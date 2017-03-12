@@ -57,12 +57,26 @@ public abstract class ZigBeeClusterHandler {
         super();
     }
 
-    public void createConverter(ZigBeeThingHandler thing, ChannelUID channelUID, ZigBeeCoordinatorHandler coordinator,
-            String address) {
+    /**
+     * Creates the converter handler
+     *
+     * @param thing
+     * @param channelUID
+     * @param coordinator
+     * @param address
+     * @return true if the handler was created successfully - false otherwise
+     */
+    public boolean createConverter(ZigBeeThingHandler thing, ChannelUID channelUID,
+            ZigBeeCoordinatorHandler coordinator, String address) {
+        this.device = coordinator.getDevice(new ZigBeeDeviceAddress(address));
+        if (this.device == null) {
+            return false;
+        }
         this.thing = thing;
         this.channelUID = channelUID;
-        this.device = coordinator.getDevice(new ZigBeeDeviceAddress(address));
         this.coordinator = coordinator;
+
+        return true;
     }
 
     public abstract void initializeConverter();
@@ -113,7 +127,7 @@ public abstract class ZigBeeClusterHandler {
         Constructor<? extends ZigBeeClusterHandler> constructor;
         try {
             if (clusterMap.get(clusterId) == null) {
-                logger.warn("Cluster converter for cluster {} is not implemented!", clusterId);
+                logger.debug("Cluster converter for cluster {} is not implemented!", clusterId);
                 return null;
             }
             constructor = clusterMap.get(clusterId).getConstructor();
@@ -140,13 +154,14 @@ public abstract class ZigBeeClusterHandler {
 
     protected Channel createChannel(ZigBeeDevice device, ThingUID thingUID, String channelType, String itemType,
             String label) {
-        String endpointRef = "_" + device.getIeeeAddress();
         Map<String, String> properties = new HashMap<String, String>();
         properties.put(ZigBeeBindingConstants.CHANNEL_PROPERTY_ADDRESS, device.getDeviceAddress().toString());
         properties.put(ZigBeeBindingConstants.CHANNEL_PROPERTY_CLUSTER, Integer.toString(getClusterId()));
         ChannelTypeUID channelTypeUID = new ChannelTypeUID(ZigBeeBindingConstants.BINDING_ID, channelType);
 
-        return ChannelBuilder.create(new ChannelUID(thingUID, channelType + "_" + endpointRef), itemType)
+        return ChannelBuilder
+                .create(new ChannelUID(thingUID,
+                        device.getIeeeAddress() + "_" + device.getEndpoint() + "_" + channelType), itemType)
                 .withType(channelTypeUID).withLabel(label).withProperties(properties).build();
     }
 

@@ -38,6 +38,8 @@ import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeDevice;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
+import com.zsmartsystems.zigbee.zdo.descriptors.NeighborTable;
+import com.zsmartsystems.zigbee.zdo.descriptors.RoutingTable;
 
 /**
  *
@@ -106,6 +108,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     }
 
     private void doNodeInitialisation() {
+        logger.debug("{}: Initialising node", nodeIeeeAddress);
+
         // Load the node information
         ZigBeeNode node = coordinatorHandler.getNode(nodeIeeeAddress);
         if (node == null) {
@@ -115,7 +119,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         }
 
         // Create the channels from the device
-        // Now process all the endpoints for this device and add all channels
+        // Process all the endpoints for this device and add all channels as derived from the supported clusters
         List<Channel> clusterChannels = new ArrayList<Channel>();
         for (ZigBeeDevice device : coordinatorHandler.getNodeDevices(nodeIeeeAddress)) {
             for (int cluster : device.getInputClusterIds()) {
@@ -136,19 +140,22 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
             String strCluster = properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_CLUSTER);
             if (strCluster == null) {
-                logger.warn("{}: No cluster set for {}", nodeIeeeAddress, channel.getUID());
-                return;
+                logger.debug("{}: No cluster set for {}", nodeIeeeAddress, channel.getUID());
+                continue;
             }
             Integer intCluster = Integer.parseInt(strCluster);
 
             ZigBeeClusterHandler handler = ZigBeeClusterHandler.getConverter(intCluster);
             if (handler == null) {
-                logger.warn("{}: No handler found for {}", nodeIeeeAddress, channel.getUID());
+                logger.debug("{}: No handler found for {}", nodeIeeeAddress, channel.getUID());
                 continue;
             }
 
-            handler.createConverter(this, channel.getUID(), coordinatorHandler,
-                    properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_ADDRESS));
+            if (handler.createConverter(this, channel.getUID(), coordinatorHandler,
+                    properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_ADDRESS)) == false) {
+                logger.debug("{}: Initializing ZigBee thing handler", nodeIeeeAddress);
+                continue;
+            }
 
             handler.initializeConverter();
 
@@ -158,28 +165,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         logger.debug("{}: Initializing ZigBee thing handler", nodeIeeeAddress);
         updateNodeProperties(node);
 
-        /*
-         * Runnable pollingRunnable = new Runnable() {
-         *
-         * @Override
-         * public void run() {
-         * logger.debug("{}: Polling...", nodeIeeeAddress);
-         *
-         * for (ChannelUID channel : channels.keySet()) {
-         * ZigBeeClusterHandler handler = channels.get(channel);
-         * if (handler == null) {
-         * logger.debug("{}: Polling aborted as no handler found for {}", nodeIeeeAddress, channel);
-         * continue;
-         * }
-         *
-         * logger.debug("{}: Polling {}", nodeIeeeAddress, channel);
-         * handler.handleRefresh();
-         * }
-         * }
-         * };
-         *
-         * pollingJob = scheduler.scheduleAtFixedRate(pollingRunnable, 60, 60, TimeUnit.SECONDS);
-         */
+        updateStatus(ThingStatus.ONLINE);
+
         return;
     }
 
@@ -252,6 +239,12 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         scheduler.schedule(handler.handleCommand(command), 0, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * Callback from handlers to update a channel state
+     *
+     * @param channel
+     * @param state
+     */
     public void setChannelState(ChannelUID channel, State state) {
         updateState(channel, state);
         updateStatus(ThingStatus.ONLINE);
@@ -287,6 +280,50 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         }
 
         logger.debug("{}: Node updated - {}", nodeIeeeAddress, node);
+
+        Map<String, String> orgProperties = editProperties();
+
+        StringBuilder jsonBuilder = new StringBuilder();
+        jsonBuilder.append("[");
+        boolean first = true;
+        for (NeighborTable neighbor : node.getNeighbors()) {
+            if (!first) {
+                jsonBuilder.append(",");
+            }
+            first = false;
+
+            Map<String, Object> object = new HashMap<String, Object>();
+            object.put("address", neighbor.getNetworkAddress());
+            object.put("depth", neighbor.getDepth());
+            object.put("lqi", neighbor.getLqi());
+            jsonBuilder.append(ZigBeeBindingConstants.propertiesToJson(object));
+        }
+        jsonBuilder.append("]");
+        orgProperties.put(ZigBeeBindingConstants.THING_PROPERTY_NEIGHBORS, jsonBuilder.toString());
+
+        jsonBuilder = new StringBuilder();
+        jsonBuilder.append("[");
+        first = true;
+        for (RoutingTable route : node.getRoutes()) {
+            if (!first) {
+                jsonBuilder.append(",");
+            }
+            first = false;
+
+            Map<String, Object> object = new HashMap<String, Object>();
+            object.put("destination", route.getDestinationAddress());
+            object.put("next_hop", route.getNextHopAddress());
+            object.put("state", route.getStatus());
+            jsonBuilder.append(ZigBeeBindingConstants.propertiesToJson(object));
+        }
+        jsonBuilder.append("]");
+        orgProperties.put(ZigBeeBindingConstants.THING_PROPERTY_ROUTES, jsonBuilder.toString());
+
+        orgProperties.put(ZigBeeBindingConstants.THING_PROPERTY_LASTUPDATE,
+                ZigBeeBindingConstants.getISO8601StringForDate(node.getLastUpdateTime()));
+
+        updateProperties(orgProperties);
+
         initialiseZigBeeNode();
     }
 
