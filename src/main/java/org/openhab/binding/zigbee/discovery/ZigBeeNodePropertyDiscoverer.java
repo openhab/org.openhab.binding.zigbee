@@ -25,6 +25,9 @@ public class ZigBeeNodePropertyDiscoverer {
 
     public Map<String, String> getProperties(final ZigBeeCoordinatorHandler coordinatorHandler, final ZigBeeNode node) {
 
+        if (node.getNetworkAddress() == 14389) {
+            logger.debug("ZigBee Node Discovery: {}", node.getIeeeAddress());
+        }
         logger.debug("ZigBee Node Discovery: {}", node.getIeeeAddress());
 
         // Create a list of devices for the discovery service to work with
@@ -87,7 +90,9 @@ public class ZigBeeNodePropertyDiscoverer {
             properties.put(ZigBeeBindingConstants.THING_PROPERTY_DATECODE, dateCode);
         }
 
-        properties.put(ZigBeeBindingConstants.THING_PROPERTY_LOGICALTYPE, node.getLogicalType().toString());
+        if (node.getLogicalType() != null) {
+            properties.put(ZigBeeBindingConstants.THING_PROPERTY_LOGICALTYPE, node.getLogicalType().toString());
+        }
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_NETWORKADDRESS, node.getNetworkAddress().toString());
 
         PowerDescriptor powerDescriptor = node.getPowerDescriptor();
