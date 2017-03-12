@@ -8,8 +8,13 @@
  */
 package org.openhab.binding.zigbee;
 
+import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 
 import org.eclipse.smarthome.core.i18n.I18nProvider;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
@@ -67,7 +72,10 @@ public class ZigBeeBindingConstants {
     public static final String THING_PROPERTY_AVAILABLEPOWERSOURCES = "zigbee_powersources";
     public static final String THING_PROPERTY_POWERSOURCE = "zigbee_powersource";
     public static final String THING_PROPERTY_POWERMODE = "zigbee_powermode";
-    public static final String THING_PROPERTY_POWERLEVEL = "zigbee_powermode";
+    public static final String THING_PROPERTY_POWERLEVEL = "zigbee_powerlevel";
+    public static final String THING_PROPERTY_ROUTES = "zigbee_routes";
+    public static final String THING_PROPERTY_NEIGHBORS = "zigbee_neighbors";
+    public static final String THING_PROPERTY_LASTUPDATE = "zigbee_lastupdate";
 
     // List of all parameters
     public final static String PARAMETER_PANID = "panid";
@@ -125,5 +133,58 @@ public class ZigBeeBindingConstants {
             this.key = key;
             this.defaultText = defaultText;
         }
+    }
+
+    /**
+     * Return an ISO 8601 combined date and time string for current date/time
+     *
+     * @return String with format "yyyy-MM-dd'T'HH:mm:ss'Z'"
+     */
+    public static String getISO8601StringForCurrentDate() {
+        Date now = new Date();
+        return getISO8601StringForDate(now);
+    }
+
+    /**
+     * Return an ISO 8601 combined date and time string for specified date/time
+     *
+     * @param date
+     *            Date
+     * @return String with format "yyyy-MM-dd'T'HH:mm:ss'Z'"
+     */
+    public static String getISO8601StringForDate(Date date) {
+        if (date == null) {
+            return "";
+        }
+
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return dateFormat.format(date);
+    }
+
+    /**
+     * Convert a map into a json encoded string
+     *
+     * @param object
+     * @return
+     */
+    public static String propertiesToJson(Map<String, Object> object) {
+        StringBuilder jsonBuilder = new StringBuilder();
+        jsonBuilder.append("{");
+        boolean first = true;
+        for (String key : object.keySet()) {
+            if (!first) {
+                jsonBuilder.append(",");
+            }
+            first = false;
+
+            jsonBuilder.append("\"");
+            jsonBuilder.append(key);
+            jsonBuilder.append("\":\"");
+            jsonBuilder.append(object.get(key));
+            jsonBuilder.append("\"");
+        }
+        jsonBuilder.append("}");
+        return jsonBuilder.toString();
     }
 }

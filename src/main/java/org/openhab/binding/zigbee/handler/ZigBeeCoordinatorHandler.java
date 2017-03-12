@@ -11,8 +11,10 @@ package org.openhab.binding.zigbee.handler;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.*;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -42,6 +44,8 @@ import com.zsmartsystems.zigbee.ZigBeeTransportTransmit;
 import com.zsmartsystems.zigbee.serialization.ZigBeeDeserializer;
 import com.zsmartsystems.zigbee.serialization.ZigBeeSerializer;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
+import com.zsmartsystems.zigbee.zdo.descriptors.NeighborTable;
+import com.zsmartsystems.zigbee.zdo.descriptors.RoutingTable;
 
 /**
  * The {@link ZigBeeCoordinatorHandler} is responsible for handling commands,
@@ -307,7 +311,53 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     @Override
     public void nodeUpdated(ZigBeeNode node) {
-        // TODO Auto-generated method stub
+        // We're only interested in the coordinator here.
+        if (node.getNetworkAddress() != 0) {
+            return;
+        }
+
+        Map<String, String> orgProperties = editProperties();
+
+        StringBuilder jsonBuilder = new StringBuilder();
+        jsonBuilder.append("[");
+        boolean first = true;
+        for (NeighborTable neighbor : node.getNeighbors()) {
+            if (!first) {
+                jsonBuilder.append(",");
+            }
+            first = false;
+
+            Map<String, Object> object = new HashMap<String, Object>();
+            object.put("address", neighbor.getNetworkAddress());
+            object.put("depth", neighbor.getDepth());
+            object.put("lqi", neighbor.getLqi());
+            jsonBuilder.append(ZigBeeBindingConstants.propertiesToJson(object));
+        }
+        jsonBuilder.append("]");
+        orgProperties.put(ZigBeeBindingConstants.THING_PROPERTY_NEIGHBORS, jsonBuilder.toString());
+
+        jsonBuilder = new StringBuilder();
+        jsonBuilder.append("[");
+        first = true;
+        for (RoutingTable route : node.getRoutes()) {
+            if (!first) {
+                jsonBuilder.append(",");
+            }
+            first = false;
+
+            Map<String, Object> object = new HashMap<String, Object>();
+            object.put("destination", route.getDestinationAddress());
+            object.put("next_hop", route.getNextHopAddress());
+            object.put("state", route.getStatus());
+            jsonBuilder.append(ZigBeeBindingConstants.propertiesToJson(object));
+        }
+        jsonBuilder.append("]");
+        orgProperties.put(ZigBeeBindingConstants.THING_PROPERTY_ROUTES, jsonBuilder.toString());
+
+        orgProperties.put(ZigBeeBindingConstants.THING_PROPERTY_LASTUPDATE,
+                ZigBeeBindingConstants.getISO8601StringForDate(node.getLastUpdateTime()));
+
+        updateProperties(orgProperties);
     }
 
     public void bind(String address, int cluster) {
@@ -321,6 +371,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     }
 
     public ZigBeeDevice getDevice(ZigBeeAddress address) {
+        if (networkManager == null) {
+            return null;
+        }
         return networkManager.getDevice(address);
     }
 
