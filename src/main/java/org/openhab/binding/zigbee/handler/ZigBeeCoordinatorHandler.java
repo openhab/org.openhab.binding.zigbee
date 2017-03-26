@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.config.discovery.DiscoveryService;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -27,6 +28,7 @@ import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.BaseBridgeHandler;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.discovery.ZigBeeDiscoveryService;
+import org.openhab.binding.zigbee.internal.ZigBeeNetworkStateSerializerImpl;
 import org.osgi.framework.ServiceRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +40,7 @@ import com.zsmartsystems.zigbee.ZigBeeDeviceAddress;
 import com.zsmartsystems.zigbee.ZigBeeNetworkManager;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNetworkStateListener;
+import com.zsmartsystems.zigbee.ZigBeeNetworkStateSerializer;
 import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.ZigBeeTransportState;
 import com.zsmartsystems.zigbee.ZigBeeTransportTransmit;
@@ -88,46 +91,60 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     public void initialize() {
         logger.debug("Initializing ZigBee network [{}].", thing.getUID());
 
+        panId = 0xffff;
+        channelId = 0;
         try {
-            panId = ((BigDecimal) getConfig().get(PARAMETER_PANID)).intValue();
-            channelId = ((BigDecimal) getConfig().get(PARAMETER_CHANNEL)).intValue();
-        } catch (ClassCastException e) {
+            if (getConfig().get(CONFIGURATION_PANID) != null) {
+                panId = ((BigDecimal) getConfig().get(CONFIGURATION_PANID)).intValue();
+            }
+
+            if (getConfig().get(CONFIGURATION_CHANNEL) != null) {
+                channelId = ((BigDecimal) getConfig().get(CONFIGURATION_CHANNEL)).intValue();
+            }
+
+            if (getConfig().get(CONFIGURATION_EXTENDEDPANID) != null) {
+                extendedPanId = Long.decode("0x" + (String) getConfig().get(CONFIGURATION_EXTENDEDPANID));
+            }
+        } catch (ClassCastException | NumberFormatException e) {
 
         }
+
+        // Get the network key
+        // If no key exists, generate a random key and save it back to the configuration
+        String networkKeyString = "";
+        Object param = getConfig().get(CONFIGURATION_NETWORKKEY);
+        if (param != null && param instanceof String) {
+            networkKeyString = (String) param;
+        }
+        if (networkKeyString.length() == 0) {
+            // Create random network key
+            networkKeyString = "";
+            for (int cnt = 0; cnt < 16; cnt++) {
+                int value = (int) Math.floor((Math.random() * 255));
+                if (cnt != 0) {
+                    networkKeyString += " ";
+                }
+                networkKeyString += String.format("%02X", value);
+            }
+
+            try {
+                // Persist the key
+                Configuration configuration = editConfiguration();
+                configuration.put(CONFIGURATION_NETWORKKEY, networkKeyString);
+
+                // If the thing is defined statically, then this will fail and we will never start!
+                updateConfiguration(configuration);
+
+                logger.debug("Created random network key for ZigBee coordinator");
+            } catch (IllegalStateException e) {
+                logger.debug("Error updating configuration", e);
+            }
+        }
+        networkKey = processNetworkKey(networkKeyString);
 
         updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE,
                 ZigBeeBindingConstants.getI18nConstant(ZigBeeBindingConstants.OFFLINE_NOT_INITIALIZED));
     }
-
-    // private void serializeNode(ZigBeeDevice device) {
-    // ZigBeeNodeSerializer serializer = new ZigBeeNodeSerializer();
-
-    // serializer.serializeNode(zigbeeApi, device);
-    // }
-
-    // public void deserializeNode(String address) {
-    // ZigBeeNodeSerializer serializer = new ZigBeeNodeSerializer();
-
-    // List<ZigBeeDevice> endpoints = serializer.deserializeNode(address);
-    // if (endpoints == null) {
-    // return;
-    // }
-
-    // for (final ZigBeeEndpoint endpoint : endpoints) {
-    // Check if the node is existing
-    // ZigBeeNodeImpl existingNode = zigbeeApi.getZigBeeNetwork().getNode(endpoint.getNode().getIeeeAddress());
-    // if (existingNode == null) {
-    // zigbeeApi.getZigBeeNetwork().addNode((ZigBeeNodeImpl) endpoint.getNode());
-    // } else {
-    // ((ZigBeeEndpointImpl) endpoint).setNode(existingNode);
-    // }
-
-    // Check if the endpoint is existing
-
-    // ((ZigBeeEndpointImpl) endpoint).setNetworkManager(zigbeeApi.getZigBeeNetworkManager());
-    // zigbeeApi.getZigBeeNetwork().addEndpoint(endpoint);
-    // }
-    // }
 
     @Override
     public void dispose() {
@@ -187,7 +204,10 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         discoveryRegistration = bundleContext.registerService(DiscoveryService.class.getName(), discoveryService,
                 new Hashtable<String, Object>());
 
+        ZigBeeNetworkStateSerializer networkStateSerializer = new ZigBeeNetworkStateSerializerImpl();
+
         networkManager = new ZigBeeNetworkManager(zigbeeTransport);
+        networkManager.setNetworkStateSerializer(networkStateSerializer);
         networkManager.setSerializer(serializerClass, deserializerClass);
         networkManager.addNetworkStateListener(this);
         networkManager.addNetworkNodeListener(this);
@@ -203,7 +223,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         long currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
 
         if (channelId != -1 && currentChannel != channelId) {
-            // networkManager.setZigBeeChannel(channelId);
+            networkManager.setZigBeeChannel(channelId);
         }
 
         if (panId != 0xffff) {
@@ -220,6 +240,55 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     ZigBeeBindingConstants.getI18nConstant(ZigBeeBindingConstants.OFFLINE_STARTUP_FAIL));
             return;
         }
+
+        currentChannel = networkManager.getZigBeeChannel();
+        currentPanId = networkManager.getZigBeePanId();
+        currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
+
+        try {
+            // Persist the network configuration
+            Configuration configuration = editConfiguration();
+            configuration.put(CONFIGURATION_PANID, currentPanId);
+            configuration.put(CONFIGURATION_EXTENDEDPANID, String.format("%016X", currentExtendedPanId));
+            configuration.put(CONFIGURATION_CHANNEL, currentChannel);
+
+            // If the thing is defined statically, then this will fail and we will never start!
+            updateConfiguration(configuration);
+        } catch (IllegalStateException e) {
+            logger.debug("Error updating configuration", e);
+        }
+    }
+
+    /**
+     * Process the network key. The key is provided as a string of hexadecimal values. Values can be space or comma
+     * delimited, or can have no separation between values. Values can be prefixed with 0x or not.
+     *
+     * @param value {@link String} containing the new network key
+     */
+    private byte[] processNetworkKey(String value) {
+        if (value == null) {
+            logger.debug("Network key must not be null");
+            return null;
+        }
+
+        String hexString = value.replace("0x", "");
+        hexString = hexString.replace(",", "");
+        hexString = hexString.replace(" ", "");
+
+        if ((hexString.length() % 2) != 0) {
+            logger.debug("Network key must contain an even number of characters");
+            return null;
+        }
+
+        byte[] networkKey = new byte[hexString.length() / 2];
+        char enc[] = hexString.toCharArray();
+        for (int i = 0; i < enc.length; i += 2) {
+            StringBuilder curr = new StringBuilder(2);
+            curr.append(enc[i]).append(enc[i + 1]);
+            networkKey[i / 2] = (byte) Integer.parseInt(curr.toString(), 16);
+        }
+
+        return networkKey;
     }
 
     /**
@@ -353,6 +422,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         }
         jsonBuilder.append("]");
         orgProperties.put(ZigBeeBindingConstants.THING_PROPERTY_ROUTES, jsonBuilder.toString());
+
+        orgProperties.put(ZigBeeBindingConstants.THING_PROPERTY_ASSOCIATEDDEVICES,
+                node.getAssociatedDevices().toString());
 
         orgProperties.put(ZigBeeBindingConstants.THING_PROPERTY_LASTUPDATE,
                 ZigBeeBindingConstants.getISO8601StringForDate(node.getLastUpdateTime()));
