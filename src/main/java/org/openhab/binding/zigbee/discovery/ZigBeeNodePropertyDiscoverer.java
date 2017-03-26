@@ -25,17 +25,14 @@ public class ZigBeeNodePropertyDiscoverer {
 
     public Map<String, String> getProperties(final ZigBeeCoordinatorHandler coordinatorHandler, final ZigBeeNode node) {
 
-        if (node.getNetworkAddress() == 14389) {
-            logger.debug("ZigBee Node Discovery: {}", node.getIeeeAddress());
-        }
-        logger.debug("ZigBee Node Discovery: {}", node.getIeeeAddress());
+        logger.debug("{}: ZigBee node property discovery start", node.getIeeeAddress());
 
         // Create a list of devices for the discovery service to work with
         Set<ZigBeeDevice> devices = coordinatorHandler.getNodeDevices(node.getIeeeAddress());
 
         // Make sure we found some devices!
         if (devices.size() == 0) {
-            logger.debug("Node has no devices: {}", node.getIeeeAddress());
+            logger.debug("{}: Node has no devices", node.getIeeeAddress());
             return null;
         }
 
@@ -51,43 +48,59 @@ public class ZigBeeNodePropertyDiscoverer {
         }
 
         if (basicCluster == null) {
-            logger.debug("Node doesn't support basic cluster: {}", node.getIeeeAddress());
+            logger.debug("{}: Node doesn't support basic cluster", node.getIeeeAddress());
             return null;
         }
+
+        logger.debug("{}: ZigBee node property discovery using {}", node.getIeeeAddress(),
+                basicCluster.getZigBeeAddress());
 
         String manufacturer = basicCluster.getManufacturerName(Long.MAX_VALUE);
         if (manufacturer != null) {
             properties.put(ZigBeeBindingConstants.THING_PROPERTY_MANUFACTURER, manufacturer);
+        } else {
+            logger.debug("{}: Manufacturer request timeout", node.getIeeeAddress());
         }
 
         String model = basicCluster.getModelIdentifier(Long.MAX_VALUE);
         if (model != null) {
             properties.put(ZigBeeBindingConstants.THING_PROPERTY_MODEL, model);
+        } else {
+            logger.debug("{}: Model request timeout", node.getIeeeAddress());
         }
-
         Integer hwVersion = basicCluster.getHwVersion(Long.MAX_VALUE);
         if (hwVersion != null) {
             properties.put(ZigBeeBindingConstants.THING_PROPERTY_HWVERSION, hwVersion.toString());
+        } else {
+            logger.debug("{}: Hardware version request timeout", node.getIeeeAddress());
         }
 
         Integer stkVersion = basicCluster.getStackVersion(Long.MAX_VALUE);
         if (stkVersion != null) {
             properties.put(ZigBeeBindingConstants.THING_PROPERTY_STKVERSION, stkVersion.toString());
+        } else {
+            logger.debug("{}: Stack version request timeout", node.getIeeeAddress());
         }
 
         Integer zclVersion = basicCluster.getZclVersion(Long.MAX_VALUE);
         if (zclVersion != null) {
             properties.put(ZigBeeBindingConstants.THING_PROPERTY_ZCLVERSION, zclVersion.toString());
+        } else {
+            logger.debug("{}: ZCL version request timeout", node.getIeeeAddress());
         }
 
         Integer appVersion = basicCluster.getApplicationVersion(Long.MAX_VALUE);
         if (appVersion != null) {
             properties.put(ZigBeeBindingConstants.THING_PROPERTY_APPVERSION, appVersion.toString());
+        } else {
+            logger.debug("{}: Application version request timeout", node.getIeeeAddress());
         }
 
         String dateCode = basicCluster.getDateCode(Long.MAX_VALUE);
         if (dateCode != null) {
             properties.put(ZigBeeBindingConstants.THING_PROPERTY_DATECODE, dateCode);
+        } else {
+            logger.debug("{}: Date code request timeout", node.getIeeeAddress());
         }
 
         if (node.getLogicalType() != null) {
@@ -106,6 +119,8 @@ public class ZigBeeNodePropertyDiscoverer {
             properties.put(ZigBeeBindingConstants.THING_PROPERTY_POWERLEVEL,
                     powerDescriptor.getPowerLevel().toString());
         }
+
+        logger.debug("{}: ZigBee node property discovery complete: {}", node.getIeeeAddress(), properties);
 
         return properties;
     }

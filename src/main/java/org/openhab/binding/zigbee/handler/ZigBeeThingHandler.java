@@ -319,6 +319,9 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         jsonBuilder.append("]");
         orgProperties.put(ZigBeeBindingConstants.THING_PROPERTY_ROUTES, jsonBuilder.toString());
 
+        orgProperties.put(ZigBeeBindingConstants.THING_PROPERTY_ASSOCIATEDDEVICES,
+                node.getAssociatedDevices().toString());
+
         orgProperties.put(ZigBeeBindingConstants.THING_PROPERTY_LASTUPDATE,
                 ZigBeeBindingConstants.getISO8601StringForDate(node.getLastUpdateTime()));
 

@@ -87,6 +87,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
         Runnable pollingRunnable = new Runnable() {
             @Override
             public void run() {
+                logger.info("Starting ZigBee discovery for device {}", node.getIeeeAddress());
                 ZigBeeNodePropertyDiscoverer propertyDiscoverer = new ZigBeeNodePropertyDiscoverer();
 
                 Map<String, String> properties = propertyDiscoverer.getProperties(coordinatorHandler, node);

@@ -8,8 +8,6 @@
  */
 package org.openhab.binding.zigbee.handler;
 
-import static org.openhab.binding.zigbee.ZigBeeBindingConstants.PARAMETER_PORT;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,6 +17,7 @@ import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.types.Command;
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +63,7 @@ public class ZigBeeCoordinatorCC2531Handler extends ZigBeeCoordinatorHandler
         // Call the parent to finish any global initialisation
         super.initialize();
 
-        portId = (String) getConfig().get(PARAMETER_PORT);
+        portId = (String) getConfig().get(ZigBeeBindingConstants.CONFIGURATION_PORT);
         final ZigBeeTransportTransmit dongle = new ZigBeeDongleTiCc2531(this);
 
         logger.debug("ZigBee Coordinator CC2531 opening Port:'{}' PAN:{}, Channel:{}", portId,
