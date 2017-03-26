@@ -36,6 +36,7 @@ public class ZigBeeBindingConstants {
 
     // Coordinator (Bridges)
     public final static ThingTypeUID COORDINATOR_TYPE_CC2531 = new ThingTypeUID(BINDING_ID, "coordinator_cc2531");
+    public final static ThingTypeUID COORDINATOR_TYPE_EMBER = new ThingTypeUID(BINDING_ID, "coordinator_ember");
 
     // List of Thing Type UIDs
     public final static ThingTypeUID THING_TYPE_GENERIC_DEVICE = new ThingTypeUID(BINDING_ID, "device");
@@ -57,6 +58,9 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_COLOR_COLOR = "color_color";
     public static final String CHANNEL_COLOR_TEMPERATURE = "color_temperature";
 
+    public static final String CHANNEL_TEMPERATURE_VALUE = "sensor_temperature";
+    public static final String CHANNEL_HUMIDITY_VALUE = "sensor_humidity";
+
     public static final String CHANNEL_PROPERTY_ADDRESS = "zigbee_address";
     public static final String CHANNEL_PROPERTY_CLUSTER = "zigbee_cluster";
 
@@ -76,11 +80,14 @@ public class ZigBeeBindingConstants {
     public static final String THING_PROPERTY_ROUTES = "zigbee_routes";
     public static final String THING_PROPERTY_NEIGHBORS = "zigbee_neighbors";
     public static final String THING_PROPERTY_LASTUPDATE = "zigbee_lastupdate";
+    public static final String THING_PROPERTY_ASSOCIATEDDEVICES = "zigbee_devices";
 
-    // List of all parameters
-    public final static String PARAMETER_PANID = "panid";
-    public final static String PARAMETER_CHANNEL = "channel";
-    public final static String PARAMETER_PORT = "port";
+    // List of all configuration parameters
+    public final static String CONFIGURATION_PANID = "zigbee_panid";
+    public final static String CONFIGURATION_EXTENDEDPANID = "zigbee_extendedpanid";
+    public final static String CONFIGURATION_CHANNEL = "zigbee_channel";
+    public final static String CONFIGURATION_PORT = "zigbee_port";
+    public static final String CONFIGURATION_NETWORKKEY = "zigbee_networkkey";
 
     public final static String THING_PARAMETER_MACADDRESS = "zigbee_macaddress";
 

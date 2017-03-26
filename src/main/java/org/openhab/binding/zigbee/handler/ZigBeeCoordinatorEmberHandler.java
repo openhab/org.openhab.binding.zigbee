@@ -8,8 +8,6 @@
  */
 package org.openhab.binding.zigbee.handler;
 
-import static org.openhab.binding.zigbee.ZigBeeBindingConstants.PARAMETER_PORT;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,6 +17,7 @@ import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.types.Command;
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,11 +63,11 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler
         // Call the parent to finish any global initialisation
         super.initialize();
 
-        portId = (String) getConfig().get(PARAMETER_PORT);
+        portId = (String) getConfig().get(ZigBeeBindingConstants.CONFIGURATION_PORT);
         final ZigBeeTransportTransmit dongle = new ZigBeeDongleEzsp(this);
 
-        logger.debug("ZigBee Coordinator Ember opening Port:'{}' PAN:{}, Channel:{}", portId,
-                Integer.toHexString(panId), Integer.toString(channelId));
+        logger.debug("ZigBee Coordinator Ember opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", portId,
+                Integer.toHexString(panId), Long.toHexString(extendedPanId), Integer.toString(channelId));
 
         startZigBee(dongle, DefaultSerializer.class, DefaultDeserializer.class);
     }
@@ -99,6 +98,8 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler
             serialPort = (gnu.io.SerialPort) commPort;
             serialPort.setSerialPortParams(baudRate, gnu.io.SerialPort.DATABITS_8, gnu.io.SerialPort.STOPBITS_1,
                     gnu.io.SerialPort.PARITY_NONE);
+            serialPort.setFlowControlMode(gnu.io.SerialPort.FLOWCONTROL_RTSCTS_OUT); // FLOWCONTROL_NONE);
+
             ((CommPort) serialPort).enableReceiveThreshold(1);
             serialPort.enableReceiveTimeout(2000);
 
@@ -126,10 +127,6 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler
         try {
             inputStream = serialPort.getInputStream();
             outputStream = serialPort.getOutputStream();
-
-            // Write the 'magic byte'
-            // Note that this might change in future, or with different dongles
-            outputStream.write(0xef);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

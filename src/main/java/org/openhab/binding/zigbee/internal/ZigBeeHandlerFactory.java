@@ -15,6 +15,7 @@ import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorCC2531Handler;
+import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorEmberHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,9 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
         // Handle coordinators here
         if (thingTypeUID.equals(ZigBeeBindingConstants.COORDINATOR_TYPE_CC2531)) {
             return new ZigBeeCoordinatorCC2531Handler((Bridge) thing);
+        }
+        if (thingTypeUID.equals(ZigBeeBindingConstants.COORDINATOR_TYPE_EMBER)) {
+            return new ZigBeeCoordinatorEmberHandler((Bridge) thing);
         }
 
         // Everything else gets handled in a single handler
