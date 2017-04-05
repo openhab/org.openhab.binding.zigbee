@@ -44,18 +44,25 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
     private final static Logger logger = LoggerFactory.getLogger(ZigBeeNetworkStateSerializerImpl.class);
 
     /**
-     * The network state file path.
+     * The network state filename.
      */
-    private final String networkStateFilePath = "zigbee-network.xml";
+    private final String networkStateFileName = "zigbee-network.xml";
+
+    /**
+     * The network state filename.
+     */
+    private final String networkStateFilePath;
+
+    public ZigBeeNetworkStateSerializerImpl() {
+        networkStateFilePath = ConfigConstants.getUserDataFolder() + "/" + ZigBeeBindingConstants.BINDING_ID;
+    }
 
     private XStream openStream() {
-        String folderName = ConfigConstants.getUserDataFolder() + "/" + ZigBeeBindingConstants.BINDING_ID;
-
-        final File folder = new File(folderName);
+        final File folder = new File(networkStateFilePath);
 
         // Create the path for serialization.
         if (!folder.exists()) {
-            logger.debug("Creating ZigBee persistence folder {}", folderName);
+            logger.debug("Creating ZigBee persistence folder {}", networkStateFilePath);
             folder.mkdirs();
         }
 
@@ -92,8 +99,7 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
             destinations.add(deviceDao);
         }
 
-        final File file = new File(networkStateFilePath);
-
+        final File file = new File(networkStateFilePath + "/" + networkStateFileName);
         try {
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
             stream.marshal(destinations, new PrettyPrintWriter(writer));
@@ -103,7 +109,7 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
             logger.error("Error writing network state", e);
         }
 
-        logger.info("ZigBee saving network state done.");
+        logger.debug("Saving ZigBee network state: done.");
     }
 
     /**
@@ -114,13 +120,13 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
      */
     @Override
     public void deserialize(final ZigBeeNetworkManager networkState) {
-        final File file = new File(networkStateFilePath);
+        final File file = new File(networkStateFilePath + "/" + networkStateFileName);
         boolean networkStateExists = file.exists();
         if (networkStateExists == false) {
             return;
         }
 
-        logger.info("Loading network state...");
+        logger.debug("Loading ZigBee network state...");
 
         try {
             XStream stream = openStream();

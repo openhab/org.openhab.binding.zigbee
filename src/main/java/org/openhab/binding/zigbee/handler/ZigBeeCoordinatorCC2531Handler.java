@@ -43,9 +43,18 @@ import gnu.io.UnsupportedCommOperationException;
  */
 public class ZigBeeCoordinatorCC2531Handler extends ZigBeeCoordinatorHandler
         implements ZigBeePort, SerialPortEventListener {
-    private String portId;
-
     private Logger logger = LoggerFactory.getLogger(ZigBeeCoordinatorCC2531Handler.class);
+
+    // The serial port.
+    private gnu.io.SerialPort serialPort;
+
+    // The serial port input stream.
+    private InputStream inputStream;
+
+    // The serial port output stream.
+    private OutputStream outputStream;
+
+    private String portId;
 
     public ZigBeeCoordinatorCC2531Handler(Bridge coordinator) {
         super(coordinator);
@@ -81,14 +90,6 @@ public class ZigBeeCoordinatorCC2531Handler extends ZigBeeCoordinatorHandler
     public void thingUpdated(Thing thing) {
         super.thingUpdated(thing);
     }
-
-    // @Override
-    // protected void updateStatus(ThingStatus status, ThingStatusDetail detail, String desc) {
-    // super.updateStatus(status, detail, desc);
-    // for (Thing child : getThing().getThings()) {
-    // child.setStatusInfo(new ThingStatusInfo(status, detail, desc));
-    // }
-    // }
 
     private void openSerialPort(final String serialPortName, int baudRate) {
         logger.debug("Connecting to serial port [{}]", serialPortName);
@@ -137,17 +138,9 @@ public class ZigBeeCoordinatorCC2531Handler extends ZigBeeCoordinatorHandler
         return;
     }
 
-    // The serial port.
-    private gnu.io.SerialPort serialPort;
-
-    // The serial port input stream.
-    private InputStream inputStream;
-
-    // The serial port output stream.
-    private OutputStream outputStream;
-
     @Override
     public boolean open() {
+        logger.debug("Opening ZigBee CC2531 serial port");
         try {
             openSerialPort(portId, 115200);
             return true;
@@ -159,6 +152,7 @@ public class ZigBeeCoordinatorCC2531Handler extends ZigBeeCoordinatorHandler
 
     @Override
     public void close() {
+        logger.debug("Closing ZigBee CC2531 serial port");
         try {
             if (serialPort != null) {
                 serialPort.enableReceiveTimeout(1);
@@ -176,8 +170,7 @@ public class ZigBeeCoordinatorCC2531Handler extends ZigBeeCoordinatorHandler
                 logger.info("Serial port [{}] is closed.", portId);
             }
         } catch (Exception e) {
-            // logger.warn("Error closing serial port: '" + serialPort.getName()
-            // + "'", e);
+            logger.error("Error closing serial port: ", e);
         }
     }
 

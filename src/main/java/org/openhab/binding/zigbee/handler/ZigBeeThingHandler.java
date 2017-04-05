@@ -57,6 +57,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     private ScheduledFuture<?> pollingJob;
 
+    private boolean nodeInitialised = false;
+
     public ZigBeeThingHandler(Thing zigbeeDevice) {
         super(zigbeeDevice);
     }
@@ -108,6 +110,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     }
 
     private void doNodeInitialisation() {
+        if (nodeInitialised) {
+            return;
+        }
+
         logger.debug("{}: Initialising node", nodeIeeeAddress);
 
         // Load the node information
@@ -164,8 +170,9 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         logger.debug("{}: Initializing ZigBee thing handler", nodeIeeeAddress);
         updateNodeProperties(node);
-
         updateStatus(ThingStatus.ONLINE);
+
+        nodeInitialised = true;
 
         return;
     }

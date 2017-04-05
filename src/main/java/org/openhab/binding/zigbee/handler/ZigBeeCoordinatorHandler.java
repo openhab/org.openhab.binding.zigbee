@@ -76,7 +76,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     private Class<?> serializerClass;
     private Class<?> deserializerClass;
 
-    protected byte[] networkKey;
+    protected int[] networkKey;
+
+    /**
+     * Set to true on startup if we want to reinitialize the network
+     */
+    private boolean initializeNetwork = false;
 
     private ScheduledFuture<?> restartJob = null;
 
@@ -90,9 +95,10 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     @Override
     public void initialize() {
         logger.debug("Initializing ZigBee network [{}].", thing.getUID());
-
         panId = 0xffff;
         channelId = 0;
+        initializeNetwork = false;
+
         try {
             if (getConfig().get(CONFIGURATION_PANID) != null) {
                 panId = ((BigDecimal) getConfig().get(CONFIGURATION_PANID)).intValue();
@@ -105,42 +111,71 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             if (getConfig().get(CONFIGURATION_EXTENDEDPANID) != null) {
                 extendedPanId = Long.decode("0x" + (String) getConfig().get(CONFIGURATION_EXTENDEDPANID));
             }
+
+            if (getConfig().get(CONFIGURATION_INITIALIZE) != null) {
+                initializeNetwork = (Boolean) getConfig().get(CONFIGURATION_INITIALIZE);
+            } else {
+                initializeNetwork = true;
+            }
         } catch (ClassCastException | NumberFormatException e) {
-
+            logger.debug("Initializing ZigBee network [{}].", thing.getUID());
+            updateStatus(ThingStatus.OFFLINE);
+            return;
         }
 
-        // Get the network key
-        // If no key exists, generate a random key and save it back to the configuration
-        String networkKeyString = "";
-        Object param = getConfig().get(CONFIGURATION_NETWORKKEY);
-        if (param != null && param instanceof String) {
-            networkKeyString = (String) param;
-        }
-        if (networkKeyString.length() == 0) {
-            // Create random network key
-            networkKeyString = "";
-            for (int cnt = 0; cnt < 16; cnt++) {
-                int value = (int) Math.floor((Math.random() * 255));
-                if (cnt != 0) {
-                    networkKeyString += " ";
+        if (initializeNetwork) {
+            if (panId == 0) {
+                panId = (int) Math.floor((Math.random() * 65534));
+                logger.debug("Created random ZigBee PAN ID [{}].", String.format("%04X", panId));
+            }
+
+            if (extendedPanId == 0 || extendedPanId == 0xFFFFFFFFFFFFFFFFl) {
+                extendedPanId = (long) Math.floor((Math.random() * Long.MAX_VALUE));
+                logger.debug("Created random ZigBee extended PAN ID [{}].", String.format("%016X", extendedPanId));
+            }
+
+            // Get the network key
+            // If no key exists, generate a random key and save it back to the configuration
+            String networkKeyString = "";
+            Object param = getConfig().get(CONFIGURATION_NETWORKKEY);
+            if (param != null && param instanceof String) {
+                networkKeyString = (String) param;
+            }
+            if (networkKeyString.length() == 0) {
+                // Create random network key
+                networkKeyString = "";
+                for (int cnt = 0; cnt < 16; cnt++) {
+                    int value = (int) Math.floor((Math.random() * 255));
+                    if (cnt != 0) {
+                        networkKeyString += " ";
+                    }
+                    networkKeyString += String.format("%02X", value);
                 }
-                networkKeyString += String.format("%02X", value);
+
+                try {
+                    // Persist the key
+                    Configuration configuration = editConfiguration();
+                    configuration.put(CONFIGURATION_NETWORKKEY, networkKeyString);
+
+                    // If the thing is defined statically, then this will fail and we will never start!
+                    updateConfiguration(configuration);
+
+                    logger.debug("Created random ZigBee network key.");
+                } catch (IllegalStateException e) {
+                    logger.debug("Error updating configuration", e);
+                }
             }
-
-            try {
-                // Persist the key
-                Configuration configuration = editConfiguration();
-                configuration.put(CONFIGURATION_NETWORKKEY, networkKeyString);
-
-                // If the thing is defined statically, then this will fail and we will never start!
-                updateConfiguration(configuration);
-
-                logger.debug("Created random network key for ZigBee coordinator");
-            } catch (IllegalStateException e) {
-                logger.debug("Error updating configuration", e);
-            }
+            networkKey = processNetworkKey(networkKeyString);
         }
-        networkKey = processNetworkKey(networkKeyString);
+
+        try {
+            // Reset the initialization flag
+            Configuration configuration = editConfiguration();
+            configuration.put(CONFIGURATION_INITIALIZE, false);
+            updateConfiguration(configuration);
+        } catch (IllegalStateException e) {
+            logger.debug("Error updating configuration: Unable to reset initialize flag.", e);
+        }
 
         updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE,
                 ZigBeeBindingConstants.getI18nConstant(ZigBeeBindingConstants.OFFLINE_NOT_INITIALIZED));
@@ -206,33 +241,31 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         ZigBeeNetworkStateSerializer networkStateSerializer = new ZigBeeNetworkStateSerializerImpl();
 
+        // Configure the network manager
         networkManager = new ZigBeeNetworkManager(zigbeeTransport);
         networkManager.setNetworkStateSerializer(networkStateSerializer);
         networkManager.setSerializer(serializerClass, deserializerClass);
         networkManager.addNetworkStateListener(this);
         networkManager.addNetworkNodeListener(this);
 
+        // Initialise the network
         if (!networkManager.initialize()) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE,
                     ZigBeeBindingConstants.getI18nConstant(ZigBeeBindingConstants.OFFLINE_INITIALIZE_FAIL));
             return;
         }
 
+        // Get the initial network configuration
         int currentChannel = networkManager.getZigBeeChannel();
         int currentPanId = networkManager.getZigBeePanId();
         long currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
 
-        if (channelId != -1 && currentChannel != channelId) {
-            networkManager.setZigBeeChannel(channelId);
-        }
-
-        if (panId != 0xffff) {
-            // networkManager.setZigBeePanId(panId);
-        }
-
-        if (extendedPanId != currentExtendedPanId) {
-            // networkManager.setZigBeeExtendedPanId(extendedPanId);
-        }
+        // if (initializeNetwork == true) {
+        networkManager.setZigBeeSecurityKey(networkKey);
+        networkManager.setZigBeeChannel(channelId);
+        networkManager.setZigBeePanId(panId);
+        networkManager.setZigBeeExtendedPanId(extendedPanId);
+        // }
 
         // Call startup. The setting of the bring to ONLINE will be done via the state listener.
         if (!networkManager.startup()) {
@@ -241,6 +274,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             return;
         }
 
+        // Get the final network configuration
         currentChannel = networkManager.getZigBeeChannel();
         currentPanId = networkManager.getZigBeePanId();
         currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
@@ -265,7 +299,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      *
      * @param value {@link String} containing the new network key
      */
-    private byte[] processNetworkKey(String value) {
+    private int[] processNetworkKey(String value) {
         if (value == null) {
             logger.debug("Network key must not be null");
             return null;
@@ -280,7 +314,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             return null;
         }
 
-        byte[] networkKey = new byte[hexString.length() / 2];
+        int[] networkKey = new int[hexString.length() / 2];
         char enc[] = hexString.toCharArray();
         for (int i = 0; i < enc.length; i += 2) {
             StringBuilder curr = new StringBuilder(2);
@@ -306,15 +340,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         logger.debug("Scheduling ZigBee start");
         restartJob = scheduler.schedule(runnable, 1, TimeUnit.SECONDS);
-    }
-
-    private ZigBeeDevice getDeviceByIndexOrEndpointId(ZigBeeDeviceAddress deviceAddress) {
-        ZigBeeDevice device;
-        device = networkManager.getDevice(deviceAddress);
-        if (device == null) {
-            logger.debug("Error finding ZigBee device with address {}", deviceAddress);
-        }
-        return device;
     }
 
     /**

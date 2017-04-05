@@ -49,9 +49,11 @@ public class ZigBeeOnOffClusterHandler extends ZigBeeClusterHandler implements Z
         if (initialised == true) {
             return;
         }
+        logger.debug("{}: Initialising device on/off cluster", device.getIeeeAddress());
+
         clusterOnOff = (ZclOnOffCluster) device.getCluster(ZclOnOffCluster.CLUSTER_ID);
         if (clusterOnOff == null) {
-            logger.error("Error opening device on/off controls {}", device.getIeeeAddress());
+            logger.error("{}: Error opening device on/off controls", device.getIeeeAddress());
             return;
         }
 
@@ -76,8 +78,10 @@ public class ZigBeeOnOffClusterHandler extends ZigBeeClusterHandler implements Z
             return;
         }
 
+        logger.debug("{}: Closing device on/off cluster", device.getIeeeAddress());
+
         if (clusterOnOff != null) {
-            // coordinator.closeCluster(clusterOnOff);
+            clusterOnOff.removeAttributeListener(this);
         }
     }
 
@@ -133,7 +137,7 @@ public class ZigBeeOnOffClusterHandler extends ZigBeeClusterHandler implements Z
 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
-        logger.debug("ZigBee attribute reports {} from {}", attribute, device.getIeeeAddress());
+        logger.debug("{}: ZigBee attribute reports {}", device.getIeeeAddress(), attribute);
         if (attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
             Boolean value = (Boolean) attribute.getLastValue();
             if (value != null && value == true) {
