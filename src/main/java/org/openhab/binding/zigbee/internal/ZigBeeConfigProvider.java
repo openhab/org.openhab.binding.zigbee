@@ -147,7 +147,7 @@ public class ZigBeeConfigProvider implements ConfigDescriptionProvider, ConfigOp
 
         parameters.add(
                 ConfigDescriptionParameterBuilder.create(ZigBeeBindingConstants.THING_PARAMETER_MACADDRESS, Type.TEXT)
-                        .withLabel("Node ID").withAdvanced(true).withReadOnly(true).withRequired(true)
+                        .withLabel("MAC Address").withAdvanced(true).withReadOnly(true).withRequired(true)
                         .withDescription(
                                 "Sets the node IEEE address<BR/>The node address is unique for each device and can not be changed.")
                         .withDefault("").withGroupName("thingcfg").build());
