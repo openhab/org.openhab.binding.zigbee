@@ -88,6 +88,7 @@ public class ZigBeeBindingConstants {
     public final static String CONFIGURATION_CHANNEL = "zigbee_channel";
     public final static String CONFIGURATION_PORT = "zigbee_port";
     public static final String CONFIGURATION_NETWORKKEY = "zigbee_networkkey";
+    public static final String CONFIGURATION_INITIALIZE = "zigbee_initialise";
 
     public final static String THING_PARAMETER_MACADDRESS = "zigbee_macaddress";
 
@@ -100,7 +101,7 @@ public class ZigBeeBindingConstants {
     public final static I18nConstant OFFLINE_STARTUP_FAIL = new I18nConstant("zigbee.status.offline_startupfail",
             "Failed to startup ZigBee transport layer");
     public final static I18nConstant OFFLINE_NO_ADDRESS = new I18nConstant("zigbee.status.offline_noaddress",
-            "Can't initializing ZigBee thing handler without address");
+            "Can't initialize ZigBee thing handler without address");
     public final static I18nConstant OFFLINE_NODE_NOT_FOUND = new I18nConstant("zigbee.status.offline_nodenotfound",
             "Node not found in ZigBee network");
 

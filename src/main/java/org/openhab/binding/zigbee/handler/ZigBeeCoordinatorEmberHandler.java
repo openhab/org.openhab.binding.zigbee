@@ -43,9 +43,18 @@ import gnu.io.UnsupportedCommOperationException;
  */
 public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler
         implements ZigBeePort, SerialPortEventListener {
+    private Logger logger = LoggerFactory.getLogger(ZigBeeCoordinatorEmberHandler.class);
+
     private String portId;
 
-    private Logger logger = LoggerFactory.getLogger(ZigBeeCoordinatorEmberHandler.class);
+    // The serial port.
+    private gnu.io.SerialPort serialPort;
+
+    // The serial port input stream.
+    private InputStream inputStream;
+
+    // The serial port output stream.
+    private OutputStream outputStream;
 
     public ZigBeeCoordinatorEmberHandler(Bridge coordinator) {
         super(coordinator);
@@ -82,14 +91,6 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler
         super.thingUpdated(thing);
     }
 
-    // @Override
-    // protected void updateStatus(ThingStatus status, ThingStatusDetail detail, String desc) {
-    // super.updateStatus(status, detail, desc);
-    // for (Thing child : getThing().getThings()) {
-    // child.setStatusInfo(new ThingStatusInfo(status, detail, desc));
-    // }
-    // }
-
     private void openSerialPort(final String serialPortName, int baudRate) {
         logger.info("Connecting to serial port [{}]", serialPortName);
         try {
@@ -98,7 +99,7 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler
             serialPort = (gnu.io.SerialPort) commPort;
             serialPort.setSerialPortParams(baudRate, gnu.io.SerialPort.DATABITS_8, gnu.io.SerialPort.STOPBITS_1,
                     gnu.io.SerialPort.PARITY_NONE);
-            serialPort.setFlowControlMode(gnu.io.SerialPort.FLOWCONTROL_RTSCTS_OUT); // FLOWCONTROL_NONE);
+            serialPort.setFlowControlMode(gnu.io.SerialPort.FLOWCONTROL_RTSCTS_OUT);
 
             ((CommPort) serialPort).enableReceiveThreshold(1);
             serialPort.enableReceiveTimeout(2000);
@@ -134,15 +135,6 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler
 
         return;
     }
-
-    // The serial port.
-    private gnu.io.SerialPort serialPort;
-
-    // The serial port input stream.
-    private InputStream inputStream;
-
-    // The serial port output stream.
-    private OutputStream outputStream;
 
     @Override
     public boolean open() {
