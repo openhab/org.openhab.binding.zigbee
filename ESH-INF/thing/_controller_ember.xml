@@ -8,16 +8,28 @@
 		<label>Ember EM35x Coordinator</label>
 		<description>Ember EM35x NCP</description>
 
-		<config-description>
-			<parameter name="zigbee_port" type="text" required="true">
-				<label>Port</label>
-				<description>Serial Port</description>
-			</parameter>
-			<parameter name="zigbee_channel" type="integer" required="false"
-				min="11" max="25">
-				<label>Channel</label>
-				<description>Channel number</description>
-				<default>-1</default>
+        <config-description>
+            <parameter name="zigbee_port" type="text" required="true">
+                <label>Port</label>
+                <description>Serial Port</description>
+            </parameter>
+
+            <parameter-group name="network">
+                <context></context>
+                <label>ZigBee Network Configuration</label>
+                <description></description>
+            </parameter-group>
+
+            <parameter name="zigbee_initialise" type="boolean" groupName="network">
+                <label>Reset Controller</label>
+                <description>Resets the Controller and sets the configuration to the configured values.</description>
+                <advanced>true</advanced>
+            </parameter>
+
+            <parameter name="zigbee_channel" type="integer" groupName="network" required="false" min="11" max="25">
+                <label>Channel</label>
+                <description>Channel number</description>
+                <default>-1</default>
                 <options>
                     <option value="-1">Auto</option>
                     <option value="11">Channel 11</option>
@@ -36,10 +48,10 @@
                     <option value="24">Channel 24</option>
                     <option value="25">Channel 25</option>
                 </options>
-				<advanced>true</advanced>
-			</parameter>
-			
-            <parameter name="zigbee_panid" type="Integer" required="false">
+                <advanced>true</advanced>
+            </parameter>
+
+            <parameter name="zigbee_panid" type="Integer" groupName="network" required="false">
                 <label>PAN ID</label>
                 <description>PAN Network ID</description>
                 <default>0</default>
@@ -50,33 +62,20 @@
                 <advanced>true</advanced>
             </parameter>
 
-            <parameter name="zigbee_extendedpanid" type="text" required="false">
+            <parameter name="zigbee_extendedpanid" type="text" groupName="network" required="false">
                 <label>Extended PAN ID</label>
                 <description>Extended PAN Network ID: 16 byte hexadecimal value</description>
-                <default>0</default>
+                <default>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</default>
                 <advanced>true</advanced>
             </parameter>
 
-	        <parameter-group name="actions">
-                <context></context>
-                <label>Actions</label>
-                <description></description>
-            </parameter-group>
-            
-            <parameter name="controller_reset" type="text" groupName="actions">
-                <label>Reset Controller</label>
-                <description>Resets the Controller and sets the configuration to the configured values.</description>
-                <advanced>true</advanced>
-                <default>GO</default>
-            </parameter>
-            
             <parameter name="zigbee_networkkey" type="text" groupName="network">
                 <label>Network Security Key</label>
                 <description>Set the network security key</description>
                 <advanced>true</advanced>
             </parameter>
-            
-		</config-description>
+
+        </config-description>
 	</bridge-type>
 	
 </thing:thing-descriptions>

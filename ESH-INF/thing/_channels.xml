@@ -56,16 +56,10 @@
 
     <!-- On Off Switch -->
     <channel-type id="switch_onoff">
-        <item-type>Number</item-type>
+        <item-type>Switch</item-type>
         <label>Switch</label>
         <description>Switches the power on and off</description>
         <category>Light</category>
-        <state readOnly="true">
-            <options>
-                <option value="ON">On</option>
-                <option value="OFF">Off</option>
-            </options>
-        </state>
     </channel-type>
 
     <!-- Dimmer Switch -->

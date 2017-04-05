@@ -110,6 +110,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
                 logger.info("Creating ZigBee device {} with bridge {}", thingTypeUID, bridgeUID);
 
                 Map<String, Object> objProperties = new HashMap<String, Object>(properties);
+                // Map<String, Object> objProperties = new HashMap<String, Object>();
                 objProperties.put(ZigBeeBindingConstants.THING_PARAMETER_MACADDRESS, node.getIeeeAddress().toString());
                 DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(thingUID).withThingType(thingTypeUID)
                         .withProperties(objProperties).withBridge(bridgeUID).withLabel(label).build();
