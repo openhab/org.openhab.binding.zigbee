@@ -34,6 +34,7 @@ import org.eclipse.smarthome.core.thing.type.ThingType;
 import org.eclipse.smarthome.core.thing.type.ThingTypeRegistry;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +55,14 @@ public class ZigBeeConfigProvider implements ConfigDescriptionProvider, ConfigOp
     private static ConfigDescriptionRegistry configDescriptionRegistry;
 
     private static Set<ThingTypeUID> zigbeeThingTypeUIDList = new HashSet<ThingTypeUID>();
+
+    protected void setThingRegistry(ThingRegistry thingRegistry) {
+        ZigBeeConfigProvider.thingRegistry = thingRegistry;
+    }
+
+    protected void unsetThingRegistry(ThingRegistry thingRegistry) {
+        ZigBeeConfigProvider.thingRegistry = null;
+    }
 
     protected void setThingTypeRegistry(ThingTypeRegistry thingTypeRegistry) {
         ZigBeeConfigProvider.thingTypeRegistry = thingTypeRegistry;
@@ -112,27 +121,27 @@ public class ZigBeeConfigProvider implements ConfigDescriptionProvider, ConfigOp
             return null;
         }
 
-        // And make sure this is a node because we want to get the id off the end...
-        if (!thingUID.getId().startsWith("node")) {
-            return null;
-        }
-        String nodeIeeeAddressString = thingUID.getId().substring(4);
-        IeeeAddress nodeIeeeAddress = new IeeeAddress(nodeIeeeAddressString);
+        // String nodeIeeeAddressString = thingUID.getId();
+        IeeeAddress nodeIeeeAddress = null;// new IeeeAddress(nodeIeeeAddressString);
 
         Thing thing = getThing(thingUID);
         if (thing == null) {
             return null;
         }
-        ThingUID bridgeUID = thing.getBridgeUID();
 
-        // Get the controller for this thing
-        Thing bridge = getThing(bridgeUID);
-        if (bridge == null) {
+        ZigBeeCoordinatorHandler coordinator = null;
+        if (thing.getHandler() instanceof ZigBeeCoordinatorHandler) {
+            coordinator = (ZigBeeCoordinatorHandler) thing.getHandler();
+            nodeIeeeAddress = coordinator.getIeeeAddress();
+        } else if (thing.getHandler() instanceof ZigBeeThingHandler) {
+            ZigBeeThingHandler zigbeeThing = (ZigBeeThingHandler) thing.getHandler();
+            nodeIeeeAddress = zigbeeThing.getIeeeAddress();
+            coordinator = zigbeeThing.getCoordinatorHandler();
+        } else {
             return null;
         }
 
-        // Find the node
-        ZigBeeCoordinatorHandler coordinator = (ZigBeeCoordinatorHandler) bridge;
+        // Find the zigbee node
         ZigBeeNode node = coordinator.getNode(nodeIeeeAddress);
         if (node == null) {
             return null;
@@ -145,14 +154,26 @@ public class ZigBeeConfigProvider implements ConfigDescriptionProvider, ConfigOp
         groups.add(new ConfigDescriptionParameterGroup("actions", "", false, "Actions", null));
         groups.add(new ConfigDescriptionParameterGroup("thingcfg", "home", false, "Device Configuration", null));
 
-        parameters.add(
-                ConfigDescriptionParameterBuilder.create(ZigBeeBindingConstants.THING_PARAMETER_MACADDRESS, Type.TEXT)
-                        .withLabel("MAC Address").withAdvanced(true).withReadOnly(true).withRequired(true)
-                        .withDescription(
-                                "Sets the node IEEE address<BR/>The node address is unique for each device and can not be changed.")
-                        .withDefault("").withGroupName("thingcfg").build());
+        // parameters.add(
+        // ConfigDescriptionParameterBuilder.create(ZigBeeBindingConstants.THING_PARAMETER_MACADDRESS, Type.TEXT)
+        // .withLabel("MAC Address").withAdvanced(true).withReadOnly(true).withRequired(true)
+        // .withDescription(
+        // "Sets the node IEEE address<BR/>The node address is unique for each device and can not be changed.")
+        // .withDefault("").withGroupName("thingcfg").build());
 
+        // For coordinators and routers, we need to have the option to join and leave
         if (node.getLogicalType() == LogicalType.COORDINATOR || node.getLogicalType() == LogicalType.ROUTER) {
+            parameters.add(ConfigDescriptionParameterBuilder
+                    .create(ZigBeeBindingConstants.CONFIGURATION_JOINENABLE, Type.BOOLEAN).withLabel("Enable join")
+                    .withAdvanced(true).withDescription("Enables join mode for this device for 1 minute.")
+                    .withDefault("").withGroupName("actions").build());
+        }
+
+        if (node.getLogicalType() != LogicalType.COORDINATOR) {
+            parameters.add(ConfigDescriptionParameterBuilder
+                    .create(ZigBeeBindingConstants.CONFIGURATION_LEAVE, Type.BOOLEAN).withLabel("Leave network")
+                    .withAdvanced(true).withDescription("Requests that the node leave the network").withDefault("")
+                    .withGroupName("actions").build());
         }
 
         return new ConfigDescription(uri, parameters, groups);

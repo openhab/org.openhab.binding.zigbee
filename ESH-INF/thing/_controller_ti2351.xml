@@ -65,7 +65,7 @@
             <parameter name="zigbee_extendedpanid" type="text" groupName="network" required="false">
                 <label>Extended PAN ID</label>
                 <description>Extended PAN Network ID: 16 byte hexadecimal value</description>
-                <default>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</default>
+                <default>0000000000000000</default>
                 <advanced>true</advanced>
             </parameter>
 

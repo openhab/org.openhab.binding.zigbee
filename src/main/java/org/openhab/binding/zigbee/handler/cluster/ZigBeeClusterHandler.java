@@ -159,10 +159,13 @@ public abstract class ZigBeeClusterHandler {
         properties.put(ZigBeeBindingConstants.CHANNEL_PROPERTY_CLUSTER, Integer.toString(getClusterId()));
         ChannelTypeUID channelTypeUID = new ChannelTypeUID(ZigBeeBindingConstants.BINDING_ID, channelType);
 
-        return ChannelBuilder
+        Channel channel = ChannelBuilder
                 .create(new ChannelUID(thingUID,
                         device.getIeeeAddress() + "_" + device.getEndpoint() + "_" + channelType), itemType)
                 .withType(channelTypeUID).withLabel(label).withProperties(properties).build();
+        logger.debug("{}: Created channel {} for cluster {}", device.getIeeeAddress(), channel.getUID(),
+                getClusterId());
+        return channel;
     }
 
     public abstract int getClusterId();
