@@ -80,6 +80,7 @@ public class ZigBeeBindingConstants {
     public static final String THING_PROPERTY_ROUTES = "zigbee_routes";
     public static final String THING_PROPERTY_NEIGHBORS = "zigbee_neighbors";
     public static final String THING_PROPERTY_LASTUPDATE = "zigbee_lastupdate";
+    public static final String THING_PROPERTY_PERMITJOINING = "zigbee_permitjoining";
     public static final String THING_PROPERTY_ASSOCIATEDDEVICES = "zigbee_devices";
 
     // List of all configuration parameters
@@ -90,7 +91,9 @@ public class ZigBeeBindingConstants {
     public static final String CONFIGURATION_NETWORKKEY = "zigbee_networkkey";
     public static final String CONFIGURATION_INITIALIZE = "zigbee_initialise";
 
-    public final static String THING_PARAMETER_MACADDRESS = "zigbee_macaddress";
+    public final static String CONFIGURATION_MACADDRESS = "zigbee_macaddress";
+    public final static String CONFIGURATION_JOINENABLE = "zigbee_joinenable";
+    public final static String CONFIGURATION_LEAVE = "zigbee_leave";
 
     public final static Set<ThingTypeUID> SUPPORTED_BRIDGE_TYPES_UIDS = ImmutableSet.of(COORDINATOR_TYPE_CC2531);
 
