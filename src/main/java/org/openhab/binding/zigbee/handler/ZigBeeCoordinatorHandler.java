@@ -217,7 +217,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             logger.debug("Error updating configuration: Unable to reset initialize flag.", e);
         }
 
-        updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE,
+        updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE,
                 ZigBeeBindingConstants.getI18nConstant(ZigBeeBindingConstants.OFFLINE_NOT_INITIALIZED));
     }
 
@@ -293,7 +293,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         // Initialise the network
         ZigBeeInitializeResponse initResponse = networkManager.initialize();
         if (initResponse == ZigBeeInitializeResponse.FAILED) {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE,
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE,
                     ZigBeeBindingConstants.getI18nConstant(ZigBeeBindingConstants.OFFLINE_INITIALIZE_FAIL));
             return;
         }
@@ -321,7 +321,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         // Call startup. The setting of the bring to ONLINE will be done via the state listener.
         if (!networkManager.startup(initializeNetwork)) {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE,
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE,
                     ZigBeeBindingConstants.getI18nConstant(ZigBeeBindingConstants.OFFLINE_STARTUP_FAIL));
             return;
         }
@@ -617,7 +617,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 updateStatus(ThingStatus.ONLINE);
                 break;
             case OFFLINE:
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE,
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE,
                         ZigBeeBindingConstants.getI18nConstant(ZigBeeBindingConstants.OFFLINE_STARTUP_FAIL));
                 break;
             default:
