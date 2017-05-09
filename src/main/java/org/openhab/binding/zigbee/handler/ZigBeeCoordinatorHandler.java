@@ -118,7 +118,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 initializeNetwork = true;
             }
         } catch (ClassCastException | NumberFormatException e) {
-            logger.debug("Initializing ZigBee network [{}].", thing.getUID());
+            logger.debug("Error reading ZigBee network configuration [{}]: {}", thing.getUID(), e.getMessage());
             updateStatus(ThingStatus.OFFLINE);
             return;
         }
@@ -249,26 +249,27 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         networkManager.addNetworkNodeListener(this);
 
         // Initialise the network
-        if (!networkManager.initialize()) {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE,
-                    ZigBeeBindingConstants.getI18nConstant(ZigBeeBindingConstants.OFFLINE_INITIALIZE_FAIL));
-            return;
-        }
+        networkManager.initialize();// != ZigBeeInitializeResponse.JOINED) {
+
+        // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE,
+        // ZigBeeBindingConstants.getI18nConstant(ZigBeeBindingConstants.OFFLINE_INITIALIZE_FAIL));
+        // return;
+        // }
 
         // Get the initial network configuration
         int currentChannel = networkManager.getZigBeeChannel();
         int currentPanId = networkManager.getZigBeePanId();
         long currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
 
-        // if (initializeNetwork == true) {
-        networkManager.setZigBeeSecurityKey(networkKey);
-        networkManager.setZigBeeChannel(channelId);
-        networkManager.setZigBeePanId(panId);
-        networkManager.setZigBeeExtendedPanId(extendedPanId);
-        // }
+        if (initializeNetwork == true) {
+            networkManager.setZigBeeSecurityKey(networkKey);
+            networkManager.setZigBeeChannel(channelId);
+            networkManager.setZigBeePanId(panId);
+            networkManager.setZigBeeExtendedPanId(extendedPanId);
+        }
 
         // Call startup. The setting of the bring to ONLINE will be done via the state listener.
-        if (!networkManager.startup()) {
+        if (!networkManager.startup(initializeNetwork)) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE,
                     ZigBeeBindingConstants.getI18nConstant(ZigBeeBindingConstants.OFFLINE_STARTUP_FAIL));
             return;
@@ -359,7 +360,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         // TODO: Move to discovery handler
         // Allow devices to join for 60 seconds
-        networkManager.permitJoin(true);
+        networkManager.permitJoin(60);
 
         // ZigBeeDiscoveryManager discoveryManager = zigbeeApi.getZigBeeDiscoveryManager();
         // discoveryManager.

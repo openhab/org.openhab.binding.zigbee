@@ -25,6 +25,11 @@ Once the binding is authorized, and an adapter is added, it automatically reads 
 
 ## Thing Configuration
 
+The binding will attempt to automatically detect new devices, and will read their supported clusters upon startup. A set of channels will then be created depending on what clusters and endpoints a device supports.
+
+The following devices have been tested with the binding -:
+
+
 
 
 ## Channels
