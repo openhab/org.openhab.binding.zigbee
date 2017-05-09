@@ -118,7 +118,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
             if (getConfig().get(CONFIGURATION_EXTENDEDPANID) != null) {
                 logger.debug("EPANID {}", getConfig().get(CONFIGURATION_EXTENDEDPANID));
-                extendedPanId = Long.decode("0x" + (String) getConfig().get(CONFIGURATION_EXTENDEDPANID));
+                extendedPanId = Long.decode("0x" + getConfig().get(CONFIGURATION_EXTENDEDPANID).toString());
             }
 
             Object param = getConfig().get(CONFIGURATION_NETWORKKEY);
