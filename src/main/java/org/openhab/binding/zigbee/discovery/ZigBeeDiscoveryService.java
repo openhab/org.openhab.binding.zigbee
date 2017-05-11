@@ -117,7 +117,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
                             bridgeUID);
 
                     Map<String, Object> objProperties = new HashMap<String, Object>();
-                    objProperties.put(ZigBeeBindingConstants.THING_PARAMETER_MACADDRESS,
+                    objProperties.put(ZigBeeBindingConstants.CONFIGURATION_MACADDRESS,
                             node.getIeeeAddress().toString());
                     DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(thingUID)
                             .withThingType(thingTypeUID).withProperties(objProperties).withBridge(bridgeUID)
@@ -141,7 +141,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
                         bridgeUID);
 
                 Map<String, Object> objProperties = new HashMap<String, Object>(properties);
-                objProperties.put(ZigBeeBindingConstants.THING_PARAMETER_MACADDRESS, node.getIeeeAddress().toString());
+                objProperties.put(ZigBeeBindingConstants.CONFIGURATION_MACADDRESS, node.getIeeeAddress().toString());
                 DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(thingUID).withThingType(thingTypeUID)
                         .withProperties(objProperties).withBridge(bridgeUID).withLabel(label).build();
 
