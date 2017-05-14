@@ -35,3 +35,18 @@ The following devices have been tested with the binding -:
 ## Channels
 
 
+## TI2531 - Firmware
+
+The TI2531 USB dongle must be flashed with the correct firmware in order to work with this binding.
+The file can be downloaded from TI website archives (http://www.ti.com/tool/z-stack-archive) as part
+of the `Z-STACK-HOME v.1.2.2a` package.
+The file name is `CC2531ZNP-Pro-Secure_Standard.hex` and its sha256 is `3cc5dc571ef0f49e3f42c6c2ca076d6f8fef33a945c71e6f951b839ba0599d3c`.
+
+### Flashing on Linux
+
+It's possible to flash the dongle using Linux, using `cc-tool` (https://github.com/dashesy/cc-tool.git).
+The software has been tested and confirmed working on Ubuntu 16.10 and 17.04.
+The required dependencies can be installed with `sudo apt install build-essential libusb-1.0-0-dev libboost-all-dev`,
+and the binary compiled with `./configure && make`. Do not forget to install the `udev` rules, as described at https://github.com/dashesy/cc-tool/blob/master/README , or the software might not be able to access the USB programmer.
+
+The firmware can be flashed with `./cc-tool -e -w CC2531ZNP-Pro-Secure_Standard.hex -v r`. Change the path to the firmware accordingly.
