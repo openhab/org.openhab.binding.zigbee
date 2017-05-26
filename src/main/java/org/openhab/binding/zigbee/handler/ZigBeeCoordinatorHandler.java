@@ -209,13 +209,15 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         logger.debug("Key final array {}", networkKey);
 
-        try {
-            // Reset the initialization flag
-            Configuration configuration = editConfiguration();
-            configuration.put(CONFIGURATION_INITIALIZE, false);
-            updateConfiguration(configuration);
-        } catch (IllegalStateException e) {
-            logger.debug("Error updating configuration: Unable to reset initialize flag.", e);
+        if (initializeNetwork) {
+            try {
+                // Reset the initialization flag
+                Configuration configuration = editConfiguration();
+                configuration.put(CONFIGURATION_INITIALIZE, false);
+                updateConfiguration(configuration);
+            } catch (IllegalStateException e) {
+                logger.debug("Error updating configuration: Unable to reset initialize flag.", e);
+            }
         }
     }
 
