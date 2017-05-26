@@ -11,6 +11,7 @@ package org.openhab.binding.zigbee.handler;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.*;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -198,7 +199,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         // If no key exists, generate a random key and save it back to the configuration
         if (networkKey == null || networkKey.length != 16
-                || networkKey.equals(new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 })
+                || Arrays.equals(networkKey, new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 })
                 || networkKeyString.length() == 0) {
             networkKeyString = createNetworkKey();
             logger.debug("Key initialised String {}", networkKeyString);
