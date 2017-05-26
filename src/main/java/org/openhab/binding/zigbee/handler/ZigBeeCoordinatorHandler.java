@@ -153,7 +153,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 logger.debug("Channel set to 11.");
 
                 try {
-                    // Reset the initialization flag
+                    // Update the channel id
                     Configuration configuration = editConfiguration();
                     configuration.put(CONFIGURATION_CHANNEL, channelId);
                     updateConfiguration(configuration);
@@ -167,7 +167,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 logger.debug("Created random ZigBee PAN ID [{}].", String.format("%04X", panId));
 
                 try {
-                    // Reset the initialization flag
+                    // Update the PAN id
                     Configuration configuration = editConfiguration();
                     configuration.put(CONFIGURATION_PANID, panId);
                     updateConfiguration(configuration);
@@ -181,7 +181,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 logger.debug("Created random ZigBee extended PAN ID [{}].", String.format("%016X", extendedPanId));
 
                 try {
-                    // Reset the initialization flag
+                    // Update the extended PAN id
                     Configuration configuration = editConfiguration();
                     configuration.put(CONFIGURATION_EXTENDEDPANID, String.format("%016X", extendedPanId));
                     updateConfiguration(configuration);
