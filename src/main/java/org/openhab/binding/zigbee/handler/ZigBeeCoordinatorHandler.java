@@ -182,7 +182,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 try {
                     // Reset the initialization flag
                     Configuration configuration = editConfiguration();
-                    configuration.put(CONFIGURATION_EXTENDEDPANID, extendedPanId);
+                    configuration.put(CONFIGURATION_EXTENDEDPANID, String.format("%016X", extendedPanId));
                     updateConfiguration(configuration);
                 } catch (IllegalStateException e) {
                     logger.debug("Error updating configuration: Unable to set Extended PanID.", e);
