@@ -5,17 +5,21 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openhab.binding</groupId>
-		<artifactId>pom</artifactId>
+		<groupId>org.openhab</groupId>
+		<artifactId>pom-tycho</artifactId>
 		<version>2.1.0-SNAPSHOT</version>
+		<relativePath></relativePath>
 	</parent>
 
 	<groupId>org.openhab.binding</groupId>
 	<artifactId>org.openhab.binding.zigbee</artifactId>
-	<version>2.1.0-SNAPSHOT</version>
 
 	<name>ZigBee Binding</name>
 	<packaging>eclipse-plugin</packaging>
+
+	<properties>
+		<report.fail.on.error>false</report.fail.on.error>
+	</properties>
 
 	<build>
 		<testSourceDirectory>src/test</testSourceDirectory>
@@ -81,5 +85,91 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<pluginRepositories>
+	  <pluginRepository>
+			<id>jcenter</id>
+			<name>JCenter Repository</name>
+			<url>https://jcenter.bintray.com/</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+	  </pluginRepository>
+	  <pluginRepository>
+		  <id>artifactory</id>
+		  <name>JFrog Artifactory Repository</name>
+		  <url>https://openhab.jfrog.io/openhab/libs-release</url>
+		  <releases>
+			  <enabled>true</enabled>
+			  <updatePolicy>never</updatePolicy>
+		  </releases>
+		  <snapshots>
+			  <enabled>false</enabled>
+		  </snapshots>
+	  </pluginRepository>
+	</pluginRepositories>
+
+	<repositories>
+		
+		<!-- releases -->
+		<repository>
+			<id>jcenter</id>
+			<name>JCenter Repository</name>
+			<url>https://jcenter.bintray.com/</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+
+		<repository>
+			<id>openhab-artifactory-release</id>
+			<name>JFrog Artifactory Repository</name>
+			<url>https://openhab.jfrog.io/openhab/libs-release</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+
+		<!-- snapshots -->
+		<repository>
+			<id>openhab-artifactory-snapshot</id>
+			<name>JFrog Artifactory Repository</name>
+			<url>https://openhab.jfrog.io/openhab/libs-snapshot</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+
+		<!-- SmartHome p2 repository -->
+		<repository>
+			<id>p2-smarthome</id>
+			<url>https://openhab.jfrog.io/openhab/eclipse-smarthome-stable</url>
+			<layout>p2</layout>
+		</repository>
+
+		<!-- openHAB dependencies p2 repository -->
+		<repository>
+			<id>p2-openhab-deps-repo</id>
+			<url>https://dl.bintray.com/openhab/p2/openhab-deps-repo/${ohdr.version}</url>
+			<layout>p2</layout>
+		</repository>
+
+	</repositories>
 
 </project>
