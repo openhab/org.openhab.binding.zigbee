@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
-import org.eclipse.smarthome.core.i18n.I18nProvider;
+import org.eclipse.smarthome.core.i18n.TranslationProvider;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.openhab.binding.zigbee.internal.ZigBeeActivator;
 
@@ -108,32 +108,32 @@ public class ZigBeeBindingConstants {
     public final static I18nConstant OFFLINE_NODE_NOT_FOUND = new I18nConstant("zigbee.status.offline_nodenotfound",
             "Node not found in ZigBee network");
 
-    private static I18nProvider i18nProvider;
+    private static TranslationProvider translationProvider;
 
-    protected void setI18nProvider(I18nProvider i18nProvider) {
-        ZigBeeBindingConstants.i18nProvider = i18nProvider;
+    protected void setTranslationProvider(TranslationProvider translationProvider) {
+        ZigBeeBindingConstants.translationProvider = translationProvider;
     }
 
-    protected void unsetI18nProvider(I18nProvider i18nProvider) {
-        ZigBeeBindingConstants.i18nProvider = null;
+    protected void unsetTranslationProvider(TranslationProvider translationProvider) {
+        ZigBeeBindingConstants.translationProvider = null;
     }
 
     public static String getI18nConstant(I18nConstant constant) {
-        I18nProvider i18nProviderLocal = i18nProvider;
-        if (i18nProviderLocal == null) {
+        TranslationProvider translationProviderLocal = translationProvider;
+        if (translationProviderLocal == null) {
             return MessageFormat.format(constant.defaultText, (Object[]) null);
         }
-        return i18nProviderLocal.getText(ZigBeeActivator.getContext().getBundle(), constant.key, constant.defaultText,
-                null, (Object[]) null);
+        return translationProviderLocal.getText(ZigBeeActivator.getContext().getBundle(), constant.key,
+                constant.defaultText, null, (Object[]) null);
     }
 
     public static String getI18nConstant(I18nConstant constant, Object... arguments) {
-        I18nProvider i18nProviderLocal = i18nProvider;
-        if (i18nProviderLocal == null) {
+        TranslationProvider translationProviderLocal = translationProvider;
+        if (translationProviderLocal == null) {
             return MessageFormat.format(constant.defaultText, arguments);
         }
-        return i18nProviderLocal.getText(ZigBeeActivator.getContext().getBundle(), constant.key, constant.defaultText,
-                null, arguments);
+        return translationProviderLocal.getText(ZigBeeActivator.getContext().getBundle(), constant.key,
+                constant.defaultText, null, arguments);
     }
 
     public static class I18nConstant {
