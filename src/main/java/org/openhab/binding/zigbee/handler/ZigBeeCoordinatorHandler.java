@@ -11,6 +11,7 @@ package org.openhab.binding.zigbee.handler;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.*;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -152,7 +153,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 logger.debug("Channel set to 11.");
 
                 try {
-                    // Reset the initialization flag
+                    // Update the channel id
                     Configuration configuration = editConfiguration();
                     configuration.put(CONFIGURATION_CHANNEL, channelId);
                     updateConfiguration(configuration);
@@ -166,7 +167,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 logger.debug("Created random ZigBee PAN ID [{}].", String.format("%04X", panId));
 
                 try {
-                    // Reset the initialization flag
+                    // Update the PAN id
                     Configuration configuration = editConfiguration();
                     configuration.put(CONFIGURATION_PANID, panId);
                     updateConfiguration(configuration);
@@ -180,9 +181,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 logger.debug("Created random ZigBee extended PAN ID [{}].", String.format("%016X", extendedPanId));
 
                 try {
-                    // Reset the initialization flag
+                    // Update the extended PAN id
                     Configuration configuration = editConfiguration();
-                    configuration.put(CONFIGURATION_EXTENDEDPANID, extendedPanId);
+                    configuration.put(CONFIGURATION_EXTENDEDPANID, String.format("%016X", extendedPanId));
                     updateConfiguration(configuration);
                 } catch (IllegalStateException e) {
                     logger.debug("Error updating configuration: Unable to set Extended PanID.", e);
@@ -198,7 +199,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         // If no key exists, generate a random key and save it back to the configuration
         if (networkKey == null || networkKey.length != 16
-                || networkKey.equals(new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 })
+                || Arrays.equals(networkKey, new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 })
                 || networkKeyString.length() == 0) {
             networkKeyString = createNetworkKey();
             logger.debug("Key initialised String {}", networkKeyString);
@@ -208,13 +209,15 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         logger.debug("Key final array {}", networkKey);
 
-        try {
-            // Reset the initialization flag
-            Configuration configuration = editConfiguration();
-            configuration.put(CONFIGURATION_INITIALIZE, false);
-            updateConfiguration(configuration);
-        } catch (IllegalStateException e) {
-            logger.debug("Error updating configuration: Unable to reset initialize flag.", e);
+        if (initializeNetwork) {
+            try {
+                // Reset the initialization flag
+                Configuration configuration = editConfiguration();
+                configuration.put(CONFIGURATION_INITIALIZE, false);
+                updateConfiguration(configuration);
+            } catch (IllegalStateException e) {
+                logger.debug("Error updating configuration: Unable to reset initialize flag.", e);
+            }
         }
     }
 
