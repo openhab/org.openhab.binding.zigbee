@@ -9,16 +9,13 @@
 package org.openhab.binding.zigbee;
 
 import java.text.DateFormat;
-import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
-import org.eclipse.smarthome.core.i18n.TranslationProvider;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
-import org.openhab.binding.zigbee.internal.ZigBeeActivator;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -64,6 +61,13 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_PROPERTY_ADDRESS = "zigbee_address";
     public static final String CHANNEL_PROPERTY_CLUSTER = "zigbee_cluster";
 
+    public static final String CHANNEL_SWITCH_LEVEL = "switch_level";
+
+    public static final String ITEM_TYPE_COLOR = "HSBType";
+    public static final String ITEM_TYPE_DECIMAL = "DecimalType";
+    public static final String ITEM_TYPE_DIMMER = "DimmerType";
+    public static final String ITEM_TYPE_SWITCH = "SwitcType";
+
     public static final String THING_PROPERTY_MANUFACTURER = "zigbee_manufacturer";
     public static final String THING_PROPERTY_MODEL = "zigbee_model";
     public static final String THING_PROPERTY_HWVERSION = "zigbee_hwversion";
@@ -97,54 +101,11 @@ public class ZigBeeBindingConstants {
 
     public final static Set<ThingTypeUID> SUPPORTED_BRIDGE_TYPES_UIDS = ImmutableSet.of(COORDINATOR_TYPE_CC2531);
 
-    public final static I18nConstant OFFLINE_NOT_INITIALIZED = new I18nConstant("zigbee.status.offline_notinitialized",
-            "ZigBee transport layer not yet initialized");
-    public final static I18nConstant OFFLINE_INITIALIZE_FAIL = new I18nConstant("zigbee.status.offline_initializefail",
-            "Failed to initialize ZigBee transport layer");
-    public final static I18nConstant OFFLINE_STARTUP_FAIL = new I18nConstant("zigbee.status.offline_startupfail",
-            "Failed to startup ZigBee transport layer");
-    public final static I18nConstant OFFLINE_NO_ADDRESS = new I18nConstant("zigbee.status.offline_noaddress",
-            "Can't initialize ZigBee thing handler without address");
-    public final static I18nConstant OFFLINE_NODE_NOT_FOUND = new I18nConstant("zigbee.status.offline_nodenotfound",
-            "Node not found in ZigBee network");
-
-    private static TranslationProvider translationProvider;
-
-    protected void setTranslationProvider(TranslationProvider translationProvider) {
-        ZigBeeBindingConstants.translationProvider = translationProvider;
-    }
-
-    protected void unsetTranslationProvider(TranslationProvider translationProvider) {
-        ZigBeeBindingConstants.translationProvider = null;
-    }
-
-    public static String getI18nConstant(I18nConstant constant) {
-        TranslationProvider translationProviderLocal = translationProvider;
-        if (translationProviderLocal == null) {
-            return MessageFormat.format(constant.defaultText, (Object[]) null);
-        }
-        return translationProviderLocal.getText(ZigBeeActivator.getContext().getBundle(), constant.key,
-                constant.defaultText, null, (Object[]) null);
-    }
-
-    public static String getI18nConstant(I18nConstant constant, Object... arguments) {
-        TranslationProvider translationProviderLocal = translationProvider;
-        if (translationProviderLocal == null) {
-            return MessageFormat.format(constant.defaultText, arguments);
-        }
-        return translationProviderLocal.getText(ZigBeeActivator.getContext().getBundle(), constant.key,
-                constant.defaultText, null, arguments);
-    }
-
-    public static class I18nConstant {
-        public String key;
-        public String defaultText;
-
-        I18nConstant(String key, String defaultText) {
-            this.key = key;
-            this.defaultText = defaultText;
-        }
-    }
+    public final static String OFFLINE_NOT_INITIALIZED = "zigbee.status.offline_notinitialized";
+    public final static String OFFLINE_INITIALIZE_FAIL = "zigbee.status.offline_initializefail";
+    public final static String OFFLINE_STARTUP_FAIL = "zigbee.status.offline_startupfail";
+    public final static String OFFLINE_NO_ADDRESS = "zigbee.status.offline_noaddress";
+    public final static String OFFLINE_NODE_NOT_FOUND = "zigbee.status.offline_nodenotfound";
 
     /**
      * Return an ISO 8601 combined date and time string for current date/time

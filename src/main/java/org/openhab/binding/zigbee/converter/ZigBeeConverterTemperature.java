@@ -6,11 +6,9 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.zigbee.handler.cluster;
+package org.openhab.binding.zigbee.converter;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
@@ -24,24 +22,18 @@ import com.zsmartsystems.zigbee.ZigBeeDevice;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclTemperatureMeasurementCluster;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
  *
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeTemperatureClusterHandler extends ZigBeeClusterHandler implements ZclAttributeListener {
-    private Logger logger = LoggerFactory.getLogger(ZigBeeTemperatureClusterHandler.class);
+public class ZigBeeConverterTemperature extends ZigBeeChannelConverter implements ZclAttributeListener {
+    private Logger logger = LoggerFactory.getLogger(ZigBeeConverterTemperature.class);
 
     private ZclTemperatureMeasurementCluster cluster;
 
     private boolean initialised = false;
-
-    @Override
-    public int getClusterId() {
-        return ZclClusterType.TEMPERATURE_MEASUREMENT.getId();
-    }
 
     @Override
     public void initializeConverter() {
@@ -76,7 +68,7 @@ public class ZigBeeTemperatureClusterHandler extends ZigBeeClusterHandler implem
         }
 
         if (cluster != null) {
-            // coordinator.closeCluster(clusterOnOff);
+            cluster.removeAttributeListener(this);
         }
     }
 
@@ -85,17 +77,12 @@ public class ZigBeeTemperatureClusterHandler extends ZigBeeClusterHandler implem
         if (initialised == false) {
             return;
         }
-
     }
 
     @Override
-    public List<Channel> getChannels(ThingUID thingUID, ZigBeeDevice device) {
-        List<Channel> channels = new ArrayList<Channel>();
-
-        channels.add(createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE, "Decimal",
-                "Temperature"));
-
-        return channels;
+    public Channel getChannel(ThingUID thingUID, ZigBeeDevice device) {
+        return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE,
+                ZigBeeBindingConstants.ITEM_TYPE_DECIMAL, "Temperature");
     }
 
     @Override

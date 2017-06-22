@@ -6,10 +6,8 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.zigbee.handler.cluster;
+package org.openhab.binding.zigbee.converter;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.smarthome.core.library.types.OnOffType;
@@ -25,24 +23,18 @@ import com.zsmartsystems.zigbee.ZigBeeDevice;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
  *
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeOnOffClusterHandler extends ZigBeeClusterHandler implements ZclAttributeListener {
-    private Logger logger = LoggerFactory.getLogger(ZigBeeOnOffClusterHandler.class);
+public class ZigBeeConverterSwitchOnoff extends ZigBeeChannelConverter implements ZclAttributeListener {
+    private Logger logger = LoggerFactory.getLogger(ZigBeeConverterSwitchOnoff.class);
 
     private ZclOnOffCluster clusterOnOff;
 
     private boolean initialised = false;
-
-    @Override
-    public int getClusterId() {
-        return ZclClusterType.ON_OFF.getId();
-    }
 
     @Override
     public void initializeConverter() {
@@ -90,7 +82,6 @@ public class ZigBeeOnOffClusterHandler extends ZigBeeClusterHandler implements Z
         if (initialised == false) {
             return;
         }
-
     }
 
     @Override
@@ -127,12 +118,12 @@ public class ZigBeeOnOffClusterHandler extends ZigBeeClusterHandler implements Z
     }
 
     @Override
-    public List<Channel> getChannels(ThingUID thingUID, ZigBeeDevice device) {
-        List<Channel> channels = new ArrayList<Channel>();
-
-        channels.add(createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF, "Switch", "Switch"));
-
-        return channels;
+    public Channel getChannel(ThingUID thingUID, ZigBeeDevice device) {
+        if (device.getCluster(ZclOnOffCluster.CLUSTER_ID) == null) {
+            return null;
+        }
+        return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF,
+                ZigBeeBindingConstants.ITEM_TYPE_SWITCH, "Switch");
     }
 
     @Override

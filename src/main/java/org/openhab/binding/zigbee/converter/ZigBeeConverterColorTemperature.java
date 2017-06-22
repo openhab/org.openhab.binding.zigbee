@@ -6,10 +6,9 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.zigbee.handler.cluster;
+package org.openhab.binding.zigbee.converter;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
@@ -23,25 +22,19 @@ import org.slf4j.LoggerFactory;
 import com.zsmartsystems.zigbee.ZigBeeDevice;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
-import com.zsmartsystems.zigbee.zcl.clusters.ZclLevelControlCluster;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster;
 
 /**
  *
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeLevelClusterHandler extends ZigBeeClusterHandler implements ZclAttributeListener {
-    private Logger logger = LoggerFactory.getLogger(ZigBeeLevelClusterHandler.class);
+public class ZigBeeConverterColorTemperature extends ZigBeeChannelConverter implements ZclAttributeListener {
+    private Logger logger = LoggerFactory.getLogger(ZigBeeConverterColorTemperature.class);
 
-    private ZclLevelControlCluster clusterLevelControl;
+    private ZclColorControlCluster clusterColorControl;
 
     private boolean initialised = false;
-
-    @Override
-    public int getClusterId() {
-        return ZclClusterType.LEVEL_CONTROL.getId();
-    }
 
     @Override
     public void initializeConverter() {
@@ -49,29 +42,35 @@ public class ZigBeeLevelClusterHandler extends ZigBeeClusterHandler implements Z
             return;
         }
 
-        clusterLevelControl = (ZclLevelControlCluster) device.getCluster(ZclLevelControlCluster.CLUSTER_ID);
-        if (clusterLevelControl == null) {
-            logger.error("Error opening device level controls {}", device.getIeeeAddress());
+        clusterColorControl = (ZclColorControlCluster) device.getCluster(ZclColorControlCluster.CLUSTER_ID);
+        if (clusterColorControl == null) {
+            logger.error("Error opening device control controls {}", device.getIeeeAddress());
             return;
         }
 
-        // Add a listener, then request the status
-        clusterLevelControl.addAttributeListener(this);
-        clusterLevelControl.getCurrentLevel(0);
+        clusterColorControl.addAttributeListener(this);
+
+        clusterColorControl.getColorTemperature(0);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        clusterLevelControl.setCurrentLevelReporting(1, 600, 1);
+        try {
+            clusterColorControl.setCurrentHueReporting(1, 600, 1).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
         initialised = true;
     }
 
     @Override
     public void disposeConverter() {
-        clusterLevelControl.removeAttributeListener(this);
+        clusterColorControl.removeAttributeListener(this);
     }
 
     @Override
     public void handleRefresh() {
-        clusterLevelControl.getCurrentLevelAsync();
 
     }
 
@@ -84,42 +83,40 @@ public class ZigBeeLevelClusterHandler extends ZigBeeClusterHandler implements Z
                     return;
                 }
 
-                int level = 0;
+                // Color Temperature
+                PercentType colorTemp = PercentType.ZERO;
                 if (command instanceof PercentType) {
-                    level = ((PercentType) command).intValue();
+                    colorTemp = (PercentType) command;
                 } else if (command instanceof OnOffType) {
                     if ((OnOffType) command == OnOffType.ON) {
-                        level = 100;
+                        colorTemp = PercentType.HUNDRED;
                     } else {
-                        level = 0;
+                        colorTemp = PercentType.ZERO;
                     }
                 }
 
-                clusterLevelControl.moveToLevelWithOnOffCommand((int) (level * 254.0 / 100.0 + 0.5), 10);
+                // Range of 2000K to 6500K, gain = 4500K, offset = 2000K
+                double kelvin = colorTemp.intValue() * 4500.0 / 100.0 + 2000.0;
+                clusterColorControl.moveToColorTemperatureCommand((int) (1e6 / kelvin + 0.5), 10);
             }
         };
     }
 
     @Override
-    public List<Channel> getChannels(ThingUID thingUID, ZigBeeDevice device) {
-        List<Channel> channels = new ArrayList<Channel>();
-
-        channels.add(createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_SWITCH_DIMMER, "Dimmer", "Dimmer"));
-
-        return channels;
+    public Channel getChannel(ThingUID thingUID, ZigBeeDevice device) {
+        if (device.getCluster(ZclColorControlCluster.CLUSTER_ID) == null) {
+            return null;
+        }
+        return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_COLOR_TEMPERATURE,
+                ZigBeeBindingConstants.ITEM_TYPE_DIMMER, "Color Temperature");
     }
 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
         logger.debug("ZigBee attribute reports {} from {}", attribute, device.getIeeeAddress());
-        if (attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
+        if (attribute.getId() == ZclColorControlCluster.ATTR_COLORTEMPERATURE) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {
-                value = value * 100 / 255;
-                if (value > 100) {
-                    value = 100;
-                }
-                updateChannelState(new PercentType(value));
             }
         }
     }

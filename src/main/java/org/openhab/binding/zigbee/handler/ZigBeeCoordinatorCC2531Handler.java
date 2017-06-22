@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.TooManyListenersException;
 
+import org.eclipse.smarthome.core.i18n.TranslationProvider;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -57,8 +58,8 @@ public class ZigBeeCoordinatorCC2531Handler extends ZigBeeCoordinatorHandler
 
     private String portId;
 
-    public ZigBeeCoordinatorCC2531Handler(Bridge coordinator) {
-        super(coordinator);
+    public ZigBeeCoordinatorCC2531Handler(Bridge coordinator, TranslationProvider translationProvider) {
+        super(coordinator, translationProvider);
     }
 
     @Override

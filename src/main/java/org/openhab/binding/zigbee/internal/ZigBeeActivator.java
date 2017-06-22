@@ -33,7 +33,7 @@ public final class ZigBeeActivator implements BundleActivator {
     @Override
     public void start(BundleContext bc) throws Exception {
         context = bc;
-        logger.debug("Z-Wave binding started. Version {}", ZigBeeActivator.getVersion());
+        logger.debug("ZigBee binding started. Version {}", ZigBeeActivator.getVersion());
     }
 
     /**
@@ -44,7 +44,7 @@ public final class ZigBeeActivator implements BundleActivator {
     @Override
     public void stop(BundleContext bc) throws Exception {
         context = null;
-        logger.debug("ZWave binding stopped.");
+        logger.debug("ZigBee binding stopped.");
     }
 
     /**

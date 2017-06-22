@@ -8,6 +8,7 @@
  */
 package org.openhab.binding.zigbee.internal;
 
+import org.eclipse.smarthome.core.i18n.TranslationProvider;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
@@ -29,6 +30,16 @@ import org.slf4j.LoggerFactory;
 public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
     private final Logger logger = LoggerFactory.getLogger(ZigBeeHandlerFactory.class);
 
+    private TranslationProvider translationProvider;
+
+    protected void setTranslationProvider(TranslationProvider i18nProvider) {
+        translationProvider = i18nProvider;
+    }
+
+    protected void removeTranslationProvider(TranslationProvider i18nProvider) {
+        translationProvider = null;
+    }
+
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
         return ZigBeeBindingConstants.BINDING_ID.equals(thingTypeUID.getBindingId());
@@ -42,13 +53,13 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
 
         // Handle coordinators here
         if (thingTypeUID.equals(ZigBeeBindingConstants.COORDINATOR_TYPE_CC2531)) {
-            return new ZigBeeCoordinatorCC2531Handler((Bridge) thing);
+            return new ZigBeeCoordinatorCC2531Handler((Bridge) thing, translationProvider);
         }
         if (thingTypeUID.equals(ZigBeeBindingConstants.COORDINATOR_TYPE_EMBER)) {
-            return new ZigBeeCoordinatorEmberHandler((Bridge) thing);
+            return new ZigBeeCoordinatorEmberHandler((Bridge) thing, translationProvider);
         }
 
         // Everything else gets handled in a single handler
-        return new ZigBeeThingHandler(thing);
+        return new ZigBeeThingHandler(thing, translationProvider);
     }
 }

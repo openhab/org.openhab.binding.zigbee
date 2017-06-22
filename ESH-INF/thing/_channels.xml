@@ -62,8 +62,8 @@
         <category>Light</category>
     </channel-type>
 
-    <!-- Dimmer Switch -->
-    <channel-type id="switch_dimmer">
+    <!-- Level Switch -->
+    <channel-type id="switch_level">
         <item-type>Dimmer</item-type>
         <label>Dimmer</label>
         <description>Sets the level of the light</description>

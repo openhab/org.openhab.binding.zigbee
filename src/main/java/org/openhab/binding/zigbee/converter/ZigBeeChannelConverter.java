@@ -6,9 +6,11 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.zigbee.handler.cluster;
+package org.openhab.binding.zigbee.converter;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,31 +31,45 @@ import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.ZigBeeDevice;
 import com.zsmartsystems.zigbee.ZigBeeDeviceAddress;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
- * ZigBeeClusterConverter class. Base class for all converters that convert between ZigBee clusters and openHAB
+ * ZigBeeChannelConverter class. Base class for all converters that convert between ZigBee clusters and openHAB
  * channels.
  *
  * @author Chris Jackson
  */
-public abstract class ZigBeeClusterHandler {
-    private static Logger logger = LoggerFactory.getLogger(ZigBeeClusterHandler.class);
+public abstract class ZigBeeChannelConverter {
+    private static Logger logger = LoggerFactory.getLogger(ZigBeeChannelConverter.class);
 
     protected ZigBeeThingHandler thing = null;
-    // protected ZigBeeThingChannel channel = null;
     protected ZigBeeCoordinatorHandler coordinator = null;
 
     protected ChannelUID channelUID = null;
     protected ZigBeeDevice device = null;
 
-    private static Map<Integer, Class<? extends ZigBeeClusterHandler>> clusterMap = null;
+    /**
+     * Map of all channels supported by the binding
+     */
+    private static Map<String, Class<? extends ZigBeeChannelConverter>> channelMap = null;
+
+    static {
+        channelMap = new HashMap<String, Class<? extends ZigBeeChannelConverter>>();
+
+        // Add all the converters into the map...
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF, ZigBeeConverterSwitchOnoff.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL, ZigBeeConverterSwitchLevel.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_COLOR, ZigBeeConverterColorColor.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_TEMPERATURE, ZigBeeConverterColorTemperature.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE, ZigBeeConverterTemperature.class);
+        // clusterMap.put(ZigBeeApiConstants.CLUSTER_ID_TEMPERATURE_MEASUREMENT,
+        // ZigBeeTemperatureMeasurementClusterHandler.class);
+    }
 
     /**
-     * Constructor. Creates a new instance of the {@link ZWaveCommandClassConverter} class.
+     * Constructor. Creates a new instance of the {@link ZigBeeChannelConverter} class.
      *
      */
-    public ZigBeeClusterHandler() {
+    public ZigBeeChannelConverter() {
         super();
     }
 
@@ -94,7 +110,7 @@ public abstract class ZigBeeClusterHandler {
     }
 
     /**
-     * Receives a command from openHAB and translates it to an operation on the Z-Wave network.
+     * Receives a command from openHAB and translates it to an operation on the ZigBeee network.
      *
      * @param channel the {@link ZigBeeThingChannel}
      * @param command the {@link Command} to send
@@ -103,34 +119,43 @@ public abstract class ZigBeeClusterHandler {
         return null;
     }
 
-    public abstract List<Channel> getChannels(ThingUID thingUID, ZigBeeDevice device);
+    public abstract Channel getChannel(ThingUID thingUID, ZigBeeDevice device);
+
+    public static List<Channel> getChannels(ThingUID thingUID, ZigBeeDevice device) {
+        List<Channel> channels = new ArrayList<Channel>();
+
+        Constructor<? extends ZigBeeChannelConverter> constructor;
+        for (Class<?> converterClass : channelMap.values()) {
+            try {
+                constructor = (Constructor<? extends ZigBeeChannelConverter>) converterClass.getConstructor();
+                ZigBeeChannelConverter converter = constructor.newInstance();
+
+                Channel channel = converter.getChannel(thingUID, device);
+                if (channel != null) {
+                    channels.add(channel);
+                }
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                logger.debug("Exception while getting channels: ", e);
+            }
+        }
+        return channels;
+    }
 
     /**
      *
      * @param clusterId
      * @return
      */
-    public static ZigBeeClusterHandler getConverter(int clusterId) {
-        if (clusterMap == null) {
-            clusterMap = new HashMap<Integer, Class<? extends ZigBeeClusterHandler>>();
+    public static ZigBeeChannelConverter getConverter(ChannelTypeUID channelTypeUID) {
 
-            // Add all the handlers into the map...
-            clusterMap.put(ZclClusterType.ON_OFF.getId(), ZigBeeOnOffClusterHandler.class);
-            clusterMap.put(ZclClusterType.LEVEL_CONTROL.getId(), ZigBeeLevelClusterHandler.class);
-            clusterMap.put(ZclClusterType.COLOR_CONTROL.getId(), ZigBeeColorClusterHandler.class);
-            // clusterMap.put(ZigBeeApiConstants.CLUSTER_ID_RELATIVE_HUMIDITY_MEASUREMENT,
-            // ZigBeeRelativeHumidityMeasurementClusterHandler.class);
-            // clusterMap.put(ZigBeeApiConstants.CLUSTER_ID_TEMPERATURE_MEASUREMENT,
-            // ZigBeeTemperatureMeasurementClusterHandler.class);
-        }
-
-        Constructor<? extends ZigBeeClusterHandler> constructor;
+        Constructor<? extends ZigBeeChannelConverter> constructor;
         try {
-            if (clusterMap.get(clusterId) == null) {
-                logger.debug("Cluster converter for cluster {} is not implemented!", clusterId);
+            if (channelMap.get(channelTypeUID.getId()) == null) {
+                logger.debug("Channel converter for channel type {} is not implemented!", channelTypeUID.getId());
                 return null;
             }
-            constructor = clusterMap.get(clusterId).getConstructor();
+            constructor = channelMap.get(channelTypeUID.getId()).getConstructor();
             return constructor.newInstance();
         } catch (Exception e) {
             // logger.error("Command processor error");
@@ -156,7 +181,7 @@ public abstract class ZigBeeClusterHandler {
             String label) {
         Map<String, String> properties = new HashMap<String, String>();
         properties.put(ZigBeeBindingConstants.CHANNEL_PROPERTY_ADDRESS, device.getDeviceAddress().toString());
-        properties.put(ZigBeeBindingConstants.CHANNEL_PROPERTY_CLUSTER, Integer.toString(getClusterId()));
+        // properties.put(ZigBeeBindingConstants.CHANNEL_PROPERTY_CLUSTER, Integer.toString(getClusterId()));
         ChannelTypeUID channelTypeUID = new ChannelTypeUID(ZigBeeBindingConstants.BINDING_ID, channelType);
 
         return ChannelBuilder
@@ -165,5 +190,5 @@ public abstract class ZigBeeClusterHandler {
                 .withType(channelTypeUID).withLabel(label).withProperties(properties).build();
     }
 
-    public abstract int getClusterId();
+    // public abstract int getClusterId();
 }
