@@ -11,6 +11,7 @@ package org.openhab.binding.zigbee.handler;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.*;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.config.discovery.DiscoveryService;
+import org.eclipse.smarthome.core.i18n.TranslationProvider;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingStatus;
@@ -29,10 +31,12 @@ import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.BaseBridgeHandler;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.discovery.ZigBeeDiscoveryService;
+import org.openhab.binding.zigbee.internal.ZigBeeActivator;
 import org.osgi.framework.ServiceRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.ExtendedPanId;
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeDevice;
@@ -69,7 +73,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     protected int panId;
     protected int channelId;
-    protected long extendedPanId;
+    protected ExtendedPanId extendedPanId;
 
     private IeeeAddress nodeIeeeAddress = null;
 
@@ -93,8 +97,21 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     private ZigBeeDiscoveryService discoveryService;
     private ServiceRegistration discoveryRegistration;
 
-    public ZigBeeCoordinatorHandler(Bridge coordinator) {
+    private final TranslationProvider translationProvider;
+
+    public ZigBeeCoordinatorHandler(Bridge coordinator, TranslationProvider translationProvider) {
         super(coordinator);
+
+        this.translationProvider = translationProvider;
+    }
+
+    private String getI18nConstant(String constant, Object... arguments) {
+        TranslationProvider translationProviderLocal = translationProvider;
+        if (translationProviderLocal == null) {
+            return MessageFormat.format(constant, arguments);
+        }
+        return translationProviderLocal.getText(ZigBeeActivator.getContext().getBundle(), constant, constant, null,
+                arguments);
     }
 
     @Override
@@ -118,7 +135,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
             if (getConfig().get(CONFIGURATION_EXTENDEDPANID) != null) {
                 logger.debug("EPANID {}", getConfig().get(CONFIGURATION_EXTENDEDPANID));
-                extendedPanId = Long.decode("0x" + (String) getConfig().get(CONFIGURATION_EXTENDEDPANID));
+                extendedPanId = new ExtendedPanId((String) getConfig().get(CONFIGURATION_EXTENDEDPANID));
             }
 
             Object param = getConfig().get(CONFIGURATION_NETWORKKEY);
@@ -140,7 +157,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             initializeNetwork = true;
         }
 
-        if (extendedPanId == 0 || panId == 0) {
+        if (extendedPanId.equals(new ExtendedPanId()) || panId == 0) {
             initializeNetwork = true;
         }
 
@@ -175,9 +192,13 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 }
             }
 
-            if (extendedPanId == 0 || extendedPanId == 0xFFFFFFFFFFFFFFFFl) {
-                extendedPanId = (long) Math.floor((Math.random() * Long.MAX_VALUE));
-                logger.debug("Created random ZigBee extended PAN ID [{}].", String.format("%016X", extendedPanId));
+            if (!extendedPanId.isValid()) {
+                int[] pan = new int[8];
+                for (int cnt = 0; cnt < 8; cnt++) {
+                    pan[cnt] = (int) Math.floor((Math.random() * 255));
+                }
+                extendedPanId = new ExtendedPanId(pan);
+                logger.debug("Created random ZigBee extended PAN ID [{}].", extendedPanId);
 
                 try {
                     // Reset the initialization flag
@@ -291,7 +312,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         ZigBeeInitializeResponse initResponse = networkManager.initialize();
         if (initResponse == ZigBeeInitializeResponse.FAILED) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE,
-                    ZigBeeBindingConstants.getI18nConstant(ZigBeeBindingConstants.OFFLINE_INITIALIZE_FAIL));
+                    getI18nConstant(ZigBeeBindingConstants.OFFLINE_INITIALIZE_FAIL));
             return;
         }
 
@@ -307,7 +328,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         // Get the initial network configuration
         int currentChannel = networkManager.getZigBeeChannel();
         int currentPanId = networkManager.getZigBeePanId();
-        long currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
+        ExtendedPanId currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
 
         if (initializeNetwork) {
             networkManager.setZigBeeSecurityKey(networkKey);
@@ -319,7 +340,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         // Call startup. The setting of the bring to ONLINE will be done via the state listener.
         if (!networkManager.startup(initializeNetwork)) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE,
-                    ZigBeeBindingConstants.getI18nConstant(ZigBeeBindingConstants.OFFLINE_STARTUP_FAIL));
+                    getI18nConstant(ZigBeeBindingConstants.OFFLINE_STARTUP_FAIL));
             return;
         }
 
@@ -615,7 +636,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 break;
             case OFFLINE:
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE,
-                        ZigBeeBindingConstants.getI18nConstant(ZigBeeBindingConstants.OFFLINE_STARTUP_FAIL));
+                        getI18nConstant(ZigBeeBindingConstants.OFFLINE_STARTUP_FAIL));
                 break;
             default:
                 break;

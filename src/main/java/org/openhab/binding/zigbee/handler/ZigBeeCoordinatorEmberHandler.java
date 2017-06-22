@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.TooManyListenersException;
 
+import org.eclipse.smarthome.core.i18n.TranslationProvider;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -57,8 +58,8 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler
     // The serial port output stream.
     private OutputStream outputStream;
 
-    public ZigBeeCoordinatorEmberHandler(Bridge coordinator) {
-        super(coordinator);
+    public ZigBeeCoordinatorEmberHandler(Bridge coordinator, TranslationProvider translationProvider) {
+        super(coordinator, translationProvider);
     }
 
     @Override
@@ -77,7 +78,7 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler
         final ZigBeeTransportTransmit dongle = new ZigBeeDongleEzsp(this);
 
         logger.debug("ZigBee Coordinator Ember opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", portId,
-                Integer.toHexString(panId), Long.toHexString(extendedPanId), Integer.toString(channelId));
+                Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
 
         startZigBee(dongle, DefaultSerializer.class, DefaultDeserializer.class);
     }
@@ -130,8 +131,7 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler
             inputStream = serialPort.getInputStream();
             outputStream = serialPort.getOutputStream();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("Error getting serial streams", e);
         }
 
         return;
