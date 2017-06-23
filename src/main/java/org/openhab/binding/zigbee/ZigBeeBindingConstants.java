@@ -63,10 +63,10 @@ public class ZigBeeBindingConstants {
 
     public static final String CHANNEL_SWITCH_LEVEL = "switch_level";
 
-    public static final String ITEM_TYPE_COLOR = "HSBType";
-    public static final String ITEM_TYPE_DECIMAL = "DecimalType";
-    public static final String ITEM_TYPE_DIMMER = "DimmerType";
-    public static final String ITEM_TYPE_SWITCH = "SwitcType";
+    public static final String ITEM_TYPE_COLOR = "Color";
+    public static final String ITEM_TYPE_NUMBER = "Number";
+    public static final String ITEM_TYPE_DIMMER = "Dimmer";
+    public static final String ITEM_TYPE_SWITCH = "Switch";
 
     public static final String THING_PROPERTY_MANUFACTURER = "zigbee_manufacturer";
     public static final String THING_PROPERTY_MODEL = "zigbee_model";
@@ -98,6 +98,8 @@ public class ZigBeeBindingConstants {
     public final static String CONFIGURATION_MACADDRESS = "zigbee_macaddress";
     public final static String CONFIGURATION_JOINENABLE = "zigbee_joinenable";
     public final static String CONFIGURATION_LEAVE = "zigbee_leave";
+
+    public final static String CONFIGURATION_ZNP_MAGICNUMBER = "zigbee_znp_magicnumber";
 
     public final static Set<ThingTypeUID> SUPPORTED_BRIDGE_TYPES_UIDS = ImmutableSet.of(COORDINATOR_TYPE_CC2531);
 

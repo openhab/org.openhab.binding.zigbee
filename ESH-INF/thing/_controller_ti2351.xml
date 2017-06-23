@@ -76,6 +76,13 @@
                 <advanced>true</advanced>
             </parameter>
 
+            <parameter name="zigbee_znp_magicnumber" type="Integer">
+                <label>Magic Number</label>
+                <description>Set the bootloader exit sequence</description>
+                <default>239</default>
+                <advanced>true</advanced>
+            </parameter>
+
 		</config-description>
 
 	</bridge-type>

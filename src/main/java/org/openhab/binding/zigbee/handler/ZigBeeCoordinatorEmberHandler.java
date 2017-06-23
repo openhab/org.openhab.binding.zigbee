@@ -50,7 +50,7 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler
     private String portId;
 
     // The serial port.
-    private gnu.io.SerialPort serialPort;
+    private SerialPort serialPort;
 
     // The serial port input stream.
     private InputStream inputStream;
