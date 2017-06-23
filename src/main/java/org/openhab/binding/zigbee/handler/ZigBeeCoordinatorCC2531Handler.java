@@ -8,9 +8,12 @@
  */
 package org.openhab.binding.zigbee.handler;
 
+import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CONFIGURATION_CHANNEL;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.TooManyListenersException;
 
 import org.eclipse.smarthome.core.i18n.TranslationProvider;
@@ -26,7 +29,6 @@ import com.zsmartsystems.zigbee.dongle.cc2531.ZigBeeDongleTiCc2531;
 import com.zsmartsystems.zigbee.serialization.DefaultDeserializer;
 import com.zsmartsystems.zigbee.serialization.DefaultSerializer;
 import com.zsmartsystems.zigbee.transport.ZigBeePort;
-import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
 
 import gnu.io.CommPort;
 import gnu.io.CommPortIdentifier;
@@ -48,7 +50,7 @@ public class ZigBeeCoordinatorCC2531Handler extends ZigBeeCoordinatorHandler
     private Logger logger = LoggerFactory.getLogger(ZigBeeCoordinatorCC2531Handler.class);
 
     // The serial port.
-    private gnu.io.SerialPort serialPort;
+    private SerialPort serialPort;
 
     // The serial port input stream.
     private InputStream inputStream;
@@ -69,16 +71,23 @@ public class ZigBeeCoordinatorCC2531Handler extends ZigBeeCoordinatorHandler
 
     @Override
     public void initialize() {
-        logger.debug("Initializing ZigBee CC2531EMK serial bridge handler.");
+        logger.debug("Initializing ZigBee ZNP serial bridge handler.");
 
         // Call the parent to finish any global initialisation
         super.initialize();
 
-        portId = (String) getConfig().get(ZigBeeBindingConstants.CONFIGURATION_PORT);
-        final ZigBeeTransportTransmit dongle = new ZigBeeDongleTiCc2531(this);
+        if (getConfig().get(ZigBeeBindingConstants.CONFIGURATION_ZNP_MAGICNUMBER) != null) {
+            logger.debug("Channel {}", getConfig().get(CONFIGURATION_CHANNEL));
+            channelId = ((BigDecimal) getConfig().get(CONFIGURATION_CHANNEL)).intValue();
+        }
 
-        logger.debug("ZigBee Coordinator CC2531 opening Port:'{}' PAN:{}, Channel:{}", portId,
-                Integer.toHexString(panId), Integer.toString(channelId));
+        portId = (String) getConfig().get(ZigBeeBindingConstants.CONFIGURATION_PORT);
+        final ZigBeeDongleTiCc2531 dongle = new ZigBeeDongleTiCc2531(this);
+
+        dongle.setMagicNumber(1);
+
+        logger.debug("ZigBee Coordinator ZNP opening Port:'{}' PAN:{}, Channel:{}", portId, Integer.toHexString(panId),
+                Integer.toString(channelId));
 
         startZigBee(dongle, DefaultSerializer.class, DefaultDeserializer.class);
     }

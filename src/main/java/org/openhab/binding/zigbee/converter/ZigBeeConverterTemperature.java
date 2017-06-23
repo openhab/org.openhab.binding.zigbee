@@ -81,8 +81,11 @@ public class ZigBeeConverterTemperature extends ZigBeeChannelConverter implement
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeDevice device) {
+        if (device.getCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID) == null) {
+            return null;
+        }
         return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE,
-                ZigBeeBindingConstants.ITEM_TYPE_DECIMAL, "Temperature");
+                ZigBeeBindingConstants.ITEM_TYPE_NUMBER, "Temperature");
     }
 
     @Override
