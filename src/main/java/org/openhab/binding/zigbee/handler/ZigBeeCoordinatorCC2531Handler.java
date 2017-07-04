@@ -8,8 +8,6 @@
  */
 package org.openhab.binding.zigbee.handler;
 
-import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CONFIGURATION_CHANNEL;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -60,6 +58,8 @@ public class ZigBeeCoordinatorCC2531Handler extends ZigBeeCoordinatorHandler
 
     private String portId;
 
+    private int magicNumber = 0xef;
+
     public ZigBeeCoordinatorCC2531Handler(Bridge coordinator, TranslationProvider translationProvider) {
         super(coordinator, translationProvider);
     }
@@ -77,14 +77,14 @@ public class ZigBeeCoordinatorCC2531Handler extends ZigBeeCoordinatorHandler
         super.initialize();
 
         if (getConfig().get(ZigBeeBindingConstants.CONFIGURATION_ZNP_MAGICNUMBER) != null) {
-            logger.debug("Channel {}", getConfig().get(CONFIGURATION_CHANNEL));
-            channelId = ((BigDecimal) getConfig().get(CONFIGURATION_CHANNEL)).intValue();
+            magicNumber = ((BigDecimal) getConfig().get(ZigBeeBindingConstants.CONFIGURATION_ZNP_MAGICNUMBER))
+                    .intValue();
         }
 
         portId = (String) getConfig().get(ZigBeeBindingConstants.CONFIGURATION_PORT);
         final ZigBeeDongleTiCc2531 dongle = new ZigBeeDongleTiCc2531(this);
 
-        dongle.setMagicNumber(1);
+        dongle.setMagicNumber(magicNumber);
 
         logger.debug("ZigBee Coordinator ZNP opening Port:'{}' PAN:{}, Channel:{}", portId, Integer.toHexString(panId),
                 Integer.toString(channelId));
@@ -140,7 +140,7 @@ public class ZigBeeCoordinatorCC2531Handler extends ZigBeeCoordinatorHandler
 
             // Write the 'magic byte'
             // Note that this might change in future, or with different dongles
-            outputStream.write(0xef);
+            outputStream.write(magicNumber);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
