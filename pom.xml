@@ -22,6 +22,12 @@
 		<report.fail.on.error>false</report.fail.on.error>
 	</properties>
 
+	<scm>
+		<connection>scm:git:${scm.gitBaseUrl}/org.openhab.binding.zigbee.git</connection>
+		<developerConnection>scm:git:${scm.gitBaseUrl}/org.openhab.binding.zigbee.git</developerConnection>
+		<url>https://github.com/openhab/org.openhab.binding.zigbee</url>
+	</scm>
+
 	<build>
 		<testSourceDirectory>src/test</testSourceDirectory>
 
