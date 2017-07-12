@@ -11,7 +11,6 @@ package org.openhab.binding.zigbee.handler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.math.BigDecimal;
 import java.util.TooManyListenersException;
 
 import org.eclipse.smarthome.core.i18n.TranslationProvider;
@@ -48,10 +47,7 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler
         implements ZigBeePort, SerialPortEventListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeCoordinatorEmberHandler.class);
 
-    private final int DEFAULT_BAUD = 115200;
-
     private String portId;
-    private int portBaud;
 
     // The serial port.
     private SerialPort serialPort;
@@ -79,12 +75,6 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler
         super.initialize();
 
         portId = (String) getConfig().get(ZigBeeBindingConstants.CONFIGURATION_PORT);
-
-        if (getConfig().get(ZigBeeBindingConstants.CONFIGURATION_BAUD) != null) {
-            portBaud = ((BigDecimal) getConfig().get(ZigBeeBindingConstants.CONFIGURATION_BAUD)).intValue();
-        } else {
-            portBaud = DEFAULT_BAUD;
-        }
         final ZigBeeTransportTransmit dongle = new ZigBeeDongleEzsp(this);
 
         logger.debug("ZigBee Coordinator Ember opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", portId,
@@ -150,7 +140,7 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler
     @Override
     public boolean open() {
         try {
-            openSerialPort(portId, portBaud);
+            openSerialPort(portId, 115200);
             return true;
         } catch (Exception e) {
             logger.error("Error...", e);

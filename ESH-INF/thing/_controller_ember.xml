@@ -14,17 +14,6 @@
                 <description>Serial Port</description>
             </parameter>
 
-            <parameter name="zigbee_baud" type="integer" required="true">
-                <label>Baud Rate</label>
-                <description>Serial Port Baud Rate</description>
-                <default>115200</default>
-                <options>
-                    <option value="38400">38400</option>
-                    <option value="57600">57600</option>
-                    <option value="115200">115200</option>
-                </options>
-            </parameter>
-
             <parameter-group name="network">
                 <context></context>
                 <label>ZigBee Network Configuration</label>

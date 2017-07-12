@@ -455,14 +455,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         Configuration configuration = editConfiguration();
         for (Entry<String, Object> configurationParameter : configurationParameters.entrySet()) {
             switch (configurationParameter.getKey()) {
-                case ZigBeeBindingConstants.CONFIGURATION_BAUD:
-                    configuration.put(CONFIGURATION_BAUD, configurationParameter.getValue());
-                    break;
                 case ZigBeeBindingConstants.CONFIGURATION_JOINENABLE:
-                    if ((Boolean) configurationParameter.getValue() == true) {
-                        permitJoin(nodeIeeeAddress, 60);
-                    }
-                    configuration.put(CONFIGURATION_JOINENABLE, false);
+                    permitJoin(nodeIeeeAddress, 60);
                     break;
                 default:
                     logger.warn("{}: Unhandled configuration parameter {}.", nodeIeeeAddress,

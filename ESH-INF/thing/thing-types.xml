@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="zigbee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
+        xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
+    <thing-type id="device">
+        <label>ZigBee Device</label>
+        <description>ZigBee Device</description>
+        
+        <channels>
+          <channel id="switch" typeId="switch" ></channel>
+           <channel id="switch_onoff" typeId="switch_onoff" ></channel>
+          <channel id="temperature" typeId="temperature" ></channel>
+          <channel id="measurement_relativehumidity" typeId="measurement_relativehumidity" ></channel>
+        </channels>
+    </thing-type>
+    
+    <!-- On Off Switch -->
+    <channel-type id="switch">
+        <item-type>Switch</item-type>
+        <label>Switch</label>
+        <description>Switches the power on and off</description>
+        <category>Light</category>
+    </channel-type>
+    
+    <!-- On Off Switch -->
+    <channel-type id="switch_onoff">
+        <item-type>Number</item-type>
+        <label>Switch</label>
+        <description>State of the device</description>
+        <category>Light</category>
+        <state readOnly="true">
+            <options>
+                <option value="ON">On</option>
+                <option value="OFF">Off</option>
+            </options>
+        </state>
+    </channel-type>
+    
+    <!-- Dimmer Switch -->
+    <channel-type id="switch_dimmer">
+        <item-type>Dimmer</item-type>
+        <label>Dimmer</label>
+        <description>Sets the level of the light</description>
+        <category>Light</category>
+    </channel-type>
+    
+    <!-- Temperature -->
+     <channel-type id="temperature">
+        <item-type>Number</item-type>
+        <label>Temperature</label>
+        <description>Actual measured temperature</description>
+        <category>Temperature</category>
+        <state readOnly="true"/>
+    </channel-type>
+    
+    <!-- Humidity Channel -->
+    <channel-type id="measurement_relativehumidity">
+        <item-type>Number</item-type>
+        <label>Humidity</label>
+        <description>Indicates the current relative humidity</description>
+        <category>Humidity</category>
+        <state readOnly="true"/>
+    </channel-type>
+    
+     <!-- Pressure Channel -->
+    <channel-type id="measurement_pressure">
+        <item-type>Number</item-type>
+        <label>Pressure</label>
+        <description>Indicates the current pressure</description>
+        <category>Pressure</category>
+        <state readOnly="true"/>
+    </channel-type>
+    
+    <!-- Electrical Channel -->
+    <channel-type id="measurement_electrical">
+        <item-type>Number</item-type>
+        <label>Electrical</label>
+        <description>Indicates the current electrical</description>
+        <category>Electrical</category>
+        <state readOnly="true"/>
+    </channel-type>
+    
+
+</thing:thing-descriptions>
+    
