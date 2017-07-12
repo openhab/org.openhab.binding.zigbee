@@ -93,9 +93,9 @@ public class ZigBeeThingHandler extends BaseThingHandler {
         }
 
         // Load the node information
-        // deserializeNode doubles the channel data and calls the cluster handlers twice if we call it like this:
-        // coordinatorHandler.deserializeNode(nodeAddress);
-        // if (!coordinatorHandler.deserializeNode(nodeAddress))
+        deserializeNode doubles the channel data and calls the cluster handlers twice if we call it like this:
+        coordinatorHandler.deserializeNode(nodeAddress);
+        //if (!coordinatorHandler.deserializeNode(nodeAddress))
         // TODO: find out why should we use deserializeNode() method and why id doubles the channels
 
         ZigBeeNode node = coordinatorHandler.getNode(nodeAddress);
