@@ -52,6 +52,8 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_SWITCH_DIMMER = "switch_dimmer";
     public static final String CHANNEL_SWITCH_ONOFF = "switch_onoff";
 
+    public static final String CHANNEL_SENSOR_OCCUPANCY = "sensor_occupancy";
+
     public static final String CHANNEL_COLOR_COLOR = "color_color";
     public static final String CHANNEL_COLOR_TEMPERATURE = "color_temperature";
 
@@ -67,6 +69,7 @@ public class ZigBeeBindingConstants {
     public static final String ITEM_TYPE_NUMBER = "Number";
     public static final String ITEM_TYPE_DIMMER = "Dimmer";
     public static final String ITEM_TYPE_SWITCH = "Switch";
+    public static final String ITEM_TYPE_SENSOR = "Sensor";
 
     public static final String THING_PROPERTY_MANUFACTURER = "zigbee_manufacturer";
     public static final String THING_PROPERTY_MODEL = "zigbee_model";

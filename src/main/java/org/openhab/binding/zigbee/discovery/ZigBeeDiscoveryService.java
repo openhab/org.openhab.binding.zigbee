@@ -123,7 +123,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
                             .withThingType(thingTypeUID).withProperties(objProperties).withBridge(bridgeUID)
                             .withLabel(label).build();
 
-                    thingDiscovered(discoveryResult);
+                    // thingDiscovered(discoveryResult);
                 }
 
                 // Perform the device properties discovery

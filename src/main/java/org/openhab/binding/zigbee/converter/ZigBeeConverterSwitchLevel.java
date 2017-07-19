@@ -20,19 +20,24 @@ import org.slf4j.LoggerFactory;
 import com.zsmartsystems.zigbee.ZigBeeDevice;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclBasicCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclLevelControlCluster;
 
 /**
  *
  * @author Chris Jackson - Initial Contribution
+ * @author Dovydas Girdvainis - Added handle refresh implementation and channel labeling from location descriptor
  *
  */
 public class ZigBeeConverterSwitchLevel extends ZigBeeChannelConverter implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterSwitchLevel.class);
 
     private ZclLevelControlCluster clusterLevelControl;
+    private ZclBasicCluster basicCluster;
 
     private boolean initialised = false;
+
+    private String channelLabel;
 
     @Override
     public void initializeConverter() {
@@ -62,7 +67,15 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeChannelConverter implement
 
     @Override
     public void handleRefresh() {
-        clusterLevelControl.getCurrentLevelAsync();
+
+        Integer value = clusterLevelControl.getCurrentLevel(0);
+        if (value != null) {
+            value = value * 100 / 255;
+            if (value > 100) {
+                value = 100;
+            }
+            updateChannelState(new PercentType(value));
+        }
     }
 
     @Override
@@ -95,8 +108,19 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeChannelConverter implement
         if (device.getCluster(ZclLevelControlCluster.CLUSTER_ID) == null) {
             return null;
         }
+        basicCluster = (ZclBasicCluster) device.getCluster(ZclBasicCluster.CLUSTER_ID);
+        if (basicCluster == null) {
+            logger.error("{}: Error opening device baisic controls", device.getIeeeAddress());
+        }
+
+        // Get cluster location descriptor for channel label
+        if (basicCluster != null) {
+            channelLabel = basicCluster.getLocationDescription(0);
+        } else {
+            channelLabel = "Dimmer";
+        }
         return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL,
-                ZigBeeBindingConstants.ITEM_TYPE_DIMMER, "Dimmer");
+                ZigBeeBindingConstants.ITEM_TYPE_DIMMER, channelLabel);
     }
 
     @Override
