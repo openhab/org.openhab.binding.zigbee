@@ -17,6 +17,10 @@ The file can be downloaded from TI website archives (http://www.ti.com/tool/z-st
 of the `Z-STACK-HOME v.1.2.2a` package.
 The file name is `CC2531ZNP-Pro-Secure_Standard.hex` and its sha256 is `3cc5dc571ef0f49e3f42c6c2ca076d6f8fef33a945c71e6f951b839ba0599d3c`.
 
+#### Flashing with RF05 board on windows 
+
+If you have access to CC2540 Development Kit (http://www.ti.com/tool/cc2540dk)  you can use it to flash the CC2530 dongle. Download SmartRF Flash Programmer from TI (http://www.ti.com/tool/flash-programmer) connect your CC2530 dongle with the provided connector to P3 and power up the development kit. Select the dongle, provide the destination to the image in Flash Image and hit Perform actions.
+
 ##### Flashing on Linux
 
 It's possible to flash the dongle using Linux, using `cc-tool` (https://github.com/dashesy/cc-tool.git).
@@ -38,6 +42,7 @@ The following devices have been tested with the binding
 |------------------|----------------|
 | Hue Bulbs        | Color LED Bulb |
 | SmartThings Plug | Metered Plug   |
+| FLS-PP Ip        | Light Control  | 
 
 
 ## Discovery

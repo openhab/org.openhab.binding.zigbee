@@ -134,7 +134,8 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
                 if ((properties.get(ZigBeeBindingConstants.THING_PROPERTY_MANUFACTURER) != null)
                         && (properties.get(ZigBeeBindingConstants.THING_PROPERTY_MODEL) != null)) {
                     label = properties.get(ZigBeeBindingConstants.THING_PROPERTY_MANUFACTURER).trim() + " "
-                            + properties.get(ZigBeeBindingConstants.THING_PROPERTY_MODEL).trim();
+                            + properties.get(ZigBeeBindingConstants.THING_PROPERTY_MODEL).trim() + " ("
+                            + node.getIeeeAddress() + ")";
                 }
 
                 logger.info("{}: Update ZigBee device {} with bridge {}", node.getIeeeAddress(), thingTypeUID,
