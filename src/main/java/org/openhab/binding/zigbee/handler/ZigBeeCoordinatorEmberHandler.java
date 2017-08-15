@@ -18,6 +18,8 @@ import org.eclipse.smarthome.core.i18n.TranslationProvider;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
+import org.eclipse.smarthome.core.thing.ThingStatus;
+import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
@@ -104,7 +106,7 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler
     }
 
     private void openSerialPort(final String serialPortName, int baudRate) {
-        logger.info("Connecting to serial port [{}]", serialPortName);
+        logger.info("Connecting to serial port [{}] at {}", serialPortName, baudRate);
         try {
             CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(serialPortName);
             CommPort commPort = portIdentifier.open("org.openhab.binding.zigbee", 2000);
@@ -123,17 +125,20 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler
 
             logger.info("Serial port [{}] is initialized.", portId);
         } catch (NoSuchPortException e) {
-            logger.error("Serial Error: Port {} does not exist", serialPortName);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.OFFLINE.COMMUNICATION_ERROR,
+                    "Serial Error: Port" + serialPortName + " does not exist");
             return;
         } catch (PortInUseException e) {
-            logger.error("Serial Error: Port {} in use.", serialPortName);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.OFFLINE.COMMUNICATION_ERROR,
+                    "Serial Error: Port" + serialPortName + " is in use");
             return;
         } catch (UnsupportedCommOperationException e) {
-            logger.error("Serial Error: Unsupported comm operation on Port {}.", serialPortName);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.OFFLINE.COMMUNICATION_ERROR,
+                    "Serial Error: Unsupported comm operation on Port " + serialPortName);
             return;
         } catch (TooManyListenersException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.OFFLINE.COMMUNICATION_ERROR,
+                    "Serial Error: Too many listeners on Port " + serialPortName);
             return;
         }
 
