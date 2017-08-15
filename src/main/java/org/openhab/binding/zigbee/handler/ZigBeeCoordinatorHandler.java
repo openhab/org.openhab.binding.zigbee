@@ -47,6 +47,7 @@ import com.zsmartsystems.zigbee.ZigBeeNetworkManager.ZigBeeInitializeResponse;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNetworkStateListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
+import com.zsmartsystems.zigbee.internal.ZigBeeNetworkMeshMonitor;
 import com.zsmartsystems.zigbee.serialization.ZigBeeDeserializer;
 import com.zsmartsystems.zigbee.serialization.ZigBeeSerializer;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportState;
@@ -95,6 +96,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     private ScheduledFuture<?> restartJob = null;
 
+    private ZigBeeNetworkMeshMonitor meshMonitor;
     private ZigBeeDiscoveryService discoveryService;
     private ServiceRegistration discoveryRegistration;
 
@@ -363,6 +365,10 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         } catch (IllegalStateException e) {
             logger.debug("Error updating configuration", e);
         }
+
+        // Start the mesh monitor
+        meshMonitor = new ZigBeeNetworkMeshMonitor(networkManager);
+        meshMonitor.startup(86400);
     }
 
     // Create random network key
