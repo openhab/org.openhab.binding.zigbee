@@ -46,6 +46,8 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeChannelConverter implement
             return;
         }
 
+        clusterLevelControl.bind();
+
         // Add a listener, then request the status
         clusterLevelControl.addAttributeListener(this);
         clusterLevelControl.getCurrentLevel(0);

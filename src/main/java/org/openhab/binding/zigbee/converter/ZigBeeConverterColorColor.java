@@ -61,6 +61,9 @@ public class ZigBeeConverterColorColor extends ZigBeeChannelConverter implements
             return;
         }
 
+        clusterLevelControl.bind();
+        clusterColorControl.bind();
+
         // Add a listener, then request the status
         clusterLevelControl.addAttributeListener(this);
         clusterColorControl.addAttributeListener(this);
@@ -72,10 +75,8 @@ public class ZigBeeConverterColorColor extends ZigBeeChannelConverter implements
         try {
             clusterColorControl.setCurrentHueReporting(1, 600, 1).get();
             clusterLevelControl.setCurrentLevelReporting(1, 600, 1).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+        } catch (ExecutionException | InterruptedException e) {
+            logger.debug("Exception configuring color reporting", e);
         }
 
         initialised = true;

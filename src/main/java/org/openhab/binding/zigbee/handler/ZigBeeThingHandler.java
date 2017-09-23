@@ -121,6 +121,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         coordinatorHandler = (ZigBeeCoordinatorHandler) getBridge().getHandler();
         coordinatorHandler.addNetworkNodeListener(this);
+        coordinatorHandler.rediscoverNode(nodeIeeeAddress);
 
         initialiseZigBeeNode();
     }
@@ -258,14 +259,14 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         // Check that we have a coordinator to work through
         if (coordinatorHandler == null) {
-            logger.warn("Coordinator handler not found. Cannot handle command without coordinator.");
+            logger.debug("Coordinator handler not found. Cannot handle command without coordinator.");
             updateStatus(ThingStatus.OFFLINE);
             return;
         }
 
         ZigBeeChannelConverter handler = channels.get(channelUID);
         if (handler == null) {
-            logger.warn("No handler found for {}", channelUID);
+            logger.debug("No handler found for {}", channelUID);
             return;
         }
 

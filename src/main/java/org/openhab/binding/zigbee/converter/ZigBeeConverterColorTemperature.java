@@ -8,8 +8,6 @@
  */
 package org.openhab.binding.zigbee.converter;
 
-import java.util.concurrent.ExecutionException;
-
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.thing.Channel;
@@ -48,18 +46,13 @@ public class ZigBeeConverterColorTemperature extends ZigBeeChannelConverter impl
             return;
         }
 
-        clusterColorControl.addAttributeListener(this);
+        clusterColorControl.bind();
 
+        clusterColorControl.addAttributeListener(this);
         clusterColorControl.getColorTemperature(0);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        try {
-            clusterColorControl.setCurrentHueReporting(1, 600, 1).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+        clusterColorControl.setCurrentHueReporting(1, 600, 1);
 
         initialised = true;
     }

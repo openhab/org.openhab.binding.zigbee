@@ -59,6 +59,8 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_TEMPERATURE_VALUE = "sensor_temperature";
     public static final String CHANNEL_HUMIDITY_VALUE = "sensor_humidity";
 
+    public static final String CHANNEL_OCCUPANCY_SENSOR = "sensor_occupancy";
+
     public static final String CHANNEL_PROPERTY_ADDRESS = "zigbee_address";
     public static final String CHANNEL_PROPERTY_CLUSTER = "zigbee_cluster";
 

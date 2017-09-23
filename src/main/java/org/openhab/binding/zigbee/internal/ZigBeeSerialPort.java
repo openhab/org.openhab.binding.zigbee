@@ -113,7 +113,8 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
     @Override
     public boolean open(int baudRate) {
         try {
-            logger.debug("Connecting to serial port [{}]", portName);
+            logger.debug("Connecting to serial port [{}] at {} baud, flow control {}.", portName, baudRate,
+                    flowControl ? "enabled" : "disabled");
             try {
                 CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
                 CommPort commPort = portIdentifier.open("org.openhab.binding.zigbee", 100);
@@ -121,6 +122,8 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
                 serialPort.setSerialPortParams(baudRate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1,
                         SerialPort.PARITY_NONE);
                 if (flowControl) {
+                    serialPort.setFlowControlMode(gnu.io.SerialPort.FLOWCONTROL_RTSCTS_OUT);
+                } else {
                     serialPort.setFlowControlMode(gnu.io.SerialPort.FLOWCONTROL_NONE);
                 }
                 serialPort.enableReceiveThreshold(1);

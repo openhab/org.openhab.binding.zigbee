@@ -28,7 +28,7 @@
 		<label>Temperature</label>
 		<description>Indicates the current temperature</description>
 		<category>Temperature</category>
-		<state pattern="%0.1f" readOnly="true">
+		<state pattern="%.1f" readOnly="true">
 		</state>
 		<config-description>
 			<parameter name="config_scale" type="text">
@@ -49,7 +49,7 @@
 		<label>Humidity</label>
 		<description>Indicates the current relative humidity</description>
 		<category>Humidity</category>
-		<state pattern="%0.1f" readOnly="true">
+		<state pattern="%.1f" readOnly="true">
 		</state>
 	</channel-type>
 

@@ -8,8 +8,6 @@
  */
 package org.openhab.binding.zigbee.converter;
 
-import java.util.concurrent.ExecutionException;
-
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.thing.Channel;
@@ -49,18 +47,14 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeChannelConverter implement
             return;
         }
 
+        clusterOnOff.bind();
+
         // Add a listener, then request the status
         clusterOnOff.addAttributeListener(this);
         clusterOnOff.getOnOff(0);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        try {
-            clusterOnOff.setOnOffReporting(1, 600).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+        clusterOnOff.setOnOffReporting(1, 600);
         initialised = true;
     }
 

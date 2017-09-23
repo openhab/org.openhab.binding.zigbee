@@ -9,7 +9,6 @@
 package org.openhab.binding.zigbee.converter;
 
 import java.math.BigDecimal;
-import java.util.concurrent.ExecutionException;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.thing.Channel;
@@ -24,6 +23,7 @@ import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclTemperatureMeasurementCluster;
 
 /**
+ * Converter for the temperature channel
  *
  * @author Chris Jackson - Initial Contribution
  *
@@ -46,18 +46,14 @@ public class ZigBeeConverterTemperature extends ZigBeeChannelConverter implement
             return;
         }
 
+        cluster.bind();
+
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
         cluster.getMeasuredValue(60);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        try {
-            cluster.setMeasuredValueReporting(1, 600, 0.1).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+        cluster.setMeasuredValueReporting(1, 600, 0.1);
         initialised = true;
     }
 

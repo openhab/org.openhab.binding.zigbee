@@ -48,6 +48,7 @@ public class ZigBeeCoordinatorTelegesisHandler extends ZigBeeCoordinatorHandler 
 
     private String portId;
     private int portBaud;
+    private ZigBeeTransportTransmit dongle;
 
     public ZigBeeCoordinatorTelegesisHandler(Bridge coordinator, TranslationProvider translationProvider) {
         super(coordinator, translationProvider);
@@ -77,7 +78,7 @@ public class ZigBeeCoordinatorTelegesisHandler extends ZigBeeCoordinatorHandler 
             portBaud = DEFAULT_BAUD;
         }
         ZigBeePort serialPort = new ZigBeeSerialPort(portId, portBaud, false);
-        final ZigBeeTransportTransmit dongle = new ZigBeeDongleTelegesis(serialPort);
+        dongle = new ZigBeeDongleTelegesis(serialPort);
 
         logger.debug("ZigBee Coordinator Telegesis opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", portId,
                 Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
@@ -115,9 +116,16 @@ public class ZigBeeCoordinatorTelegesisHandler extends ZigBeeCoordinatorHandler 
                         // ProgressStep.TRANSFERRING
                         progressCallback.next();
                         break;
-                    case FIRMWARE_UPDATE_COMPLETE:
+                    case FIRMWARE_TRANSFER_COMPLETE:
                         // ProgressStep.UPDATING
                         progressCallback.next();
+                        break;
+                    case FIRMWARE_UPDATE_COMPLETE:
+                        progressCallback.success();
+
+                        // Restart the handler...
+                        dispose();
+                        initialize();
                         break;
                     case FIRMWARE_UPDATE_CANCELLED:
                         progressCallback.canceled();

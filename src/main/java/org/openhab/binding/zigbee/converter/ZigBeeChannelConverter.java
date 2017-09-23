@@ -61,8 +61,7 @@ public abstract class ZigBeeChannelConverter {
         channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_COLOR, ZigBeeConverterColorColor.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_TEMPERATURE, ZigBeeConverterColorTemperature.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE, ZigBeeConverterTemperature.class);
-        // clusterMap.put(ZigBeeApiConstants.CLUSTER_ID_TEMPERATURE_MEASUREMENT,
-        // ZigBeeTemperatureMeasurementClusterHandler.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_OCCUPANCY_SENSOR, ZigBeeConverterOccupancy.class);
     }
 
     /**
@@ -76,9 +75,9 @@ public abstract class ZigBeeChannelConverter {
     /**
      * Creates the converter handler
      *
-     * @param thing
-     * @param channelUID
-     * @param coordinator
+     * @param thing the {@link ZigBeeThingHandler} the channel is part of
+     * @param channelUID the {@link channelUID} for the channel
+     * @param coordinator the {@link ZigBeeCoordinatorHandler} this node is part of
      * @param address
      * @return true if the handler was created successfully - false otherwise
      */
@@ -95,8 +94,16 @@ public abstract class ZigBeeChannelConverter {
         return true;
     }
 
+    /**
+     * Initialise the converter. This is called by the {@link ZigBeeThingHandler} when the channel is created. The
+     * converter should initialise any internal states, open any clusters, add reporting and binding that it needs to
+     * operate.
+     */
     public abstract void initializeConverter();
 
+    /**
+     * Closes the converter and releases any resources.
+     */
     public void disposeConverter() {
     }
 
@@ -180,7 +187,7 @@ public abstract class ZigBeeChannelConverter {
     protected Channel createChannel(ZigBeeEndpoint device, ThingUID thingUID, String channelType, String itemType,
             String label) {
         Map<String, String> properties = new HashMap<String, String>();
-        properties.put(ZigBeeBindingConstants.CHANNEL_PROPERTY_ADDRESS, device.getDeviceAddress().toString());
+        properties.put(ZigBeeBindingConstants.CHANNEL_PROPERTY_ADDRESS, device.getEndpointAddress().toString());
         // properties.put(ZigBeeBindingConstants.CHANNEL_PROPERTY_CLUSTER, Integer.toString(getClusterId()));
         ChannelTypeUID channelTypeUID = new ChannelTypeUID(ZigBeeBindingConstants.BINDING_ID, channelType);
 
@@ -189,6 +196,4 @@ public abstract class ZigBeeChannelConverter {
                         device.getIeeeAddress() + "_" + device.getEndpointId() + "_" + channelType), itemType)
                 .withType(channelTypeUID).withLabel(label).withProperties(properties).build();
     }
-
-    // public abstract int getClusterId();
 }

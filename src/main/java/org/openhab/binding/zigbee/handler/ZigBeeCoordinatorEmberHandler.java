@@ -62,7 +62,7 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler {
         } else {
             portBaud = DEFAULT_BAUD;
         }
-        ZigBeePort serialPort = new ZigBeeSerialPort(portId, portBaud, false);
+        ZigBeePort serialPort = new ZigBeeSerialPort(portId, portBaud, true);
         final ZigBeeTransportTransmit dongle = new ZigBeeDongleEzsp(serialPort);
 
         logger.debug("ZigBee Coordinator Ember opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", portId,

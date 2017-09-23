@@ -648,4 +648,16 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     public IeeeAddress getIeeeAddress() {
         return nodeIeeeAddress;
     }
+
+    /**
+     * Search for a node - will perform a discovery on the defined {@link IeeeAddress}
+     * 
+     * @param nodeIeeeAddress {@link IeeeAddress} of the node to discover
+     */
+    public void rediscoverNode(IeeeAddress nodeIeeeAddress) {
+        if (networkManager == null) {
+            return;
+        }
+        networkManager.rediscoverNode(nodeIeeeAddress);
+    }
 }
