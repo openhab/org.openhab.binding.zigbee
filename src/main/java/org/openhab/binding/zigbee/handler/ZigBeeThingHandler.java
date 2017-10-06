@@ -246,7 +246,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         }
 
         // The handler returns a runnable so we schedule it for immediate execution
-        scheduler.schedule(handler.handleCommand(command), 0, TimeUnit.MILLISECONDS);
+        Runnable commandHandler = handler.handleCommand(command);
+        if (commandHandler != null) {
+            scheduler.schedule(commandHandler, 0, TimeUnit.MILLISECONDS);
+        }
     }
 
     /**
