@@ -42,6 +42,7 @@ import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeDevice;
 import com.zsmartsystems.zigbee.ZigBeeDeviceAddress;
+import com.zsmartsystems.zigbee.ZigBeeKey;
 import com.zsmartsystems.zigbee.ZigBeeNetworkManager;
 import com.zsmartsystems.zigbee.ZigBeeNetworkManager.ZigBeeInitializeResponse;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
@@ -332,7 +333,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         ExtendedPanId currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
 
         if (initializeNetwork) {
-            networkManager.setZigBeeSecurityKey(networkKey);
+            networkManager.setZigBeeNetworkKey(new ZigBeeKey(networkKey));
             networkManager.setZigBeeChannel(channelId);
             networkManager.setZigBeePanId(panId);
             networkManager.setZigBeeExtendedPanId(extendedPanId);
