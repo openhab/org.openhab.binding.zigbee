@@ -9,13 +9,17 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.CommandListener;
 import com.zsmartsystems.zigbee.ZigBeeDevice;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
+import com.zsmartsystems.zigbee.zcl.ZclCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclBasicCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOccupancySensingCluster;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclCommandType;
 
-public abstract class ZigBeeConverterOccupancySensor extends ZigBeeChannelConverter implements ZclAttributeListener {
+public abstract class ZigBeeConverterOccupancySensor extends ZigBeeChannelConverter
+        implements ZclAttributeListener, CommandListener {
     private static Logger logger = LoggerFactory.getLogger(ZigBeeConverterOccupancySensor.class);
 
     private StringType movement = new StringType("Movement detected");
@@ -113,6 +117,31 @@ public abstract class ZigBeeConverterOccupancySensor extends ZigBeeChannelConver
             } else {
                 updateChannelState(noMovement);
             }
+        }
+    }
+
+    /**
+     * commandReceived - changes the status of the thing, based on the command received directly from it
+     *
+     * @param command - ZclCommand sent from a thing to the server
+     * @return none
+     *
+     * @author Dovydas Girdvainis
+     */
+    @Override
+    public void commandReceived(final com.zsmartsystems.zigbee.Command command) {
+
+        ZclCommand zclCommand = (ZclCommand) command;
+
+        if (zclCommand == null) {
+            logger.debug("No command received");
+            return;
+        }
+
+        if (zclCommand.getCommandId() == Integer.valueOf(ZclCommandType.ON_COMMAND.getId())) {
+            updateChannelState(movement);
+        } else {
+            updateChannelState(noMovement);
         }
     }
 }

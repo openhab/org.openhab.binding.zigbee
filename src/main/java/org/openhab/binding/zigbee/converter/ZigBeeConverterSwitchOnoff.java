@@ -65,7 +65,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeChannelConverter
         clusterOnOff.getOnOff(0);
 
         // Add a command listener
-        clusterOnOff.addCommandListenerr(this);
+        clusterOnOff.addCommandListener(this);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
         try {
@@ -172,14 +172,15 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeChannelConverter
     }
 
     /**
-     * @handlePost - changes the status of the thing, based on the command received directly from it
+     * commandReceived - changes the status of the thing, based on the command received directly from it
+     * 
      * @param command - ZclCommand sent from a thing to the server
      * @return none
      *
      * @author Dovydas Girdvainis
      */
-    // @Override
-    public void commandReceived(final Command command) {
+    @Override
+    public void commandReceived(final com.zsmartsystems.zigbee.Command command) {
 
         ZclCommand zclCommand = (ZclCommand) command;
 

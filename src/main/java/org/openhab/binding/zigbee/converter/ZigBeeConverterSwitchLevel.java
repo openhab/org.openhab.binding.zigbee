@@ -17,19 +17,25 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.CommandListener;
 import com.zsmartsystems.zigbee.ZigBeeDevice;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
+import com.zsmartsystems.zigbee.zcl.ZclCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclBasicCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclLevelControlCluster;
+import com.zsmartsystems.zigbee.zcl.clusters.levelcontrol.MoveToLevelCommand;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclCommandType;
 
 /**
  *
  * @author Chris Jackson - Initial Contribution
  * @author Dovydas Girdvainis - Added handle refresh implementation and channel labeling from location descriptor
+ *         added a command listener to forward the direct commands to OH2
  *
  */
-public class ZigBeeConverterSwitchLevel extends ZigBeeChannelConverter implements ZclAttributeListener {
+public class ZigBeeConverterSwitchLevel extends ZigBeeChannelConverter
+        implements ZclAttributeListener, CommandListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterSwitchLevel.class);
 
     private ZclLevelControlCluster clusterLevelControl;
@@ -135,6 +141,32 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeChannelConverter implement
                 }
                 updateChannelState(new PercentType(value));
             }
+        }
+    }
+
+    /**
+     * commandReceived - changes the status of the thing, based on the command received directly from it
+     *
+     * @param command - ZclCommand sent from a thing to the server
+     * @return none
+     *
+     * @author Dovydas Girdvainis
+     */
+    @Override
+    public void commandReceived(final com.zsmartsystems.zigbee.Command command) {
+
+        ZclCommand zclCommand = (ZclCommand) command;
+
+        if (zclCommand == null) {
+            logger.debug("No command received");
+            return;
+        }
+
+        if (zclCommand.getCommandId() == Integer.valueOf(ZclCommandType.MOVE_TO_LEVEL_COMMAND.getId())) {
+            updateChannelState(new PercentType(((MoveToLevelCommand) zclCommand).getLevel()));
+        } else {
+            logger.debug("Unhandeled command: {}", zclCommand.toString());
+            return;
         }
     }
 
