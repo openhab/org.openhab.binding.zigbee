@@ -3,11 +3,11 @@
 	<classpathentry exported="true" kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="src" output="target/test-classes" path="src/main/test"/>
+	<classpathentry exported="true" kind="lib" path="Z:/git/org.openhab.binding.zigbee/lib/com.zsmartsystems.zigbee-1.0.0-SNAPSHOT.jar" sourcepath="lib/com.zsmartsystems.zigbee-1.0.0-SNAPSHOT-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/com.zsmartsystems.zigbee.dongle.cc2531-1.0.0-SNAPSHOT.jar" sourcepath="lib/com.zsmartsystems.zigbee.dongle.cc2531-1.0.0-SNAPSHOT-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/com.zsmartsystems.zigbee.dongle.ember-1.0.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.12.jar"/>
 	<classpathentry kind="lib" path="lib/mockito-all-1.10.19.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="Z:/git/com.zsmartsystems.zigbee/com.zsmartsystems.zigbee/target/com.zsmartsystems.zigbee-1.0.0-SNAPSHOT.jar" sourcepath="Z:/git/com.zsmartsystems.zigbee/com.zsmartsystems.zigbee/target/com.zsmartsystems.zigbee-1.0.0-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
