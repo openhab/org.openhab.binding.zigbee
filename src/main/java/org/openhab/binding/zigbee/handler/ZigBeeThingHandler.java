@@ -374,4 +374,37 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     public IeeeAddress getIeeeAddress() {
         return nodeIeeeAddress;
     }
+
+    // @SuppressWarnings("null")
+    // public void commandReceived(ChannelUID channelUID, Command command) {
+    // // Check if we received a ZCL command
+    // if (command instanceof ZclCommand && ((ZclCommand) command).getCommandDirection() == true) {
+    //
+    // ZigBeeChannelConverter handler = channels.get(channelUID);
+    // handler.handlePost((ZclCommand) command);
+    // // Integer clusterIdNumber = ((ZclCommand) command).getClusterId();
+    // // ClusterType clusterId = ClusterType.fromInteger(clusterIdNumber);
+    // //
+    // // // handle an unrecognized ZCL command
+    // // if (clusterId == null) {
+    // // logger.debug("Unknown command {}.", command.toString());
+    // // }
+    // //
+    // // // find the appropriate ZCL command and forward it to an appropriate converter
+    // // switch (clusterId) {
+    // //
+    // // case SWITCH_CLUSTER:
+    // //
+    // // break;
+    // // case LEVEL_CONTROL_CLUSTER:
+    // // break;
+    // // case TEMPERATURE_MEASUREMENT_CLUSTER:
+    // // break;
+    // // case OCCUPANCY_SENSING_CLUSTER:
+    // // break;
+    // // case COLOR_CONTROL_CLUSTER:
+    // // break;
+    // // }
+    // }
+    // }
 }

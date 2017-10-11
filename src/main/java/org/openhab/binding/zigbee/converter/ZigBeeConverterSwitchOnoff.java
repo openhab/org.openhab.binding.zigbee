@@ -19,19 +19,25 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.CommandListener;
 import com.zsmartsystems.zigbee.ZigBeeDevice;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
+import com.zsmartsystems.zigbee.zcl.ZclCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclBasicCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclCommandType;
 
 /**
  *
  * @author Chris Jackson - Initial Contribution
- * @author Dovydas Girdvainis - Added handle refresh implementation and channel labeling from location descriptor
+ * @author Dovydas Girdvainis - Added handle refresh implementation and channel labeling from location descriptor,
+ *         added a command listener to forward the direct commands to OH2
  *
  */
-public class ZigBeeConverterSwitchOnoff extends ZigBeeChannelConverter implements ZclAttributeListener {
+public class ZigBeeConverterSwitchOnoff extends ZigBeeChannelConverter
+        implements ZclAttributeListener, CommandListener {
+
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterSwitchOnoff.class);
 
     private ZclOnOffCluster clusterOnOff;
@@ -54,9 +60,12 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeChannelConverter implement
             return;
         }
 
-        // Add a listener, then request the status
+        // Add an attribute listener, then request the status
         clusterOnOff.addAttributeListener(this);
         clusterOnOff.getOnOff(0);
+
+        // Add a command listener
+        clusterOnOff.addCommandListenerr(this);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
         try {
@@ -159,6 +168,30 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeChannelConverter implement
             } else {
                 updateChannelState(OnOffType.OFF);
             }
+        }
+    }
+
+    /**
+     * @handlePost - changes the status of the thing, based on the command received directly from it
+     * @param command - ZclCommand sent from a thing to the server
+     * @return none
+     *
+     * @author Dovydas Girdvainis
+     */
+    // @Override
+    public void commandReceived(final Command command) {
+
+        ZclCommand zclCommand = (ZclCommand) command;
+
+        if (zclCommand == null) {
+            logger.debug("No command received");
+            return;
+        }
+
+        if (zclCommand.getCommandId() == Integer.valueOf(ZclCommandType.ON_COMMAND.getId())) {
+            updateChannelState(OnOffType.ON);
+        } else {
+            updateChannelState(OnOffType.OFF);
         }
     }
 }

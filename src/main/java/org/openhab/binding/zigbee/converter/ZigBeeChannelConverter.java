@@ -122,6 +122,8 @@ public abstract class ZigBeeChannelConverter {
 
     public abstract Channel getChannel(ThingUID thingUID, ZigBeeDevice device);
 
+    // public abstract void handlePost(final ZclCommand command);
+
     public static List<Channel> getChannels(ThingUID thingUID, ZigBeeDevice device) {
         List<Channel> channels = new ArrayList<Channel>();
 
