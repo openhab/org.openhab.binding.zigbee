@@ -36,18 +36,20 @@ public abstract class ZigBeeConverterOccupancySensor extends ZigBeeChannelConver
         if (initialised == true) {
             return;
         }
-        logger.debug("{}: Initialising device on/off cluster", device.getIeeeAddress());
+        logger.debug("{}: Initialising device occupancy sensor cluster", device.getIeeeAddress());
 
         clusterOccupancy = (ZclOccupancySensingCluster) device.getCluster(ZclOccupancySensingCluster.CLUSTER_ID);
 
         if (clusterOccupancy == null) {
-            logger.error("{}: Error opening device on/off controls", device.getIeeeAddress());
+            logger.error("{}: Error opening device  occupancy sensor controls", device.getIeeeAddress());
             return;
         }
 
         // Add a listener, then request the status
         clusterOccupancy.addAttributeListener(this);
         clusterOccupancy.getOccupancy(0);
+
+        clusterOccupancy.addCommandListener(this);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
         try {
@@ -66,7 +68,7 @@ public abstract class ZigBeeConverterOccupancySensor extends ZigBeeChannelConver
             return;
         }
 
-        logger.debug("{}: Closing device on/off cluster", device.getIeeeAddress());
+        logger.debug("{}: Closing device occupancy sensor cluster", device.getIeeeAddress());
 
         if (clusterOccupancy != null) {
             clusterOccupancy.removeAttributeListener(this);
@@ -140,7 +142,7 @@ public abstract class ZigBeeConverterOccupancySensor extends ZigBeeChannelConver
 
         if (zclCommand.getCommandId() == Integer.valueOf(ZclCommandType.ON_COMMAND.getId())) {
             updateChannelState(movement);
-        } else {
+        } else if (zclCommand.getCommandId() == Integer.valueOf(ZclCommandType.OFF_COMMAND.getId())) {
             updateChannelState(noMovement);
         }
     }
