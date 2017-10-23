@@ -69,5 +69,14 @@
         <description>Sets the level of the light</description>
         <category>Light</category>
     </channel-type>
+	
+	<!-- Occupnacy sensor -->
+    <channel-type id="sensor_occupancy">
+        <item-type>Switch</item-type>
+        <label>Occupnacy</label>
+        <description>Shows whether there some motion has been detected</description>
+        <category>Motion</category>
+		<state readOnly="true"></state>
+    </channel-type>
 
 </thing:thing-descriptions>

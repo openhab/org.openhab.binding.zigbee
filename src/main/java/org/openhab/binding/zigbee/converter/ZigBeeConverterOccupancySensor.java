@@ -103,7 +103,7 @@ public abstract class ZigBeeConverterOccupancySensor extends ZigBeeChannelConver
         if (basicCluster != null) {
             channelLabel = basicCluster.getLocationDescription(0);
         } else {
-            channelLabel = "Sensor";
+            channelLabel = "Occupnacy";
         }
         return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_SENSOR_OCCUPANCY,
                 ZigBeeBindingConstants.ITEM_TYPE_SENSOR, channelLabel);

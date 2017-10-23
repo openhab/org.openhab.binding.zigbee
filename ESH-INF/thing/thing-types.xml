@@ -80,6 +80,15 @@
         <category>Electrical</category>
         <state readOnly="true"/>
     </channel-type>
+	
+	<!-- Occupnacy sensor -->
+    <channel-type id="switch_onoff">
+        <item-type>Switch</item-type>
+        <label>Occupnacy</label>
+        <description>Shows whether there some motion has been detected</description>
+        <category>Motion</category>
+		<state readOnly="true"></state>
+    </channel-type>
     
 
 </thing:thing-descriptions>
