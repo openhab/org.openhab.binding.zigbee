@@ -50,6 +50,7 @@ import com.zsmartsystems.zigbee.ZigBeeNetworkStateListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.serialization.ZigBeeDeserializer;
 import com.zsmartsystems.zigbee.serialization.ZigBeeSerializer;
+import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareUpdate;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportState;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
@@ -79,7 +80,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     private IeeeAddress nodeIeeeAddress = null;
 
-    private ZigBeeTransportTransmit zigbeeTransport;
+    protected ZigBeeTransportTransmit zigbeeTransport;
     private ZigBeeNetworkManager networkManager;
 
     private Class<?> serializerClass;
@@ -391,12 +392,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     public void handleConfigurationUpdate(Map<String, Object> configurationParameters) {
         logger.debug("{}: Configuration received (Coordinator).", nodeIeeeAddress);
 
-        // Sanity check
-        if (configurationParameters == null) {
-            logger.warn("{}: No configuration parameters provided.", nodeIeeeAddress);
-            return;
-        }
-
         Configuration configuration = editConfiguration();
         for (Entry<String, Object> configurationParameter : configurationParameters.entrySet()) {
             switch (configurationParameter.getKey()) {
@@ -417,15 +412,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         // Persist changes
         updateConfiguration(configuration);
     }
-
-    /**
-     * Returns a list of all known devices
-     *
-     * @return list of devices
-     */
-    // public List<ZigBeeEndpoint> getDeviceList() {
-    // return networkManager.getDevices();
-    // }
 
     public void startDeviceDiscovery() {
         // TODO: Move to discovery handler?
@@ -542,6 +528,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_NETWORKADDRESS, node.getNetworkAddress().toString());
 
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_LOGICALTYPE, node.getLogicalType().toString());
+
+        // If this dongle supports firmware updates, then set the version
+        if (zigbeeTransport instanceof ZigBeeTransportFirmwareUpdate) {
+            ZigBeeTransportFirmwareUpdate firmwareTransport = (ZigBeeTransportFirmwareUpdate) zigbeeTransport;
+            properties.put(Thing.PROPERTY_FIRMWARE_VERSION, firmwareTransport.getFirmwareVersion());
+        }
 
         updateProperties(properties);
     }

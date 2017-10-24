@@ -11,6 +11,7 @@ package org.openhab.binding.zigbee.handler;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,12 +29,17 @@ import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.ThingStatusInfo;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.thing.binding.builder.ThingBuilder;
+import org.eclipse.smarthome.core.thing.binding.firmware.Firmware;
+import org.eclipse.smarthome.core.thing.binding.firmware.FirmwareUpdateHandler;
+import org.eclipse.smarthome.core.thing.binding.firmware.ProgressCallback;
+import org.eclipse.smarthome.core.thing.binding.firmware.ProgressStep;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.State;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverter;
 import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
 import org.openhab.binding.zigbee.internal.ZigBeeActivator;
+import org.osgi.framework.ServiceRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +70,9 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     private boolean nodeInitialised = false;
 
     private final TranslationProvider translationProvider;
+
+    private FirmwareHandler firmwareHandler = null;
+    private ServiceRegistration<FirmwareUpdateHandler> firmwareRegistration;
 
     public ZigBeeThingHandler(Thing zigbeeDevice, TranslationProvider translationProvider) {
         super(zigbeeDevice);
@@ -141,11 +150,20 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             return;
         }
 
+        // While checking the endpoints, see if OTA cluster is supported
+        boolean otaSupported = false;
+
         // Create the channels from the device
         // Process all the endpoints for this device and add all channels as derived from the supported clusters
         List<Channel> clusterChannels = new ArrayList<Channel>();
         for (ZigBeeEndpoint device : coordinatorHandler.getNodeEndpoints(nodeIeeeAddress)) {
             clusterChannels.addAll(ZigBeeChannelConverter.getChannels(getThing().getUID(), device));
+
+            // Check if this endpoint supports OTA firmware update
+            // TODO Use ZclOtaUpgradeCluster.CLUSTER.ID
+            if (device.getInputClusterIds().contains(0x19)) {
+                otaSupported = true;
+            }
         }
 
         logger.debug("{}: Created {} channels", nodeIeeeAddress, clusterChannels.size());
@@ -184,12 +202,24 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         nodeInitialised = true;
 
-        return;
+        // If this node supports the OTA firmware cluster, then register the FirmwareUpdateHandler
+        otaSupported = true;
+        if (otaSupported) {
+            firmwareHandler = new FirmwareHandler(getThing(), this);
+
+            // Register the FirmwareUpdateHandler as an OSGi service
+            firmwareRegistration = (ServiceRegistration<FirmwareUpdateHandler>) bundleContext.registerService(
+                    FirmwareUpdateHandler.class.getName(), firmwareHandler, new Hashtable<String, Object>());
+        }
     }
 
     @Override
     public void dispose() {
-        logger.debug("Handler disposes. Unregistering listener.");
+        if (firmwareRegistration != null) {
+            firmwareRegistration.unregister();
+        }
+
+        logger.debug("Handler dispose. Unregistering listener.");
         if (nodeIeeeAddress != null) {
             if (coordinatorHandler != null) {
                 // coordinatorHandler.unsubscribeEvents(nodeAddress, this);
@@ -201,12 +231,6 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     @Override
     public void handleConfigurationUpdate(Map<String, Object> configurationParameters) {
         logger.debug("{}: Configuration received.", nodeIeeeAddress);
-
-        // Sanity check
-        if (configurationParameters == null) {
-            logger.warn("{}: No configuration parameters provided.", nodeIeeeAddress);
-            return;
-        }
 
         Configuration configuration = editConfiguration();
         for (Entry<String, Object> configurationParameter : configurationParameters.entrySet()) {
@@ -373,5 +397,52 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     public IeeeAddress getIeeeAddress() {
         return nodeIeeeAddress;
+    }
+
+    class FirmwareHandler implements FirmwareUpdateHandler {
+        private final Thing thing;
+        private final ZigBeeThingHandler thingHandler;
+
+        FirmwareHandler(Thing thing, ZigBeeThingHandler thingHandler) {
+            this.thing = thing;
+            this.thingHandler = thingHandler;
+        }
+
+        @Override
+        public Thing getThing() {
+            return thing;
+        }
+
+        @Override
+        public void updateFirmware(Firmware firmware, ProgressCallback progressCallback) {
+            thingHandler.updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.FIRMWARE_UPDATING);
+
+            progressCallback.defineSequence(ProgressStep.DOWNLOADING, ProgressStep.TRANSFERRING, ProgressStep.UPDATING);
+
+            // download / read firmware image
+            progressCallback.next();
+
+            // transfer image to device
+            progressCallback.next();
+
+            // triggering the actual firmware update
+            progressCallback.next();
+
+            // here: send immediately the success information because it is not mandatory for this implementation to
+            // wait for the successful update of the device
+            progressCallback.success();
+        }
+
+        @Override
+        public void cancel() {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public boolean isUpdateExecutable() {
+            // TODO Auto-generated method stub
+            return false;
+        }
     }
 }

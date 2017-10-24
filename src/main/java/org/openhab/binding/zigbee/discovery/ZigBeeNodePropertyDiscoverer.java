@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.smarthome.core.thing.Thing;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.slf4j.Logger;
@@ -70,7 +71,7 @@ public class ZigBeeNodePropertyDiscoverer {
         }
         Integer hwVersion = basicCluster.getHwVersion(Long.MAX_VALUE);
         if (hwVersion != null) {
-            properties.put(ZigBeeBindingConstants.THING_PROPERTY_HWVERSION, hwVersion.toString());
+            properties.put(Thing.PROPERTY_HARDWARE_VERSION, hwVersion.toString());
         } else {
             logger.debug("{}: Hardware version request timeout", node.getIeeeAddress());
         }
@@ -91,7 +92,7 @@ public class ZigBeeNodePropertyDiscoverer {
 
         Integer appVersion = basicCluster.getApplicationVersion(Long.MAX_VALUE);
         if (appVersion != null) {
-            properties.put(ZigBeeBindingConstants.THING_PROPERTY_APPVERSION, appVersion.toString());
+            properties.put(Thing.PROPERTY_FIRMWARE_VERSION, appVersion.toString());
         } else {
             logger.debug("{}: Application version request timeout", node.getIeeeAddress());
         }
