@@ -38,11 +38,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.IeeeAddress;
-import com.zsmartsystems.zigbee.ZigBeeDevice;
+import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
-import com.zsmartsystems.zigbee.zdo.descriptors.NeighborTable;
-import com.zsmartsystems.zigbee.zdo.descriptors.RoutingTable;
+import com.zsmartsystems.zigbee.zdo.field.NeighborTable;
+import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
 
 /**
  *
@@ -144,7 +144,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         // Create the channels from the device
         // Process all the endpoints for this device and add all channels as derived from the supported clusters
         List<Channel> clusterChannels = new ArrayList<Channel>();
-        for (ZigBeeDevice device : coordinatorHandler.getNodeDevices(nodeIeeeAddress)) {
+        for (ZigBeeEndpoint device : coordinatorHandler.getNodeEndpoints(nodeIeeeAddress)) {
             clusterChannels.addAll(ZigBeeChannelConverter.getChannels(getThing().getUID(), device));
         }
 

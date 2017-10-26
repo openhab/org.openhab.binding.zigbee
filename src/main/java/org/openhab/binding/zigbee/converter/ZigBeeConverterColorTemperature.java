@@ -19,7 +19,7 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zsmartsystems.zigbee.ZigBeeDevice;
+import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster;
@@ -103,7 +103,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeChannelConverter impl
     }
 
     @Override
-    public Channel getChannel(ThingUID thingUID, ZigBeeDevice device) {
+    public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint device) {
         if (device.getCluster(ZclColorControlCluster.CLUSTER_ID) == null) {
             return null;
         }

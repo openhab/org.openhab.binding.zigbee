@@ -29,8 +29,8 @@ import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zsmartsystems.zigbee.ZigBeeDevice;
-import com.zsmartsystems.zigbee.ZigBeeDeviceAddress;
+import com.zsmartsystems.zigbee.ZigBeeEndpoint;
+import com.zsmartsystems.zigbee.ZigBeeEndpointAddress;
 
 /**
  * ZigBeeChannelConverter class. Base class for all converters that convert between ZigBee clusters and openHAB
@@ -45,7 +45,7 @@ public abstract class ZigBeeChannelConverter {
     protected ZigBeeCoordinatorHandler coordinator = null;
 
     protected ChannelUID channelUID = null;
-    protected ZigBeeDevice device = null;
+    protected ZigBeeEndpoint device = null;
 
     /**
      * Map of all channels supported by the binding
@@ -84,7 +84,7 @@ public abstract class ZigBeeChannelConverter {
      */
     public boolean createConverter(ZigBeeThingHandler thing, ChannelUID channelUID,
             ZigBeeCoordinatorHandler coordinator, String address) {
-        this.device = coordinator.getDevice(new ZigBeeDeviceAddress(address));
+        this.device = coordinator.getEndpoint(new ZigBeeEndpointAddress(address));
         if (this.device == null) {
             return false;
         }
@@ -119,9 +119,9 @@ public abstract class ZigBeeChannelConverter {
         return null;
     }
 
-    public abstract Channel getChannel(ThingUID thingUID, ZigBeeDevice device);
+    public abstract Channel getChannel(ThingUID thingUID, ZigBeeEndpoint device);
 
-    public static List<Channel> getChannels(ThingUID thingUID, ZigBeeDevice device) {
+    public static List<Channel> getChannels(ThingUID thingUID, ZigBeeEndpoint device) {
         List<Channel> channels = new ArrayList<Channel>();
 
         Constructor<? extends ZigBeeChannelConverter> constructor;
@@ -177,7 +177,7 @@ public abstract class ZigBeeChannelConverter {
         return null;
     }
 
-    protected Channel createChannel(ZigBeeDevice device, ThingUID thingUID, String channelType, String itemType,
+    protected Channel createChannel(ZigBeeEndpoint device, ThingUID thingUID, String channelType, String itemType,
             String label) {
         Map<String, String> properties = new HashMap<String, String>();
         properties.put(ZigBeeBindingConstants.CHANNEL_PROPERTY_ADDRESS, device.getDeviceAddress().toString());
@@ -186,7 +186,7 @@ public abstract class ZigBeeChannelConverter {
 
         return ChannelBuilder
                 .create(new ChannelUID(thingUID,
-                        device.getIeeeAddress() + "_" + device.getEndpoint() + "_" + channelType), itemType)
+                        device.getIeeeAddress() + "_" + device.getEndpointId() + "_" + channelType), itemType)
                 .withType(channelTypeUID).withLabel(label).withProperties(properties).build();
     }
 

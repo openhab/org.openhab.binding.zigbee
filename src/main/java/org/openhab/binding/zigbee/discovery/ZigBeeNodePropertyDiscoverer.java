@@ -1,18 +1,18 @@
 package org.openhab.binding.zigbee.discovery;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zsmartsystems.zigbee.ZigBeeDevice;
+import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclBasicCluster;
-import com.zsmartsystems.zigbee.zdo.descriptors.PowerDescriptor;
+import com.zsmartsystems.zigbee.zdo.field.PowerDescriptor;
 
 /**
  * Implements a reusable method to return a set of properties about the device
@@ -28,7 +28,7 @@ public class ZigBeeNodePropertyDiscoverer {
         logger.debug("{}: ZigBee node property discovery start", node.getIeeeAddress());
 
         // Create a list of devices for the discovery service to work with
-        Set<ZigBeeDevice> devices = coordinatorHandler.getNodeDevices(node.getIeeeAddress());
+        Collection<ZigBeeEndpoint> devices = coordinatorHandler.getNodeEndpoints(node.getIeeeAddress());
 
         // Make sure we found some devices!
         if (devices.size() == 0) {
@@ -40,7 +40,7 @@ public class ZigBeeNodePropertyDiscoverer {
         Map<String, String> properties = new HashMap<String, String>();
         ZclBasicCluster basicCluster = null;
 
-        for (ZigBeeDevice device : devices) {
+        for (ZigBeeEndpoint device : devices) {
             basicCluster = (ZclBasicCluster) device.getCluster(ZclBasicCluster.CLUSTER_ID);
             if (basicCluster != null) {
                 break;

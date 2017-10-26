@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeNode;
-import com.zsmartsystems.zigbee.zdo.descriptors.NodeDescriptor.LogicalType;
+import com.zsmartsystems.zigbee.zdo.field.NodeDescriptor.LogicalType;
 
 /**
  *

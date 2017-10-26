@@ -21,16 +21,15 @@ import org.slf4j.LoggerFactory;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 import com.thoughtworks.xstream.io.xml.StaxDriver;
-import com.zsmartsystems.zigbee.ZigBeeDevice;
 import com.zsmartsystems.zigbee.ZigBeeNetworkManager;
 import com.zsmartsystems.zigbee.ZigBeeNetworkStateSerializer;
 import com.zsmartsystems.zigbee.ZigBeeNode;
-import com.zsmartsystems.zigbee.dao.ZigBeeDeviceDao;
+import com.zsmartsystems.zigbee.dao.ZigBeeEndpointDao;
 import com.zsmartsystems.zigbee.dao.ZigBeeNodeDao;
-import com.zsmartsystems.zigbee.zdo.descriptors.NodeDescriptor.FrequencyBandType;
-import com.zsmartsystems.zigbee.zdo.descriptors.NodeDescriptor.MacCapabilitiesType;
-import com.zsmartsystems.zigbee.zdo.descriptors.NodeDescriptor.ServerCapabilitiesType;
-import com.zsmartsystems.zigbee.zdo.descriptors.PowerDescriptor.PowerSourceType;
+import com.zsmartsystems.zigbee.zdo.field.NodeDescriptor.FrequencyBandType;
+import com.zsmartsystems.zigbee.zdo.field.NodeDescriptor.MacCapabilitiesType;
+import com.zsmartsystems.zigbee.zdo.field.NodeDescriptor.ServerCapabilitiesType;
+import com.zsmartsystems.zigbee.zdo.field.PowerDescriptor.PowerSourceType;
 
 /**
  * Serializes and deserializes the ZigBee network state.
@@ -70,7 +69,7 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
         stream.setClassLoader(ZigBeeNetworkStateSerializerImpl.class.getClassLoader());
 
         stream.alias("ZigBeeNode", ZigBeeNodeDao.class);
-        stream.alias("ZigBeeDevice", ZigBeeDeviceDao.class);
+        stream.alias("ZigBeeEndpoint", ZigBeeEndpointDao.class);
         stream.alias("MacCapabilitiesType", MacCapabilitiesType.class);
         stream.alias("ServerCapabilitiesType", ServerCapabilitiesType.class);
         stream.alias("PowerSourceType", PowerSourceType.class);
@@ -81,22 +80,18 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
     /**
      * Serializes the network state.
      *
-     * @param networkState the network state
+     * @param networkManager the network state
      * @return the serialized network state as json {@link String}.
      */
     @Override
-    public void serialize(final ZigBeeNetworkManager networkState) {
+    public void serialize(final ZigBeeNetworkManager networkManager) {
         XStream stream = openStream();
 
         final List<Object> destinations = new ArrayList<Object>();
 
-        for (ZigBeeNode node : networkState.getNodes()) {
+        for (ZigBeeNode node : networkManager.getNodes()) {
             ZigBeeNodeDao nodeDao = ZigBeeNodeDao.createFromZigBeeNode(node);
             destinations.add(nodeDao);
-        }
-        for (ZigBeeDevice device : networkState.getDevices()) {
-            ZigBeeDeviceDao deviceDao = ZigBeeDeviceDao.createFromZigBeeDevice(device);
-            destinations.add(deviceDao);
         }
 
         final File file = new File(networkStateFilePath + "/" + networkStateFileName);
@@ -136,8 +131,6 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
             for (final Object object : objects) {
                 if (object instanceof ZigBeeNodeDao) {
                     networkState.addNode(ZigBeeNodeDao.createFromZigBeeDao(networkState, (ZigBeeNodeDao) object));
-                } else {
-                    networkState.addDevice(ZigBeeDeviceDao.createFromZigBeeDao(networkState, (ZigBeeDeviceDao) object));
                 }
             }
         } catch (UnsupportedEncodingException | FileNotFoundException e) {
