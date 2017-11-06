@@ -62,8 +62,6 @@ public abstract class ZigBeeChannelConverter {
         channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_TEMPERATURE, ZigBeeConverterColorTemperature.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE, ZigBeeConverterTemperature.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_OCCUPANCY, ZigBeeConverterOccupancySensor.class);
-        // clusterMap.put(ZigBeeApiConstants.CLUSTER_ID_TEMPERATURE_MEASUREMENT,
-        // ZigBeeTemperatureMeasurementClusterHandler.class);
     }
 
     /**
@@ -121,9 +119,7 @@ public abstract class ZigBeeChannelConverter {
     }
 
     public abstract Channel getChannel(ThingUID thingUID, ZigBeeDevice device);
-
-    // public abstract void handlePost(final ZclCommand command);
-
+    
     public static List<Channel> getChannels(ThingUID thingUID, ZigBeeDevice device) {
         List<Channel> channels = new ArrayList<Channel>();
 
@@ -162,7 +158,8 @@ public abstract class ZigBeeChannelConverter {
             constructor = channelMap.get(channelTypeUID.getId()).getConstructor();
             return constructor.newInstance();
         } catch (Exception e) {
-            // logger.error("Command processor error");
+             logger.error("Command processor error {}", e.toString()); 
+             e.printStackTrace();
         }
 
         return null;
@@ -185,14 +182,11 @@ public abstract class ZigBeeChannelConverter {
             String label) {
         Map<String, String> properties = new HashMap<String, String>();
         properties.put(ZigBeeBindingConstants.CHANNEL_PROPERTY_ADDRESS, device.getDeviceAddress().toString());
-        // properties.put(ZigBeeBindingConstants.CHANNEL_PROPERTY_CLUSTER, Integer.toString(getClusterId()));
-        ChannelTypeUID channelTypeUID = new ChannelTypeUID(ZigBeeBindingConstants.BINDING_ID, channelType);
+              ChannelTypeUID channelTypeUID = new ChannelTypeUID(ZigBeeBindingConstants.BINDING_ID, channelType);
 
         return ChannelBuilder
                 .create(new ChannelUID(thingUID,
                         device.getIeeeAddress() + "_" + device.getEndpoint() + "_" + channelType), itemType)
                 .withType(channelTypeUID).withLabel(label).withProperties(properties).build();
     }
-
-    // public abstract int getClusterId();
 }
