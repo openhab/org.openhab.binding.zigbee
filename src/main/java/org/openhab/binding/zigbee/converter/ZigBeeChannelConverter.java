@@ -61,7 +61,7 @@ public abstract class ZigBeeChannelConverter {
         channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_COLOR, ZigBeeConverterColorColor.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_TEMPERATURE, ZigBeeConverterColorTemperature.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE, ZigBeeConverterTemperature.class);
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_SENSOR_OCCUPANCY, ZigBeeConverterOccupancySensor.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_OCCUPANCY, ZigBeeConverterOccupancySensor.class);
         // clusterMap.put(ZigBeeApiConstants.CLUSTER_ID_TEMPERATURE_MEASUREMENT,
         // ZigBeeTemperatureMeasurementClusterHandler.class);
     }
@@ -139,7 +139,8 @@ public abstract class ZigBeeChannelConverter {
                 }
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                logger.debug("Exception while getting channels: ", e);
+                logger.error("Exception while getting channels: ", e.toString());
+                e.printStackTrace();
             }
         }
         return channels;

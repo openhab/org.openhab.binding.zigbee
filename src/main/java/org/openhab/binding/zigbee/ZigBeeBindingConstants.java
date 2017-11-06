@@ -42,34 +42,23 @@ public class ZigBeeBindingConstants {
 
     // List of Channel ids
     public final static String CHANNEL_CFG_BINDING = "binding";
-
-    public final static String CHANNEL_TEMPERATURE = "temperature";
-    public final static String CHANNEL_SWITCH = "switch";
-    public static final String CHANNEL_COLORTEMPERATURE = "color_temperature";
-    public static final String CHANNEL_COLOR = "color";
-    public static final String CHANNEL_BRIGHTNESS = "brightness";
-
-    public static final String CHANNEL_SWITCH_DIMMER = "switch_dimmer";
-    public static final String CHANNEL_SWITCH_ONOFF = "switch_onoff";
-
-    public static final String CHANNEL_SENSOR_OCCUPANCY = "sensor_occupancy";
-
-    public static final String CHANNEL_COLOR_COLOR = "color_color";
-    public static final String CHANNEL_COLOR_TEMPERATURE = "color_temperature";
-
-    public static final String CHANNEL_TEMPERATURE_VALUE = "sensor_temperature";
-    public static final String CHANNEL_HUMIDITY_VALUE = "sensor_humidity";
-
     public static final String CHANNEL_PROPERTY_ADDRESS = "zigbee_address";
     public static final String CHANNEL_PROPERTY_CLUSTER = "zigbee_cluster";
 
+    public final static String CHANNEL_TEMPERATURE_VALUE = "measurement_temperature";
+    public static final String CHANNEL_RELATIVE_HUMIDITY_VALUE = "measurement_relativehumidity";
+    public static final String CHANNEL_COLORTEMPERATURE = "color_temperature";
+    public static final String CHANNEL_BRIGHTNESS = "brightness";
     public static final String CHANNEL_SWITCH_LEVEL = "switch_level";
+    public static final String CHANNEL_SWITCH_ONOFF = "switch_onoff";
+    public static final String CHANNEL_COLOR_COLOR = "color_color";
+    public static final String CHANNEL_COLOR_TEMPERATURE = "color_temperature";
+    public static final String CHANNEL_OCCUPANCY = "sensor_occupancy";
 
     public static final String ITEM_TYPE_COLOR = "Color";
     public static final String ITEM_TYPE_NUMBER = "Number";
     public static final String ITEM_TYPE_DIMMER = "Dimmer";
     public static final String ITEM_TYPE_SWITCH = "Switch";
-    public static final String ITEM_TYPE_SENSOR = "Sensor";
 
     public static final String THING_PROPERTY_MANUFACTURER = "zigbee_manufacturer";
     public static final String THING_PROPERTY_MODEL = "zigbee_model";

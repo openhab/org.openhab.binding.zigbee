@@ -18,7 +18,7 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclBasicCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOccupancySensingCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclCommandType;
 
-public abstract class ZigBeeConverterOccupancySensor extends ZigBeeChannelConverter
+public class ZigBeeConverterOccupancySensor extends ZigBeeChannelConverter
         implements ZclAttributeListener, CommandListener {
     private static Logger logger = LoggerFactory.getLogger(ZigBeeConverterOccupancySensor.class);
 
@@ -55,8 +55,10 @@ public abstract class ZigBeeConverterOccupancySensor extends ZigBeeChannelConver
         try {
             clusterOccupancy.setOccupancyReporting(1, 600).get();
         } catch (InterruptedException e) {
+            logger.error("Caught an interrupted exception in: {} ", ZigBeeConverterOccupancySensor.class.toString());
             e.printStackTrace();
         } catch (ExecutionException e) {
+            logger.error("Caught an execution exception in: {} ", ZigBeeConverterOccupancySensor.class.toString());
             e.printStackTrace();
         }
         initialised = true;
@@ -105,8 +107,8 @@ public abstract class ZigBeeConverterOccupancySensor extends ZigBeeChannelConver
         } else {
             channelLabel = "Occupnacy";
         }
-        return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_SENSOR_OCCUPANCY,
-                ZigBeeBindingConstants.ITEM_TYPE_SENSOR, channelLabel);
+        return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_OCCUPANCY,
+                ZigBeeBindingConstants.ITEM_TYPE_SWITCH, channelLabel);
     }
 
     @Override
