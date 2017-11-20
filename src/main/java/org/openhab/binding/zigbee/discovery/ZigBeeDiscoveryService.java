@@ -18,6 +18,7 @@ import org.eclipse.smarthome.config.discovery.DiscoveryResult;
 import org.eclipse.smarthome.config.discovery.DiscoveryResultBuilder;
 import org.eclipse.smarthome.config.discovery.DiscoveryServiceCallback;
 import org.eclipse.smarthome.config.discovery.ExtendedDiscoveryService;
+import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
@@ -26,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.ZigBeeNode;
-import com.zsmartsystems.zigbee.zdo.descriptors.NodeDescriptor.LogicalType;
+import com.zsmartsystems.zigbee.zdo.field.NodeDescriptor.LogicalType;
 
 /**
  * The {@link ZigBeeDiscoveryService} tracks ZigBee devices which are associated
@@ -71,6 +72,11 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
 
     @Override
     public void startScan() {
+        if (coordinatorHandler.getThing().getStatus() != ThingStatus.ONLINE) {
+            logger.debug("ZigBee coordinator is offline - aborted scan for {}", coordinatorHandler.getThing().getUID());
+            return;
+        }
+
         logger.debug("Starting ZigBee scan for {}", coordinatorHandler.getThing().getUID());
 
         // Update the inbox with all devices we already know about

@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class ZigBeeActivator implements BundleActivator {
 
-    private static Logger logger = LoggerFactory.getLogger(ZigBeeActivator.class);
+    private Logger logger = LoggerFactory.getLogger(ZigBeeActivator.class);
 
     private static BundleContext context;
 

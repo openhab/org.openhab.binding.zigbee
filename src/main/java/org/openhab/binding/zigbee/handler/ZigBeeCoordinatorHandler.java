@@ -12,10 +12,10 @@ import static org.openhab.binding.zigbee.ZigBeeBindingConstants.*;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -39,23 +39,24 @@ import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.ExtendedPanId;
 import com.zsmartsystems.zigbee.IeeeAddress;
-import com.zsmartsystems.zigbee.ZigBeeAddress;
-import com.zsmartsystems.zigbee.ZigBeeDevice;
-import com.zsmartsystems.zigbee.ZigBeeDeviceAddress;
+import com.zsmartsystems.zigbee.ZigBeeEndpoint;
+import com.zsmartsystems.zigbee.ZigBeeEndpointAddress;
+import com.zsmartsystems.zigbee.ZigBeeKey;
 import com.zsmartsystems.zigbee.ZigBeeNetworkManager;
 import com.zsmartsystems.zigbee.ZigBeeNetworkManager.ZigBeeInitializeResponse;
+import com.zsmartsystems.zigbee.ZigBeeNetworkMeshMonitor;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNetworkStateListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
-import com.zsmartsystems.zigbee.internal.ZigBeeNetworkMeshMonitor;
 import com.zsmartsystems.zigbee.serialization.ZigBeeDeserializer;
 import com.zsmartsystems.zigbee.serialization.ZigBeeSerializer;
+import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareUpdate;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportState;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
-import com.zsmartsystems.zigbee.zdo.descriptors.NeighborTable;
-import com.zsmartsystems.zigbee.zdo.descriptors.NodeDescriptor.LogicalType;
-import com.zsmartsystems.zigbee.zdo.descriptors.RoutingTable;
+import com.zsmartsystems.zigbee.zdo.field.NeighborTable;
+import com.zsmartsystems.zigbee.zdo.field.NodeDescriptor.LogicalType;
+import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
 
 /**
  * The {@link ZigBeeCoordinatorHandler} is responsible for handling commands,
@@ -79,13 +80,13 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     private IeeeAddress nodeIeeeAddress = null;
 
-    private ZigBeeTransportTransmit zigbeeTransport;
+    protected ZigBeeTransportTransmit zigbeeTransport;
     private ZigBeeNetworkManager networkManager;
 
     private Class<?> serializerClass;
     private Class<?> deserializerClass;
 
-    protected int[] networkKey;
+    protected ZigBeeKey networkKey;
 
     private boolean macAddressSet = false;
 
@@ -226,17 +227,16 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         logger.debug("Key String {}", networkKeyString);
 
         // Process the network key
-        networkKey = processNetworkKey(networkKeyString);
-        logger.debug("Key array {}", networkKey);
+        try {
+            networkKey = new ZigBeeKey(networkKeyString);
+        } catch (IllegalArgumentException e) {
+            networkKey = new ZigBeeKey();
+        }
 
         // If no key exists, generate a random key and save it back to the configuration
-        if (networkKey == null || networkKey.length != 16
-                || Arrays.equals(networkKey, new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 })
-                || networkKeyString.length() == 0) {
-            networkKeyString = createNetworkKey();
-            logger.debug("Key initialised String {}", networkKeyString);
-            networkKey = processNetworkKey(networkKeyString);
-            logger.debug("Key initialised array {}", networkKey);
+        if (!networkKey.isValid()) {
+            networkKey = ZigBeeKey.createRandom();
+            logger.debug("Key initialised {}", networkKey);
         }
 
         logger.debug("Key final array {}", networkKey);
@@ -334,7 +334,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         ExtendedPanId currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
 
         if (initializeNetwork) {
-            networkManager.setZigBeeSecurityKey(networkKey);
+            networkManager.setZigBeeNetworkKey(networkKey);
             networkManager.setZigBeeChannel(channelId);
             networkManager.setZigBeePanId(panId);
             networkManager.setZigBeeExtendedPanId(extendedPanId);
@@ -368,67 +368,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         // Start the mesh monitor
         meshMonitor = new ZigBeeNetworkMeshMonitor(networkManager);
-        meshMonitor.startup(86400);
-    }
-
-    // Create random network key
-    private String createNetworkKey() {
-        logger.debug("Creating random ZigBee network key.");
-        String networkKeyString = "";
-        for (int cnt = 0; cnt < 16; cnt++) {
-            int value = (int) Math.floor((Math.random() * 255));
-            if (cnt != 0) {
-                networkKeyString += " ";
-            }
-            networkKeyString += String.format("%02X", value);
-        }
-
-        try {
-            // Persist the key
-            Configuration configuration = editConfiguration();
-            configuration.put(CONFIGURATION_NETWORKKEY, networkKeyString);
-
-            // If the thing is defined statically, then this will fail and we will never start!
-            updateConfiguration(configuration);
-
-            logger.debug("Created random ZigBee network key.");
-        } catch (IllegalStateException e) {
-            logger.debug("Error updating configuration", e);
-        }
-
-        return networkKeyString;
-    }
-
-    /**
-     * Process the network key. The key is provided as a string of hexadecimal values. Values can be space or comma
-     * delimited, or can have no separation between values. Values can be prefixed with 0x or not.
-     *
-     * @param value {@link String} containing the new network key
-     */
-    private int[] processNetworkKey(String value) {
-        if (value == null) {
-            logger.debug("Network key must not be null");
-            return null;
-        }
-
-        String hexString = value.replace("0x", "");
-        hexString = hexString.replace(",", "");
-        hexString = hexString.replace(" ", "");
-
-        if ((hexString.length() % 2) != 0) {
-            logger.debug("Network key must contain an even number of characters");
-            return null;
-        }
-
-        int[] networkKey = new int[hexString.length() / 2];
-        char enc[] = hexString.toCharArray();
-        for (int i = 0; i < enc.length; i += 2) {
-            StringBuilder curr = new StringBuilder(2);
-            curr.append(enc[i]).append(enc[i + 1]);
-            networkKey[i / 2] = Integer.parseInt(curr.toString(), 16);
-        }
-
-        return networkKey;
+        meshMonitor.startup(90);
     }
 
     /**
@@ -452,18 +392,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     public void handleConfigurationUpdate(Map<String, Object> configurationParameters) {
         logger.debug("{}: Configuration received (Coordinator).", nodeIeeeAddress);
 
-        // Sanity check
-        if (configurationParameters == null) {
-            logger.warn("{}: No configuration parameters provided.", nodeIeeeAddress);
-            return;
-        }
-
         Configuration configuration = editConfiguration();
         for (Entry<String, Object> configurationParameter : configurationParameters.entrySet()) {
             switch (configurationParameter.getKey()) {
-                case ZigBeeBindingConstants.CONFIGURATION_BAUD:
-                    configuration.put(CONFIGURATION_BAUD, configurationParameter.getValue());
-                    break;
                 case ZigBeeBindingConstants.CONFIGURATION_JOINENABLE:
                     if ((Boolean) configurationParameter.getValue() == true) {
                         permitJoin(nodeIeeeAddress, 60);
@@ -471,8 +402,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     configuration.put(CONFIGURATION_JOINENABLE, false);
                     break;
                 default:
-                    logger.warn("{}: Unhandled configuration parameter {}.", nodeIeeeAddress,
-                            configurationParameter.getKey());
+                    configuration.put(configurationParameter.getKey(), configurationParameter.getValue());
+                    logger.debug("{}: Unhandled configuration parameter {} >> {}.", nodeIeeeAddress,
+                            configurationParameter.getKey(), configurationParameter.getValue());
                     break;
             }
         }
@@ -481,22 +413,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         updateConfiguration(configuration);
     }
 
-    /**
-     * Returns a list of all known devices
-     *
-     * @return list of devices
-     */
-    public List<ZigBeeDevice> getDeviceList() {
-        return networkManager.getDevices();
-    }
-
     public void startDeviceDiscovery() {
-        final List<ZigBeeDevice> devices = networkManager.getDevices();
-        for (ZigBeeDevice device : devices) {
-            // addNewNode(node);
-        }
-
-        // TODO: Move to discovery handler
+        // TODO: Move to discovery handler?
         // Allow devices to join for 60 seconds
         networkManager.permitJoin(60);
 
@@ -611,30 +529,48 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_LOGICALTYPE, node.getLogicalType().toString());
 
+        // If this dongle supports firmware updates, then set the version
+        if (zigbeeTransport instanceof ZigBeeTransportFirmwareUpdate) {
+            ZigBeeTransportFirmwareUpdate firmwareTransport = (ZigBeeTransportFirmwareUpdate) zigbeeTransport;
+            properties.put(Thing.PROPERTY_FIRMWARE_VERSION, firmwareTransport.getFirmwareVersion());
+        }
+
         updateProperties(properties);
     }
 
-    public ZigBeeDevice getDevice(ZigBeeAddress address) {
+    public ZigBeeEndpoint getEndpoint(ZigBeeEndpointAddress address) {
         if (networkManager == null) {
             return null;
         }
-        return networkManager.getDevice(address);
+        ZigBeeNode node = networkManager.getNode(address.getAddress());
+        if (node == null) {
+            return null;
+        }
+        return node.getEndpoint(address.getEndpoint());
     }
 
-    public Set<ZigBeeDevice> getNodeDevices(IeeeAddress nodeIeeeAddress) {
-        return networkManager.getNodeDevices(nodeIeeeAddress);
+    public Collection<ZigBeeEndpoint> getNodeEndpoints(IeeeAddress nodeIeeeAddress) {
+        if (networkManager == null) {
+            return Collections.<ZigBeeEndpoint> emptySet();
+        }
+        ZigBeeNode node = networkManager.getNode(nodeIeeeAddress);
+        if (node == null) {
+            return Collections.<ZigBeeEndpoint> emptySet();
+        }
+
+        return node.getEndpoints();
     }
 
     public Set<ZigBeeNode> getNodes() {
         return networkManager.getNodes();
     }
 
-    public ZclCluster getCluster(ZigBeeDeviceAddress address, int clusterId) {
-        ZigBeeDevice device = networkManager.getDevice(address);
-        if (device == null) {
+    public ZclCluster getCluster(ZigBeeEndpointAddress address, int clusterId) {
+        ZigBeeEndpoint endpoint = getEndpoint(address);
+        if (endpoint == null) {
             return null;
         }
-        return device.getCluster(clusterId);
+        return endpoint.getCluster(clusterId);
     }
 
     @Override
@@ -657,6 +593,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     }
 
     public ZigBeeNode getNode(IeeeAddress nodeIeeeAddress) {
+        if (networkManager == null) {
+            return null;
+        }
         return networkManager.getNode(nodeIeeeAddress);
     }
 
@@ -676,7 +615,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         logger.debug("{}: ZigBee join command to {}", address, node.getNetworkAddress());
 
-        networkManager.permitJoin(new ZigBeeDeviceAddress(node.getNetworkAddress()), duration);
+        networkManager.permitJoin(new ZigBeeEndpointAddress(node.getNetworkAddress()), duration);
         return true;
     }
 
@@ -708,5 +647,17 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     public IeeeAddress getIeeeAddress() {
         return nodeIeeeAddress;
+    }
+
+    /**
+     * Search for a node - will perform a discovery on the defined {@link IeeeAddress}
+     * 
+     * @param nodeIeeeAddress {@link IeeeAddress} of the node to discover
+     */
+    public void rediscoverNode(IeeeAddress nodeIeeeAddress) {
+        if (networkManager == null) {
+            return;
+        }
+        networkManager.rediscoverNode(nodeIeeeAddress);
     }
 }

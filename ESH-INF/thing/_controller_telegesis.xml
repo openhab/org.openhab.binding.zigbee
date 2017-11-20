@@ -4,9 +4,9 @@
 	xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
 	xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 org.eclipse.smarthome.thing-description.xsd">
 
-	<bridge-type id="coordinator_ember">
-		<label>Ember EM35x Coordinator</label>
-		<description>Ember EM35x NCP</description>
+	<bridge-type id="coordinator_telegesis">
+		<label>Telegesis Coordinator</label>
+		<description>Telegesis ETRX3 Dongle</description>
 
         <config-description>
             <parameter name="zigbee_port" type="text" required="true">
@@ -18,8 +18,9 @@
             <parameter name="zigbee_baud" type="integer" required="true">
                 <label>Baud Rate</label>
                 <description>Serial Port Baud Rate</description>
-                <default>115200</default>
+                <default>19200</default>
                 <options>
+                    <option value="19200">19200</option>
                     <option value="38400">38400</option>
                     <option value="57600">57600</option>
                     <option value="115200">115200</option>
@@ -78,13 +79,6 @@
                 <label>Extended PAN ID</label>
                 <description>Extended PAN Network ID: 16 byte hexadecimal value</description>
                 <default>0000000000000000</default>
-                <advanced>true</advanced>
-            </parameter>
-
-            <parameter name="zigbee_networkkey" type="text" groupName="network">
-                <label>Network Security Key</label>
-                <description>Set the network security key</description>
-                <default>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</default>
                 <advanced>true</advanced>
             </parameter>
 

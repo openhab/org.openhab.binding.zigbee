@@ -21,7 +21,7 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zsmartsystems.zigbee.ZigBeeDevice;
+import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster;
@@ -61,6 +61,9 @@ public class ZigBeeConverterColorColor extends ZigBeeChannelConverter implements
             return;
         }
 
+        clusterLevelControl.bind();
+        clusterColorControl.bind();
+
         // Add a listener, then request the status
         clusterLevelControl.addAttributeListener(this);
         clusterColorControl.addAttributeListener(this);
@@ -72,10 +75,8 @@ public class ZigBeeConverterColorColor extends ZigBeeChannelConverter implements
         try {
             clusterColorControl.setCurrentHueReporting(1, 600, 1).get();
             clusterLevelControl.setCurrentLevelReporting(1, 600, 1).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+        } catch (ExecutionException | InterruptedException e) {
+            logger.debug("Exception configuring color reporting", e);
         }
 
         initialised = true;
@@ -136,7 +137,7 @@ public class ZigBeeConverterColorColor extends ZigBeeChannelConverter implements
     }
 
     @Override
-    public Channel getChannel(ThingUID thingUID, ZigBeeDevice device) {
+    public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint device) {
         if (device.getCluster(ZclColorControlCluster.CLUSTER_ID) == null
                 || device.getCluster(ZclLevelControlCluster.CLUSTER_ID) == null) {
             return null;

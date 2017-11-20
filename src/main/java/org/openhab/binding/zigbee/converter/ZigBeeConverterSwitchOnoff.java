@@ -8,8 +8,6 @@
  */
 package org.openhab.binding.zigbee.converter;
 
-import java.util.concurrent.ExecutionException;
-
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.thing.Channel;
@@ -19,7 +17,7 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zsmartsystems.zigbee.ZigBeeDevice;
+import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
@@ -49,18 +47,14 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeChannelConverter implement
             return;
         }
 
+        clusterOnOff.bind();
+
         // Add a listener, then request the status
         clusterOnOff.addAttributeListener(this);
         clusterOnOff.getOnOff(0);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        try {
-            clusterOnOff.setOnOffReporting(1, 600).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+        clusterOnOff.setOnOffReporting(1, 600);
         initialised = true;
     }
 
@@ -118,7 +112,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeChannelConverter implement
     }
 
     @Override
-    public Channel getChannel(ThingUID thingUID, ZigBeeDevice device) {
+    public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint device) {
         if (device.getCluster(ZclOnOffCluster.CLUSTER_ID) == null) {
             return null;
         }
