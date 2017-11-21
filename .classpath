@@ -3,12 +3,11 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="src" output="target/test-classes" path="src/main/test"/>
-	<classpathentry kind="lib" path="lib/junit-4.12.jar"/>
-	<classpathentry kind="lib" path="lib/mockito-all-1.10.19.jar"/>
 	<classpathentry kind="lib" path="lib/com.zsmartsystems.zigbee-1.0.1-SNAPSHOT.jar" sourcepath="lib/com.zsmartsystems.zigbee-1.0.1-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="lib/com.zsmartsystems.zigbee.dongle.cc2531-1.0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/com.zsmartsystems.zigbee.dongle.ember-1.0.1-SNAPSHOT.jar" sourcepath="lib/com.zsmartsystems.zigbee.dongle.ember-1.0.1-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="lib/com.zsmartsystems.zigbee.dongle.telegesis-1.0.1-SNAPSHOT.jar" sourcepath="lib/com.zsmartsystems.zigbee.dongle.telegesis-1.0.1-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
