@@ -13,11 +13,15 @@ import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
+import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorCC2531Handler;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorEmberHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorTelegesisHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,17 +30,20 @@ import org.slf4j.LoggerFactory;
  * handlers.
  *
  * @author Chris Jackson - Initial contribution
+ * @author Kai Kreuzer - Refactored to use DS annotations
  */
+@Component(immediate = true, service = { ThingHandlerFactory.class })
 public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
     private final Logger logger = LoggerFactory.getLogger(ZigBeeHandlerFactory.class);
 
     private TranslationProvider translationProvider;
 
+    @Reference(cardinality = ReferenceCardinality.OPTIONAL)
     protected void setTranslationProvider(TranslationProvider i18nProvider) {
         translationProvider = i18nProvider;
     }
 
-    protected void removeTranslationProvider(TranslationProvider i18nProvider) {
+    protected void unsetTranslationProvider(TranslationProvider i18nProvider) {
         translationProvider = null;
     }
 

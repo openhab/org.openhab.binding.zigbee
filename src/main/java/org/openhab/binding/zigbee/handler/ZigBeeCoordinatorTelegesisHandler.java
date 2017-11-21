@@ -82,6 +82,7 @@ public class ZigBeeCoordinatorTelegesisHandler extends ZigBeeCoordinatorHandler 
         logger.debug("ZigBee Coordinator Telegesis opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", portId,
                 Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
 
+        updateStatus(ThingStatus.UNKNOWN);
         startZigBee(dongle, DefaultSerializer.class, DefaultDeserializer.class);
     }
 

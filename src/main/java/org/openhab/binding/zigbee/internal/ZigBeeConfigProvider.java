@@ -11,10 +11,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import org.eclipse.smarthome.config.core.ConfigDescription;
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
@@ -22,18 +20,16 @@ import org.eclipse.smarthome.config.core.ConfigDescriptionParameter.Type;
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameterBuilder;
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameterGroup;
 import org.eclipse.smarthome.config.core.ConfigDescriptionProvider;
-import org.eclipse.smarthome.config.core.ConfigDescriptionRegistry;
 import org.eclipse.smarthome.config.core.ConfigOptionProvider;
 import org.eclipse.smarthome.config.core.ParameterOption;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingRegistry;
-import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
-import org.eclipse.smarthome.core.thing.type.ThingType;
-import org.eclipse.smarthome.core.thing.type.ThingTypeRegistry;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,57 +40,20 @@ import com.zsmartsystems.zigbee.zdo.field.NodeDescriptor.LogicalType;
 /**
  *
  * @author Chris Jackson - Initial Contribution
- *
+ * @author Kai Kreuzer - Refactored to use DS annotations
  */
+@Component(immediate = true)
 public class ZigBeeConfigProvider implements ConfigDescriptionProvider, ConfigOptionProvider {
     private final Logger logger = LoggerFactory.getLogger(ZigBeeConfigProvider.class);
+    private ThingRegistry thingRegistry;
 
-    private static ThingRegistry thingRegistry;
-    private static ThingTypeRegistry thingTypeRegistry;
-    private static ConfigDescriptionRegistry configDescriptionRegistry;
-
-    private static Set<ThingTypeUID> zigbeeThingTypeUIDList = new HashSet<ThingTypeUID>();
-
+    @Reference
     protected void setThingRegistry(ThingRegistry thingRegistry) {
-        ZigBeeConfigProvider.thingRegistry = thingRegistry;
+        this.thingRegistry = thingRegistry;
     }
 
     protected void unsetThingRegistry(ThingRegistry thingRegistry) {
-        ZigBeeConfigProvider.thingRegistry = null;
-    }
-
-    protected void setThingTypeRegistry(ThingTypeRegistry thingTypeRegistry) {
-        ZigBeeConfigProvider.thingTypeRegistry = thingTypeRegistry;
-    }
-
-    protected void unsetThingTypeRegistry(ThingTypeRegistry thingTypeRegistry) {
-        ZigBeeConfigProvider.thingTypeRegistry = null;
-    }
-
-    protected void setConfigDescriptionRegistry(ConfigDescriptionRegistry configDescriptionRegistry) {
-        ZigBeeConfigProvider.configDescriptionRegistry = configDescriptionRegistry;
-    }
-
-    protected void unsetConfigDescriptionRegistry(ConfigDescriptionRegistry configDescriptionRegistry) {
-        ZigBeeConfigProvider.configDescriptionRegistry = null;
-    }
-
-    public static Thing getThing(ThingUID thingUID) {
-        // Check that we know about the registry
-        if (thingRegistry == null) {
-            return null;
-        }
-
-        return thingRegistry.get(thingUID);
-    }
-
-    public static ThingType getThingType(ThingTypeUID thingTypeUID) {
-        // Check that we know about the registry
-        if (thingTypeRegistry == null) {
-            return null;
-        }
-
-        return thingTypeRegistry.getThingType(thingTypeUID);
+        this.thingRegistry = null;
     }
 
     @Override
@@ -123,7 +82,7 @@ public class ZigBeeConfigProvider implements ConfigDescriptionProvider, ConfigOp
         // String nodeIeeeAddressString = thingUID.getId();
         IeeeAddress nodeIeeeAddress = null;// new IeeeAddress(nodeIeeeAddressString);
 
-        Thing thing = getThing(thingUID);
+        Thing thing = thingRegistry.get(thingUID);
         if (thing == null) {
             return null;
         }
@@ -180,7 +139,6 @@ public class ZigBeeConfigProvider implements ConfigDescriptionProvider, ConfigOp
 
     @Override
     public Collection<ParameterOption> getParameterOptions(URI uri, String param, Locale locale) {
-        // TODO Auto-generated method stub
         return null;
     }
 }

@@ -148,7 +148,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             }
 
         } catch (ClassCastException | NumberFormatException e) {
-            logger.debug("Initializing ZigBee network [{}].", thing.getUID(), e.getMessage());
+            logger.debug("Initializing ZigBee network [{}].", thing.getUID());
             logger.debug("ZigBee initialisation exception", e);
             updateStatus(ThingStatus.OFFLINE);
             return;
@@ -370,21 +370,13 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         meshMonitor.startup(90);
     }
 
-    /**
-     * If the network initialisation fails, then periodically reschedule a restart
-     */
     private void startZigBeeNetwork() {
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                logger.debug("ZigBee network starting");
-                restartJob = null;
-                initialiseZigBee();
-            }
-        };
-
         logger.debug("Scheduling ZigBee start");
-        restartJob = scheduler.schedule(runnable, 1, TimeUnit.SECONDS);
+        restartJob = scheduler.schedule(() -> {
+            logger.debug("ZigBee network starting");
+            restartJob = null;
+            initialiseZigBee();
+        }, 1, TimeUnit.SECONDS);
     }
 
     @Override
@@ -650,7 +642,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     /**
      * Search for a node - will perform a discovery on the defined {@link IeeeAddress}
-     * 
+     *
      * @param nodeIeeeAddress {@link IeeeAddress} of the node to discover
      */
     public void rediscoverNode(IeeeAddress nodeIeeeAddress) {

@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import org.eclipse.smarthome.core.i18n.TranslationProvider;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
+import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.internal.ZigBeeSerialPort;
@@ -67,6 +68,7 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler {
         logger.debug("ZigBee Coordinator Ember opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", portId,
                 Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
 
+        updateStatus(ThingStatus.UNKNOWN);
         startZigBee(dongle, DefaultSerializer.class, DefaultDeserializer.class);
     }
 

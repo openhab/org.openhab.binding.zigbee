@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.smarthome.config.core.Configuration;
@@ -58,13 +57,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     private HashMap<ChannelUID, ZigBeeChannelConverter> channels = new HashMap<ChannelUID, ZigBeeChannelConverter>();
 
     private IeeeAddress nodeIeeeAddress = null;
-    private int networkAddress;
 
     private Logger logger = LoggerFactory.getLogger(ZigBeeThingHandler.class);
 
     private ZigBeeCoordinatorHandler coordinatorHandler;
-
-    private ScheduledFuture<?> pollingJob;
 
     private boolean nodeInitialised = false;
 
@@ -100,7 +96,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         }
         nodeIeeeAddress = new IeeeAddress(configAddress);
 
-        updateStatus(ThingStatus.OFFLINE);
+        updateStatus(ThingStatus.UNKNOWN);
 
         if (getBridge() != null) {
             bridgeStatusChanged(getBridge().getStatusInfo());
@@ -135,6 +131,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         }, 10, TimeUnit.MILLISECONDS);
     }
 
+    @SuppressWarnings("unchecked")
     private void doNodeInitialisation() {
         if (nodeInitialised) {
             return;
@@ -317,9 +314,6 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         }
 
         logger.debug("{}: Node updated - {}", nodeIeeeAddress, node);
-
-        // Update the network address
-        networkAddress = node.getNetworkAddress();
 
         Map<String, String> properties = editProperties();
 
