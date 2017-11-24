@@ -14,15 +14,15 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Hashtable;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.config.core.Configuration;
-import org.eclipse.smarthome.config.discovery.DiscoveryService;
 import org.eclipse.smarthome.core.i18n.TranslationProvider;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -30,9 +30,7 @@ import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.BaseBridgeHandler;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.discovery.ZigBeeDiscoveryService;
 import org.openhab.binding.zigbee.internal.ZigBeeActivator;
-import org.osgi.framework.ServiceRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +52,6 @@ import com.zsmartsystems.zigbee.transport.ZigBeeTransportState;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
 import com.zsmartsystems.zigbee.zdo.field.NeighborTable;
-import com.zsmartsystems.zigbee.zdo.field.NodeDescriptor.LogicalType;
 import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
 
 /**
@@ -87,6 +84,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     protected ZigBeeKey networkKey;
 
+    private Set<ZigBeeNetworkNodeListener> listeners = new HashSet<ZigBeeNetworkNodeListener>();
+
     private boolean macAddressSet = false;
 
     /**
@@ -97,12 +96,10 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     private ScheduledFuture<?> restartJob = null;
 
     private ZigBeeNetworkMeshMonitor meshMonitor;
-    private ZigBeeDiscoveryService discoveryService;
-    private ServiceRegistration discoveryRegistration;
 
     private final TranslationProvider translationProvider;
 
-    public ZigBeeCoordinatorHandler(Bridge coordinator, TranslationProvider translationProvider) {
+    public ZigBeeCoordinatorHandler(@NonNull Bridge coordinator, TranslationProvider translationProvider) {
         super(coordinator);
 
         this.translationProvider = translationProvider;
@@ -243,17 +240,19 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     @Override
     public void dispose() {
-        // Remove the discovery service
-        discoveryService.deactivate();
-        discoveryRegistration.unregister();
-
         // If we have scheduled tasks, stop them
         if (restartJob != null) {
             restartJob.cancel(true);
         }
 
-        // Shut down the ZigBee library
         if (networkManager != null) {
+            synchronized (listeners) {
+                for (ZigBeeNetworkNodeListener listener : listeners) {
+                    networkManager.removeNetworkNodeListener(listener);
+                }
+            }
+
+            // Shut down the ZigBee library
             networkManager.shutdown();
         }
         logger.debug("ZigBee network [{}] closed.", thing.getUID());
@@ -291,14 +290,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     private void initialiseZigBee() {
         logger.debug("Initialising ZigBee coordinator");
 
-        // Start the discovery service
-        discoveryService = new ZigBeeDiscoveryService(this);
-        discoveryService.activate();
-
-        // And register it as an OSGi service
-        discoveryRegistration = bundleContext.registerService(DiscoveryService.class.getName(), discoveryService,
-                new Hashtable<String, Object>());
-
         // ZigBeeNetworkStateSerializer networkStateSerializer = new ZigBeeNetworkStateSerializerImpl();
 
         // Configure the network manager
@@ -309,6 +300,13 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         networkManager.addNetworkNodeListener(this);
 
         logger.debug("Key initialise {}", networkKey);
+
+        // Add any listeners that were registered before the manager was registered
+        synchronized (listeners) {
+            for (ZigBeeNetworkNodeListener listener : listeners) {
+                networkManager.addNetworkNodeListener(listener);
+            }
+        }
 
         // Initialise the network
         ZigBeeInitializeResponse initResponse = networkManager.initialize();
@@ -405,12 +403,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     }
 
     public void startDeviceDiscovery() {
-        // TODO: Move to discovery handler?
         // Allow devices to join for 60 seconds
         networkManager.permitJoin(60);
-
-        // ZigBeeDiscoveryManager discoveryManager = zigbeeApi.getZigBeeDiscoveryManager();
-        // discoveryManager.
     }
 
     /**
@@ -419,6 +413,14 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      * @param listener
      */
     public void addNetworkNodeListener(ZigBeeNetworkNodeListener listener) {
+        // Save the listeners until the network is initialised
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+
+        if (networkManager == null) {
+            return;
+        }
         networkManager.addNetworkNodeListener(listener);
     }
 
@@ -428,22 +430,19 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      * @param listener
      */
     public void removeNetworkNodeListener(ZigBeeNetworkNodeListener listener) {
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+
+        if (networkManager == null) {
+            return;
+        }
         networkManager.removeNetworkNodeListener(listener);
     }
 
     @Override
     public void nodeAdded(ZigBeeNode node) {
-        logger.debug("ZigBee Node discovered: {}", node);
-        if (node.getLogicalType() == LogicalType.COORDINATOR) {
-            // Ignore the coordinator
-            return;
-        }
-
-        if (discoveryService == null) {
-            logger.error("ZigBee Node discovered but there is no discovery service");
-            return;
-        }
-        discoveryService.nodeDiscovered(node);
+        // Nothing to do here...
     }
 
     @Override
@@ -561,7 +560,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         if (endpoint == null) {
             return null;
         }
-        return endpoint.getCluster(clusterId);
+        return endpoint.getInputCluster(clusterId);
     }
 
     @Override
