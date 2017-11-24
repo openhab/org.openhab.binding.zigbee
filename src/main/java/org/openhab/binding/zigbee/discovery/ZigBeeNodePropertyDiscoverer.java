@@ -36,11 +36,11 @@ public class ZigBeeNodePropertyDiscoverer {
         logger.debug("{}: ZigBee node property discovery start", node.getIeeeAddress());
 
         // Create a list of devices for the discovery service to work with
-        Collection<ZigBeeEndpoint> devices = coordinatorHandler.getNodeEndpoints(node.getIeeeAddress());
+        Collection<ZigBeeEndpoint> endpoints = coordinatorHandler.getNodeEndpoints(node.getIeeeAddress());
 
         // Make sure we found some devices!
-        if (devices.size() == 0) {
-            logger.debug("{}: Node has no devices", node.getIeeeAddress());
+        if (endpoints.size() == 0) {
+            logger.debug("{}: Node has no endpoints", node.getIeeeAddress());
             return null;
         }
 
@@ -48,8 +48,8 @@ public class ZigBeeNodePropertyDiscoverer {
         Map<String, String> properties = new HashMap<String, String>();
         ZclBasicCluster basicCluster = null;
 
-        for (ZigBeeEndpoint device : devices) {
-            basicCluster = (ZclBasicCluster) device.getCluster(ZclBasicCluster.CLUSTER_ID);
+        for (ZigBeeEndpoint device : endpoints) {
+            basicCluster = (ZclBasicCluster) device.getInputCluster(ZclBasicCluster.CLUSTER_ID);
             if (basicCluster != null) {
                 break;
             }

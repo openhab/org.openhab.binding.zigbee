@@ -7,18 +7,27 @@
  */
 package org.openhab.binding.zigbee.internal;
 
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+
+import org.eclipse.smarthome.config.discovery.DiscoveryService;
 import org.eclipse.smarthome.core.i18n.TranslationProvider;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
+import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.discovery.ZigBeeDiscoveryService;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorCC2531Handler;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorEmberHandler;
+import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorTelegesisHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
@@ -35,6 +44,8 @@ import org.slf4j.LoggerFactory;
 @Component(immediate = true, service = { ThingHandlerFactory.class })
 public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
     private final Logger logger = LoggerFactory.getLogger(ZigBeeHandlerFactory.class);
+
+    private Map<ThingUID, ServiceRegistration<?>> discoveryServiceRegs = new HashMap<>();
 
     private TranslationProvider translationProvider;
 
@@ -58,18 +69,47 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
 
         logger.debug("Creating coordinator handler for {}", thing);
 
+        ZigBeeCoordinatorHandler coordinator = null;
+
         // Handle coordinators here
         if (thingTypeUID.equals(ZigBeeBindingConstants.COORDINATOR_TYPE_EMBER)) {
-            return new ZigBeeCoordinatorEmberHandler((Bridge) thing, translationProvider);
+            coordinator = new ZigBeeCoordinatorEmberHandler((Bridge) thing, translationProvider);
         }
         if (thingTypeUID.equals(ZigBeeBindingConstants.COORDINATOR_TYPE_CC2531)) {
-            return new ZigBeeCoordinatorCC2531Handler((Bridge) thing, translationProvider);
+            coordinator = new ZigBeeCoordinatorCC2531Handler((Bridge) thing, translationProvider);
         }
         if (thingTypeUID.equals(ZigBeeBindingConstants.COORDINATOR_TYPE_TELEGESIS)) {
-            return new ZigBeeCoordinatorTelegesisHandler((Bridge) thing, translationProvider);
+            coordinator = new ZigBeeCoordinatorTelegesisHandler((Bridge) thing, translationProvider);
+        }
+
+        if (coordinator != null) {
+            ZigBeeDiscoveryService discoveryService = new ZigBeeDiscoveryService(coordinator);
+            discoveryService.activate();
+
+            discoveryServiceRegs.put(coordinator.getThing().getUID(), bundleContext.registerService(
+                    DiscoveryService.class.getName(), discoveryService, new Hashtable<String, Object>()));
+
+            return coordinator;
         }
 
         // Everything else gets handled in a single handler
         return new ZigBeeThingHandler(thing, translationProvider);
+    }
+
+    @Override
+    protected synchronized void removeHandler(ThingHandler thingHandler) {
+        if (thingHandler instanceof ZigBeeCoordinatorHandler) {
+            ServiceRegistration<?> serviceReg = this.discoveryServiceRegs.get(thingHandler.getThing().getUID());
+            if (serviceReg != null) {
+                // remove discovery service, if bridge handler is removed
+                ZigBeeDiscoveryService service = (ZigBeeDiscoveryService) bundleContext
+                        .getService(serviceReg.getReference());
+                if (service != null) {
+                    service.deactivate();
+                }
+                serviceReg.unregister();
+                discoveryServiceRegs.remove(thingHandler.getThing().getUID());
+            }
+        }
     }
 }

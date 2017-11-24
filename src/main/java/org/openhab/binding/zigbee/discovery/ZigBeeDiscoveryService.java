@@ -25,6 +25,7 @@ import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.zdo.field.NodeDescriptor.LogicalType;
 
@@ -35,7 +36,8 @@ import com.zsmartsystems.zigbee.zdo.field.NodeDescriptor.LogicalType;
  * @author Chris Jackson - Initial contribution
  *
  */
-public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements ExtendedDiscoveryService {
+public class ZigBeeDiscoveryService extends AbstractDiscoveryService
+        implements ExtendedDiscoveryService, ZigBeeNetworkNodeListener {
     private final Logger logger = LoggerFactory.getLogger(ZigBeeDiscoveryService.class);
 
     private final static int SEARCH_TIME = 60;
@@ -52,6 +54,15 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
 
     public void activate() {
         logger.debug("Activating ZigBee discovery service for {}", coordinatorHandler.getThing().getUID());
+
+        coordinatorHandler.addNetworkNodeListener(this);
+    }
+
+    @Override
+    public void deactivate() {
+        logger.debug("Deactivating ZigBee discovery service for {}", coordinatorHandler.getThing().getUID());
+
+        coordinatorHandler.removeNetworkNodeListener(this);
     }
 
     @Override
@@ -62,11 +73,6 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
     @Override
     public Set<ThingTypeUID> getSupportedThingTypes() {
         return ZigBeeBindingConstants.SUPPORTED_THING_TYPES;
-    }
-
-    @Override
-    public void deactivate() {
-        logger.debug("Deactivating ZigBee discovery service for {}", coordinatorHandler.getThing().getUID());
     }
 
     @Override
@@ -97,7 +103,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
      *
      * @param node the new {@link ZigBeeNode}
      */
-    public void nodeDiscovered(final ZigBeeNode node) {
+    private void nodeDiscovered(final ZigBeeNode node) {
         Runnable pollingRunnable = new Runnable() {
             @Override
             public void run() {
@@ -155,5 +161,20 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
         };
 
         scheduler.schedule(pollingRunnable, 10, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public void nodeAdded(ZigBeeNode node) {
+        nodeDiscovered(node);
+    }
+
+    @Override
+    public void nodeUpdated(ZigBeeNode node) {
+        // Not needed
+    }
+
+    @Override
+    public void nodeRemoved(ZigBeeNode node) {
+        // Not needed
     }
 }
