@@ -29,6 +29,7 @@ import com.zsmartsystems.zigbee.dongle.ember.ZigBeeDongleEzsp;
 import com.zsmartsystems.zigbee.serialization.DefaultDeserializer;
 import com.zsmartsystems.zigbee.serialization.DefaultSerializer;
 import com.zsmartsystems.zigbee.transport.ZigBeePort;
+import com.zsmartsystems.zigbee.transport.ZigBeePort.FlowControl;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareCallback;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareStatus;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareUpdate;
@@ -71,7 +72,7 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler impl
         } else {
             portBaud = DEFAULT_BAUD;
         }
-        ZigBeePort serialPort = new ZigBeeSerialPort(portId, portBaud, true);
+        ZigBeePort serialPort = new ZigBeeSerialPort(portId, portBaud, FlowControl.FLOWCONTROL_OUT_RTSCTS);
         final ZigBeeTransportTransmit dongle = new ZigBeeDongleEzsp(serialPort);
 
         logger.debug("ZigBee Coordinator Ember opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", portId,
@@ -83,7 +84,7 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler impl
 
     @Override
     public void updateFirmware(Firmware firmware, ProgressCallback progressCallback) {
-        logger.debug("Telegesis coordinator: update firmware with {}", firmware.getVersion());
+        logger.debug("Ember coordinator: update firmware with {}", firmware.getVersion());
 
         updateStatus(ThingStatus.OFFLINE);
         zigbeeTransport.shutdown();
@@ -96,7 +97,7 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler impl
         firmwareUpdate.updateFirmware(firmware.getInputStream(), new ZigBeeTransportFirmwareCallback() {
             @Override
             public void firmwareUpdateCallback(ZigBeeTransportFirmwareStatus status) {
-                logger.debug("Telegesis dongle firmware status: {}", status);
+                logger.debug("Ember dongle firmware status: {}", status);
                 switch (status) {
                     case FIRMWARE_UPDATE_STARTED:
                         // ProgressStep.DOWNLOADING
@@ -132,7 +133,7 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler impl
 
     @Override
     public void cancel() {
-        logger.debug("Telegesis coordinator: cancel firmware update");
+        logger.debug("Ember coordinator: cancel firmware update");
         ZigBeeTransportFirmwareUpdate firmwareUpdate = (ZigBeeTransportFirmwareUpdate) zigbeeTransport;
         firmwareUpdate.cancelUpdateFirmware();
     }

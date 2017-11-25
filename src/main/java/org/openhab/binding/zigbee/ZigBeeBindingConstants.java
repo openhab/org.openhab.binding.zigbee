@@ -40,15 +40,7 @@ public class ZigBeeBindingConstants {
 
     public final static Set<ThingTypeUID> SUPPORTED_THING_TYPES = Sets.newHashSet(THING_TYPE_GENERIC_DEVICE);
 
-    // List of Channel ids
-    public final static String CHANNEL_CFG_BINDING = "binding";
-
-    public final static String CHANNEL_TEMPERATURE = "temperature";
-    public final static String CHANNEL_SWITCH = "switch";
-    public static final String CHANNEL_COLORTEMPERATURE = "color_temperature";
-    public static final String CHANNEL_COLOR = "color";
-    public static final String CHANNEL_BRIGHTNESS = "brightness";
-
+    // List of Channel UIDs
     public static final String CHANNEL_SWITCH_DIMMER = "switch_dimmer";
     public static final String CHANNEL_SWITCH_ONOFF = "switch_onoff";
 

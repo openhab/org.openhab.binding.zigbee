@@ -72,7 +72,7 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
     /**
      * True to enable RTS / CTS flow control
      */
-    private final boolean flowControl;
+    private final FlowControl flowControl;
 
     /**
      * The circular fifo queue for receive data
@@ -106,7 +106,7 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
      * @param baudRate the baud rate
      * @param flowControl to use flow control
      */
-    public ZigBeeSerialPort(String portName, int baudRate, boolean flowControl) {
+    public ZigBeeSerialPort(String portName, int baudRate, FlowControl flowControl) {
         this.portName = portName;
         this.baudRate = baudRate;
         this.flowControl = flowControl;
@@ -114,25 +114,39 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
 
     @Override
     public boolean open() {
-        return open(baudRate);
+        return open(baudRate, flowControl);
     }
 
     @Override
     public boolean open(int baudRate) {
+        return open(baudRate, flowControl);
+    }
+
+    @Override
+    public boolean open(int baudRate, FlowControl flowControl) {
         try {
             logger.debug("Connecting to serial port [{}] at {} baud, flow control {}.", portName, baudRate,
-                    flowControl ? "enabled" : "disabled");
+                    flowControl);
             try {
                 CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
                 CommPort commPort = portIdentifier.open("org.openhab.binding.zigbee", 100);
                 serialPort = (SerialPort) commPort;
                 serialPort.setSerialPortParams(baudRate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1,
                         SerialPort.PARITY_NONE);
-                if (flowControl) {
-                    serialPort.setFlowControlMode(gnu.io.SerialPort.FLOWCONTROL_RTSCTS_OUT);
-                } else {
-                    serialPort.setFlowControlMode(gnu.io.SerialPort.FLOWCONTROL_NONE);
+                switch (flowControl) {
+                    case FLOWCONTROL_OUT_NONE:
+                        serialPort.setFlowControlMode(gnu.io.SerialPort.FLOWCONTROL_NONE);
+                        break;
+                    case FLOWCONTROL_OUT_RTSCTS:
+                        serialPort.setFlowControlMode(gnu.io.SerialPort.FLOWCONTROL_RTSCTS_OUT);
+                        break;
+                    case FLOWCONTROL_OUT_XONOFF:
+                        serialPort.setFlowControlMode(gnu.io.SerialPort.FLOWCONTROL_XONXOFF_OUT);
+                        break;
+                    default:
+                        break;
                 }
+
                 serialPort.enableReceiveThreshold(1);
                 serialPort.enableReceiveTimeout(100);
                 serialPort.addEventListener(this);
@@ -268,4 +282,5 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
             end = 0;
         }
     }
+
 }

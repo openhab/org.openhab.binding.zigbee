@@ -10,7 +10,6 @@ package org.openhab.binding.zigbee.handler;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -27,10 +26,7 @@ import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.ThingStatusInfo;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.thing.binding.builder.ThingBuilder;
-import org.eclipse.smarthome.core.thing.binding.firmware.Firmware;
 import org.eclipse.smarthome.core.thing.binding.firmware.FirmwareUpdateHandler;
-import org.eclipse.smarthome.core.thing.binding.firmware.ProgressCallback;
-import org.eclipse.smarthome.core.thing.binding.firmware.ProgressStep;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.State;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
@@ -66,7 +62,6 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     private final TranslationProvider translationProvider;
 
-    private FirmwareHandler firmwareHandler = null;
     private ServiceRegistration<FirmwareUpdateHandler> firmwareRegistration;
 
     public ZigBeeThingHandler(Thing zigbeeDevice, TranslationProvider translationProvider) {
@@ -198,16 +193,6 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         updateStatus(ThingStatus.ONLINE);
 
         nodeInitialised = true;
-
-        // If this node supports the OTA firmware cluster, then register the FirmwareUpdateHandler
-        otaSupported = true;
-        if (otaSupported) {
-            firmwareHandler = new FirmwareHandler(getThing(), this);
-
-            // Register the FirmwareUpdateHandler as an OSGi service
-            firmwareRegistration = (ServiceRegistration<FirmwareUpdateHandler>) bundleContext.registerService(
-                    FirmwareUpdateHandler.class.getName(), firmwareHandler, new Hashtable<String, Object>());
-        }
     }
 
     @Override
@@ -391,52 +376,5 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     public IeeeAddress getIeeeAddress() {
         return nodeIeeeAddress;
-    }
-
-    class FirmwareHandler implements FirmwareUpdateHandler {
-        private final Thing thing;
-        private final ZigBeeThingHandler thingHandler;
-
-        FirmwareHandler(Thing thing, ZigBeeThingHandler thingHandler) {
-            this.thing = thing;
-            this.thingHandler = thingHandler;
-        }
-
-        @Override
-        public Thing getThing() {
-            return thing;
-        }
-
-        @Override
-        public void updateFirmware(Firmware firmware, ProgressCallback progressCallback) {
-            thingHandler.updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.FIRMWARE_UPDATING);
-
-            progressCallback.defineSequence(ProgressStep.DOWNLOADING, ProgressStep.TRANSFERRING, ProgressStep.UPDATING);
-
-            // download / read firmware image
-            progressCallback.next();
-
-            // transfer image to device
-            progressCallback.next();
-
-            // triggering the actual firmware update
-            progressCallback.next();
-
-            // here: send immediately the success information because it is not mandatory for this implementation to
-            // wait for the successful update of the device
-            progressCallback.success();
-        }
-
-        @Override
-        public void cancel() {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public boolean isUpdateExecutable() {
-            // TODO Auto-generated method stub
-            return false;
-        }
     }
 }
