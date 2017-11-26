@@ -38,8 +38,14 @@ import com.zsmartsystems.zigbee.zdo.field.NodeDescriptor.LogicalType;
  */
 public class ZigBeeDiscoveryService extends AbstractDiscoveryService
         implements ExtendedDiscoveryService, ZigBeeNetworkNodeListener {
+    /**
+     * The logger
+     */
     private final Logger logger = LoggerFactory.getLogger(ZigBeeDiscoveryService.class);
 
+    /**
+     * Default search time
+     */
     private final static int SEARCH_TIME = 60;
 
     private final ZigBeeCoordinatorHandler coordinatorHandler;
@@ -124,7 +130,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService
                 if (discoveryServiceCallback != null
                         && discoveryServiceCallback.getExistingDiscoveryResult(thingUID) == null) {
 
-                    logger.info("{}: Creating ZigBee device {} with bridge {}", node.getIeeeAddress(), thingTypeUID,
+                    logger.debug("{}: Creating ZigBee device {} with bridge {}", node.getIeeeAddress(), thingTypeUID,
                             bridgeUID);
 
                     Map<String, Object> objProperties = new HashMap<String, Object>();
@@ -142,13 +148,14 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService
                 ZigBeeNodePropertyDiscoverer propertyDiscoverer = new ZigBeeNodePropertyDiscoverer();
                 Map<String, String> properties = propertyDiscoverer.getProperties(coordinatorHandler, node);
 
+                // If we know the manufacturer and model, then give this device a name and a thing type
                 if ((properties.get(ZigBeeBindingConstants.THING_PROPERTY_MANUFACTURER) != null)
                         && (properties.get(ZigBeeBindingConstants.THING_PROPERTY_MODEL) != null)) {
                     label = properties.get(ZigBeeBindingConstants.THING_PROPERTY_MANUFACTURER).trim() + " "
                             + properties.get(ZigBeeBindingConstants.THING_PROPERTY_MODEL).trim();
                 }
 
-                logger.info("{}: Update ZigBee device {} with bridge {}", node.getIeeeAddress(), thingTypeUID,
+                logger.debug("{}: Update ZigBee device {} with bridge {}", node.getIeeeAddress(), thingTypeUID,
                         bridgeUID);
 
                 Map<String, Object> objProperties = new HashMap<String, Object>(properties);

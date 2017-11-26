@@ -24,6 +24,7 @@ import com.zsmartsystems.zigbee.dongle.cc2531.ZigBeeDongleTiCc2531;
 import com.zsmartsystems.zigbee.serialization.DefaultDeserializer;
 import com.zsmartsystems.zigbee.serialization.DefaultSerializer;
 import com.zsmartsystems.zigbee.transport.ZigBeePort;
+import com.zsmartsystems.zigbee.transport.ZigBeePort.FlowControl;
 
 /**
  * The {@link ZigBeeCoordinatorCC2531Handler} is responsible for handling
@@ -69,7 +70,7 @@ public class ZigBeeCoordinatorCC2531Handler extends ZigBeeCoordinatorHandler {
         }
 
         portId = (String) getConfig().get(ZigBeeBindingConstants.CONFIGURATION_PORT);
-        ZigBeePort serialPort = new ZigBeeSerialPort(portId, portBaud, false);
+        ZigBeePort serialPort = new ZigBeeSerialPort(portId, portBaud, FlowControl.FLOWCONTROL_OUT_NONE);
         final ZigBeeDongleTiCc2531 dongle = new ZigBeeDongleTiCc2531(serialPort);
 
         dongle.setMagicNumber(magicNumber);

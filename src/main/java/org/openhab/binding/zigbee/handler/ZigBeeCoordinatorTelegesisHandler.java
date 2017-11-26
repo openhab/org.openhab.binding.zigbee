@@ -30,6 +30,7 @@ import com.zsmartsystems.zigbee.dongle.telegesis.ZigBeeDongleTelegesis;
 import com.zsmartsystems.zigbee.serialization.DefaultDeserializer;
 import com.zsmartsystems.zigbee.serialization.DefaultSerializer;
 import com.zsmartsystems.zigbee.transport.ZigBeePort;
+import com.zsmartsystems.zigbee.transport.ZigBeePort.FlowControl;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareCallback;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareStatus;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareUpdate;
@@ -77,7 +78,7 @@ public class ZigBeeCoordinatorTelegesisHandler extends ZigBeeCoordinatorHandler 
         } else {
             portBaud = DEFAULT_BAUD;
         }
-        ZigBeePort serialPort = new ZigBeeSerialPort(portId, portBaud, false);
+        ZigBeePort serialPort = new ZigBeeSerialPort(portId, portBaud, FlowControl.FLOWCONTROL_OUT_NONE);
         dongle = new ZigBeeDongleTelegesis(serialPort);
 
         logger.debug("ZigBee Coordinator Telegesis opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", portId,
