@@ -20,6 +20,7 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
  *
@@ -40,7 +41,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeChannelConverter implement
         }
         logger.debug("{}: Initialising device on/off cluster", device.getIeeeAddress());
 
-        clusterOnOff = (ZclOnOffCluster) device.getCluster(ZclOnOffCluster.CLUSTER_ID);
+        clusterOnOff = (ZclOnOffCluster) device.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
         if (clusterOnOff == null) {
             logger.error("{}: Error opening device on/off controls", device.getIeeeAddress());
             return;
@@ -112,7 +113,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeChannelConverter implement
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint device) {
-        if (device.getCluster(ZclOnOffCluster.CLUSTER_ID) == null) {
+        if (device.getInputCluster(ZclOnOffCluster.CLUSTER_ID) == null) {
             return null;
         }
         return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF,
@@ -122,7 +123,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeChannelConverter implement
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
         logger.debug("{}: ZigBee attribute reports {}", device.getIeeeAddress(), attribute);
-        if (attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
+        if (attribute.getCluster() == ZclClusterType.ON_OFF && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
             Boolean value = (Boolean) attribute.getLastValue();
             if (value != null && value == true) {
                 updateChannelState(OnOffType.ON);

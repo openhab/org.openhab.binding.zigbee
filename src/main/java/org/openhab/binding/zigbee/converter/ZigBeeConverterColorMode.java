@@ -7,11 +7,9 @@
  */
 package org.openhab.binding.zigbee.converter;
 
-import org.eclipse.smarthome.core.library.types.OnOffType;
-import org.eclipse.smarthome.core.library.types.PercentType;
+import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
-import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,12 +21,16 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
+ * Converter for the color mode indicator.
+ * <p>
+ * Note that this attribute is not reportable, therefore we set up reporting on other changes to the color and if these
+ * change, we can poll the mode.
  *
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeConverterColorTemperature extends ZigBeeChannelConverter implements ZclAttributeListener {
-    private Logger logger = LoggerFactory.getLogger(ZigBeeConverterColorTemperature.class);
+public class ZigBeeConverterColorMode extends ZigBeeChannelConverter implements ZclAttributeListener {
+    private Logger logger = LoggerFactory.getLogger(ZigBeeConverterColorMode.class);
 
     private ZclColorControlCluster clusterColorControl;
 
@@ -36,7 +38,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeChannelConverter impl
 
     @Override
     public void initializeConverter() {
-        if (initialised == true) {
+        if (initialised) {
             return;
         }
 
@@ -48,11 +50,16 @@ public class ZigBeeConverterColorTemperature extends ZigBeeChannelConverter impl
 
         clusterColorControl.bind();
 
+        // Add a listener, then request the status
         clusterColorControl.addAttributeListener(this);
-        clusterColorControl.getColorTemperature(0);
 
-        // Configure reporting - no faster than once per second - no slower than 10 minutes.
+        clusterColorControl.getColorMode(0);
+
+        clusterColorControl.setColorTemperatureReporting(1, 600, 1);
         clusterColorControl.setCurrentHueReporting(1, 600, 1);
+        clusterColorControl.setCurrentSaturationReporting(1, 600, 1);
+        clusterColorControl.setCurrentXReporting(1, 600, 1);
+        clusterColorControl.setCurrentYReporting(1, 600, 1);
 
         initialised = true;
     }
@@ -64,35 +71,10 @@ public class ZigBeeConverterColorTemperature extends ZigBeeChannelConverter impl
 
     @Override
     public void handleRefresh() {
-
-    }
-
-    @Override
-    public Runnable handleCommand(final Command command) {
-        return new Runnable() {
-            @Override
-            public void run() {
-                if (initialised == false) {
-                    return;
-                }
-
-                // Color Temperature
-                PercentType colorTemp = PercentType.ZERO;
-                if (command instanceof PercentType) {
-                    colorTemp = (PercentType) command;
-                } else if (command instanceof OnOffType) {
-                    if ((OnOffType) command == OnOffType.ON) {
-                        colorTemp = PercentType.HUNDRED;
-                    } else {
-                        colorTemp = PercentType.ZERO;
-                    }
-                }
-
-                // Range of 2000K to 6500K, gain = 4500K, offset = 2000K
-                double kelvin = colorTemp.intValue() * 4500.0 / 100.0 + 2000.0;
-                clusterColorControl.moveToColorTemperatureCommand((int) (1e6 / kelvin + 0.5), 10);
-            }
-        };
+        if (!initialised) {
+            return;
+        }
+        clusterColorControl.getColorMode(0);
     }
 
     @Override
@@ -100,18 +82,32 @@ public class ZigBeeConverterColorTemperature extends ZigBeeChannelConverter impl
         if (device.getInputCluster(ZclColorControlCluster.CLUSTER_ID) == null) {
             return null;
         }
-        return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_COLOR_TEMPERATURE,
-                ZigBeeBindingConstants.ITEM_TYPE_DIMMER, "Color Temperature");
+        return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_COLOR_MODE,
+                ZigBeeBindingConstants.ITEM_TYPE_NUMBER, "Color Mode");
     }
 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
         logger.debug("ZigBee attribute reports {} from {}", attribute, device.getIeeeAddress());
-        if (attribute.getCluster() == ZclClusterType.COLOR_CONTROL
-                && attribute.getId() == ZclColorControlCluster.ATTR_COLORTEMPERATURE) {
-            Integer value = (Integer) attribute.getLastValue();
-            if (value != null) {
-            }
+        if (attribute.getCluster() != ZclClusterType.COLOR_CONTROL) {
+            return;
+        }
+        switch (attribute.getId()) {
+            case ZclColorControlCluster.ATTR_COLORMODE:
+                Integer value = (Integer) attribute.getLastValue();
+                if (value != null) {
+                    DecimalType decimalValue = new DecimalType(value);
+                    updateChannelState(decimalValue);
+                }
+                break;
+
+            case ZclColorControlCluster.ATTR_COLORTEMPERATURE:
+            case ZclColorControlCluster.ATTR_CURRENTHUE:
+            case ZclColorControlCluster.ATTR_CURRENTSATURATION:
+            case ZclColorControlCluster.ATTR_CURRENTX:
+            case ZclColorControlCluster.ATTR_CURRENTY:
+                clusterColorControl.getColorMode(0);
+                break;
         }
     }
 

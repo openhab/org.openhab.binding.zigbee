@@ -45,6 +45,7 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_SWITCH_ONOFF = "switch_onoff";
 
     public static final String CHANNEL_COLOR_COLOR = "color_color";
+    public static final String CHANNEL_COLOR_MODE = "color_mode";
     public static final String CHANNEL_COLOR_TEMPERATURE = "color_temperature";
 
     public static final String CHANNEL_TEMPERATURE_VALUE = "sensor_temperature";

@@ -20,6 +20,7 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclTemperatureMeasurementCluster;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
  * Converter for the temperature channel
@@ -36,10 +37,11 @@ public class ZigBeeConverterTemperature extends ZigBeeChannelConverter implement
 
     @Override
     public void initializeConverter() {
-        if (initialised == true) {
+        if (initialised) {
             return;
         }
-        cluster = (ZclTemperatureMeasurementCluster) device.getCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID);
+        cluster = (ZclTemperatureMeasurementCluster) device
+                .getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID);
         if (cluster == null) {
             logger.error("Error opening device temperature measurement cluster {}", device.getIeeeAddress());
             return;
@@ -58,7 +60,7 @@ public class ZigBeeConverterTemperature extends ZigBeeChannelConverter implement
 
     @Override
     public void disposeConverter() {
-        if (initialised == false) {
+        if (!initialised) {
             return;
         }
 
@@ -69,14 +71,14 @@ public class ZigBeeConverterTemperature extends ZigBeeChannelConverter implement
 
     @Override
     public void handleRefresh() {
-        if (initialised == false) {
+        if (!initialised) {
             return;
         }
     }
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint device) {
-        if (device.getCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID) == null) {
+        if (device.getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID) == null) {
             return null;
         }
         return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE,
@@ -86,10 +88,11 @@ public class ZigBeeConverterTemperature extends ZigBeeChannelConverter implement
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
         logger.debug("ZigBee attribute reports {} from {}", attribute, device.getIeeeAddress());
-        if (attribute.getId() == ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE) {
+        if (attribute.getCluster() == ZclClusterType.TEMPERATURE_MEASUREMENT
+                && attribute.getId() == ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {
-                updateChannelState(new DecimalType(BigDecimal.valueOf(value, 2)));
+                updateChannelState(new DecimalType(BigDecimal.valueOf(value, 0)));
             }
         }
     }

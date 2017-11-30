@@ -20,6 +20,7 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclLevelControlCluster;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
  *
@@ -39,7 +40,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeChannelConverter implement
             return;
         }
 
-        clusterLevelControl = (ZclLevelControlCluster) device.getCluster(ZclLevelControlCluster.CLUSTER_ID);
+        clusterLevelControl = (ZclLevelControlCluster) device.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
         if (clusterLevelControl == null) {
             logger.error("Error opening device level controls {}", device.getIeeeAddress());
             return;
@@ -93,7 +94,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeChannelConverter implement
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint device) {
-        if (device.getCluster(ZclLevelControlCluster.CLUSTER_ID) == null) {
+        if (device.getInputCluster(ZclLevelControlCluster.CLUSTER_ID) == null) {
             return null;
         }
         return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL,
@@ -103,7 +104,8 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeChannelConverter implement
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
         logger.debug("ZigBee attribute reports {} from {}", attribute, device.getIeeeAddress());
-        if (attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
+        if (attribute.getCluster() == ZclClusterType.LEVEL_CONTROL
+                && attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {
                 value = value * 100 / 255;
