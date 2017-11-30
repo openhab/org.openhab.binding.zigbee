@@ -10,11 +10,12 @@ package org.openhab.binding.zigbee.converter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameter.Type;
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameterBuilder;
+import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.config.core.ParameterOption;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
@@ -25,7 +26,6 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
@@ -41,6 +41,13 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterSwitchLevel.class);
 
     private ZclLevelControlCluster clusterLevelControl;
+
+    private final String TRANSITION_TIME = "zigbee_levelcontrol_transitiontime";
+    private final String TRANSITION_TIME_ON_OFF = "zigbee_levelcontrol_transitiontimeonoff";
+    private final String TRANSITION_TIME_ON = "zigbee_levelcontrol_transitiontimeon";
+    private final String TRANSITION_TIME_OFF = "zigbee_levelcontrol_transitiontimeoff";
+    private final String ON_LEVEL = "zigbee_levelcontrol_onlevel";
+    private final String DEFAULT_MOVE_RATE = "zigbee_levelcontrol_defaultrate";
 
     private boolean initialised = false;
 
@@ -65,22 +72,21 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
         clusterLevelControl.setCurrentLevelReporting(1, 600, 1);
 
-        List<Integer> supportedAttributes = new ArrayList<Integer>();
-        supportedAttributes.add(ZclLevelControlCluster.ATTR_ONOFFTRANSITIONTIME);
-        clusterLevelControl.geta
-        try {
-            CommandResult result = clusterLevelControl.discoverAttributes().get();
-            if (result.isSuccess()) {
-                result.get();
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.debug("Error getting supported attributes. Default to ALL!", e);
-        }
+        // try {
+        // Set<Integer> supportedAttributes = null;
+        // Boolean result = clusterLevelControl.discoverAttributes(false).get();
+        // if (result) {
+        // supportedAttributes = clusterLevelControl.getSupportedAttributes();
+        // }
+
+        // } catch (InterruptedException | ExecutionException e) {
+        // logger.debug("Error getting supported attributes. ", e);
+        // }
         List<ConfigDescriptionParameter> parameters = new ArrayList<ConfigDescriptionParameter>();
 
         List<ParameterOption> options = new ArrayList<ParameterOption>();
         options.add(new ParameterOption("65535", "Use On/Off transition time"));
-        parameters.add(ConfigDescriptionParameterBuilder.create("zigbee_levelcontrol_transitiontime", Type.INTEGER)
+        parameters.add(ConfigDescriptionParameterBuilder.create(TRANSITION_TIME, Type.INTEGER)
                 .withLabel("Transition Time").withDescription("Time in 100ms intervals to transition between settings")
                 .withDefault("0").withMinimum(new BigDecimal(0)).withMaximum(new BigDecimal(60000)).withOptions(options)
                 .withLimitToOptions(false).build());
@@ -132,6 +138,10 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         }
         return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL,
                 ZigBeeBindingConstants.ITEM_TYPE_DIMMER, "Dimmer");
+    }
+
+    @Override
+    public void updateConfiguration(@NonNull Configuration configuration) {
     }
 
     @Override

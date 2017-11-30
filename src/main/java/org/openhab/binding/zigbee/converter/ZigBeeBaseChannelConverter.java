@@ -7,7 +7,6 @@
  */
 package org.openhab.binding.zigbee.converter;
 
-import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,6 +98,7 @@ public abstract class ZigBeeBaseChannelConverter {
      * Initialise the converter. This is called by the {@link ZigBeeThingHandler} when the channel is created. The
      * converter should initialise any internal states, open any clusters, add reporting and binding that it needs to
      * operate.
+     * A list of configuration parameters for the thing should be built based on the features the device supports
      */
     public abstract void initializeConverter();
 
@@ -147,29 +147,7 @@ public abstract class ZigBeeBaseChannelConverter {
     public abstract Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint);
 
     /**
-     *
-     * @param clusterId
-     * @return
-     */
-    public static ZigBeeBaseChannelConverter getConverter(ChannelTypeUID channelTypeUID) {
-
-        Constructor<? extends ZigBeeBaseChannelConverter> constructor;
-        try {
-            if (channelMap.get(channelTypeUID.getId()) == null) {
-                logger.debug("Channel converter for channel type {} is not implemented!", channelTypeUID.getId());
-                return null;
-            }
-            constructor = channelMap.get(channelTypeUID.getId()).getConstructor();
-            return constructor.newInstance();
-        } catch (Exception e) {
-            // logger.error("Command processor error");
-        }
-
-        return null;
-    }
-
-    /**
-     * Update the channel state.
+     * Updates the channel state within the thing.
      *
      * @param state the updated {@link State}
      */
