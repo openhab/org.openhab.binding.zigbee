@@ -32,7 +32,7 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeConverterColorColor extends ZigBeeChannelConverter implements ZclAttributeListener {
+public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterColorColor.class);
 
     private HSBType currentHSB;
@@ -49,31 +49,33 @@ public class ZigBeeConverterColorColor extends ZigBeeChannelConverter implements
 
         currentHSB = new HSBType();
 
-        clusterColorControl = (ZclColorControlCluster) device.getInputCluster(ZclColorControlCluster.CLUSTER_ID);
+        clusterColorControl = (ZclColorControlCluster) endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID);
         if (clusterColorControl == null) {
-            logger.error("Error opening device control controls {}", device.getIeeeAddress());
+            logger.error("Error opening device control controls {}", endpoint.getIeeeAddress());
             return;
         }
 
-        clusterLevelControl = (ZclLevelControlCluster) device.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
+        clusterLevelControl = (ZclLevelControlCluster) endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
         if (clusterLevelControl == null) {
-            logger.error("Error opening device level controls {}", device.getIeeeAddress());
+            logger.error("Error opening device level controls {}", endpoint.getIeeeAddress());
             return;
         }
 
-        clusterLevelControl.bind();
         clusterColorControl.bind();
+        clusterLevelControl.bind();
 
         // Add a listener, then request the status
-        clusterLevelControl.addAttributeListener(this);
         clusterColorControl.addAttributeListener(this);
+        clusterLevelControl.addAttributeListener(this);
 
         clusterColorControl.getCurrentHue(0);
+        clusterColorControl.getCurrentSaturation(0);
         clusterLevelControl.getCurrentLevel(0);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
         try {
             clusterColorControl.setCurrentHueReporting(1, 600, 1).get();
+            clusterColorControl.setCurrentSaturationReporting(1, 600, 1).get();
             clusterLevelControl.setCurrentLevelReporting(1, 600, 1).get();
         } catch (ExecutionException | InterruptedException e) {
             logger.debug("Exception configuring color reporting", e);
@@ -90,6 +92,9 @@ public class ZigBeeConverterColorColor extends ZigBeeChannelConverter implements
 
     @Override
     public void handleRefresh() {
+        clusterColorControl.getCurrentHue(0);
+        clusterColorControl.getCurrentSaturation(0);
+        clusterLevelControl.getCurrentLevel(0);
     }
 
     @Override
@@ -101,32 +106,24 @@ public class ZigBeeConverterColorColor extends ZigBeeChannelConverter implements
                     return;
                 }
 
-                if (command instanceof HSBType) {
-                    currentHSB = new HSBType(command.toString());
-                } else if (command instanceof PercentType) {
-                    currentHSB = new HSBType(currentHSB.getHue(), (PercentType) command, PercentType.HUNDRED);
-                } else if (command instanceof OnOffType) {
-                    PercentType saturation;
-                    if ((OnOffType) command == OnOffType.ON) {
-                        saturation = PercentType.HUNDRED;
-                    } else {
-                        saturation = PercentType.ZERO;
-                    }
-                    currentHSB = new HSBType(currentHSB.getHue(), saturation, PercentType.HUNDRED);
-                }
-
-                int hue = currentHSB.getHue().intValue();
-                int saturation = currentHSB.getSaturation().intValue();
-                int level = (int) (currentHSB.getBrightness().intValue() * 254.0 / 100.0 + 0.5);
+                int level;
                 try {
-                    logger.debug("COLOR 1");
-                    clusterColorControl.moveToHueAndSaturationCommand((int) (hue * 254.0 / 360.0 + 0.5),
-                            (int) (saturation * 254.0 / 100.0 + 0.5), 10).get();
-                    logger.debug("COLOR 2");
-                    clusterColorControl.moveToSaturationCommand((int) (saturation * 254.0 / 100.0 + 0.5), 10).get();
-                    logger.debug("COLOR 3");
-                    clusterLevelControl.moveToLevelWithOnOffCommand(level, 10).get();
-                    logger.debug("COLOR 4");
+                    if (command instanceof HSBType) {
+                        HSBType hsb = (HSBType) command;
+                        clusterColorControl
+                                .moveToHueAndSaturationCommand((int) (hsb.getHue().doubleValue() * 254.0 / 360.0 + 0.5),
+                                        (int) (hsb.getSaturation().doubleValue() * 254.0 / 100.0 + 0.5), 10)
+                                .get();
+                        level = hsb.getBrightness().intValue();
+                    } else if (command instanceof PercentType) {
+                        level = ((PercentType) command).intValue();
+                    } else if (command instanceof OnOffType) {
+                        level = (OnOffType) command == OnOffType.ON ? 100 : 0;
+                    } else {
+                        return;
+                    }
+
+                    clusterLevelControl.moveToLevelWithOnOffCommand((int) (level * 254.0 / 100.0 + 0.5), 10).get();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } catch (ExecutionException e) {
@@ -137,24 +134,41 @@ public class ZigBeeConverterColorColor extends ZigBeeChannelConverter implements
     }
 
     @Override
-    public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint device) {
-        if (device.getInputCluster(ZclColorControlCluster.CLUSTER_ID) == null
-                || device.getInputCluster(ZclLevelControlCluster.CLUSTER_ID) == null) {
+    public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
+        if (endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID) == null
+                || endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID) == null) {
             return null;
         }
-        return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_COLOR_COLOR,
+        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_COLOR_COLOR,
                 ZigBeeBindingConstants.ITEM_TYPE_COLOR, "Color");
     }
 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
-        logger.debug("ZigBee attribute reports {} from {}", attribute, device.getIeeeAddress());
-        if (attribute.getCluster() == ZclClusterType.COLOR_CONTROL
-                && attribute.getId() == ZclColorControlCluster.ATTR_CURRENTHUE) {
+        logger.debug("ZigBee attribute reports {} from {}", attribute, endpoint.getIeeeAddress());
+        if (attribute.getCluster() == ZclClusterType.COLOR_CONTROL) {
+            if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTHUE) {
+                Integer value = (Integer) attribute.getLastValue();
+                if (value != null) {
+                    DecimalType hue = new DecimalType(value);
+                    currentHSB = new HSBType(hue, currentHSB.getSaturation(), currentHSB.getBrightness());
+                    updateChannelState(currentHSB);
+                }
+            }
+            if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTSATURATION) {
+                Integer value = (Integer) attribute.getLastValue();
+                if (value != null) {
+                    PercentType saturation = new PercentType(value * 100 / 254);
+                    currentHSB = new HSBType(currentHSB.getHue(), saturation, currentHSB.getBrightness());
+                    updateChannelState(currentHSB);
+                }
+            }
+        } else if (attribute.getCluster() == ZclClusterType.LEVEL_CONTROL
+                && attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {
-                DecimalType decimalValue = new DecimalType(value);
-                currentHSB = new HSBType(decimalValue, currentHSB.getSaturation(), currentHSB.getBrightness());
+                PercentType brightness = new PercentType(value * 100 / 254);
+                currentHSB = new HSBType(currentHSB.getHue(), currentHSB.getSaturation(), brightness);
                 updateChannelState(currentHSB);
             }
         }

@@ -33,7 +33,8 @@ import org.eclipse.smarthome.core.thing.binding.firmware.ProgressStep;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.State;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeChannelConverter;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterlFactory;
 import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
 import org.openhab.binding.zigbee.internal.ZigBeeActivator;
 import org.osgi.framework.ServiceRegistration;
@@ -58,7 +59,7 @@ import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
  *
  */
 public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetworkNodeListener, FirmwareUpdateHandler {
-    private HashMap<ChannelUID, ZigBeeChannelConverter> channels = new HashMap<ChannelUID, ZigBeeChannelConverter>();
+    private HashMap<ChannelUID, ZigBeeBaseChannelConverter> channels = new HashMap<ChannelUID, ZigBeeBaseChannelConverter>();
 
     private IeeeAddress nodeIeeeAddress = null;
 
@@ -110,8 +111,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     public void bridgeStatusChanged(ThingStatusInfo bridgeStatusInfo) {
         logger.debug("{}: Coordinator status changed to {}.", nodeIeeeAddress, bridgeStatusInfo.getStatus());
 
-        if (bridgeStatusInfo.getStatus() != ThingStatus.ONLINE) {
-            logger.debug("{}: Coordinator is not online.", nodeIeeeAddress, bridgeStatusInfo.getStatus());
+        if (bridgeStatusInfo.getStatus() != ThingStatus.ONLINE || getBridge() == null) {
+            logger.debug("{}: Coordinator is unknown or not online.", nodeIeeeAddress, bridgeStatusInfo.getStatus());
             return;
         }
 
@@ -150,41 +151,32 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             return;
         }
 
-        // While checking the endpoints, see if OTA cluster is supported
-        boolean otaSupported = false;
+        // Create the channel factory
+        ZigBeeChannelConverterlFactory factory = new ZigBeeChannelConverterlFactory();
 
         // Create the channels from the device
         // Process all the endpoints for this device and add all channels as derived from the supported clusters
-        List<Channel> clusterChannels = new ArrayList<Channel>();
+        List<Channel> nodeChannels = new ArrayList<Channel>();
         for (ZigBeeEndpoint device : coordinatorHandler.getNodeEndpoints(nodeIeeeAddress)) {
-            clusterChannels.addAll(ZigBeeChannelConverter.getChannels(getThing().getUID(), device));
-
-            // Check if this endpoint supports OTA firmware update
-            // TODO Use ZclOtaUpgradeCluster.CLUSTER.ID
-            if (device.getInputClusterIds().contains(0x19)) {
-                otaSupported = true;
-            }
+            nodeChannels.addAll(factory.getChannels(getThing().getUID(), device));
         }
 
-        logger.debug("{}: Created {} channels", nodeIeeeAddress, clusterChannels.size());
+        logger.debug("{}: Created {} channels", nodeIeeeAddress, nodeChannels.size());
         try {
             ThingBuilder thingBuilder = editThing();
-            thingBuilder.withChannels(clusterChannels).withConfiguration(getConfig());
+            thingBuilder.withChannels(nodeChannels).withConfiguration(getConfig());
             updateThing(thingBuilder.build());
-            // Create the channels list to simplify processing incoming events
+
+            // Create the channel map to simplify processing incoming events
             for (Channel channel : getThing().getChannels()) {
                 // Process the channel properties
                 Map<String, String> properties = channel.getProperties();
 
-                ZigBeeChannelConverter handler = ZigBeeChannelConverter.getConverter(channel.getChannelTypeUID());
+                ZigBeeBaseChannelConverter handler = factory.createConverter(this, channel.getChannelTypeUID(),
+                        channel.getUID(), coordinatorHandler, node.getIeeeAddress(),
+                        Integer.parseInt(properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_ENDPOINT)));
                 if (handler == null) {
                     logger.debug("{}: No handler found for {}", nodeIeeeAddress, channel.getUID());
-                    continue;
-                }
-
-                if (handler.createConverter(this, channel.getUID(), coordinatorHandler,
-                        properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_ADDRESS)) == false) {
-                    logger.debug("{}: Initializing ZigBee thing handler", nodeIeeeAddress);
                     continue;
                 }
 
@@ -253,7 +245,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             return;
         }
 
-        ZigBeeChannelConverter handler = channels.get(channelUID);
+        ZigBeeBaseChannelConverter handler = channels.get(channelUID);
         if (handler == null) {
             logger.debug("No handler found for {}", channelUID);
             return;
@@ -267,10 +259,11 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     }
 
     /**
-     * Callback from handlers to update a channel state
+     * Callback from handlers to update a channel state. This is called from the channel converter when the state
+     * changes.
      *
-     * @param channel
-     * @param state
+     * @param channel the {@link ChannelUID} to be updated
+     * @param state the new {link State}
      */
     public void setChannelState(ChannelUID channel, State state) {
         updateState(channel, state);

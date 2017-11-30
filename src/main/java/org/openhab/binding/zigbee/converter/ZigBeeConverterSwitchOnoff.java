@@ -27,7 +27,7 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeConverterSwitchOnoff extends ZigBeeChannelConverter implements ZclAttributeListener {
+public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterSwitchOnoff.class);
 
     private ZclOnOffCluster clusterOnOff;
@@ -39,11 +39,11 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeChannelConverter implement
         if (initialised == true) {
             return;
         }
-        logger.debug("{}: Initialising device on/off cluster", device.getIeeeAddress());
+        logger.debug("{}: Initialising device on/off cluster", endpoint.getIeeeAddress());
 
-        clusterOnOff = (ZclOnOffCluster) device.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
+        clusterOnOff = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
         if (clusterOnOff == null) {
-            logger.error("{}: Error opening device on/off controls", device.getIeeeAddress());
+            logger.error("{}: Error opening device on/off controls", endpoint.getIeeeAddress());
             return;
         }
 
@@ -64,7 +64,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeChannelConverter implement
             return;
         }
 
-        logger.debug("{}: Closing device on/off cluster", device.getIeeeAddress());
+        logger.debug("{}: Closing device on/off cluster", endpoint.getIeeeAddress());
 
         if (clusterOnOff != null) {
             clusterOnOff.removeAttributeListener(this);
@@ -112,17 +112,17 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeChannelConverter implement
     }
 
     @Override
-    public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint device) {
-        if (device.getInputCluster(ZclOnOffCluster.CLUSTER_ID) == null) {
+    public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
+        if (endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID) == null) {
             return null;
         }
-        return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF,
+        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF,
                 ZigBeeBindingConstants.ITEM_TYPE_SWITCH, "Switch");
     }
 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
-        logger.debug("{}: ZigBee attribute reports {}", device.getIeeeAddress(), attribute);
+        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.ON_OFF && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
             Boolean value = (Boolean) attribute.getLastValue();
             if (value != null && value == true) {

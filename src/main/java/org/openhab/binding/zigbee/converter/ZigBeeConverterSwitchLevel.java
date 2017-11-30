@@ -27,7 +27,7 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeConverterSwitchLevel extends ZigBeeChannelConverter implements ZclAttributeListener {
+public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterSwitchLevel.class);
 
     private ZclLevelControlCluster clusterLevelControl;
@@ -40,9 +40,9 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeChannelConverter implement
             return;
         }
 
-        clusterLevelControl = (ZclLevelControlCluster) device.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
+        clusterLevelControl = (ZclLevelControlCluster) endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
         if (clusterLevelControl == null) {
-            logger.error("Error opening device level controls {}", device.getIeeeAddress());
+            logger.error("Error opening device level controls {}", endpoint.getIeeeAddress());
             return;
         }
 
@@ -93,25 +93,22 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeChannelConverter implement
     }
 
     @Override
-    public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint device) {
-        if (device.getInputCluster(ZclLevelControlCluster.CLUSTER_ID) == null) {
+    public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
+        if (endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID) == null) {
             return null;
         }
-        return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL,
+        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL,
                 ZigBeeBindingConstants.ITEM_TYPE_DIMMER, "Dimmer");
     }
 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
-        logger.debug("ZigBee attribute reports {} from {}", attribute, device.getIeeeAddress());
+        logger.debug("ZigBee attribute reports {} from {}", attribute, endpoint.getIeeeAddress());
         if (attribute.getCluster() == ZclClusterType.LEVEL_CONTROL
                 && attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {
                 value = value * 100 / 255;
-                if (value > 100) {
-                    value = 100;
-                }
                 updateChannelState(new PercentType(value));
             }
         }

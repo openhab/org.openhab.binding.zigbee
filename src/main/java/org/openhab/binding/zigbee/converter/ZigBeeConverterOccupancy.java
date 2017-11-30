@@ -26,7 +26,7 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeConverterOccupancy extends ZigBeeChannelConverter implements ZclAttributeListener {
+public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterOccupancy.class);
 
     private ZclOccupancySensingCluster clusterOccupancy;
@@ -38,11 +38,11 @@ public class ZigBeeConverterOccupancy extends ZigBeeChannelConverter implements 
         if (initialised == true) {
             return;
         }
-        logger.debug("{}: Initialising device occupancy cluster", device.getIeeeAddress());
+        logger.debug("{}: Initialising device occupancy cluster", endpoint.getIeeeAddress());
 
-        clusterOccupancy = (ZclOccupancySensingCluster) device.getInputCluster(ZclOccupancySensingCluster.CLUSTER_ID);
+        clusterOccupancy = (ZclOccupancySensingCluster) endpoint.getInputCluster(ZclOccupancySensingCluster.CLUSTER_ID);
         if (clusterOccupancy == null) {
-            logger.error("{}: Error opening occupancy cluster", device.getIeeeAddress());
+            logger.error("{}: Error opening occupancy cluster", endpoint.getIeeeAddress());
             return;
         }
 
@@ -63,7 +63,7 @@ public class ZigBeeConverterOccupancy extends ZigBeeChannelConverter implements 
             return;
         }
 
-        logger.debug("{}: Closing device on/off cluster", device.getIeeeAddress());
+        logger.debug("{}: Closing device on/off cluster", endpoint.getIeeeAddress());
 
         if (clusterOccupancy != null) {
             clusterOccupancy.removeAttributeListener(this);
@@ -78,17 +78,17 @@ public class ZigBeeConverterOccupancy extends ZigBeeChannelConverter implements 
     }
 
     @Override
-    public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint device) {
-        if (device.getInputCluster(ZclOccupancySensingCluster.CLUSTER_ID) == null) {
+    public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
+        if (endpoint.getInputCluster(ZclOccupancySensingCluster.CLUSTER_ID) == null) {
             return null;
         }
-        return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_OCCUPANCY_SENSOR,
+        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_OCCUPANCY_SENSOR,
                 ZigBeeBindingConstants.ITEM_TYPE_SWITCH, "Occupancy");
     }
 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
-        logger.debug("{}: ZigBee attribute reports {}", device.getIeeeAddress(), attribute);
+        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.OCCUPANCY_SENSING
                 && attribute.getId() == ZclOccupancySensingCluster.ATTR_OCCUPANCY) {
             Boolean value = (Boolean) attribute.getLastValue();
