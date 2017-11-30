@@ -7,15 +7,21 @@
  */
 package org.openhab.binding.zigbee.handler;
 
+import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.smarthome.config.core.ConfigDescription;
+import org.eclipse.smarthome.config.core.ConfigDescriptionProvider;
 import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.i18n.TranslationProvider;
 import org.eclipse.smarthome.core.thing.Channel;
@@ -58,8 +64,9 @@ import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetworkNodeListener, FirmwareUpdateHandler {
-    private HashMap<ChannelUID, ZigBeeBaseChannelConverter> channels = new HashMap<ChannelUID, ZigBeeBaseChannelConverter>();
+public class ZigBeeThingHandler extends BaseThingHandler
+        implements ZigBeeNetworkNodeListener, FirmwareUpdateHandler, ConfigDescriptionProvider {
+    private Map<ChannelUID, ZigBeeBaseChannelConverter> channels = new HashMap<ChannelUID, ZigBeeBaseChannelConverter>();
 
     private IeeeAddress nodeIeeeAddress = null;
 
@@ -184,6 +191,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 }
 
                 handler.initializeConverter();
+                handler.updateConfiguration(channel.getConfiguration());
 
                 channels.put(channel.getUID(), handler);
             }
@@ -383,6 +391,17 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     }
 
     @Override
+    public Collection<ConfigDescription> getConfigDescriptions(Locale locale) {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public ConfigDescription getConfigDescription(URI uri, Locale locale) {
+
+        return null;
+    }
+
+    @Override
     public void updateFirmware(Firmware firmware, ProgressCallback progressCallback) {
         logger.debug("{}: Update firmware with {}", nodeIeeeAddress, firmware.getVersion());
 
@@ -479,4 +498,5 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         // Always allow the firmware to be updated
         return true;
     }
+
 }

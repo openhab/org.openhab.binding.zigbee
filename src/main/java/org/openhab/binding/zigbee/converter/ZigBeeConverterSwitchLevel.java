@@ -7,6 +7,15 @@
  */
 package org.openhab.binding.zigbee.converter;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
+import org.eclipse.smarthome.config.core.ConfigDescriptionParameter.Type;
+import org.eclipse.smarthome.config.core.ConfigDescriptionParameterBuilder;
+import org.eclipse.smarthome.config.core.ParameterOption;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.thing.Channel;
@@ -16,6 +25,7 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
@@ -42,7 +52,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
 
         clusterLevelControl = (ZclLevelControlCluster) endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
         if (clusterLevelControl == null) {
-            logger.error("Error opening device level controls {}", endpoint.getIeeeAddress());
+            logger.debug("Error opening device level controls {}", endpoint.getIeeeAddress());
             return;
         }
 
@@ -54,6 +64,29 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
         clusterLevelControl.setCurrentLevelReporting(1, 600, 1);
+
+        List<Integer> supportedAttributes = new ArrayList<Integer>();
+        supportedAttributes.add(ZclLevelControlCluster.ATTR_ONOFFTRANSITIONTIME);
+        clusterLevelControl.geta
+        try {
+            CommandResult result = clusterLevelControl.discoverAttributes().get();
+            if (result.isSuccess()) {
+                result.get();
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.debug("Error getting supported attributes. Default to ALL!", e);
+        }
+        List<ConfigDescriptionParameter> parameters = new ArrayList<ConfigDescriptionParameter>();
+
+        List<ParameterOption> options = new ArrayList<ParameterOption>();
+        options.add(new ParameterOption("65535", "Use On/Off transition time"));
+        parameters.add(ConfigDescriptionParameterBuilder.create("zigbee_levelcontrol_transitiontime", Type.INTEGER)
+                .withLabel("Transition Time").withDescription("Time in 100ms intervals to transition between settings")
+                .withDefault("0").withMinimum(new BigDecimal(0)).withMaximum(new BigDecimal(60000)).withOptions(options)
+                .withLimitToOptions(false).build());
+
+        configOptions = parameters;
+
         initialised = true;
     }
 

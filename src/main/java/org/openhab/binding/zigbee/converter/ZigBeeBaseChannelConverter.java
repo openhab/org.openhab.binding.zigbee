@@ -9,9 +9,12 @@ package org.openhab.binding.zigbee.converter;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.eclipse.smarthome.config.core.ConfigDescription;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
+import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
@@ -27,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
+import com.zsmartsystems.zigbee.zcl.ZclCluster;
 
 /**
  * ZigBeeChannelConverter class. Base class for all converters that convert between ZigBee clusters and openHAB
@@ -39,6 +43,8 @@ public abstract class ZigBeeBaseChannelConverter {
 
     protected ZigBeeThingHandler thing = null;
     protected ZigBeeCoordinatorHandler coordinator = null;
+
+    protected List<ConfigDescriptionParameter> configOptions = null;
 
     protected ChannelUID channelUID = null;
     protected ZigBeeEndpoint endpoint = null;
@@ -125,7 +131,14 @@ public abstract class ZigBeeBaseChannelConverter {
 
     /**
      * Creates a {@link Channel} if this converter supports features from the {@link ZigBeeEndpoint}
-     * If the converter doesn't support any features, it returns null
+     * If the converter doesn't support any features, it returns null.
+     * <p>
+     * The converter should perform the following -:
+     * <ul>
+     * <li>Check if the device supports the cluster(s) required by the converter
+     * <li>Check if the cluster supports the attributes or commands required by the converter
+     * </ul>
+     * Only if the device supports the features required by the channel should the channel be implemented.
      *
      * @param thingUID the {@link ThingUID} of the thing to which the channel will be attached
      * @param endpoint The {@link ZigBeeEndpoint} to search for channels
@@ -155,17 +168,25 @@ public abstract class ZigBeeBaseChannelConverter {
         return null;
     }
 
+    /**
+     * Update the channel state.
+     *
+     * @param state the updated {@link State}
+     */
     protected void updateChannelState(State state) {
         thing.setChannelState(channelUID, state);
     }
 
     /**
-     * Gets the configuration descriptions required for this cluster
+     * Gets the configuration descriptions required to configure this channel.
+     * <p>
+     * Ideally, implementations should use the {@link ZclCluster#discoverAttributes()} method to understand exactly what
+     * the device supports and only provide configuration as necessary.
      *
-     * @return {@link ConfigDescription} null if no config is provided
+     * @return a {@link List} of {@link ConfigDescriptionParameter}s. null if no config is provided
      */
-    public ConfigDescription getConfigDescription() {
-        return null;
+    public List<ConfigDescriptionParameter> getConfigDescription() {
+        return configOptions;
     }
 
     /**
@@ -187,5 +208,14 @@ public abstract class ZigBeeBaseChannelConverter {
                 .create(new ChannelUID(thingUID,
                         endpoint.getIeeeAddress() + "_" + endpoint.getEndpointId() + "_" + channelType), itemType)
                 .withType(channelTypeUID).withLabel(label).withProperties(properties).build();
+    }
+
+    /**
+     * Update the channel configuration
+     *
+     * @param configuration
+     */
+    public void updateConfiguration(@NonNull Configuration configuration) {
+        // Nothing required as default implementation
     }
 }
