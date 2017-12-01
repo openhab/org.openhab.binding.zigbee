@@ -47,6 +47,9 @@ import com.zsmartsystems.zigbee.ZigBeeNetworkStateListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.serialization.ZigBeeDeserializer;
 import com.zsmartsystems.zigbee.serialization.ZigBeeSerializer;
+import com.zsmartsystems.zigbee.transport.TransportConfig;
+import com.zsmartsystems.zigbee.transport.TransportConfigOption;
+import com.zsmartsystems.zigbee.transport.TrustCentreLinkMode;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareUpdate;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportState;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
@@ -337,6 +340,16 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             networkManager.setZigBeeExtendedPanId(extendedPanId);
         }
 
+        TransportConfig config = new TransportConfig();
+
+        if (getConfig().get(CONFIGURATION_TRUSTCENTREMODE) != null) {
+            String mode = (String) getConfig().get(CONFIGURATION_TRUSTCENTREMODE);
+            TrustCentreLinkMode linkMode = TrustCentreLinkMode.valueOf(mode);
+            config.addOption(TransportConfigOption.TRUST_CENTRE_JOIN_MODE, linkMode);
+        }
+
+        zigbeeTransport.updateTransportConfig(config);
+
         // Call startup. The setting of the bring to ONLINE will be done via the state listener.
         if (!networkManager.startup(initializeNetwork)) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE,
@@ -381,6 +394,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     public void handleConfigurationUpdate(Map<String, Object> configurationParameters) {
         logger.debug("{}: Configuration received (Coordinator).", nodeIeeeAddress);
 
+        TransportConfig transportConfig = new TransportConfig();
+
         Configuration configuration = editConfiguration();
         for (Entry<String, Object> configurationParameter : configurationParameters.entrySet()) {
             switch (configurationParameter.getKey()) {
@@ -388,18 +403,31 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     if ((Boolean) configurationParameter.getValue() == true) {
                         permitJoin(nodeIeeeAddress, 60);
                     }
-                    configuration.put(CONFIGURATION_JOINENABLE, false);
                     break;
+
+                case ZigBeeBindingConstants.CONFIGURATION_TRUSTCENTREMODE:
+                    TrustCentreLinkMode linkMode = TrustCentreLinkMode
+                            .valueOf((String) configurationParameter.getValue());
+                    transportConfig.addOption(TransportConfigOption.TRUST_CENTRE_JOIN_MODE, linkMode);
+                    break;
+
                 default:
                     configuration.put(configurationParameter.getKey(), configurationParameter.getValue());
                     logger.debug("{}: Unhandled configuration parameter {} >> {}.", nodeIeeeAddress,
                             configurationParameter.getKey(), configurationParameter.getValue());
-                    break;
+                    continue;
             }
+
+            configuration.put(configurationParameter.getKey(), configurationParameter.getValue());
         }
 
         // Persist changes
         updateConfiguration(configuration);
+
+        // If we added any transport layer configuration, pass it down
+        if (transportConfig.getOptions().size() != 0) {
+            zigbeeTransport.updateTransportConfig(transportConfig);
+        }
     }
 
     public void startDeviceDiscovery() {

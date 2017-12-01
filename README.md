@@ -46,6 +46,7 @@ The following devices have been tested with the binding
 | SmartThings Plug | Metered Plug   |
 | Tradfri Bulbs |  |
 | Osram Bulbs   |  |
+| Busch-Jaegar 6711 | Relay Insert |
 
 
 ## Discovery

@@ -9,9 +9,16 @@
 		<description>Ember EM35x NCP</description>
 
         <config-description>
+            <parameter-group name="network">
+                <context></context>
+                <label>ZigBee Network Configuration</label>
+                <description></description>
+            </parameter-group>
+
             <parameter name="zigbee_port" type="text" required="true">
                 <label>Port</label>
                 <context>serial-port</context>
+                <default></default>
                 <description>Serial Port</description>
             </parameter>
 
@@ -26,15 +33,10 @@
                 </options>
             </parameter>
 
-            <parameter-group name="network">
-                <context></context>
-                <label>ZigBee Network Configuration</label>
-                <description></description>
-            </parameter-group>
-
             <parameter name="zigbee_initialise" type="boolean" groupName="network">
                 <label>Reset Controller</label>
                 <description>Resets the Controller and sets the configuration to the configured values.</description>
+                <default>false</default>
                 <advanced>true</advanced>
             </parameter>
 
