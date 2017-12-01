@@ -25,6 +25,7 @@ import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclLevelControlCluster;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
  *
@@ -48,13 +49,13 @@ public class ZigBeeConverterColorColor extends ZigBeeChannelConverter implements
 
         currentHSB = new HSBType();
 
-        clusterColorControl = (ZclColorControlCluster) device.getCluster(ZclColorControlCluster.CLUSTER_ID);
+        clusterColorControl = (ZclColorControlCluster) device.getInputCluster(ZclColorControlCluster.CLUSTER_ID);
         if (clusterColorControl == null) {
             logger.error("Error opening device control controls {}", device.getIeeeAddress());
             return;
         }
 
-        clusterLevelControl = (ZclLevelControlCluster) device.getCluster(ZclLevelControlCluster.CLUSTER_ID);
+        clusterLevelControl = (ZclLevelControlCluster) device.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
         if (clusterLevelControl == null) {
             logger.error("Error opening device level controls {}", device.getIeeeAddress());
             return;
@@ -137,8 +138,8 @@ public class ZigBeeConverterColorColor extends ZigBeeChannelConverter implements
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint device) {
-        if (device.getCluster(ZclColorControlCluster.CLUSTER_ID) == null
-                || device.getCluster(ZclLevelControlCluster.CLUSTER_ID) == null) {
+        if (device.getInputCluster(ZclColorControlCluster.CLUSTER_ID) == null
+                || device.getInputCluster(ZclLevelControlCluster.CLUSTER_ID) == null) {
             return null;
         }
         return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_COLOR_COLOR,
@@ -148,7 +149,8 @@ public class ZigBeeConverterColorColor extends ZigBeeChannelConverter implements
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
         logger.debug("ZigBee attribute reports {} from {}", attribute, device.getIeeeAddress());
-        if (attribute.getId() != ZclColorControlCluster.ATTR_CURRENTHUE) {
+        if (attribute.getCluster() == ZclClusterType.COLOR_CONTROL
+                && attribute.getId() == ZclColorControlCluster.ATTR_CURRENTHUE) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {
                 DecimalType decimalValue = new DecimalType(value);

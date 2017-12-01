@@ -58,6 +58,7 @@ public abstract class ZigBeeChannelConverter {
         channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF, ZigBeeConverterSwitchOnoff.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL, ZigBeeConverterSwitchLevel.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_COLOR, ZigBeeConverterColorColor.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_MODE, ZigBeeConverterColorMode.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_TEMPERATURE, ZigBeeConverterColorTemperature.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE, ZigBeeConverterTemperature.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_OCCUPANCY_SENSOR, ZigBeeConverterOccupancy.class);
@@ -127,6 +128,7 @@ public abstract class ZigBeeChannelConverter {
 
     public abstract Channel getChannel(ThingUID thingUID, ZigBeeEndpoint device);
 
+    @SuppressWarnings("unchecked")
     public static List<Channel> getChannels(ThingUID thingUID, ZigBeeEndpoint device) {
         List<Channel> channels = new ArrayList<Channel>();
 

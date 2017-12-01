@@ -18,6 +18,7 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOccupancySensingCluster;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
  * Converter for the occupancy sensor.
@@ -39,7 +40,7 @@ public class ZigBeeConverterOccupancy extends ZigBeeChannelConverter implements 
         }
         logger.debug("{}: Initialising device occupancy cluster", device.getIeeeAddress());
 
-        clusterOccupancy = (ZclOccupancySensingCluster) device.getCluster(ZclOccupancySensingCluster.CLUSTER_ID);
+        clusterOccupancy = (ZclOccupancySensingCluster) device.getInputCluster(ZclOccupancySensingCluster.CLUSTER_ID);
         if (clusterOccupancy == null) {
             logger.error("{}: Error opening occupancy cluster", device.getIeeeAddress());
             return;
@@ -78,7 +79,7 @@ public class ZigBeeConverterOccupancy extends ZigBeeChannelConverter implements 
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint device) {
-        if (device.getCluster(ZclOccupancySensingCluster.CLUSTER_ID) == null) {
+        if (device.getInputCluster(ZclOccupancySensingCluster.CLUSTER_ID) == null) {
             return null;
         }
         return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_OCCUPANCY_SENSOR,
@@ -88,7 +89,8 @@ public class ZigBeeConverterOccupancy extends ZigBeeChannelConverter implements 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
         logger.debug("{}: ZigBee attribute reports {}", device.getIeeeAddress(), attribute);
-        if (attribute.getId() == ZclOccupancySensingCluster.ATTR_OCCUPANCY) {
+        if (attribute.getCluster() == ZclClusterType.OCCUPANCY_SENSING
+                && attribute.getId() == ZclOccupancySensingCluster.ATTR_OCCUPANCY) {
             Boolean value = (Boolean) attribute.getLastValue();
             if (value != null && value == true) {
                 updateChannelState(OnOffType.ON);
