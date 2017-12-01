@@ -26,7 +26,10 @@ import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.ThingStatusInfo;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.thing.binding.builder.ThingBuilder;
+import org.eclipse.smarthome.core.thing.binding.firmware.Firmware;
 import org.eclipse.smarthome.core.thing.binding.firmware.FirmwareUpdateHandler;
+import org.eclipse.smarthome.core.thing.binding.firmware.ProgressCallback;
+import org.eclipse.smarthome.core.thing.binding.firmware.ProgressStep;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.State;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
@@ -41,6 +44,11 @@ import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
+import com.zsmartsystems.zigbee.otaserver.ZigBeeOtaFile;
+import com.zsmartsystems.zigbee.otaserver.ZigBeeOtaServer;
+import com.zsmartsystems.zigbee.otaserver.ZigBeeOtaServerStatus;
+import com.zsmartsystems.zigbee.otaserver.ZigBeeOtaStatusCallback;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclOtaUpgradeCluster;
 import com.zsmartsystems.zigbee.zdo.field.NeighborTable;
 import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
 
@@ -49,7 +57,7 @@ import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetworkNodeListener {
+public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetworkNodeListener, FirmwareUpdateHandler {
     private HashMap<ChannelUID, ZigBeeChannelConverter> channels = new HashMap<ChannelUID, ZigBeeChannelConverter>();
 
     private IeeeAddress nodeIeeeAddress = null;
@@ -81,8 +89,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     @Override
     public void initialize() {
-        logger.debug("Initializing ZigBee thing handler {}.", getThing().getUID());
         final String configAddress = (String) getConfig().get(ZigBeeBindingConstants.CONFIGURATION_MACADDRESS);
+        logger.debug("Initializing ZigBee thing handler {}, Ieee=\"{}\".", getThing().getUID(), configAddress);
 
         if (configAddress == null || configAddress.length() == 0) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
@@ -376,5 +384,103 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     public IeeeAddress getIeeeAddress() {
         return nodeIeeeAddress;
+    }
+
+    @Override
+    public void updateFirmware(Firmware firmware, ProgressCallback progressCallback) {
+        logger.debug("{}: Update firmware with {}", nodeIeeeAddress, firmware.getVersion());
+
+        updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.FIRMWARE_UPDATING);
+
+        // Define the sequence of the firmware update so that external consumers can listen for the progress
+        progressCallback.defineSequence(ProgressStep.DOWNLOADING, ProgressStep.TRANSFERRING, ProgressStep.UPDATING);
+
+        // Find an OTA client if the device supports OTA upgrades
+        ZigBeeNode node = coordinatorHandler.getNode(nodeIeeeAddress);
+        if (node == null) {
+            logger.debug("{}: Can't find node", nodeIeeeAddress);
+            return;
+        }
+
+        ZigBeeOtaServer otaServer = null;
+        ZigBeeEndpoint otaEndpoint = null;
+        ZclOtaUpgradeCluster otaCluster = null;
+        for (ZigBeeEndpoint endpoint : node.getEndpoints()) {
+            otaServer = (ZigBeeOtaServer) endpoint.getServer(ZclOtaUpgradeCluster.CLUSTER_ID);
+            if (otaServer != null) {
+                break;
+            }
+
+            otaCluster = (ZclOtaUpgradeCluster) endpoint.getOutputCluster(ZclOtaUpgradeCluster.CLUSTER_ID);
+            if (otaCluster != null) {
+                otaEndpoint = endpoint;
+                break;
+            }
+        }
+
+        if (otaServer == null && otaCluster == null) {
+            logger.debug("{}: Can't find OTA cluster", nodeIeeeAddress);
+            return;
+        }
+
+        // Register the OTA server if it's not already registered
+        if (otaServer == null && otaEndpoint != null) {
+            otaServer = new ZigBeeOtaServer();
+            otaEndpoint.addServer(otaServer);
+        } else {
+            logger.debug("{}: Can't create OTA server", nodeIeeeAddress);
+            return;
+        }
+
+        ZigBeeOtaFile otaFile = new ZigBeeOtaFile(firmware.getBytes());
+        otaServer.setFirmware(otaFile);
+
+        // DOWNLOADING
+        progressCallback.next();
+
+        final ZigBeeOtaServer finalOtaServer = otaServer;
+        otaServer.addListener(new ZigBeeOtaStatusCallback() {
+            @Override
+            public void otaStatusUpdate(ZigBeeOtaServerStatus status) {
+                switch (status) {
+                    case OTA_WAITING:
+                        // progressCallback.next();
+                        return;
+                    case OTA_TRANSFER_IN_PROGRESS:
+                        // TRANSFERRING
+                        progressCallback.next();
+                        return;
+                    case OTA_TRANSFER_COMPLETE:
+                        // UPDATING
+                        progressCallback.next();
+                        return;
+                    case OTA_UPGRADE_COMPLETE:
+                        progressCallback.success();
+                        break;
+                    case OTA_UPGRADE_FAILED:
+                        progressCallback.failed("zigbee.firmware.failed");
+                        break;
+                    case OTA_CANCELLED:
+                        progressCallback.canceled();
+                        break;
+                    default:
+                        return;
+                }
+
+                // OTA transfer is complete, cancelled or failed
+                finalOtaServer.cancelUpgrade();
+            }
+        });
+    }
+
+    @Override
+    public void cancel() {
+        logger.debug("{}: Cancel firmware update", nodeIeeeAddress);
+    }
+
+    @Override
+    public boolean isUpdateExecutable() {
+        // Always allow the firmware to be updated
+        return true;
     }
 }

@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclBasicCluster;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclOtaUpgradeCluster;
 import com.zsmartsystems.zigbee.zdo.field.PowerDescriptor;
 
 /**
@@ -65,14 +66,14 @@ public class ZigBeeNodePropertyDiscoverer {
 
         String manufacturer = basicCluster.getManufacturerName(Long.MAX_VALUE);
         if (manufacturer != null) {
-            properties.put(ZigBeeBindingConstants.THING_PROPERTY_MANUFACTURER, manufacturer);
+            properties.put(Thing.PROPERTY_VENDOR, manufacturer);
         } else {
             logger.debug("{}: Manufacturer request timeout", node.getIeeeAddress());
         }
 
         String model = basicCluster.getModelIdentifier(Long.MAX_VALUE);
         if (model != null) {
-            properties.put(ZigBeeBindingConstants.THING_PROPERTY_MODEL, model);
+            properties.put(Thing.PROPERTY_MODEL_ID, model);
         } else {
             logger.debug("{}: Model request timeout", node.getIeeeAddress());
         }
@@ -99,7 +100,7 @@ public class ZigBeeNodePropertyDiscoverer {
 
         Integer appVersion = basicCluster.getApplicationVersion(Long.MAX_VALUE);
         if (appVersion != null) {
-            properties.put(Thing.PROPERTY_FIRMWARE_VERSION, appVersion.toString());
+            properties.put(ZigBeeBindingConstants.THING_PROPERTY_APPVERSION, appVersion.toString());
         } else {
             logger.debug("{}: Application version request timeout", node.getIeeeAddress());
         }
@@ -115,6 +116,24 @@ public class ZigBeeNodePropertyDiscoverer {
             properties.put(ZigBeeBindingConstants.THING_PROPERTY_LOGICALTYPE, node.getLogicalType().toString());
         }
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_NETWORKADDRESS, node.getNetworkAddress().toString());
+
+        // Find an OTA client if the device supports OTA upgrades
+        ZclOtaUpgradeCluster otaCluster = null;
+        for (ZigBeeEndpoint endpoint : node.getEndpoints()) {
+            otaCluster = (ZclOtaUpgradeCluster) endpoint.getOutputCluster(ZclOtaUpgradeCluster.CLUSTER_ID);
+            if (otaCluster != null) {
+                break;
+            }
+        }
+
+        if (otaCluster != null) {
+            Integer fileVersion = otaCluster.getCurrentFileVersion(Long.MAX_VALUE);
+            if (fileVersion != null) {
+                properties.put(Thing.PROPERTY_FIRMWARE_VERSION, String.format("%08X", fileVersion));
+            } else {
+                logger.debug("{}: OTA firmware request timeout", node.getIeeeAddress());
+            }
+        }
 
         PowerDescriptor powerDescriptor = node.getPowerDescriptor();
         if (powerDescriptor != null) {
