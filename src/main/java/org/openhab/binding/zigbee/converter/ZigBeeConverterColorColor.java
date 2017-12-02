@@ -150,7 +150,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTHUE) {
                 Integer value = (Integer) attribute.getLastValue();
                 if (value != null) {
-                    DecimalType hue = new DecimalType(value);
+                    DecimalType hue = new DecimalType(value * 100 / 254);
                     currentHSB = new HSBType(hue, currentHSB.getSaturation(), currentHSB.getBrightness());
                     updateChannelState(currentHSB);
                 }

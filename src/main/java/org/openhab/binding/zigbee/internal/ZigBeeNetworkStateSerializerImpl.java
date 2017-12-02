@@ -52,14 +52,20 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
     /**
      * The network state filename.
      */
-    private final String networkStateFileName = "zigbee-network.xml";
+    private final String networkStateFileName = "zigbee-network--";
+
+    /**
+     * The networkId - used to allow multiple coordinators
+     */
+    private final String networkId;
 
     /**
      * The network state filename.
      */
     private final String networkStateFilePath;
 
-    public ZigBeeNetworkStateSerializerImpl() {
+    public ZigBeeNetworkStateSerializerImpl(String networkId) {
+        this.networkId = networkId;
         networkStateFilePath = ConfigConstants.getUserDataFolder() + "/" + ZigBeeBindingConstants.BINDING_ID;
     }
 
@@ -101,7 +107,7 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
             destinations.add(nodeDao);
         }
 
-        final File file = new File(networkStateFilePath + "/" + networkStateFileName);
+        final File file = new File(networkStateFilePath + "/" + networkStateFileName + networkId + ".xml");
         try {
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
             stream.marshal(destinations, new PrettyPrintWriter(writer));

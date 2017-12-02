@@ -161,6 +161,9 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             nodeChannels.addAll(factory.getChannels(getThing().getUID(), device));
         }
 
+        // TODO: Perform a channel consolidation to remove unnecessary channels.
+        // This removes channels that a re covered through inheritance.
+
         logger.debug("{}: Created {} channels", nodeIeeeAddress, nodeChannels.size());
         try {
             ThingBuilder thingBuilder = editThing();
@@ -185,7 +188,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 channels.put(channel.getUID(), handler);
             }
         } catch (Exception e) {
-            logger.debug(e.toString());
+            logger.debug("Exception creating channels for " + nodeIeeeAddress + ": ", e);
         }
 
         logger.debug("{}: Initializing ZigBee thing handler", nodeIeeeAddress);

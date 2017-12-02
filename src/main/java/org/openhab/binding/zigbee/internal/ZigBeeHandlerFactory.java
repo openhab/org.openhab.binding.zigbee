@@ -72,11 +72,14 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
         ZigBeeCoordinatorHandler coordinator = null;
 
         // Handle coordinators here
-        if (thingTypeUID.equals(ZigBeeBindingConstants.COORDINATOR_TYPE_EMBER)) {
-            coordinator = new ZigBeeCoordinatorEmberHandler((Bridge) thing, translationProvider);
-        }
         if (thingTypeUID.equals(ZigBeeBindingConstants.COORDINATOR_TYPE_CC2531)) {
             coordinator = new ZigBeeCoordinatorCC2531Handler((Bridge) thing, translationProvider);
+        }
+        // if (thingTypeUID.equals(ZigBeeBindingConstants.COORDINATOR_TYPE_CONBEE)) {
+        // coordinator = new ZigBeeCoordinatorConBeeHandler((Bridge) thing, translationProvider);
+        // }
+        if (thingTypeUID.equals(ZigBeeBindingConstants.COORDINATOR_TYPE_EMBER)) {
+            coordinator = new ZigBeeCoordinatorEmberHandler((Bridge) thing, translationProvider);
         }
         if (thingTypeUID.equals(ZigBeeBindingConstants.COORDINATOR_TYPE_TELEGESIS)) {
             coordinator = new ZigBeeCoordinatorTelegesisHandler((Bridge) thing, translationProvider);
