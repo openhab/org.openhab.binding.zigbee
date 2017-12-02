@@ -34,7 +34,6 @@ import com.zsmartsystems.zigbee.transport.ZigBeePort.FlowControl;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareCallback;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareStatus;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareUpdate;
-import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
 
 /**
  * The {@link ZigBeeCoordinatorTelegesisHandler} is responsible for handling
@@ -47,9 +46,11 @@ public class ZigBeeCoordinatorTelegesisHandler extends ZigBeeCoordinatorHandler 
 
     private final int DEFAULT_BAUD = 19200;
 
+    private final String DEFAULT_PASSWORD = "password";
+
     private String portId;
     private int portBaud;
-    private ZigBeeTransportTransmit dongle;
+    private ZigBeeDongleTelegesis dongle;
 
     public ZigBeeCoordinatorTelegesisHandler(@NonNull Bridge coordinator, TranslationProvider translationProvider) {
         super(coordinator, translationProvider);
@@ -83,6 +84,12 @@ public class ZigBeeCoordinatorTelegesisHandler extends ZigBeeCoordinatorHandler 
 
         logger.debug("ZigBee Coordinator Telegesis opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", portId,
                 Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
+
+        String password = (String) getConfig().get(ZigBeeBindingConstants.CONFIGURATION_PASSWORD);
+        if (password == null) {
+            password = DEFAULT_PASSWORD;
+        }
+        dongle.setTelegesisPassword(password);
 
         updateStatus(ThingStatus.UNKNOWN);
         startZigBee(dongle, DefaultSerializer.class, DefaultDeserializer.class);

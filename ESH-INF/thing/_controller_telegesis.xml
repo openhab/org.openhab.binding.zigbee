@@ -9,9 +9,16 @@
 		<description>Telegesis ETRX3 Dongle</description>
 
         <config-description>
+            <parameter-group name="network">
+                <context></context>
+                <label>ZigBee Network Configuration</label>
+                <description></description>
+            </parameter-group>
+
             <parameter name="zigbee_port" type="text" required="true">
                 <label>Port</label>
                 <context>serial-port</context>
+                <default></default>
                 <description>Serial Port</description>
             </parameter>
 
@@ -27,15 +34,10 @@
                 </options>
             </parameter>
 
-            <parameter-group name="network">
-                <context></context>
-                <label>ZigBee Network Configuration</label>
-                <description></description>
-            </parameter-group>
-
             <parameter name="zigbee_initialise" type="boolean" groupName="network">
                 <label>Reset Controller</label>
                 <description>Resets the Controller and sets the configuration to the configured values.</description>
+                <default>false</default>
                 <advanced>true</advanced>
             </parameter>
 
@@ -82,6 +84,25 @@
                 <advanced>true</advanced>
             </parameter>
 
+            <parameter name="zigbee_password" type="text" required="false">
+                <label>Telegesis Dongle Password</label>
+                <description>Sets the password required to access the dongle</description>
+                <default>password</default>
+                <advanced>true</advanced>
+            </parameter>
+
+            <parameter name="zigbee_trustcentremode" type="text" groupName="network">
+                <label>Trust Centre Join Mode</label>
+                <description>Sets the Trust Centre join/rejoin mode</description>
+                <options>
+                    <option value="TC_JOIN_DENY">Deny all joins</option>
+                    <option value="TC_JOIN_SECURE">Allow only secure joining</option>
+                    <option value="TC_JOIN_INSECURE">All all joins</option>
+                </options>
+                <default>TC_JOIN_SECURE</default>
+                <advanced>true</advanced>
+            </parameter>
+            
         </config-description>
 	</bridge-type>
 	
