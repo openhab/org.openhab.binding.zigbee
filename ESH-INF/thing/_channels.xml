@@ -13,22 +13,6 @@
         <category>ColorLight</category>
     </channel-type>
 
-    <!-- Color Channel -->
-    <channel-type id="color_mode">
-        <item-type>Number</item-type>
-        <label>Color</label>
-        <description>The color mode channel allows to control the color mode of a light.
-        </description>
-        <category>ColorLight</category>
-        <state readOnly="true">
-            <options>
-                <option value="0">Hue and Saturation</option>
-                <option value="1">X and Y</option>
-                <option value="2">Color Temperature</option>
-            </options>
-        </state>
-    </channel-type>
-
 	<!-- Color Temperature Channel -->
 	<channel-type id="color_temperature">
 		<item-type>Dimmer</item-type>
