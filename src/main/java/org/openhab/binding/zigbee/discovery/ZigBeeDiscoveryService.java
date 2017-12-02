@@ -172,6 +172,10 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService
 
     @Override
     public void nodeAdded(ZigBeeNode node) {
+        // If this is the coordinator (NWK address 0), ignore this device
+        if (node.getNetworkAddress() == 0) {
+            return;
+        }
         nodeDiscovered(node);
     }
 

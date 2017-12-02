@@ -28,7 +28,7 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeConverterTemperature extends ZigBeeChannelConverter implements ZclAttributeListener {
+public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterTemperature.class);
 
     private ZclTemperatureMeasurementCluster cluster;
@@ -40,10 +40,10 @@ public class ZigBeeConverterTemperature extends ZigBeeChannelConverter implement
         if (initialised) {
             return;
         }
-        cluster = (ZclTemperatureMeasurementCluster) device
+        cluster = (ZclTemperatureMeasurementCluster) endpoint
                 .getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID);
         if (cluster == null) {
-            logger.error("Error opening device temperature measurement cluster {}", device.getIeeeAddress());
+            logger.error("Error opening device temperature measurement cluster {}", endpoint.getIeeeAddress());
             return;
         }
 
@@ -77,17 +77,17 @@ public class ZigBeeConverterTemperature extends ZigBeeChannelConverter implement
     }
 
     @Override
-    public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint device) {
-        if (device.getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID) == null) {
+    public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
+        if (endpoint.getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID) == null) {
             return null;
         }
-        return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE,
+        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE,
                 ZigBeeBindingConstants.ITEM_TYPE_NUMBER, "Temperature");
     }
 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
-        logger.debug("ZigBee attribute reports {} from {}", attribute, device.getIeeeAddress());
+        logger.debug("ZigBee attribute reports {} from {}", attribute, endpoint.getIeeeAddress());
         if (attribute.getCluster() == ZclClusterType.TEMPERATURE_MEASUREMENT
                 && attribute.getId() == ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE) {
             Integer value = (Integer) attribute.getLastValue();

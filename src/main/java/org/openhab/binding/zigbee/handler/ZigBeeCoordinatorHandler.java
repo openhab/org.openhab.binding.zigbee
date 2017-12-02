@@ -51,11 +51,10 @@ import com.zsmartsystems.zigbee.serialization.ZigBeeDeserializer;
 import com.zsmartsystems.zigbee.serialization.ZigBeeSerializer;
 import com.zsmartsystems.zigbee.transport.TransportConfig;
 import com.zsmartsystems.zigbee.transport.TransportConfigOption;
-import com.zsmartsystems.zigbee.transport.TrustCentreLinkMode;
+import com.zsmartsystems.zigbee.transport.TrustCentreJoinMode;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareUpdate;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportState;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
-import com.zsmartsystems.zigbee.zcl.ZclCluster;
 import com.zsmartsystems.zigbee.zdo.field.NeighborTable;
 import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
 
@@ -346,7 +345,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         if (getConfig().get(CONFIGURATION_TRUSTCENTREMODE) != null) {
             String mode = (String) getConfig().get(CONFIGURATION_TRUSTCENTREMODE);
-            TrustCentreLinkMode linkMode = TrustCentreLinkMode.valueOf(mode);
+            TrustCentreJoinMode linkMode = TrustCentreJoinMode.valueOf(mode);
             config.addOption(TransportConfigOption.TRUST_CENTRE_JOIN_MODE, linkMode);
         }
 
@@ -408,7 +407,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     break;
 
                 case ZigBeeBindingConstants.CONFIGURATION_TRUSTCENTREMODE:
-                    TrustCentreLinkMode linkMode = TrustCentreLinkMode
+                    TrustCentreJoinMode linkMode = TrustCentreJoinMode
                             .valueOf((String) configurationParameter.getValue());
                     transportConfig.addOption(TransportConfigOption.TRUST_CENTRE_JOIN_MODE, linkMode);
                     break;
@@ -558,15 +557,26 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         updateProperties(properties);
     }
 
-    public ZigBeeEndpoint getEndpoint(ZigBeeEndpointAddress address) {
+    // public ZigBeeEndpoint getEndpoint(ZigBeeEndpointAddress address) {
+    // if (networkManager == null) {
+    // return null;
+    // }
+    // ZigBeeNode node = networkManager.getNode(address.getAddress());
+    // if (node == null) {
+    // return null;
+    // }
+    // return node.getEndpoint(address.getEndpoint());
+    // }
+
+    public ZigBeeEndpoint getEndpoint(IeeeAddress address, int endpointId) {
         if (networkManager == null) {
             return null;
         }
-        ZigBeeNode node = networkManager.getNode(address.getAddress());
+        ZigBeeNode node = networkManager.getNode(address);
         if (node == null) {
             return null;
         }
-        return node.getEndpoint(address.getEndpoint());
+        return node.getEndpoint(endpointId);
     }
 
     public Collection<ZigBeeEndpoint> getNodeEndpoints(IeeeAddress nodeIeeeAddress) {
@@ -583,14 +593,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     public Set<ZigBeeNode> getNodes() {
         return networkManager.getNodes();
-    }
-
-    public ZclCluster getCluster(ZigBeeEndpointAddress address, int clusterId) {
-        ZigBeeEndpoint endpoint = getEndpoint(address);
-        if (endpoint == null) {
-            return null;
-        }
-        return endpoint.getInputCluster(clusterId);
     }
 
     @Override
@@ -680,4 +682,5 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         }
         networkManager.rediscoverNode(nodeIeeeAddress);
     }
+
 }

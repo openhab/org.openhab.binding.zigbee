@@ -29,7 +29,7 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeConverterColorMode extends ZigBeeChannelConverter implements ZclAttributeListener {
+public class ZigBeeConverterColorMode extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterColorMode.class);
 
     private ZclColorControlCluster clusterColorControl;
@@ -42,9 +42,9 @@ public class ZigBeeConverterColorMode extends ZigBeeChannelConverter implements 
             return;
         }
 
-        clusterColorControl = (ZclColorControlCluster) device.getInputCluster(ZclColorControlCluster.CLUSTER_ID);
+        clusterColorControl = (ZclColorControlCluster) endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID);
         if (clusterColorControl == null) {
-            logger.error("Error opening device control controls {}", device.getIeeeAddress());
+            logger.error("Error opening device control controls {}", endpoint.getIeeeAddress());
             return;
         }
 
@@ -78,17 +78,17 @@ public class ZigBeeConverterColorMode extends ZigBeeChannelConverter implements 
     }
 
     @Override
-    public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint device) {
-        if (device.getInputCluster(ZclColorControlCluster.CLUSTER_ID) == null) {
+    public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
+        if (endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID) == null) {
             return null;
         }
-        return createChannel(device, thingUID, ZigBeeBindingConstants.CHANNEL_COLOR_MODE,
+        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_COLOR_MODE,
                 ZigBeeBindingConstants.ITEM_TYPE_NUMBER, "Color Mode");
     }
 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
-        logger.debug("ZigBee attribute reports {} from {}", attribute, device.getIeeeAddress());
+        logger.debug("ZigBee attribute reports {} from {}", attribute, endpoint.getIeeeAddress());
         if (attribute.getCluster() != ZclClusterType.COLOR_CONTROL) {
             return;
         }

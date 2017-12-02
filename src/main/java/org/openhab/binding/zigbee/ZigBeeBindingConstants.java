@@ -53,8 +53,7 @@ public class ZigBeeBindingConstants {
 
     public static final String CHANNEL_OCCUPANCY_SENSOR = "sensor_occupancy";
 
-    public static final String CHANNEL_PROPERTY_ADDRESS = "zigbee_address";
-    public static final String CHANNEL_PROPERTY_CLUSTER = "zigbee_cluster";
+    public static final String CHANNEL_PROPERTY_ENDPOINT = "zigbee_endpoint";
 
     public static final String CHANNEL_SWITCH_LEVEL = "switch_level";
 
