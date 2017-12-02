@@ -161,7 +161,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             initializeNetwork = true;
         }
 
-        if (extendedPanId.equals(new ExtendedPanId()) || panId == 0) {
+        if (extendedPanId == null || extendedPanId.equals(new ExtendedPanId()) || panId == 0) {
             initializeNetwork = true;
         }
 
@@ -196,7 +196,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 }
             }
 
-            if (!extendedPanId.isValid()) {
+            if (extendedPanId != null && !extendedPanId.isValid()) {
                 int[] pan = new int[8];
                 for (int cnt = 0; cnt < 8; cnt++) {
                     pan[cnt] = (int) Math.floor((Math.random() * 255));
@@ -294,7 +294,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     private void initialiseZigBee() {
         logger.debug("Initialising ZigBee coordinator");
 
-        ZigBeeNetworkStateSerializer networkStateSerializer = new ZigBeeNetworkStateSerializerImpl();
+        String networkId = getThing().getUID().toString().replaceAll(":", "_");
+        ZigBeeNetworkStateSerializer networkStateSerializer = new ZigBeeNetworkStateSerializerImpl(networkId);
 
         // Configure the network manager
         networkManager = new ZigBeeNetworkManager(zigbeeTransport);

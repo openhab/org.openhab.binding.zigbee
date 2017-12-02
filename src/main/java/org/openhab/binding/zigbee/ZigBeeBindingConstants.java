@@ -32,6 +32,7 @@ public class ZigBeeBindingConstants {
 
     // Coordinator (Bridges)
     public final static ThingTypeUID COORDINATOR_TYPE_EMBER = new ThingTypeUID(BINDING_ID, "coordinator_ember");
+    // public final static ThingTypeUID COORDINATOR_TYPE_CONBEE = new ThingTypeUID(BINDING_ID, "coordinator_conbee");
     public final static ThingTypeUID COORDINATOR_TYPE_CC2531 = new ThingTypeUID(BINDING_ID, "coordinator_cc2531");
     public final static ThingTypeUID COORDINATOR_TYPE_TELEGESIS = new ThingTypeUID(BINDING_ID, "coordinator_telegesis");
 
@@ -41,8 +42,8 @@ public class ZigBeeBindingConstants {
     public final static Set<ThingTypeUID> SUPPORTED_THING_TYPES = Sets.newHashSet(THING_TYPE_GENERIC_DEVICE);
 
     // List of Channel UIDs
-    public static final String CHANNEL_SWITCH_DIMMER = "switch_dimmer";
     public static final String CHANNEL_SWITCH_ONOFF = "switch_onoff";
+    public static final String CHANNEL_SWITCH_LEVEL = "switch_level";
 
     public static final String CHANNEL_COLOR_COLOR = "color_color";
     public static final String CHANNEL_COLOR_TEMPERATURE = "color_temperature";
@@ -53,8 +54,6 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_OCCUPANCY_SENSOR = "sensor_occupancy";
 
     public static final String CHANNEL_PROPERTY_ENDPOINT = "zigbee_endpoint";
-
-    public static final String CHANNEL_SWITCH_LEVEL = "switch_level";
 
     public static final String ITEM_TYPE_COLOR = "Color";
     public static final String ITEM_TYPE_NUMBER = "Number";
@@ -97,7 +96,8 @@ public class ZigBeeBindingConstants {
 
     public final static String CONFIGURATION_ZNP_MAGICNUMBER = "zigbee_znp_magicnumber";
 
-    public final static Set<ThingTypeUID> SUPPORTED_BRIDGE_TYPES_UIDS = ImmutableSet.of(COORDINATOR_TYPE_CC2531);
+    public final static Set<ThingTypeUID> SUPPORTED_BRIDGE_TYPES_UIDS = ImmutableSet.of(COORDINATOR_TYPE_CC2531,
+            COORDINATOR_TYPE_EMBER, COORDINATOR_TYPE_TELEGESIS);
 
     public final static String OFFLINE_NOT_INITIALIZED = "zigbee.status.offline_notinitialized";
     public final static String OFFLINE_INITIALIZE_FAIL = "zigbee.status.offline_initializefail";

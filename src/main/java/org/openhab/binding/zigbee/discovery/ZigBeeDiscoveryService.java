@@ -92,9 +92,6 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService
 
         // Update the inbox with all devices we already know about
         for (ZigBeeNode node : coordinatorHandler.getNodes()) {
-            if (node.getLogicalType() == LogicalType.COORDINATOR) {
-                continue;
-            }
             nodeDiscovered(node);
         }
 
@@ -110,6 +107,11 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService
      * @param node the new {@link ZigBeeNode}
      */
     private void nodeDiscovered(final ZigBeeNode node) {
+        // If this is the coordinator (NWK address 0), ignore this device
+        if (node.getLogicalType() == LogicalType.COORDINATOR || node.getNetworkAddress() == 0) {
+            return;
+        }
+
         Runnable pollingRunnable = new Runnable() {
             @Override
             public void run() {
@@ -172,10 +174,6 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService
 
     @Override
     public void nodeAdded(ZigBeeNode node) {
-        // If this is the coordinator (NWK address 0), ignore this device
-        if (node.getNetworkAddress() == 0) {
-            return;
-        }
         nodeDiscovered(node);
     }
 
