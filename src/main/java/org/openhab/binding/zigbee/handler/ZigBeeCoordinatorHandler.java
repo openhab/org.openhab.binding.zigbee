@@ -88,6 +88,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     protected ZigBeeKey networkKey;
 
+    private TransportConfig transportConfig;
+
     private Set<ZigBeeNetworkNodeListener> listeners = new HashSet<ZigBeeNetworkNodeListener>();
 
     private boolean macAddressSet = false;
@@ -242,6 +244,14 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         logger.debug("Key final array {}", networkKey);
     }
 
+    /**
+     * A dongle specific initialisation method. This can be overridden by coordinator handlers and is called just before
+     * the {@link ZigBeeTransportTransmit#startup(boolean)} is called.
+     */
+    protected void initializeDongleSpecific() {
+        // Can be overridden to provide dongle specific configuration
+    }
+
     @Override
     public void dispose() {
         // If we have scheduled tasks, stop them
@@ -273,13 +283,15 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      * Called by bridge implementations after they have initialised their interfaces.
      *
      * @param zigbeeTransport a {@link ZigBeeTransportTransmit} interface instance
+     * @param transportConfig any binding specific configuration that needs to be sent
      * @param serializerClass a {@link ZigBeeSerializer} Class
      * @param deserializerClass a {@link ZigBeeDeserializer} Class
      */
-    protected void startZigBee(ZigBeeTransportTransmit zigbeeTransport, Class<?> serializerClass,
-            Class<?> deserializerClass) {
+    protected void startZigBee(ZigBeeTransportTransmit zigbeeTransport, TransportConfig transportConfig,
+            Class<?> serializerClass, Class<?> deserializerClass) {
 
         this.zigbeeTransport = zigbeeTransport;
+        this.transportConfig = transportConfig;
         this.serializerClass = serializerClass;
         this.deserializerClass = deserializerClass;
 
@@ -342,15 +354,13 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             networkManager.setZigBeeExtendedPanId(extendedPanId);
         }
 
-        TransportConfig config = new TransportConfig();
-
         if (getConfig().get(CONFIGURATION_TRUSTCENTREMODE) != null) {
             String mode = (String) getConfig().get(CONFIGURATION_TRUSTCENTREMODE);
             TrustCentreJoinMode linkMode = TrustCentreJoinMode.valueOf(mode);
-            config.addOption(TransportConfigOption.TRUST_CENTRE_JOIN_MODE, linkMode);
+            transportConfig.addOption(TransportConfigOption.TRUST_CENTRE_JOIN_MODE, linkMode);
         }
 
-        zigbeeTransport.updateTransportConfig(config);
+        zigbeeTransport.updateTransportConfig(transportConfig);
 
         // Call startup. The setting of the bring to ONLINE will be done via the state listener.
         if (!networkManager.startup(initializeNetwork)) {
@@ -377,6 +387,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         } catch (IllegalStateException e) {
             logger.debug("Error updating configuration", e);
         }
+
+        initializeDongleSpecific();
 
         // Start the mesh monitor
         meshMonitor = new ZigBeeNetworkMeshMonitor(networkManager);
