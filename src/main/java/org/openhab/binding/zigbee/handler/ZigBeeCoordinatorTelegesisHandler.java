@@ -8,6 +8,8 @@
 package org.openhab.binding.zigbee.handler;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.core.i18n.TranslationProvider;
@@ -29,11 +31,14 @@ import org.slf4j.LoggerFactory;
 import com.zsmartsystems.zigbee.dongle.telegesis.ZigBeeDongleTelegesis;
 import com.zsmartsystems.zigbee.serialization.DefaultDeserializer;
 import com.zsmartsystems.zigbee.serialization.DefaultSerializer;
+import com.zsmartsystems.zigbee.transport.TransportConfig;
+import com.zsmartsystems.zigbee.transport.TransportConfigOption;
 import com.zsmartsystems.zigbee.transport.ZigBeePort;
 import com.zsmartsystems.zigbee.transport.ZigBeePort.FlowControl;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareCallback;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareStatus;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareUpdate;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclIasZoneCluster;
 
 /**
  * The {@link ZigBeeCoordinatorTelegesisHandler} is responsible for handling
@@ -91,8 +96,18 @@ public class ZigBeeCoordinatorTelegesisHandler extends ZigBeeCoordinatorHandler 
         }
         dongle.setTelegesisPassword(password);
 
+        TransportConfig config = new TransportConfig();
+
+        Set<Integer> clusters = new HashSet<Integer>();
+        clusters.add(ZclIasZoneCluster.CLUSTER_ID);
+        config.addOption(TransportConfigOption.SUPPORTED_OUTPUT_CLUSTERS, clusters);
+
         updateStatus(ThingStatus.UNKNOWN);
-        startZigBee(dongle, DefaultSerializer.class, DefaultDeserializer.class);
+        startZigBee(dongle, config, DefaultSerializer.class, DefaultDeserializer.class);
+    }
+
+    @Override
+    protected void initializeDongleSpecific() {
     }
 
     @Override
@@ -165,4 +180,5 @@ public class ZigBeeCoordinatorTelegesisHandler extends ZigBeeCoordinatorHandler 
         // firmware.
         return true;
     }
+
 }

@@ -92,7 +92,7 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
                 && attribute.getId() == ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {
-                updateChannelState(new DecimalType(BigDecimal.valueOf(value, 0)));
+                updateChannelState(new DecimalType(BigDecimal.valueOf(value, 2)));
             }
         }
     }

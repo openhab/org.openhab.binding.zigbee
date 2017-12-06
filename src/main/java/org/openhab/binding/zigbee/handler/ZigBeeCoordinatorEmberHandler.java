@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import com.zsmartsystems.zigbee.dongle.ember.ZigBeeDongleEzsp;
 import com.zsmartsystems.zigbee.serialization.DefaultDeserializer;
 import com.zsmartsystems.zigbee.serialization.DefaultSerializer;
+import com.zsmartsystems.zigbee.transport.TransportConfig;
 import com.zsmartsystems.zigbee.transport.ZigBeePort;
 import com.zsmartsystems.zigbee.transport.ZigBeePort.FlowControl;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareCallback;
@@ -78,8 +79,10 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler impl
         logger.debug("ZigBee Coordinator Ember opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", portId,
                 Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
 
+        TransportConfig config = new TransportConfig();
+
         updateStatus(ThingStatus.UNKNOWN);
-        startZigBee(dongle, DefaultSerializer.class, DefaultDeserializer.class);
+        startZigBee(dongle, config, DefaultSerializer.class, DefaultDeserializer.class);
     }
 
     @Override

@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import com.zsmartsystems.zigbee.dongle.cc2531.ZigBeeDongleTiCc2531;
 import com.zsmartsystems.zigbee.serialization.DefaultDeserializer;
 import com.zsmartsystems.zigbee.serialization.DefaultSerializer;
+import com.zsmartsystems.zigbee.transport.TransportConfig;
 import com.zsmartsystems.zigbee.transport.ZigBeePort;
 import com.zsmartsystems.zigbee.transport.ZigBeePort.FlowControl;
 
@@ -78,7 +79,9 @@ public class ZigBeeCoordinatorCC2531Handler extends ZigBeeCoordinatorHandler {
         logger.debug("ZigBee Coordinator ZNP opening Port:'{}' PAN:{}, Channel:{}", portId, Integer.toHexString(panId),
                 Integer.toString(channelId));
 
+        TransportConfig config = new TransportConfig();
+
         updateStatus(ThingStatus.UNKNOWN);
-        startZigBee(dongle, DefaultSerializer.class, DefaultDeserializer.class);
+        startZigBee(dongle, config, DefaultSerializer.class, DefaultDeserializer.class);
     }
 }
