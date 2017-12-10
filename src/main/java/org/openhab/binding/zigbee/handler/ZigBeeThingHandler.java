@@ -45,10 +45,10 @@ import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
-import com.zsmartsystems.zigbee.otaserver.ZigBeeOtaFile;
-import com.zsmartsystems.zigbee.otaserver.ZigBeeOtaServer;
-import com.zsmartsystems.zigbee.otaserver.ZigBeeOtaServerStatus;
-import com.zsmartsystems.zigbee.otaserver.ZigBeeOtaStatusCallback;
+import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaFile;
+import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaServer;
+import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaServerStatus;
+import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaStatusCallback;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOtaUpgradeCluster;
 import com.zsmartsystems.zigbee.zdo.field.NeighborTable;
 import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
@@ -402,7 +402,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         ZigBeeEndpoint otaEndpoint = null;
         ZclOtaUpgradeCluster otaCluster = null;
         for (ZigBeeEndpoint endpoint : node.getEndpoints()) {
-            otaServer = (ZigBeeOtaServer) endpoint.getServer(ZclOtaUpgradeCluster.CLUSTER_ID);
+            otaServer = (ZigBeeOtaServer) endpoint.getExtension(ZclOtaUpgradeCluster.CLUSTER_ID);
             if (otaServer != null) {
                 break;
             }
@@ -422,7 +422,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         // Register the OTA server if it's not already registered
         if (otaServer == null && otaEndpoint != null) {
             otaServer = new ZigBeeOtaServer();
-            otaEndpoint.addServer(otaServer);
+            otaEndpoint.addExtension(otaServer);
         } else {
             logger.debug("{}: Can't create OTA server", nodeIeeeAddress);
             return;

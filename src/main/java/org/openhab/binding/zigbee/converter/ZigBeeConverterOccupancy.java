@@ -63,7 +63,7 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
             return;
         }
 
-        logger.debug("{}: Closing device on/off cluster", endpoint.getIeeeAddress());
+        logger.debug("{}: Closing device occupancy cluster", endpoint.getIeeeAddress());
 
         if (clusterOccupancy != null) {
             clusterOccupancy.removeAttributeListener(this);
@@ -91,8 +91,8 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.OCCUPANCY_SENSING
                 && attribute.getId() == ZclOccupancySensingCluster.ATTR_OCCUPANCY) {
-            Boolean value = (Boolean) attribute.getLastValue();
-            if (value != null && value == true) {
+            Integer value = (Integer) attribute.getLastValue();
+            if (value != null && value == 1) {
                 updateChannelState(OnOffType.ON);
             } else {
                 updateChannelState(OnOffType.OFF);

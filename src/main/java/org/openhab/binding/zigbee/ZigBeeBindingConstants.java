@@ -48,10 +48,16 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_COLOR_COLOR = "color_color";
     public static final String CHANNEL_COLOR_TEMPERATURE = "color_temperature";
 
-    public static final String CHANNEL_TEMPERATURE_VALUE = "sensor_temperature";
-    public static final String CHANNEL_HUMIDITY_VALUE = "sensor_humidity";
+    public static final String CHANNEL_ILLUMINANCE_VALUE = "measurement_illuminance";
+    public static final String CHANNEL_TEMPERATURE_VALUE = "measurement_temperature";
+    public static final String CHANNEL_HUMIDITY_VALUE = "measurement_relativehumidity";
 
     public static final String CHANNEL_OCCUPANCY_SENSOR = "sensor_occupancy";
+
+    public static final String CHANNEL_IAS_CONTACT_PORTAL1 = "ias_contactportal1";
+    public static final String CHANNEL_IAS_CONTACT_PORTAL2 = "ias_contactportal2";
+    public static final String CHANNEL_IAS_MOTION_INTRUSION = "ias_motionintrusion";
+    public static final String CHANNEL_IAS_MOTION_PRESENCE = "ias_motionpresence";
 
     public static final String CHANNEL_PROPERTY_ENDPOINT = "zigbee_endpoint";
 

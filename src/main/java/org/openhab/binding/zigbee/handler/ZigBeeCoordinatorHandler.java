@@ -47,6 +47,8 @@ import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNetworkStateListener;
 import com.zsmartsystems.zigbee.ZigBeeNetworkStateSerializer;
 import com.zsmartsystems.zigbee.ZigBeeNode;
+import com.zsmartsystems.zigbee.app.iasclient.ZigBeeIasCieApp;
+import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaServer;
 import com.zsmartsystems.zigbee.serialization.ZigBeeDeserializer;
 import com.zsmartsystems.zigbee.serialization.ZigBeeSerializer;
 import com.zsmartsystems.zigbee.transport.TransportConfig;
@@ -55,6 +57,8 @@ import com.zsmartsystems.zigbee.transport.TrustCentreJoinMode;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareUpdate;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportState;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclIasZoneCluster;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclOtaUpgradeCluster;
 import com.zsmartsystems.zigbee.zdo.field.NeighborTable;
 import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
 
@@ -393,6 +397,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         // Start the mesh monitor
         meshMonitor = new ZigBeeNetworkMeshMonitor(networkManager);
         meshMonitor.startup(90);
+
+        // Add the IAS Zone cluster to the network manager so we respond to the MatchDescriptor
+        networkManager.addSupportedCluster(ZclIasZoneCluster.CLUSTER_ID);
     }
 
     private void startZigBeeNetwork() {
@@ -484,7 +491,20 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     @Override
     public void nodeAdded(ZigBeeNode node) {
-        // Nothing to do here...
+        // This adds extra services to the clusters.
+        ZigBeeNode coordinator = networkManager.getNode(0);
+        for (ZigBeeEndpoint endpoint : node.getEndpoints()) {
+            if (endpoint.getInputCluster(ZclIasZoneCluster.CLUSTER_ID) != null) {
+                logger.debug("{}: Adding IAS CIE", node.getIeeeAddress());
+                endpoint.addExtension(new ZigBeeIasCieApp(coordinator.getIeeeAddress(), 0));
+                break;
+            }
+            if (endpoint.getInputCluster(ZclOtaUpgradeCluster.CLUSTER_ID) != null) {
+                logger.debug("{}: Adding OTA Server", node.getIeeeAddress());
+                endpoint.addExtension(new ZigBeeOtaServer());
+                break;
+            }
+        }
     }
 
     @Override
