@@ -22,6 +22,56 @@
 		<category>ColorLight</category>
 	</channel-type>
 
+    <!-- IAS Contact Channel -->
+    <channel-type id="ias_contactportal1">
+        <item-type>Switch</item-type>
+        <label>Contact Sensor</label>
+        <description>Contact sensor</description>
+        <category>Door</category>
+        <state readOnly="true">
+        </state>
+    </channel-type>
+
+    <!-- IAS Motion Intrusion Channel -->
+    <channel-type id="ias_motionintrusion">
+        <item-type>Switch</item-type>
+        <label>Motion Intrusion</label>
+        <description>Motion intrusion sensor</description>
+        <category>Motion</category>
+        <state readOnly="true">
+        </state>
+    </channel-type>
+    
+    <!-- IAS Motion Presence Channel -->
+    <channel-type id="ias_motionpresence">
+        <item-type>Switch</item-type>
+        <label>Motion Presence</label>
+        <description>Motion presence sensor</description>
+        <category>Motion</category>
+        <state readOnly="true">
+        </state>
+    </channel-type>
+    
+    <!-- Illuminance Channel -->
+    <channel-type id="measurement_illuminance">
+        <item-type>Number</item-type>
+        <label>Illuminance</label>
+        <description>Indicates the current illuminance</description>
+        <category></category>
+        <state pattern="%.1f" readOnly="true">
+        </state>
+    </channel-type>
+
+    <!-- Humidity Channel -->
+    <channel-type id="measurement_relativehumidity">
+        <item-type>Number</item-type>
+        <label>Humidity</label>
+        <description>Indicates the current relative humidity</description>
+        <category>Humidity</category>
+        <state pattern="%.1f" readOnly="true">
+        </state>
+    </channel-type>
+
 	<!-- Temperature Channel -->
 	<channel-type id="measurement_temperature">
 		<item-type>Number</item-type>
@@ -41,16 +91,6 @@
 				</options>
 			</parameter>
 		</config-description>
-	</channel-type>
-
-	<!-- Humidity Channel -->
-	<channel-type id="measurement_relativehumidity">
-		<item-type>Number</item-type>
-		<label>Humidity</label>
-		<description>Indicates the current relative humidity</description>
-		<category>Humidity</category>
-		<state pattern="%.1f" readOnly="true">
-		</state>
 	</channel-type>
 
 	<!-- Occupancy sensor -->
