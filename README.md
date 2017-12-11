@@ -78,8 +78,12 @@ The following channels are supported -:
 | switch_onoff | ```ON_OFF``` (0x0006) | Switch  |
 | color_color | ```COLOR_CONTROL``` (0x0300) | Color |   |
 | color_temperature | ```COLOR_CONTROL``` (0x0300) | Dimmer |   |
-| sensor_occupancy   | ```OCCUPANCY_SENSING``` (0x0406) | Switch  |
-| sensor_temperature | ```TEMPERATURE_MEASUREMENT``` (0x0402) | Number |   |
+| ias_contactportal1 | ```IAS_ZONE``` (0x0500) | Switch |  |
+| ias_motionintrusion | ```IAS_ZONE``` (0x0500) | Switch |  |
+| ias_motionpresence | ```IAS_ZONE``` (0x0500) | Switch |  |
+| measurement_illuminance | ```ILLUMINANCE_MEASUREMENT``` (0x0400) | Number |   |
+| measurement_temperature | ```TEMPERATURE_MEASUREMENT``` (0x0402) | Number |   |
+| sensor_occupancy   | ```OCCUPANCY_SENSING``` (0x0406) | Switch  |  |
 
 
 
