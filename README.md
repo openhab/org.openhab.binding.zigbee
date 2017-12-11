@@ -40,13 +40,17 @@ The thing type is ```coordinator_telegesis```.
 
 The following devices have been tested with the binding
 
-| Device           | Description    |
-|------------------|----------------|
-| Hue Bulbs        | Color LED Bulb |
-| SmartThings Plug | Metered Plug   |
-| Tradfri Bulbs |  |
-| Osram Bulbs   |  |
-| Busch-Jaegar 6711 | Relay Insert |
+| Device                     | Description                    |
+|----------------------------|--------------------------------|
+| Busch-Jaegar 6711          | Relay Insert                   |
+| Hue Bulbs                  | Color LED Bulb                 |
+| Hue Motion Sensor          | Motion and Luminance sensor    |
+| Osram Bulbs                |                                |
+| SmartThings Plug           | Metered Plug                   |
+| SmartThings Motion Sensor  | Motion and Temperature sensor  |
+| SmartThings Contact Sensor | Contact and Temperature sensor |
+| Tradfri Bulbs              |                                |
+
 
 
 ## Discovery
