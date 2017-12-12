@@ -81,7 +81,6 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler impl
 
         TransportConfig config = new TransportConfig();
 
-        updateStatus(ThingStatus.UNKNOWN);
         startZigBee(dongle, config, DefaultSerializer.class, DefaultDeserializer.class);
     }
 

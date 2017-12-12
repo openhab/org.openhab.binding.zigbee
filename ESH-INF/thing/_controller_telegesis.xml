@@ -86,7 +86,7 @@
 
             <parameter name="zigbee_password" type="text" required="false">
                 <label>Telegesis Dongle Password</label>
-                <description>Sets the password required to access the dongle</description>
+                <description>Sets the password required to configure some parameters on the dongle</description>
                 <default>password</default>
                 <advanced>true</advanced>
             </parameter>

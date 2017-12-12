@@ -37,10 +37,11 @@ import org.eclipse.smarthome.core.thing.binding.firmware.FirmwareUpdateHandler;
 import org.eclipse.smarthome.core.thing.binding.firmware.ProgressCallback;
 import org.eclipse.smarthome.core.thing.binding.firmware.ProgressStep;
 import org.eclipse.smarthome.core.types.Command;
+import org.eclipse.smarthome.core.types.RefreshType;
 import org.eclipse.smarthome.core.types.State;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
-import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterlFactory;
+import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
 import org.openhab.binding.zigbee.internal.ZigBeeActivator;
 import org.osgi.framework.ServiceRegistration;
@@ -66,11 +67,14 @@ import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
  */
 public class ZigBeeThingHandler extends BaseThingHandler
         implements ZigBeeNetworkNodeListener, FirmwareUpdateHandler, ConfigDescriptionProvider {
+    /**
+     * Our logger
+     */
+    private Logger logger = LoggerFactory.getLogger(ZigBeeThingHandler.class);
+
     private Map<ChannelUID, ZigBeeBaseChannelConverter> channels = new HashMap<ChannelUID, ZigBeeBaseChannelConverter>();
 
     private IeeeAddress nodeIeeeAddress = null;
-
-    private Logger logger = LoggerFactory.getLogger(ZigBeeThingHandler.class);
 
     private ZigBeeCoordinatorHandler coordinatorHandler;
 
@@ -83,7 +87,6 @@ public class ZigBeeThingHandler extends BaseThingHandler
     public ZigBeeThingHandler(Thing zigbeeDevice, TranslationProvider translationProvider) {
         super(zigbeeDevice);
         this.translationProvider = translationProvider;
-
     }
 
     private String getI18nConstant(String constant, Object... arguments) {
@@ -159,13 +162,13 @@ public class ZigBeeThingHandler extends BaseThingHandler
         }
 
         // Create the channel factory
-        ZigBeeChannelConverterlFactory factory = new ZigBeeChannelConverterlFactory();
+        ZigBeeChannelConverterFactory factory = new ZigBeeChannelConverterFactory();
 
         // Create the channels from the device
         // Process all the endpoints for this device and add all channels as derived from the supported clusters
         List<Channel> nodeChannels = new ArrayList<Channel>();
-        for (ZigBeeEndpoint device : coordinatorHandler.getNodeEndpoints(nodeIeeeAddress)) {
-            nodeChannels.addAll(factory.getChannels(getThing().getUID(), device));
+        for (ZigBeeEndpoint endpoint : coordinatorHandler.getNodeEndpoints(nodeIeeeAddress)) {
+            nodeChannels.addAll(factory.getChannels(getThing().getUID(), endpoint));
         }
 
         // TODO: Perform a channel consolidation to remove unnecessary channels.
@@ -191,6 +194,8 @@ public class ZigBeeThingHandler extends BaseThingHandler
                 }
 
                 handler.initializeConverter();
+
+                // TODO: Update the channel configuration from the device if method available
                 handler.updateConfiguration(channel.getConfiguration());
 
                 channels.put(channel.getUID(), handler);
@@ -246,7 +251,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
     }
 
     @Override
-    public void handleCommand(ChannelUID channelUID, Command command) {
+    public void handleCommand(final ChannelUID channelUID, final Command command) {
         logger.debug("{}: Command for channel {} --> {}", nodeIeeeAddress, channelUID, command);
 
         // Check that we have a coordinator to work through
@@ -262,11 +267,16 @@ public class ZigBeeThingHandler extends BaseThingHandler
             return;
         }
 
-        // The handler returns a runnable so we schedule it for immediate execution
-        Runnable commandHandler = handler.handleCommand(command);
-        if (commandHandler != null) {
-            scheduler.schedule(commandHandler, 0, TimeUnit.MILLISECONDS);
-        }
+        Runnable commandHandler = new Runnable() {
+            @Override
+            public void run() {
+                if (command == RefreshType.REFRESH) {
+                } else {
+                    handler.handleCommand(command);
+                }
+            }
+        };
+        scheduler.schedule(commandHandler, 0, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -397,8 +407,29 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
     @Override
     public ConfigDescription getConfigDescription(URI uri, Locale locale) {
+        if (uri == null) {
+            return null;
+        }
 
-        return null;
+        if ("channel".equals(uri.getScheme()) == false) {
+            return null;
+        }
+
+        ChannelUID channelUID = new ChannelUID(uri.getSchemeSpecificPart());
+
+        // Is this a zigbee thing?
+        if (!channelUID.getBindingId().equals(ZigBeeBindingConstants.BINDING_ID)) {
+            return null;
+        }
+
+        // Do we know this channel?
+        if (channels.get(channelUID) == null) {
+            return null;
+        }
+
+        ZigBeeBaseChannelConverter converter = channels.get(channelUID);
+
+        return new ConfigDescription(uri, converter.getConfigDescription());
     }
 
     @Override

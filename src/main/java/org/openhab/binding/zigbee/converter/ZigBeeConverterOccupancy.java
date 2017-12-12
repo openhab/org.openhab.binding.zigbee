@@ -31,19 +31,14 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
 
     private ZclOccupancySensingCluster clusterOccupancy;
 
-    private boolean initialised = false;
-
     @Override
-    public void initializeConverter() {
-        if (initialised == true) {
-            return;
-        }
+    public boolean initializeConverter() {
         logger.debug("{}: Initialising device occupancy cluster", endpoint.getIeeeAddress());
 
         clusterOccupancy = (ZclOccupancySensingCluster) endpoint.getInputCluster(ZclOccupancySensingCluster.CLUSTER_ID);
         if (clusterOccupancy == null) {
             logger.error("{}: Error opening occupancy cluster", endpoint.getIeeeAddress());
-            return;
+            return false;
         }
 
         clusterOccupancy.bind();
@@ -54,27 +49,19 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
         clusterOccupancy.setOccupancyReporting(1, 600);
-        initialised = true;
+        return true;
     }
 
     @Override
     public void disposeConverter() {
-        if (initialised == false) {
-            return;
-        }
-
         logger.debug("{}: Closing device occupancy cluster", endpoint.getIeeeAddress());
 
-        if (clusterOccupancy != null) {
-            clusterOccupancy.removeAttributeListener(this);
-        }
+        clusterOccupancy.removeAttributeListener(this);
     }
 
     @Override
     public void handleRefresh() {
-        if (initialised == false) {
-            return;
-        }
+        clusterOccupancy.getOccupancy(0);
     }
 
     @Override

@@ -65,18 +65,14 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     private boolean yChanged = false;
 
     @Override
-    public void initializeConverter() {
-        if (initialised == true) {
-            return;
-        }
-
+    public boolean initializeConverter() {
         currentHSB = new HSBType();
         colorUpdateScheduler = Executors.newSingleThreadScheduledExecutor();
 
         clusterColorControl = (ZclColorControlCluster) endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID);
         if (clusterColorControl == null) {
             logger.error("{}: Error opening device color controls", endpoint.getIeeeAddress());
-            return;
+            return false;
         }
 
         clusterLevelControl = (ZclLevelControlCluster) endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
@@ -104,7 +100,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                 delayedColorChange = true; // By now, only for XY lights till this is configurable
             } else {
                 logger.warn("{}: Device does not support RGB color", endpoint.getIeeeAddress());
-                return;
+                return false;
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.warn(
@@ -159,7 +155,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             }
         }
 
-        initialised = true;
+        return true;
     }
 
     @Override
@@ -272,54 +268,44 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     }
 
     @Override
-    public Runnable handleCommand(final Command command) {
-        return new Runnable() {
-            @Override
-            public void run() {
-                if (initialised == false) {
-                    return;
+    public void handleCommand(final Command command) {
+        try {
+            if (command instanceof HSBType) {
+                HSBType current = currentHSB;
+                HSBType color = (HSBType) command;
+                PercentType brightness = color.getBrightness();
+
+                boolean changeColor = true;
+                if (delayedColorChange) {
+                    // Color conversion (HUE -> XY -> HUE) makes this necessary due to rounding & precision
+                    int changeSensitivity = supportsHue ? 0 : 1;
+                    changeColor = Math.abs(current.getHue().intValue() - color.getHue().intValue()) > changeSensitivity
+                            || Math.abs(current.getSaturation().intValue()
+                                    - color.getSaturation().intValue()) > changeSensitivity;
                 }
 
-                try {
-                    if (command instanceof HSBType) {
-                        HSBType current = currentHSB;
-                        HSBType color = (HSBType) command;
-                        PercentType brightness = color.getBrightness();
-
-                        boolean changeColor = true;
-                        if (delayedColorChange) {
-                            // Color conversion (HUE -> XY -> HUE) makes this necessary due to rounding & precision
-                            int changeSensitivity = supportsHue ? 0 : 1;
-                            changeColor = Math
-                                    .abs(current.getHue().intValue() - color.getHue().intValue()) > changeSensitivity
-                                    || Math.abs(current.getSaturation().intValue()
-                                            - color.getSaturation().intValue()) > changeSensitivity;
-                        }
-
-                        if (brightness.intValue() != currentHSB.getBrightness().intValue()) {
-                            changeBrightness(brightness);
-                            if (changeColor && delayedColorChange) {
-                                Thread.sleep(1100);
-                            }
-                        }
-
-                        if (changeColor) {
-                            if (supportsHue) {
-                                changeColorHueSaturation(color);
-                            } else {
-                                changeColorXY(color);
-                            }
-                        }
-                    } else if (command instanceof PercentType) {
-                        changeBrightness((PercentType) command);
-                    } else if (command instanceof OnOffType) {
-                        changeOnOff((OnOffType) command);
+                if (brightness.intValue() != currentHSB.getBrightness().intValue()) {
+                    changeBrightness(brightness);
+                    if (changeColor && delayedColorChange) {
+                        Thread.sleep(1100);
                     }
-                } catch (InterruptedException | ExecutionException e) {
-                    logger.warn("{}: Exception processing command", endpoint.getIeeeAddress(), e);
                 }
+
+                if (changeColor) {
+                    if (supportsHue) {
+                        changeColorHueSaturation(color);
+                    } else {
+                        changeColorXY(color);
+                    }
+                }
+            } else if (command instanceof PercentType) {
+                changeBrightness((PercentType) command);
+            } else if (command instanceof OnOffType) {
+                changeOnOff((OnOffType) command);
             }
-        };
+        } catch (InterruptedException | ExecutionException e) {
+            logger.warn("{}: Exception processing command", endpoint.getIeeeAddress(), e);
+        }
     }
 
     @Override
@@ -395,7 +381,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
-        logger.debug("ZigBee attribute reports {} from {}", attribute, endpoint.getIeeeAddress());
+        logger.debug("{}: ZigBee attribute reports {} from {}", endpoint.getIeeeAddress(), attribute);
 
         synchronized (colorUpdateSync) {
             try {

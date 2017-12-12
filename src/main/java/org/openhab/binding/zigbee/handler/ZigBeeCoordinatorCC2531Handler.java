@@ -13,7 +13,6 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.core.i18n.TranslationProvider;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
-import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.internal.ZigBeeSerialPort;
@@ -81,7 +80,6 @@ public class ZigBeeCoordinatorCC2531Handler extends ZigBeeCoordinatorHandler {
 
         TransportConfig config = new TransportConfig();
 
-        updateStatus(ThingStatus.UNKNOWN);
         startZigBee(dongle, config, DefaultSerializer.class, DefaultDeserializer.class);
     }
 }

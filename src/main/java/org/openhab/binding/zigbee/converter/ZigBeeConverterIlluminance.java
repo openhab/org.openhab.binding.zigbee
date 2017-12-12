@@ -33,18 +33,13 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
 
     private ZclIlluminanceMeasurementCluster cluster;
 
-    private boolean initialised = false;
-
     @Override
-    public void initializeConverter() {
-        if (initialised) {
-            return;
-        }
+    public boolean initializeConverter() {
         cluster = (ZclIlluminanceMeasurementCluster) endpoint
                 .getInputCluster(ZclIlluminanceMeasurementCluster.CLUSTER_ID);
         if (cluster == null) {
             logger.error("Error opening device illuminance measurement cluster {}", endpoint.getIeeeAddress());
-            return;
+            return false;
         }
 
         cluster.bind();
@@ -54,26 +49,18 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
         cluster.getMeasuredValue(60);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        cluster.setMeasuredValueReporting(1, 600, 0.1);
-        initialised = true;
+        cluster.setMeasuredValueReporting(1, 600, 1);
+        return true;
     }
 
     @Override
     public void disposeConverter() {
-        if (!initialised) {
-            return;
-        }
-
-        if (cluster != null) {
-            cluster.removeAttributeListener(this);
-        }
+        cluster.removeAttributeListener(this);
     }
 
     @Override
     public void handleRefresh() {
-        if (!initialised) {
-            return;
-        }
+        cluster.getMeasuredValue(0);
     }
 
     @Override
@@ -87,7 +74,7 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
-        logger.debug("ZigBee attribute reports {} from {}", attribute, endpoint.getIeeeAddress());
+        logger.debug("{}: ZigBee attribute reports {} from {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.ILLUMINANCE_MEASUREMENT
                 && attribute.getId() == ZclIlluminanceMeasurementCluster.ATTR_MEASUREDVALUE) {
             Integer value = (Integer) attribute.getLastValue();

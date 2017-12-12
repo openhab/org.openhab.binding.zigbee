@@ -8,6 +8,7 @@
 package org.openhab.binding.zigbee.converter;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,18 +50,12 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
     private final String ON_LEVEL = "zigbee_levelcontrol_onlevel";
     private final String DEFAULT_MOVE_RATE = "zigbee_levelcontrol_defaultrate";
 
-    private boolean initialised = false;
-
     @Override
-    public void initializeConverter() {
-        if (initialised == true) {
-            return;
-        }
-
+    public boolean initializeConverter() {
         clusterLevelControl = (ZclLevelControlCluster) endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
         if (clusterLevelControl == null) {
             logger.debug("Error opening device level controls {}", endpoint.getIeeeAddress());
-            return;
+            return false;
         }
 
         clusterLevelControl.bind();
@@ -93,7 +88,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
 
         configOptions = parameters;
 
-        initialised = true;
+        return true;
     }
 
     @Override
@@ -103,32 +98,23 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
 
     @Override
     public void handleRefresh() {
-        clusterLevelControl.getCurrentLevelAsync();
+        clusterLevelControl.getCurrentLevel(0);
     }
 
     @Override
-    public Runnable handleCommand(final Command command) {
-        return new Runnable() {
-            @Override
-            public void run() {
-                if (initialised == false) {
-                    return;
-                }
-
-                int level = 0;
-                if (command instanceof PercentType) {
-                    level = ((PercentType) command).intValue();
-                } else if (command instanceof OnOffType) {
-                    if ((OnOffType) command == OnOffType.ON) {
-                        level = 100;
-                    } else {
-                        level = 0;
-                    }
-                }
-
-                clusterLevelControl.moveToLevelWithOnOffCommand((int) (level * 254.0 / 100.0 + 0.5), 10);
+    public void handleCommand(final Command command) {
+        int level = 0;
+        if (command instanceof PercentType) {
+            level = ((PercentType) command).intValue();
+        } else if (command instanceof OnOffType) {
+            if ((OnOffType) command == OnOffType.ON) {
+                level = 100;
+            } else {
+                level = 0;
             }
-        };
+        }
+
+        clusterLevelControl.moveToLevelWithOnOffCommand((int) (level * 254.0 / 100.0 + 0.5), 10);
     }
 
     @Override
@@ -141,20 +127,37 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
     }
 
     @Override
-    public void updateConfiguration(@NonNull Configuration configuration) {
+    public Configuration updateConfiguration(@NonNull Configuration configuration) {
+        Configuration updatedConfiguration = new Configuration();
+
+        for (String property : configuration.getProperties().keySet()) {
+            switch (property) {
+                case TRANSITION_TIME:
+                    BigDecimal value = (BigDecimal) configuration.get(property);
+                    clusterLevelControl.setOnOffTransitionTime(value.intValue());
+                    Integer response = clusterLevelControl.getOnOffTransitionTime(0);
+                    if (response != null) {
+                        updatedConfiguration.put(property, BigInteger.valueOf(response));
+                    }
+                    break;
+                default:
+                    logger.debug("{}: Unhandled configuration property {}", endpoint.getIeeeAddress(), property);
+                    break;
+            }
+        }
+
+        return updatedConfiguration;
     }
 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
-        logger.debug("ZigBee attribute reports {} from {}", attribute, endpoint.getIeeeAddress());
+        logger.debug("{}: ZigBee attribute reports {} from {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.LEVEL_CONTROL
                 && attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {
-                value = value * 100 / 255;
-                updateChannelState(new PercentType(value));
+                updateChannelState(new PercentType(value * 100 / 254));
             }
         }
     }
-
 }

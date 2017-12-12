@@ -33,33 +33,34 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
  * The factory performs two functions -
  * <ul>
  * <li>gets a list of channels the thing supports. This uses methods in each converter to decide if they are supported.
- * <li>instantiates converters based on the channel uid
+ * <li>instantiates converters based on the channel UID.
  * </ul>
  *
  * @author Chris Jackson
  */
-public class ZigBeeChannelConverterlFactory {
-    private static Logger logger = LoggerFactory.getLogger(ZigBeeChannelConverterlFactory.class);
+public class ZigBeeChannelConverterFactory {
+    private static Logger logger = LoggerFactory.getLogger(ZigBeeChannelConverterFactory.class);
 
     /**
      * Map of all channels supported by the binding
      */
     private final Map<String, Class<? extends ZigBeeBaseChannelConverter>> channelMap;
 
-    public ZigBeeChannelConverterlFactory() {
+    public ZigBeeChannelConverterFactory() {
         channelMap = new HashMap<String, Class<? extends ZigBeeBaseChannelConverter>>();
 
         // Add all the converters into the map...
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF, ZigBeeConverterSwitchOnoff.class);
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL, ZigBeeConverterSwitchLevel.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_COLOR, ZigBeeConverterColorColor.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_TEMPERATURE, ZigBeeConverterColorTemperature.class);
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_ILLUMINANCE_VALUE, ZigBeeConverterIlluminance.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_CONTACT_PORTAL1, ZigBeeConverterIasContactPortal1.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_MOTION_INTRUSION, ZigBeeConverterIasMotionIntrusion.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_MOTION_PRESENCE, ZigBeeConverterIasMotionPresence.class);
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE, ZigBeeConverterTemperature.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_ILLUMINANCE_VALUE, ZigBeeConverterIlluminance.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_OCCUPANCY_SENSOR, ZigBeeConverterOccupancy.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_POWER_BATTERYPERCENT, ZigBeeConverterBatteryPercent.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF, ZigBeeConverterSwitchOnoff.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL, ZigBeeConverterSwitchLevel.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE, ZigBeeConverterTemperature.class);
     }
 
     /**

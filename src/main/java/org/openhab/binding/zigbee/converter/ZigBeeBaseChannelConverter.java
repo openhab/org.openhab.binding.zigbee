@@ -17,6 +17,7 @@ import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
 import org.eclipse.smarthome.core.types.Command;
@@ -24,46 +25,75 @@ import org.eclipse.smarthome.core.types.State;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
 
 /**
- * ZigBeeChannelConverter class. Base class for all converters that convert between ZigBee clusters and openHAB
- * channels.
+ * ZigBeeBaseChannelConverter class. Base class for all converters that convert between ZigBee clusters, attributes and
+ * commands, and ESH channels.
+ * <p>
+ * The following converter lifecycle is defined -:
+ * <ul>
+ * <li>The thing handler may call {@link #getChannel(ThingUID, ZigBeeEndpoint)} to check if the device supports a
+ * channel from the converter. The converter should check the features of the {@link ZigBeeEndpoint} to see if the
+ * required features are available. If so, it should return the channel. This method allows dynamic channel detection
+ * for unknown devices and may not be called if a device is defined through another mechanism.
+ * <li>The thing handler will call the
+ * {@link #initialize(ZigBeeThingHandler, ChannelUID, ZigBeeCoordinatorHandler, IeeeAddress, int)} to initialise the
+ * channel converter. The converter should get any clusters via the
+ * {@link ZigBeeCoordinatorHandler#getEndpoint(IeeeAddress, int)} and {@link ZigBeeEndpoint#getInputCluster(int)} or
+ * {@link ZigBeeEndpoint#getOutputCluster(int)}. It should configure the binding by calling {@link ZclCluster#bind()}
+ * and configure reporting for attributes that are required to maintain state. It should configure any listeners for
+ * Attribute changes or incoming commands. During the initialisation, the converter should populate
+ * {@link #configOptions} with any configuration options that the device supports that may need to be adjusted by the
+ * user.
+ * <li>If the converter receives information from the ZigBee library that updates the channel state, it should update
+ * the state by calling {@link #updateChannelState(State).
+ * <li>The thing handler may call {@link #updateConfiguration(Configuration)} with an updated channel configuration from
+ * the user. The handler should update the configuration in the device, read back the updated configuration if
+ * necessary, and return an updated channel configuration to the thing handler.
+ * <li>The thing handler may call {@link #handleCommand(Command)} if there is an incoming command.
+ * <li>The thing handler may call {@link #handleRefresh()} to poll for an update of the channel data.
+ * <li>The thing handler will call {@link #disposeConverter()} when the channel is no longer required. The converter
+ * must release all resources an unregister any listeners from the ZigBee library.
+ * </ul>
+ * <p>
+ * Since many interactions with ZigBee devices can take an appreciable time to complete (especially for battery
+ * devices, most of the above commands are run in separate threads. The thread management is handled in the
+ * {@link ThingHandler} to allow common thread pools to be used so the converter does not need to be concerned with this
+ * other than to be careful about thread synchronisation. A converter should not assume it has exclusive access to a
+ * cluster as related functions may also be utilising the cluster.
  *
  * @author Chris Jackson
  */
 public abstract class ZigBeeBaseChannelConverter {
-    private static Logger logger = LoggerFactory.getLogger(ZigBeeBaseChannelConverter.class);
-
+    /**
+     * The {@link ZigBeeThingHandler} to which this channel belongs.
+     */
     protected ZigBeeThingHandler thing = null;
-    protected ZigBeeCoordinatorHandler coordinator = null;
-
-    protected List<ConfigDescriptionParameter> configOptions = null;
-
-    protected ChannelUID channelUID = null;
-    protected ZigBeeEndpoint endpoint = null;
 
     /**
-     * Map of all channels supported by the binding
+     * The {@link ZigBeeCoordinatorHandler} that controls the network
      */
-    private static Map<String, Class<? extends ZigBeeBaseChannelConverter>> channelMap = null;
+    protected ZigBeeCoordinatorHandler coordinator = null;
 
-    static {
-        channelMap = new HashMap<String, Class<? extends ZigBeeBaseChannelConverter>>();
+    /**
+     * A List of {@link ConfigDescriptionParameter} supported by this channel. This should be populated during the
+     * {@link #initializeConverter()} method if the device has configuration the user needs to be concerned with.
+     */
+    protected List<ConfigDescriptionParameter> configOptions = null;
 
-        // Add all the converters into the map...
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF, ZigBeeConverterSwitchOnoff.class);
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL, ZigBeeConverterSwitchLevel.class);
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_COLOR, ZigBeeConverterColorColor.class);
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_TEMPERATURE, ZigBeeConverterColorTemperature.class);
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE, ZigBeeConverterTemperature.class);
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_OCCUPANCY_SENSOR, ZigBeeConverterOccupancy.class);
-    }
+    /**
+     * The {@link ChannelUID} for this converter
+     */
+    protected ChannelUID channelUID = null;
+
+    /**
+     * The {@link ZigBeeEndpoint} this channel is linked to
+     */
+    protected ZigBeeEndpoint endpoint = null;
 
     /**
      * Constructor. Creates a new instance of the {@link ZigBeeBaseChannelConverter} class.
@@ -78,7 +108,7 @@ public abstract class ZigBeeBaseChannelConverter {
      *
      * @param thing the {@link ZigBeeThingHandler} the channel is part of
      * @param channelUID the {@link channelUID} for the channel
-     * @param coordinator the {@link ZigBeeCoordinatorHandler} this node is part of
+     * @param coordinator the {@link ZigBeeCoordinatorHandler} this endpoint is part of
      * @param address the {@link IeeeAddress} of the node
      * @param endpointId the endpoint this channel is linked to
      * @return true if the handler was created successfully - false otherwise
@@ -98,9 +128,12 @@ public abstract class ZigBeeBaseChannelConverter {
      * Initialise the converter. This is called by the {@link ZigBeeThingHandler} when the channel is created. The
      * converter should initialise any internal states, open any clusters, add reporting and binding that it needs to
      * operate.
+     * <p>
      * A list of configuration parameters for the thing should be built based on the features the device supports
+     *
+     * @return true if the converter was initialised successfully
      */
-    public abstract void initializeConverter();
+    public abstract boolean initializeConverter();
 
     /**
      * Closes the converter and releases any resources.
@@ -112,6 +145,9 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * Execute refresh method. This method is called every time a binding item is refreshed and the corresponding node
      * should be sent a message.
+     * <p>
+     * This is run in a separate thread by the Thing Handler so the converter doesn't need to worry about returning
+     * quickly.
      *
      * @param channel the {@link ZigBeeThingChannel}
      */
@@ -121,12 +157,14 @@ public abstract class ZigBeeBaseChannelConverter {
 
     /**
      * Receives a command from openHAB and translates it to an operation on the ZigBeee network.
+     * <p>
+     * This is run in a separate thread by the Thing Handler so the converter doesn't need to worry about returning
+     * quickly.
      *
-     * @param channel the {@link ZigBeeThingChannel}
      * @param command the {@link Command} to send
      */
-    public Runnable handleCommand(final Command command) {
-        return null;
+    public void handleCommand(final Command command) {
+        // Overridable if a channel can be commanded
     }
 
     /**
@@ -142,7 +180,7 @@ public abstract class ZigBeeBaseChannelConverter {
      *
      * @param thingUID the {@link ThingUID} of the thing to which the channel will be attached
      * @param endpoint The {@link ZigBeeEndpoint} to search for channels
-     * @return a {@link Channel} if the converter supports fetures from the {@link ZigBeeEndpoint}, otherwise null.
+     * @return a {@link Channel} if the converter supports features from the {@link ZigBeeEndpoint}, otherwise null.
      */
     public abstract Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint);
 
@@ -158,8 +196,12 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * Gets the configuration descriptions required to configure this channel.
      * <p>
-     * Ideally, implementations should use the {@link ZclCluster#discoverAttributes()} method to understand exactly what
-     * the device supports and only provide configuration as necessary.
+     * Ideally, implementations should use the {@link ZclCluster#discoverAttributes()} method and the
+     * {@link ZclCluster#isAttributeSupported()} method to understand exactly what the device supports and only provide
+     * configuration as necessary.
+     * <p>
+     * This method should not be overridden - the {@link #configOptions} list should be populated during converter
+     * initialisation.
      *
      * @return a {@link List} of {@link ConfigDescriptionParameter}s. null if no config is provided
      */
@@ -171,10 +213,11 @@ public abstract class ZigBeeBaseChannelConverter {
      * Creates a channel. This is called from extended converters to create a channel they support
      *
      * @param thingUID the {@link ThingUID}
+     * @param endpoint
      * @param channelType the channel uid as a string
      * @param itemType the item type for the channel
      * @param label the label for the channel
-     * @return
+     * @return the newly created {@link Channel}
      */
     protected Channel createChannel(ThingUID thingUID, ZigBeeEndpoint endpoint, String channelType, String itemType,
             String label) {
@@ -189,11 +232,14 @@ public abstract class ZigBeeBaseChannelConverter {
     }
 
     /**
-     * Update the channel configuration
+     * Update the channel configuration. This is called by the Thing Handler if the user updates the channel
+     * configuration.
      *
-     * @param configuration
+     * @param configuration the channel {@link Configuration}
+     * @return the updated {@link Configuration} to persist to handler configuration
      */
-    public void updateConfiguration(@NonNull Configuration configuration) {
+    public Configuration updateConfiguration(@NonNull Configuration configuration) {
         // Nothing required as default implementation
+        return new Configuration();
     }
 }
