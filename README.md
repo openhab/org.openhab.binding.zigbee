@@ -42,7 +42,7 @@ The following devices have been tested with the binding
 
 | Device                     | Description                    |
 |----------------------------|--------------------------------|
-| Busch-Jaegar 6711          | Relay Insert                   |
+| Busch-Jaeger 6711          | Relay Insert                   |
 | Hue Bulbs                  | Color LED Bulb                 |
 | Hue Motion Sensor          | Motion and Luminance sensor    |
 | Osram Bulbs                |                                |
@@ -60,7 +60,7 @@ Once the binding is authorized, and an adapter is added, it automatically reads 
 
 ## Thing Configuration
 
-The binding will attempt to automatically detect new devices, giving them a type based on their information they report, and will read their supported clusters to define the supported channels. 
+The binding will attempt to automatically detect new devices, giving them a type based on the information they report, and will read their supported clusters to define the supported channels. 
 
 ### Thing Types
 
@@ -86,6 +86,6 @@ The following channels are supported -:
 | sensor_occupancy   | ```OCCUPANCY_SENSING``` (0x0406) | Switch  |  |
 
 
+### Updates
 
-
-
+The binding will attempt to configure a connection with the device to receive automatic and instantaneous reports when the device status changes. Should this configuration fail, the binding will resort to using a fast polling (note that "fast" is approximately 10 seconds at this time). 

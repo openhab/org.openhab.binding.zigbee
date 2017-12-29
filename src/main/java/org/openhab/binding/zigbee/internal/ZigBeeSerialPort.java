@@ -152,9 +152,9 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
                 serialPort.addEventListener(this);
                 serialPort.notifyOnDataAvailable(true);
 
-                logger.info("Serial port [{}] is initialized.", portName);
+                logger.debug("Serial port [{}] is initialized.", portName);
             } catch (NoSuchPortException e) {
-                logger.error("Serial Error: Port {} does not exist", portName);
+                logger.error("Serial Error: Port {} does not exist.", portName);
                 return false;
             } catch (PortInUseException e) {
                 logger.error("Serial Error: Port {} in use.", portName);
@@ -175,7 +175,7 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
 
             return true;
         } catch (Exception e) {
-            logger.warn("Unable to open serial port: " + e.getMessage());
+            logger.error("Unable to open serial port: ", e);
             return false;
         }
     }
@@ -199,10 +199,10 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
                     this.notify();
                 }
 
-                logger.info("Serial port '" + portName + "' closed.");
+                logger.debug("Serial port '{}' closed.", portName);
             }
         } catch (Exception e) {
-            logger.warn("Error closing serial port: '" + portName + "'", e);
+            logger.error("Error closing serial port: '{}' ", portName, e);
         }
     }
 
@@ -248,7 +248,7 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
             }
             return -1;
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("Error reading from serial port ", e);
         }
         return -1;
     }

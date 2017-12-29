@@ -25,6 +25,8 @@ import org.eclipse.smarthome.core.types.State;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
@@ -70,6 +72,21 @@ import com.zsmartsystems.zigbee.zcl.ZclCluster;
  */
 public abstract class ZigBeeBaseChannelConverter {
     /**
+     * Our logger
+     */
+    private Logger logger = LoggerFactory.getLogger(ZigBeeBaseChannelConverter.class);
+
+    /**
+     * Default polling period (in seconds).
+     */
+    protected int POLLING_PERIOD_DEFAULT = 600;
+
+    /**
+     * Standard high rate polling period (in seconds).
+     */
+    protected int POLLING_PERIOD_HIGH = 10;
+
+    /**
      * The {@link ZigBeeThingHandler} to which this channel belongs.
      */
     protected ZigBeeThingHandler thing = null;
@@ -94,6 +111,14 @@ public abstract class ZigBeeBaseChannelConverter {
      * The {@link ZigBeeEndpoint} this channel is linked to
      */
     protected ZigBeeEndpoint endpoint = null;
+
+    /**
+     * The polling period used for this channel in seconds. Normally this should be left at the default
+     * ({@link POLLING_PERIOD_DEFAULT}), however if the channel does not support reporting, it can be set to a higher
+     * period such as {@link POLLING_PERIOD_HIGH}. Any period may be used, however it is recommended to use these
+     * standard settings.
+     */
+    protected int pollingPeriod = POLLING_PERIOD_DEFAULT;
 
     /**
      * Constructor. Creates a new instance of the {@link ZigBeeBaseChannelConverter} class.
@@ -129,7 +154,11 @@ public abstract class ZigBeeBaseChannelConverter {
      * converter should initialise any internal states, open any clusters, add reporting and binding that it needs to
      * operate.
      * <p>
-     * A list of configuration parameters for the thing should be built based on the features the device supports
+     * The binding should initialise reporting using one of the {@link ZclCluster#setReporting} commands. If this fails,
+     * the {@link #pollingPeriod} variable should be set to {@link #POLLING_PERIOD_HIGH}.
+     * <p>
+     * A list of configuration parameters for the thing should be built and added to {@link #configOptions} based on the
+     * features the device supports.
      *
      * @return true if the converter was initialised successfully
      */
@@ -190,6 +219,8 @@ public abstract class ZigBeeBaseChannelConverter {
      * @param state the updated {@link State}
      */
     protected void updateChannelState(State state) {
+        logger.debug("{}: Channel {} updated to {}", endpoint.getIeeeAddress(), channelUID, state);
+
         thing.setChannelState(channelUID, state);
     }
 
@@ -207,6 +238,18 @@ public abstract class ZigBeeBaseChannelConverter {
      */
     public List<ConfigDescriptionParameter> getConfigDescription() {
         return configOptions;
+    }
+
+    /**
+     * Gets the polling period for this channel in seconds. Normally this should be left at the default
+     * ({@link POLLING_PERIOD_DEFAULT}), however if the channel does not support reporting, it can be set to a higher
+     * period such as {@link POLLING_PERIOD_HIGH} during the converter initialisation. Any period may be used, however
+     * it is recommended to use these standard settings.
+     *
+     * @return the polling period for this channel in seconds
+     */
+    public int getPollingPeriod() {
+        return pollingPeriod;
     }
 
     /**

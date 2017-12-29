@@ -114,7 +114,7 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
             writer.flush();
             writer.close();
         } catch (IOException e) {
-            logger.error("Error writing network state", e);
+            logger.error("Error writing network state ", e);
         }
 
         logger.debug("Saving ZigBee network state: done.");
@@ -147,11 +147,10 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
                 }
             }
         } catch (UnsupportedEncodingException | FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("Error loading ZigBee state ", e);
         }
 
-        logger.info("Loading network state done.");
+        logger.debug("Loading network state done.");
     }
 
 }

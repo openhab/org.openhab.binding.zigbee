@@ -13,6 +13,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.HSBType;
 import org.eclipse.smarthome.core.library.types.OnOffType;
@@ -21,9 +23,11 @@ import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.config.ZclLevelControlConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
@@ -47,7 +51,6 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
     private boolean delayedColorChange = false; // Wait for brightness transition before changing color
 
-    private boolean initialised = false;
     private PercentType lastBrightness = PercentType.HUNDRED;
     private ScheduledExecutorService colorUpdateScheduler;
     private ScheduledFuture<?> colorUpdateTimer = null;
@@ -63,6 +66,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     private float lastY = -1.0f;
     private boolean xChanged = false;
     private boolean yChanged = false;
+
+    private ZclLevelControlConfig configLevelControl;
 
     @Override
     public boolean initializeConverter() {
@@ -111,49 +116,71 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
         // Bind to attribute reports, add listeners, then request the status
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        clusterColorControl.bind();
         clusterColorControl.addAttributeListener(this);
-        if (supportsHue) {
-            clusterColorControl.getCurrentHue(0);
-            clusterColorControl.getCurrentSaturation(0);
-            try {
-                clusterColorControl.setCurrentHueReporting(1, 600, 1).get();
-                clusterColorControl.setCurrentSaturationReporting(1, 600, 1).get();
-            } catch (ExecutionException | InterruptedException e) {
-                logger.debug("{}: Exception configuring color reporting", endpoint.getIeeeAddress(), e);
+
+        try {
+            CommandResult bindResponse = clusterColorControl.bind().get();
+            if (!bindResponse.isSuccess()) {
+                pollingPeriod = POLLING_PERIOD_HIGH;
             }
-        } else {
-            clusterColorControl.getCurrentX(0);
-            clusterColorControl.getCurrentY(0);
-            try {
+            if (supportsHue) {
+                clusterColorControl.getCurrentHue(0);
+                clusterColorControl.getCurrentSaturation(0);
+                CommandResult reportResponse = clusterColorControl.setCurrentHueReporting(1, 600, 1).get();
+                if (!reportResponse.isSuccess()) {
+                    pollingPeriod = POLLING_PERIOD_HIGH;
+                }
+                reportResponse = clusterColorControl.setCurrentSaturationReporting(1, 600, 1).get();
+                if (!reportResponse.isSuccess()) {
+                    pollingPeriod = POLLING_PERIOD_HIGH;
+                }
+            } else {
+                clusterColorControl.getCurrentX(0);
+                clusterColorControl.getCurrentY(0);
                 clusterColorControl.setCurrentXReporting(1, 600, 1).get();
                 clusterColorControl.setCurrentYReporting(1, 600, 1).get();
-            } catch (ExecutionException | InterruptedException e) {
-                logger.debug("{}: Exception configuring color reporting", endpoint.getIeeeAddress(), e);
             }
+        } catch (ExecutionException | InterruptedException e) {
+            logger.debug("{}: Exception configuring color reporting", endpoint.getIeeeAddress(), e);
         }
 
         if (clusterLevelControl != null) {
-            clusterLevelControl.bind();
             clusterLevelControl.addAttributeListener(this);
-            clusterLevelControl.getCurrentLevel(0);
             try {
-                clusterLevelControl.setCurrentLevelReporting(1, 600, 1).get();
+                CommandResult bindResponse = clusterLevelControl.bind().get();
+                if (!bindResponse.isSuccess()) {
+                    pollingPeriod = POLLING_PERIOD_HIGH;
+                }
+                clusterLevelControl.getCurrentLevel(0);
+                CommandResult reportResponse = clusterLevelControl.setCurrentLevelReporting(1, 600, 1).get();
+                if (!reportResponse.isSuccess()) {
+                    pollingPeriod = POLLING_PERIOD_HIGH;
+                }
             } catch (ExecutionException | InterruptedException e) {
                 logger.debug("{}: Exception configuring level reporting", endpoint.getIeeeAddress(), e);
             }
         }
 
         if (clusterOnOff != null) {
-            clusterOnOff.bind();
             clusterOnOff.addAttributeListener(this);
-            clusterOnOff.getOnOff(0);
             try {
-                clusterOnOff.setOnOffReporting(1, 600).get();
+                CommandResult bindResponse = clusterOnOff.bind().get();
+                if (!bindResponse.isSuccess()) {
+                    pollingPeriod = POLLING_PERIOD_HIGH;
+                }
+                clusterOnOff.getOnOff(0);
+                CommandResult reportResponse = clusterOnOff.setOnOffReporting(1, 600).get();
+                if (!reportResponse.isSuccess()) {
+                    pollingPeriod = POLLING_PERIOD_HIGH;
+                }
             } catch (ExecutionException | InterruptedException e) {
                 logger.debug("{}: Exception configuring on/off reporting", endpoint.getIeeeAddress(), e);
             }
         }
+
+        // Create a configuration handler and get the available options
+        configLevelControl = new ZclLevelControlConfig(clusterLevelControl);
+        configOptions = configLevelControl.getConfiguration();
 
         return true;
     }
@@ -377,6 +404,14 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         updateColorXY(x, y);
         xChanged = false;
         yChanged = false;
+    }
+
+    @Override
+    public Configuration updateConfiguration(@NonNull Configuration configuration) {
+        Configuration updatedConfiguration = new Configuration();
+        configLevelControl.updateConfiguration(configuration, updatedConfiguration);
+
+        return updatedConfiguration;
     }
 
     @Override

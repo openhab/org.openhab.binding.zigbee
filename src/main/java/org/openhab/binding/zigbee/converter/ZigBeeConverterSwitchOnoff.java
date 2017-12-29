@@ -7,6 +7,8 @@
  */
 package org.openhab.binding.zigbee.converter;
 
+import java.util.concurrent.ExecutionException;
+
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.thing.Channel;
@@ -16,6 +18,7 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
@@ -42,14 +45,25 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter imple
             return false;
         }
 
-        clusterOnOff.bind();
+        try {
+            CommandResult bindResponse = clusterOnOff.bind().get();
+            if (bindResponse.isSuccess()) {
+                // Configure reporting - no faster than once per second - no slower than 10 minutes.
+                CommandResult reportingResponse = clusterOnOff.setOnOffReporting(1, 600).get();
+                if (reportingResponse.isError()) {
+                    pollingPeriod = POLLING_PERIOD_HIGH;
+                }
+            } else {
+                pollingPeriod = POLLING_PERIOD_HIGH;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+        }
 
         // Add a listener, then request the status
         clusterOnOff.addAttributeListener(this);
         clusterOnOff.getOnOff(0);
 
-        // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        clusterOnOff.setOnOffReporting(1, 600);
         return true;
     }
 

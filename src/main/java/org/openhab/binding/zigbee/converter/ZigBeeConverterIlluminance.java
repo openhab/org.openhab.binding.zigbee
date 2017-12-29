@@ -38,7 +38,7 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
         cluster = (ZclIlluminanceMeasurementCluster) endpoint
                 .getInputCluster(ZclIlluminanceMeasurementCluster.CLUSTER_ID);
         if (cluster == null) {
-            logger.error("Error opening device illuminance measurement cluster {}", endpoint.getIeeeAddress());
+            logger.error("{}: Error opening device illuminance measurement cluster", endpoint.getIeeeAddress());
             return false;
         }
 
@@ -74,7 +74,7 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
-        logger.debug("{}: ZigBee attribute reports {} from {}", endpoint.getIeeeAddress(), attribute);
+        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.ILLUMINANCE_MEASUREMENT
                 && attribute.getId() == ZclIlluminanceMeasurementCluster.ATTR_MEASUREDVALUE) {
             Integer value = (Integer) attribute.getLastValue();

@@ -7,30 +7,26 @@
  */
 package org.openhab.binding.zigbee.converter;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
-import org.eclipse.smarthome.config.core.ConfigDescriptionParameter.Type;
-import org.eclipse.smarthome.config.core.ConfigDescriptionParameterBuilder;
 import org.eclipse.smarthome.config.core.Configuration;
-import org.eclipse.smarthome.config.core.ParameterOption;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.config.ZclLevelControlConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclLevelControlCluster;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
@@ -41,52 +37,65 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterSwitchLevel.class);
 
+    private ZclOnOffCluster clusterOnOff;
     private ZclLevelControlCluster clusterLevelControl;
-
-    private final String TRANSITION_TIME = "zigbee_levelcontrol_transitiontime";
-    private final String TRANSITION_TIME_ON_OFF = "zigbee_levelcontrol_transitiontimeonoff";
-    private final String TRANSITION_TIME_ON = "zigbee_levelcontrol_transitiontimeon";
-    private final String TRANSITION_TIME_OFF = "zigbee_levelcontrol_transitiontimeoff";
-    private final String ON_LEVEL = "zigbee_levelcontrol_onlevel";
-    private final String DEFAULT_MOVE_RATE = "zigbee_levelcontrol_defaultrate";
+    private ZclLevelControlConfig configLevelControl;
 
     @Override
     public boolean initializeConverter() {
         clusterLevelControl = (ZclLevelControlCluster) endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
         if (clusterLevelControl == null) {
-            logger.debug("Error opening device level controls {}", endpoint.getIeeeAddress());
+            logger.error("{}: Error opening device level controls", endpoint.getIeeeAddress());
             return false;
         }
+        clusterOnOff = (ZclOnOffCluster) endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
+        if (clusterLevelControl == null) {
+            logger.debug("{}: Error opening device onoff controls - will use level cluster", endpoint.getIeeeAddress());
+        }
 
-        clusterLevelControl.bind();
+        try {
+            CommandResult bindResponse = clusterLevelControl.bind().get();
+            if (bindResponse.isSuccess()) {
+                // Configure reporting - no faster than once per second - no slower than 10 minutes.
+                CommandResult reportingResponse = clusterLevelControl.setCurrentLevelReporting(1, 600, 1).get();
+                if (reportingResponse.isError()) {
+                    pollingPeriod = POLLING_PERIOD_HIGH;
+                }
+            } else {
+                pollingPeriod = POLLING_PERIOD_HIGH;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+        }
 
         // Add a listener, then request the status
         clusterLevelControl.addAttributeListener(this);
         clusterLevelControl.getCurrentLevel(0);
 
-        // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        clusterLevelControl.setCurrentLevelReporting(1, 600, 1);
+        if (clusterOnOff != null) {
+            try {
+                CommandResult bindResponse = clusterOnOff.bind().get();
+                if (bindResponse.isSuccess()) {
+                    // Configure reporting - no faster than once per second - no slower than 10 minutes.
+                    CommandResult reportingResponse = clusterOnOff.setOnOffReporting(1, 600).get();
+                    if (reportingResponse.isError()) {
+                        pollingPeriod = POLLING_PERIOD_HIGH;
+                    }
+                } else {
+                    pollingPeriod = POLLING_PERIOD_HIGH;
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            }
 
-        // try {
-        // Set<Integer> supportedAttributes = null;
-        // Boolean result = clusterLevelControl.discoverAttributes(false).get();
-        // if (result) {
-        // supportedAttributes = clusterLevelControl.getSupportedAttributes();
-        // }
+            // Add a listener, then request the status
+            clusterOnOff.addAttributeListener(this);
+            clusterOnOff.getOnOff(0);
+        }
 
-        // } catch (InterruptedException | ExecutionException e) {
-        // logger.debug("Error getting supported attributes. ", e);
-        // }
-        List<ConfigDescriptionParameter> parameters = new ArrayList<ConfigDescriptionParameter>();
-
-        List<ParameterOption> options = new ArrayList<ParameterOption>();
-        options.add(new ParameterOption("65535", "Use On/Off transition time"));
-        parameters.add(ConfigDescriptionParameterBuilder.create(TRANSITION_TIME, Type.INTEGER)
-                .withLabel("Transition Time").withDescription("Time in 100ms intervals to transition between settings")
-                .withDefault("0").withMinimum(new BigDecimal(0)).withMaximum(new BigDecimal(60000)).withOptions(options)
-                .withLimitToOptions(false).build());
-
-        configOptions = parameters;
+        // Create a configuration handler and get the available options
+        configLevelControl = new ZclLevelControlConfig(clusterLevelControl);
+        configOptions = configLevelControl.getConfiguration();
 
         return true;
     }
@@ -107,14 +116,25 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         if (command instanceof PercentType) {
             level = ((PercentType) command).intValue();
         } else if (command instanceof OnOffType) {
-            if ((OnOffType) command == OnOffType.ON) {
+            OnOffType cmdOnOff = (OnOffType) command;
+            if (clusterOnOff != null) {
+                if (cmdOnOff == OnOffType.ON) {
+                    clusterOnOff.onCommand();
+                } else {
+                    clusterOnOff.offCommand();
+                }
+                return;
+            }
+
+            if (cmdOnOff == OnOffType.ON) {
                 level = 100;
             } else {
                 level = 0;
             }
         }
 
-        clusterLevelControl.moveToLevelWithOnOffCommand((int) (level * 254.0 / 100.0 + 0.5), 10);
+        clusterLevelControl.moveToLevelWithOnOffCommand((int) (level * 254.0 / 100.0 + 0.5),
+                configLevelControl.getDefaultTransitionTime());
     }
 
     @Override
@@ -129,34 +149,28 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
     @Override
     public Configuration updateConfiguration(@NonNull Configuration configuration) {
         Configuration updatedConfiguration = new Configuration();
-
-        for (String property : configuration.getProperties().keySet()) {
-            switch (property) {
-                case TRANSITION_TIME:
-                    BigDecimal value = (BigDecimal) configuration.get(property);
-                    clusterLevelControl.setOnOffTransitionTime(value.intValue());
-                    Integer response = clusterLevelControl.getOnOffTransitionTime(0);
-                    if (response != null) {
-                        updatedConfiguration.put(property, BigInteger.valueOf(response));
-                    }
-                    break;
-                default:
-                    logger.debug("{}: Unhandled configuration property {}", endpoint.getIeeeAddress(), property);
-                    break;
-            }
-        }
+        configLevelControl.updateConfiguration(configuration, updatedConfiguration);
 
         return updatedConfiguration;
     }
 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
-        logger.debug("{}: ZigBee attribute reports {} from {}", endpoint.getIeeeAddress(), attribute);
+        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.LEVEL_CONTROL
                 && attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {
                 updateChannelState(new PercentType(value * 100 / 254));
+            }
+            return;
+        }
+        if (attribute.getCluster() == ZclClusterType.ON_OFF && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
+            Boolean value = (Boolean) attribute.getLastValue();
+            if (value != null && value == true) {
+                updateChannelState(OnOffType.ON);
+            } else {
+                updateChannelState(OnOffType.OFF);
             }
         }
     }

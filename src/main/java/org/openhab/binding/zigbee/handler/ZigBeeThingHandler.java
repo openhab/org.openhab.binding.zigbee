@@ -13,11 +13,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.smarthome.config.core.ConfigDescription;
@@ -72,8 +76,14 @@ public class ZigBeeThingHandler extends BaseThingHandler
      */
     private Logger logger = LoggerFactory.getLogger(ZigBeeThingHandler.class);
 
+    /**
+     * The map of all the channels defined for this thing
+     */
     private Map<ChannelUID, ZigBeeBaseChannelConverter> channels = new HashMap<ChannelUID, ZigBeeBaseChannelConverter>();
 
+    /**
+     * The {@link IeeeAddress} for this device
+     */
     private IeeeAddress nodeIeeeAddress = null;
 
     private ZigBeeCoordinatorHandler coordinatorHandler;
@@ -83,6 +93,19 @@ public class ZigBeeThingHandler extends BaseThingHandler
     private final TranslationProvider translationProvider;
 
     private ServiceRegistration<FirmwareUpdateHandler> firmwareRegistration;
+
+    private final Object pollingSync = new Object();
+    private ScheduledFuture<?> pollingJob = null;
+    private final int POLLING_PERIOD_MIN = 5;
+    private final int POLLING_PERIOD_MAX = 86400;
+    private final int POLLING_PERIOD_DEFAULT = 1800;
+    private int pollingPeriod = POLLING_PERIOD_DEFAULT;
+
+    /**
+     * A set of channels that have been linked to items. This is used to ensure we only poll channels that are linked to
+     * keep netowkr activity to a minimum.
+     */
+    private final Set<ChannelUID> thingChannelsPoll = new HashSet<ChannelUID>();
 
     public ZigBeeThingHandler(Thing zigbeeDevice, TranslationProvider translationProvider) {
         super(zigbeeDevice);
@@ -145,13 +168,12 @@ public class ZigBeeThingHandler extends BaseThingHandler
         }, 10, TimeUnit.MILLISECONDS);
     }
 
-    @SuppressWarnings("unchecked")
     private void doNodeInitialisation() {
         if (nodeInitialised) {
             return;
         }
 
-        logger.debug("{}: Initialising node", nodeIeeeAddress);
+        logger.debug("{}: Initialising ZigBee Thing handler.", nodeIeeeAddress);
 
         // Load the node information
         ZigBeeNode node = coordinatorHandler.getNode(nodeIeeeAddress);
@@ -171,14 +193,25 @@ public class ZigBeeThingHandler extends BaseThingHandler
             nodeChannels.addAll(factory.getChannels(getThing().getUID(), endpoint));
         }
 
-        // TODO: Perform a channel consolidation to remove unnecessary channels.
-        // This removes channels that a re covered through inheritance.
-
         logger.debug("{}: Created {} channels", nodeIeeeAddress, nodeChannels.size());
         try {
-            ThingBuilder thingBuilder = editThing();
-            thingBuilder.withChannels(nodeChannels).withConfiguration(getConfig());
-            updateThing(thingBuilder.build());
+            pollingPeriod = POLLING_PERIOD_MAX;
+
+            // Check if the channels we've discovered are the same
+            List<ChannelUID> oldChannelUidList = new ArrayList<ChannelUID>();
+            for (Channel channel : getThing().getChannels()) {
+                oldChannelUidList.add(channel.getUID());
+            }
+            List<ChannelUID> newChannelUidList = new ArrayList<ChannelUID>();
+            for (Channel channel : nodeChannels) {
+                newChannelUidList.add(channel.getUID());
+            }
+            if (!newChannelUidList.equals(oldChannelUidList)) {
+                logger.debug("{}: Updating thing definition as channels have changed", nodeIeeeAddress);
+                ThingBuilder thingBuilder = editThing();
+                thingBuilder.withChannels(nodeChannels).withConfiguration(getConfig());
+                updateThing(thingBuilder.build());
+            }
 
             // Create the channel map to simplify processing incoming events
             for (Channel channel : getThing().getChannels()) {
@@ -199,36 +232,132 @@ public class ZigBeeThingHandler extends BaseThingHandler
                 handler.updateConfiguration(channel.getConfiguration());
 
                 channels.put(channel.getUID(), handler);
+
+                if (handler.getPollingPeriod() < pollingPeriod) {
+                    pollingPeriod = handler.getPollingPeriod();
+                }
             }
         } catch (Exception e) {
-            logger.debug("Exception creating channels for " + nodeIeeeAddress + ": ", e);
+            logger.error("{}: Exception creating channels ", nodeIeeeAddress, e);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.HANDLER_INITIALIZING_ERROR);
+            return;
         }
 
-        logger.debug("{}: Initializing ZigBee thing handler", nodeIeeeAddress);
-        updateNodeProperties(node);
+        // Update the general properties
+        ZigBeeNodePropertyDiscoverer propertyDiscoverer = new ZigBeeNodePropertyDiscoverer();
+        Map<String, String> newProperties = propertyDiscoverer.getProperties(coordinatorHandler, node);
+        Map<String, String> orgProperties = editProperties();
+        orgProperties.putAll(newProperties);
+        updateProperties(orgProperties);
+
+        // Update the binding table.
+        // We're not doing anything with the information here, but we want it up to date so it's ready for use later.
+        try {
+            if (node.updateBindingTable().get() == false) {
+                logger.debug("{}: Error getting binding table", nodeIeeeAddress);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception getting binding table ", nodeIeeeAddress, e);
+        }
+
         updateStatus(ThingStatus.ONLINE);
+
+        startPolling();
 
         nodeInitialised = true;
     }
 
     @Override
     public void dispose() {
+        logger.debug("{}: Handler dispose.", nodeIeeeAddress);
         if (firmwareRegistration != null) {
             firmwareRegistration.unregister();
         }
 
-        logger.debug("Handler dispose. Unregistering listener.");
         if (nodeIeeeAddress != null) {
             if (coordinatorHandler != null) {
-                // coordinatorHandler.unsubscribeEvents(nodeAddress, this);
+                coordinatorHandler.removeNetworkNodeListener(this);
             }
             nodeIeeeAddress = null;
+        }
+
+        for (ZigBeeBaseChannelConverter channel : channels.values()) {
+            channel.disposeConverter();
+        }
+    }
+
+    /**
+     * Start polling channel updates
+     */
+    private void startPolling() {
+        Runnable pollingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    logger.debug("{}: Polling...", nodeIeeeAddress);
+
+                    for (ChannelUID channelUid : channels.keySet()) {
+                        if (!thingChannelsPoll.contains(channelUid)) {
+                            // Don't poll if this channel isn't linked
+                            continue;
+                        }
+
+                        logger.debug("{}: Polling {}", nodeIeeeAddress, channelUid);
+                        ZigBeeBaseChannelConverter converter = channels.get(channelUid);
+                        if (converter == null) {
+                            logger.debug("{}: Polling aborted as no converter found for {}", nodeIeeeAddress,
+                                    channelUid);
+                        } else {
+                            converter.handleRefresh();
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.warn("{}: Polling aborted due to exception ", nodeIeeeAddress, e);
+                }
+            }
+        };
+
+        synchronized (pollingSync) {
+            if (pollingJob != null) {
+                pollingJob.cancel(true);
+                pollingJob = null;
+            }
+
+            if (pollingPeriod < POLLING_PERIOD_MIN) {
+                logger.debug("{}: Polling period was set below minimum value. Using minimum.", nodeIeeeAddress);
+                pollingPeriod = POLLING_PERIOD_MIN;
+            }
+
+            if (pollingPeriod > POLLING_PERIOD_MAX) {
+                logger.debug("{}: Polling period was set above maximum value. Using maximum.", nodeIeeeAddress);
+                pollingPeriod = POLLING_PERIOD_MAX;
+            }
+
+            pollingJob = scheduler.scheduleAtFixedRate(pollingRunnable, pollingPeriod * 1000, pollingPeriod * 1000,
+                    TimeUnit.MILLISECONDS);
+            logger.debug("{}: Polling intialised at {} seconds", nodeIeeeAddress, pollingPeriod);
         }
     }
 
     @Override
+    public void channelLinked(ChannelUID channelUID) {
+        logger.debug("{}: Channel {} linked - polling started.", nodeIeeeAddress, channelUID);
+
+        // We keep track of what channels are used and only poll channels that the framework is using
+        thingChannelsPoll.add(channelUID);
+    }
+
+    @Override
+    public void channelUnlinked(ChannelUID channelUID) {
+        logger.debug("{}: Channel {} unlinked - polling stopped.", nodeIeeeAddress, channelUID);
+
+        // We keep track of what channels are used and only poll channels that the framework is using
+        thingChannelsPoll.remove(channelUID);
+    }
+
+    @Override
     public void handleConfigurationUpdate(Map<String, Object> configurationParameters) {
-        logger.debug("{}: Configuration received.", nodeIeeeAddress);
+        logger.debug("{}: Configuration received: {}", nodeIeeeAddress, configurationParameters);
 
         Configuration configuration = editConfiguration();
         for (Entry<String, Object> configurationParameter : configurationParameters.entrySet()) {
@@ -289,23 +418,6 @@ public class ZigBeeThingHandler extends BaseThingHandler
     public void setChannelState(ChannelUID channel, State state) {
         updateState(channel, state);
         updateStatus(ThingStatus.ONLINE);
-    }
-
-    private void updateNodeProperties(final ZigBeeNode node) {
-        final ZigBeeThingHandler thisHandler = this;
-        Runnable pollingRunnable = new Runnable() {
-            @Override
-            public void run() {
-                ZigBeeNodePropertyDiscoverer propertyDiscoverer = new ZigBeeNodePropertyDiscoverer();
-
-                Map<String, String> newProperties = propertyDiscoverer.getProperties(coordinatorHandler, node);
-                Map<String, String> orgProperties = thisHandler.editProperties();
-                orgProperties.putAll(newProperties);
-                thisHandler.updateProperties(orgProperties);
-            }
-        };
-
-        scheduler.schedule(pollingRunnable, 10, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -390,14 +502,6 @@ public class ZigBeeThingHandler extends BaseThingHandler
         updateProperties(properties);
 
         updateStatus(ThingStatus.OFFLINE);
-    }
-
-    public ZigBeeCoordinatorHandler getCoordinatorHandler() {
-        return coordinatorHandler;
-    }
-
-    public IeeeAddress getIeeeAddress() {
-        return nodeIeeeAddress;
     }
 
     @Override

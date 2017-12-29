@@ -11,6 +11,17 @@
             It is also possible to dim values and switch the light on and off.
         </description>
         <category>ColorLight</category>
+        <config-description>
+            <parameter name="zigbee_levelcontrol_transitiontimedefault" type="integer" min="0" max="255">
+                <label>Default transition time</label>
+                <description>Default time in 10ms intervals to transition between settings</description>
+                <default>65535</default>
+                <options>
+                    <option value="65535">No Default</option>
+                </options>
+                <limitToOptions>false</limitToOptions>
+            </parameter>
+        </config-description>
     </channel-type>
 
 	<!-- Color Temperature Channel -->
@@ -80,17 +91,6 @@
 		<category>Temperature</category>
 		<state pattern="%.1f" readOnly="true">
 		</state>
-		<config-description>
-			<parameter name="config_scale" type="text">
-				<label>Scale</label>
-				<description>Select the scale for temperature readings</description>
-				<default>0</default>
-				<options>
-					<option value="0">Celsius</option>
-					<option value="1">Fahrenheit</option>
-				</options>
-			</parameter>
-		</config-description>
 	</channel-type>
 
 	<!-- Occupancy sensor -->
@@ -116,6 +116,17 @@
 		<label>Dimmer</label>
 		<description>Sets the level of the light</description>
 		<category>Light</category>
+        <config-description>
+            <parameter name="zigbee_levelcontrol_transitiontimedefault" type="integer" min="0" max="255">
+                <label>Default transition time</label>
+                <description>Default time in 10ms intervals to transition between settings</description>
+                <default>65535</default>
+                <options>
+                    <option value="65535">No Default</option>
+                </options>
+                <limitToOptions>false</limitToOptions>
+            </parameter>
+        </config-description>
 	</channel-type>
 
 </thing:thing-descriptions>
