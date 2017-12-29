@@ -70,9 +70,9 @@ public class ColorHelper {
         float g = X * Xy2Rgb[1][0] + Yo * Xy2Rgb[1][1] + Z * Xy2Rgb[1][2];
         float b = X * Xy2Rgb[2][0] + Yo * Xy2Rgb[2][1] + Z * Xy2Rgb[2][2];
 
-        r = gammaCompress(r * Y);
-        g = gammaCompress(g * Y);
-        b = gammaCompress(b * Y);
+        r = gammaCompress(r) * Y;
+        g = gammaCompress(g) * Y;
+        b = gammaCompress(b) * Y;
 
         return HSBType.fromRGB((int) (r * 255.0f + 0.5f), (int) (g * 255.0f + 0.5f), (int) (b * 255.0f + 0.5f));
     }
