@@ -51,18 +51,16 @@ public class ColorHelper {
     }
 
     /**
-     * Returns a HSBType object representing the provided xyY color values in CIE XY color model.
+     * Returns a HSBType object representing the provided xy color values in CIE XY color model.
      * Conversion from CIE XY color model to sRGB using D65 reference white
+     * Returned color is set to full brightness
      *
      * @param x, y color information 0.0 - 1.0
-     * @param Y relative luminance 0.0 - 1.0
      *
-     * @return new HSBType object representing the given CIE XY color
+     * @return new HSBType object representing the given CIE XY color, full brightness
      */
-    public static HSBType fromXY(float x, float y, float Y) {
-        // This makes sure we keep color information even if relative luminance is zero
+    public static HSBType fromXY(float x, float y) {
         float Yo = 1.0f;
-
         float X = (Yo / y) * x;
         float Z = (Yo / y) * (1.0f - x - y);
 
@@ -70,9 +68,14 @@ public class ColorHelper {
         float g = X * Xy2Rgb[1][0] + Yo * Xy2Rgb[1][1] + Z * Xy2Rgb[1][2];
         float b = X * Xy2Rgb[2][0] + Yo * Xy2Rgb[2][1] + Z * Xy2Rgb[2][2];
 
-        r = gammaCompress(r) * Y;
-        g = gammaCompress(g) * Y;
-        b = gammaCompress(b) * Y;
+        float max = r > g ? r : g;
+        if (b > max) {
+            max = b;
+        }
+
+        r = gammaCompress(r / max);
+        g = gammaCompress(g / max);
+        b = gammaCompress(b / max);
 
         return HSBType.fromRGB((int) (r * 255.0f + 0.5f), (int) (g * 255.0f + 0.5f), (int) (b * 255.0f + 0.5f));
     }

@@ -45,6 +45,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     private ZclLevelControlCluster clusterLevelControl;
     private ZclOnOffCluster clusterOnOff;
 
+    private boolean delayedColorChange = false; // Wait for brightness transition before changing color
+
     private boolean initialised = false;
     private PercentType lastBrightness = PercentType.HUNDRED;
     private ScheduledExecutorService colorUpdateScheduler;
@@ -99,6 +101,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             } else if (clusterColorControl.getSupportedAttributes().contains(ZclColorControlCluster.ATTR_CURRENTX)) {
                 logger.debug("{}: Device supports XY color set of commands", endpoint.getIeeeAddress());
                 supportsHue = false;
+                delayedColorChange = true; // By now, only for XY lights till this is configurable
             } else {
                 logger.warn("{}: Device does not support RGB color", endpoint.getIeeeAddress());
                 return;
@@ -279,21 +282,33 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
                 try {
                     if (command instanceof HSBType) {
+                        HSBType current = currentHSB;
                         HSBType color = (HSBType) command;
                         PercentType brightness = color.getBrightness();
 
-                        if (brightness.intValue() != currentHSB.getBrightness().intValue()) {
-                            changeBrightness(brightness);
-                            // Wait for transition to complete
-                            // Some lights do not like receiving a level/color change command
-                            // while the previous transition is in progress...
-                            // Thread.sleep(1000);
+                        boolean changeColor = true;
+                        if (delayedColorChange) {
+                            // Color conversion (HUE -> XY -> HUE) makes this necessary due to rounding & precision
+                            int changeSensitivity = supportsHue ? 0 : 1;
+                            changeColor = Math
+                                    .abs(current.getHue().intValue() - color.getHue().intValue()) > changeSensitivity
+                                    || Math.abs(current.getSaturation().intValue()
+                                            - color.getSaturation().intValue()) > changeSensitivity;
                         }
 
-                        if (supportsHue) {
-                            changeColorHueSaturation(color);
-                        } else {
-                            changeColorXY(color);
+                        if (brightness.intValue() != currentHSB.getBrightness().intValue()) {
+                            changeBrightness(brightness);
+                            if (changeColor && delayedColorChange) {
+                                Thread.sleep(1100);
+                            }
+                        }
+
+                        if (changeColor) {
+                            if (supportsHue) {
+                                changeColorHueSaturation(color);
+                            } else {
+                                changeColorXY(color);
+                            }
                         }
                     } else if (command instanceof PercentType) {
                         changeBrightness((PercentType) command);
@@ -356,7 +371,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     }
 
     private void updateColorXY(PercentType x, PercentType y) {
-        HSBType color = ColorHelper.fromXY(x.floatValue() / 100.0f, y.floatValue() / 100.0f, 1.0f);
+        HSBType color = ColorHelper.fromXY(x.floatValue() / 100.0f, y.floatValue() / 100.0f);
         logger.debug("{}: Update Color XY ({}, {}) -> HSV ({}, {}, {})", endpoint.getIeeeAddress(), x.toString(),
                 y.toString(), color.getHue(), color.getSaturation(), currentHSB.getBrightness());
         updateColorHSB(color.getHue(), color.getSaturation());
