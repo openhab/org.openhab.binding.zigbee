@@ -36,16 +36,13 @@ public class ZigBeeConverterIasMotionPresence extends ZigBeeBaseChannelConverter
     private boolean initialised = false;
 
     @Override
-    public void initializeConverter() {
-        if (initialised == true) {
-            return;
-        }
+    public boolean initializeConverter() {
         logger.debug("{}: Initialising device IAS Zone cluster", endpoint.getIeeeAddress());
 
         clusterIasZone = (ZclIasZoneCluster) endpoint.getInputCluster(ZclIasZoneCluster.CLUSTER_ID);
         if (clusterIasZone == null) {
             logger.error("{}: Error opening ias zone cluster", endpoint.getIeeeAddress());
-            return;
+            return false;
         }
 
         clusterIasZone.bind();
@@ -57,27 +54,19 @@ public class ZigBeeConverterIasMotionPresence extends ZigBeeBaseChannelConverter
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
         ZclAttribute attribute = clusterIasZone.getAttribute(ZclIasZoneCluster.ATTR_ZONESTATUS);
         clusterIasZone.setReporting(attribute, 3, 600);
-        initialised = true;
+        return true;
     }
 
     @Override
     public void disposeConverter() {
-        if (initialised == false) {
-            return;
-        }
-
         logger.debug("{}: Closing device IAS cluster [motion presence]", endpoint.getIeeeAddress());
 
-        if (clusterIasZone != null) {
-            clusterIasZone.removeCommandListener(this);
-        }
+        clusterIasZone.removeCommandListener(this);
     }
 
     @Override
     public void handleRefresh() {
-        if (initialised == false) {
-            return;
-        }
+        clusterIasZone.getZoneStatus(0);
     }
 
     @Override

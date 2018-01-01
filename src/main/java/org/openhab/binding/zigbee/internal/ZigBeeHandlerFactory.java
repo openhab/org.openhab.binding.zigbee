@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
+import org.eclipse.smarthome.config.core.ConfigDescriptionProvider;
 import org.eclipse.smarthome.config.discovery.DiscoveryService;
 import org.eclipse.smarthome.core.i18n.TranslationProvider;
 import org.eclipse.smarthome.core.thing.Bridge;
@@ -96,7 +97,12 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
         }
 
         // Everything else gets handled in a single handler
-        return new ZigBeeThingHandler(thing, translationProvider);
+        ZigBeeThingHandler handler = new ZigBeeThingHandler(thing, translationProvider);
+
+        bundleContext.registerService(ConfigDescriptionProvider.class.getName(), handler,
+                new Hashtable<String, Object>());
+
+        return handler;
     }
 
     @Override

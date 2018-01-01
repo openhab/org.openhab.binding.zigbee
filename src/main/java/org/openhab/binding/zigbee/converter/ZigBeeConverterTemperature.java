@@ -33,18 +33,13 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
 
     private ZclTemperatureMeasurementCluster cluster;
 
-    private boolean initialised = false;
-
     @Override
-    public void initializeConverter() {
-        if (initialised) {
-            return;
-        }
+    public boolean initializeConverter() {
         cluster = (ZclTemperatureMeasurementCluster) endpoint
                 .getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID);
         if (cluster == null) {
-            logger.error("Error opening device temperature measurement cluster {}", endpoint.getIeeeAddress());
-            return;
+            logger.error("{}: Error opening device temperature measurement cluster", endpoint.getIeeeAddress());
+            return false;
         }
 
         cluster.bind();
@@ -55,25 +50,17 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
         cluster.setMeasuredValueReporting(1, 600, 0.1);
-        initialised = true;
+        return true;
     }
 
     @Override
     public void disposeConverter() {
-        if (!initialised) {
-            return;
-        }
-
-        if (cluster != null) {
-            cluster.removeAttributeListener(this);
-        }
+        cluster.removeAttributeListener(this);
     }
 
     @Override
     public void handleRefresh() {
-        if (!initialised) {
-            return;
-        }
+        cluster.getMeasuredValue(60);
     }
 
     @Override
@@ -87,7 +74,7 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
-        logger.debug("ZigBee attribute reports {} from {}", attribute, endpoint.getIeeeAddress());
+        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.TEMPERATURE_MEASUREMENT
                 && attribute.getId() == ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE) {
             Integer value = (Integer) attribute.getLastValue();

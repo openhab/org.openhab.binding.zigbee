@@ -59,6 +59,8 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_IAS_MOTION_INTRUSION = "ias_motionintrusion";
     public static final String CHANNEL_IAS_MOTION_PRESENCE = "ias_motionpresence";
 
+    public static final String CHANNEL_POWER_BATTERYPERCENT = "power_batterypercent";
+
     public static final String CHANNEL_PROPERTY_ENDPOINT = "zigbee_endpoint";
 
     public static final String ITEM_TYPE_COLOR = "Color";

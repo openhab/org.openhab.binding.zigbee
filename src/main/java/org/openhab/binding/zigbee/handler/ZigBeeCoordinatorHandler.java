@@ -155,8 +155,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             }
 
         } catch (ClassCastException | NumberFormatException e) {
-            logger.debug("Initializing ZigBee network [{}].", thing.getUID());
-            logger.debug("ZigBee initialisation exception", e);
+            logger.error("{}: ZigBee initialisation exception ", thing.getUID(), e);
             updateStatus(ThingStatus.OFFLINE);
             return;
         }
@@ -184,7 +183,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     configuration.put(CONFIGURATION_CHANNEL, channelId);
                     updateConfiguration(configuration);
                 } catch (IllegalStateException e) {
-                    logger.debug("Error updating configuration: Unable to set channel.", e);
+                    logger.error("Error updating configuration: Unable to set channel. ", e);
                 }
             }
 
@@ -198,7 +197,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     configuration.put(CONFIGURATION_PANID, panId);
                     updateConfiguration(configuration);
                 } catch (IllegalStateException e) {
-                    logger.debug("Error updating configuration: Unable to set PanID.", e);
+                    logger.error("Error updating configuration: Unable to set PanID. ", e);
                 }
             }
 
@@ -216,7 +215,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     configuration.put(CONFIGURATION_EXTENDEDPANID, extendedPanId.toString());
                     updateConfiguration(configuration);
                 } catch (IllegalStateException e) {
-                    logger.debug("Error updating configuration: Unable to set Extended PanID.", e);
+                    logger.error("Error updating configuration: Unable to set Extended PanID. ", e);
                 }
             }
 
@@ -226,7 +225,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 configuration.put(CONFIGURATION_INITIALIZE, false);
                 updateConfiguration(configuration);
             } catch (IllegalStateException e) {
-                logger.debug("Error updating configuration: Unable to reset initialize flag.", e);
+                logger.error("Error updating configuration: Unable to reset initialize flag. ", e);
             }
         }
 
@@ -293,6 +292,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      */
     protected void startZigBee(ZigBeeTransportTransmit zigbeeTransport, TransportConfig transportConfig,
             Class<?> serializerClass, Class<?> deserializerClass) {
+        updateStatus(ThingStatus.UNKNOWN);
 
         this.zigbeeTransport = zigbeeTransport;
         this.transportConfig = transportConfig;
@@ -389,7 +389,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             // If the thing is defined statically, then this will fail and we will never start!
             updateConfiguration(configuration);
         } catch (IllegalStateException e) {
-            logger.debug("Error updating configuration", e);
+            logger.error("Error updating configuration ", e);
         }
 
         initializeDongleSpecific();
@@ -529,7 +529,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 configuration.put(CONFIGURATION_MACADDRESS, node.getIeeeAddress().toString());
                 updateConfiguration(configuration);
             } catch (IllegalStateException e) {
-                logger.debug("Error updating configuration: Unable to set mac address.", e);
+                logger.error("Error updating configuration: Unable to set mac address. ", e);
             }
         }
 
@@ -589,17 +589,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         updateProperties(properties);
     }
-
-    // public ZigBeeEndpoint getEndpoint(ZigBeeEndpointAddress address) {
-    // if (networkManager == null) {
-    // return null;
-    // }
-    // ZigBeeNode node = networkManager.getNode(address.getAddress());
-    // if (node == null) {
-    // return null;
-    // }
-    // return node.getEndpoint(address.getEndpoint());
-    // }
 
     public ZigBeeEndpoint getEndpoint(IeeeAddress address, int endpointId) {
         if (networkManager == null) {
@@ -698,10 +687,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         networkManager.leave(node.getNetworkAddress(), node.getIeeeAddress());
         // networkManager.leave(ZigBeeBroadcastDestination.BROADCAST_ALL_DEVICES.getKey(), node.getIeeeAddress());
         return true;
-    }
-
-    public IeeeAddress getIeeeAddress() {
-        return nodeIeeeAddress;
     }
 
     /**

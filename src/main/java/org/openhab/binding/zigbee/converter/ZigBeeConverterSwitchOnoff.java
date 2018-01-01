@@ -7,6 +7,8 @@
  */
 package org.openhab.binding.zigbee.converter;
 
+import java.util.concurrent.ExecutionException;
+
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.thing.Channel;
@@ -16,6 +18,7 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
@@ -32,83 +35,68 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter imple
 
     private ZclOnOffCluster clusterOnOff;
 
-    private boolean initialised = false;
-
     @Override
-    public void initializeConverter() {
-        if (initialised == true) {
-            return;
-        }
+    public boolean initializeConverter() {
         logger.debug("{}: Initialising device on/off cluster", endpoint.getIeeeAddress());
 
         clusterOnOff = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
         if (clusterOnOff == null) {
             logger.error("{}: Error opening device on/off controls", endpoint.getIeeeAddress());
-            return;
+            return false;
         }
 
-        clusterOnOff.bind();
+        try {
+            CommandResult bindResponse = clusterOnOff.bind().get();
+            if (bindResponse.isSuccess()) {
+                // Configure reporting - no faster than once per second - no slower than 10 minutes.
+                CommandResult reportingResponse = clusterOnOff.setOnOffReporting(1, 600).get();
+                if (reportingResponse.isError()) {
+                    pollingPeriod = POLLING_PERIOD_HIGH;
+                }
+            } else {
+                pollingPeriod = POLLING_PERIOD_HIGH;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+        }
 
         // Add a listener, then request the status
         clusterOnOff.addAttributeListener(this);
         clusterOnOff.getOnOff(0);
 
-        // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        clusterOnOff.setOnOffReporting(1, 600);
-        initialised = true;
+        return true;
     }
 
     @Override
     public void disposeConverter() {
-        if (initialised == false) {
-            return;
-        }
-
         logger.debug("{}: Closing device on/off cluster", endpoint.getIeeeAddress());
 
-        if (clusterOnOff != null) {
-            clusterOnOff.removeAttributeListener(this);
-        }
+        clusterOnOff.removeAttributeListener(this);
     }
 
     @Override
     public void handleRefresh() {
-        if (initialised == false) {
-            return;
-        }
+        clusterOnOff.getOnOff(0);
     }
 
     @Override
-    public Runnable handleCommand(final Command command) {
-        return new Runnable() {
-            @Override
-            public void run() {
-                if (initialised == false) {
-                    return;
-                }
-
-                OnOffType currentOnOff = null;
-                if (command instanceof PercentType) {
-                    if (((PercentType) command).intValue() == 0) {
-                        currentOnOff = OnOffType.OFF;
-                    } else {
-                        currentOnOff = OnOffType.ON;
-                    }
-                } else if (command instanceof OnOffType) {
-                    currentOnOff = (OnOffType) command;
-                }
-
-                if (clusterOnOff == null) {
-                    return;
-                }
-
-                if (currentOnOff == OnOffType.ON) {
-                    clusterOnOff.onCommand();
-                } else {
-                    clusterOnOff.offCommand();
-                }
+    public void handleCommand(final Command command) {
+        OnOffType cmdOnOff = null;
+        if (command instanceof PercentType) {
+            if (((PercentType) command).intValue() == 0) {
+                cmdOnOff = OnOffType.OFF;
+            } else {
+                cmdOnOff = OnOffType.ON;
             }
-        };
+        } else if (command instanceof OnOffType) {
+            cmdOnOff = (OnOffType) command;
+        }
+
+        if (cmdOnOff == OnOffType.ON) {
+            clusterOnOff.onCommand();
+        } else {
+            clusterOnOff.offCommand();
+        }
     }
 
     @Override

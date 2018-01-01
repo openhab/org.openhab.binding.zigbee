@@ -7,19 +7,26 @@
  */
 package org.openhab.binding.zigbee.converter;
 
+import java.util.concurrent.ExecutionException;
+
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.config.ZclLevelControlConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclLevelControlCluster;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
@@ -30,31 +37,67 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterSwitchLevel.class);
 
+    private ZclOnOffCluster clusterOnOff;
     private ZclLevelControlCluster clusterLevelControl;
-
-    private boolean initialised = false;
+    private ZclLevelControlConfig configLevelControl;
 
     @Override
-    public void initializeConverter() {
-        if (initialised == true) {
-            return;
-        }
-
+    public boolean initializeConverter() {
         clusterLevelControl = (ZclLevelControlCluster) endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
         if (clusterLevelControl == null) {
-            logger.error("Error opening device level controls {}", endpoint.getIeeeAddress());
-            return;
+            logger.error("{}: Error opening device level controls", endpoint.getIeeeAddress());
+            return false;
+        }
+        clusterOnOff = (ZclOnOffCluster) endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
+        if (clusterLevelControl == null) {
+            logger.debug("{}: Error opening device onoff controls - will use level cluster", endpoint.getIeeeAddress());
         }
 
-        clusterLevelControl.bind();
+        try {
+            CommandResult bindResponse = clusterLevelControl.bind().get();
+            if (bindResponse.isSuccess()) {
+                // Configure reporting - no faster than once per second - no slower than 10 minutes.
+                CommandResult reportingResponse = clusterLevelControl.setCurrentLevelReporting(1, 600, 1).get();
+                if (reportingResponse.isError()) {
+                    pollingPeriod = POLLING_PERIOD_HIGH;
+                }
+            } else {
+                pollingPeriod = POLLING_PERIOD_HIGH;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+        }
 
         // Add a listener, then request the status
         clusterLevelControl.addAttributeListener(this);
         clusterLevelControl.getCurrentLevel(0);
 
-        // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        clusterLevelControl.setCurrentLevelReporting(1, 600, 1);
-        initialised = true;
+        if (clusterOnOff != null) {
+            try {
+                CommandResult bindResponse = clusterOnOff.bind().get();
+                if (bindResponse.isSuccess()) {
+                    // Configure reporting - no faster than once per second - no slower than 10 minutes.
+                    CommandResult reportingResponse = clusterOnOff.setOnOffReporting(1, 600).get();
+                    if (reportingResponse.isError()) {
+                        pollingPeriod = POLLING_PERIOD_HIGH;
+                    }
+                } else {
+                    pollingPeriod = POLLING_PERIOD_HIGH;
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            }
+
+            // Add a listener, then request the status
+            clusterOnOff.addAttributeListener(this);
+            clusterOnOff.getOnOff(0);
+        }
+
+        // Create a configuration handler and get the available options
+        configLevelControl = new ZclLevelControlConfig(clusterLevelControl);
+        configOptions = configLevelControl.getConfiguration();
+
+        return true;
     }
 
     @Override
@@ -64,32 +107,34 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
 
     @Override
     public void handleRefresh() {
-        clusterLevelControl.getCurrentLevelAsync();
+        clusterLevelControl.getCurrentLevel(0);
     }
 
     @Override
-    public Runnable handleCommand(final Command command) {
-        return new Runnable() {
-            @Override
-            public void run() {
-                if (initialised == false) {
-                    return;
+    public void handleCommand(final Command command) {
+        int level = 0;
+        if (command instanceof PercentType) {
+            level = ((PercentType) command).intValue();
+        } else if (command instanceof OnOffType) {
+            OnOffType cmdOnOff = (OnOffType) command;
+            if (clusterOnOff != null) {
+                if (cmdOnOff == OnOffType.ON) {
+                    clusterOnOff.onCommand();
+                } else {
+                    clusterOnOff.offCommand();
                 }
-
-                int level = 0;
-                if (command instanceof PercentType) {
-                    level = ((PercentType) command).intValue();
-                } else if (command instanceof OnOffType) {
-                    if ((OnOffType) command == OnOffType.ON) {
-                        level = 100;
-                    } else {
-                        level = 0;
-                    }
-                }
-
-                clusterLevelControl.moveToLevelWithOnOffCommand((int) (level * 254.0 / 100.0 + 0.5), 10);
+                return;
             }
-        };
+
+            if (cmdOnOff == OnOffType.ON) {
+                level = 100;
+            } else {
+                level = 0;
+            }
+        }
+
+        clusterLevelControl.moveToLevelWithOnOffCommand((int) (level * 254.0 / 100.0 + 0.5),
+                configLevelControl.getDefaultTransitionTime());
     }
 
     @Override
@@ -102,16 +147,31 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
     }
 
     @Override
+    public Configuration updateConfiguration(@NonNull Configuration configuration) {
+        Configuration updatedConfiguration = new Configuration();
+        configLevelControl.updateConfiguration(configuration, updatedConfiguration);
+
+        return updatedConfiguration;
+    }
+
+    @Override
     public void attributeUpdated(ZclAttribute attribute) {
-        logger.debug("ZigBee attribute reports {} from {}", attribute, endpoint.getIeeeAddress());
+        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.LEVEL_CONTROL
                 && attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {
-                value = value * 100 / 255;
-                updateChannelState(new PercentType(value));
+                updateChannelState(new PercentType(value * 100 / 254));
+            }
+            return;
+        }
+        if (attribute.getCluster() == ZclClusterType.ON_OFF && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
+            Boolean value = (Boolean) attribute.getLastValue();
+            if (value != null && value == true) {
+                updateChannelState(OnOffType.ON);
+            } else {
+                updateChannelState(OnOffType.OFF);
             }
         }
     }
-
 }

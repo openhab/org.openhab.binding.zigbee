@@ -33,19 +33,18 @@ public class ZigBeeNodePropertyDiscoverer {
     private Logger logger = LoggerFactory.getLogger(ZigBeeNodePropertyDiscoverer.class);
 
     public Map<String, String> getProperties(final ZigBeeCoordinatorHandler coordinatorHandler, final ZigBeeNode node) {
-
         logger.debug("{}: ZigBee node property discovery start", node.getIeeeAddress());
 
-        // Create a list of devices for the discovery service to work with
+        // Create a list of endpoints for the discovery service to work with
         Collection<ZigBeeEndpoint> endpoints = coordinatorHandler.getNodeEndpoints(node.getIeeeAddress());
 
-        // Make sure we found some devices!
+        // Make sure the device has some endpoints!
         if (endpoints.size() == 0) {
             logger.debug("{}: Node has no endpoints", node.getIeeeAddress());
             return null;
         }
 
-        // Find a device that supports the BASIC cluster and get device information
+        // Find an endpoint that supports the BASIC cluster and get device information
         Map<String, String> properties = new HashMap<String, String>();
         ZclBasicCluster basicCluster = null;
 

@@ -9,9 +9,9 @@ package org.openhab.binding.zigbee.converter;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.eclipse.smarthome.core.thing.Channel;
@@ -33,33 +33,52 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
  * The factory performs two functions -
  * <ul>
  * <li>gets a list of channels the thing supports. This uses methods in each converter to decide if they are supported.
- * <li>instantiates converters based on the channel uid
+ * <li>instantiates converters based on the channel UID.
  * </ul>
  *
  * @author Chris Jackson
  */
-public class ZigBeeChannelConverterlFactory {
-    private static Logger logger = LoggerFactory.getLogger(ZigBeeChannelConverterlFactory.class);
+public class ZigBeeChannelConverterFactory {
+    private Logger logger = LoggerFactory.getLogger(ZigBeeChannelConverterFactory.class);
 
     /**
      * Map of all channels supported by the binding
      */
     private final Map<String, Class<? extends ZigBeeBaseChannelConverter>> channelMap;
 
-    public ZigBeeChannelConverterlFactory() {
+    /**
+     * Map of all channels to be consolidated. Note that order is important.
+     */
+    private final Map<String, String> channelConsolidation;
+
+    public ZigBeeChannelConverterFactory() {
         channelMap = new HashMap<String, Class<? extends ZigBeeBaseChannelConverter>>();
 
         // Add all the converters into the map...
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF, ZigBeeConverterSwitchOnoff.class);
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL, ZigBeeConverterSwitchLevel.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_COLOR, ZigBeeConverterColorColor.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_TEMPERATURE, ZigBeeConverterColorTemperature.class);
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_ILLUMINANCE_VALUE, ZigBeeConverterIlluminance.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_CONTACT_PORTAL1, ZigBeeConverterIasContactPortal1.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_MOTION_INTRUSION, ZigBeeConverterIasMotionIntrusion.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_MOTION_PRESENCE, ZigBeeConverterIasMotionPresence.class);
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE, ZigBeeConverterTemperature.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_ILLUMINANCE_VALUE, ZigBeeConverterIlluminance.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_OCCUPANCY_SENSOR, ZigBeeConverterOccupancy.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_POWER_BATTERYPERCENT, ZigBeeConverterBatteryPercent.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF, ZigBeeConverterSwitchOnoff.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL, ZigBeeConverterSwitchLevel.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE, ZigBeeConverterTemperature.class);
+
+        // Add the hierarchical list of channels that are to be removed due to inheritance
+        // Note that order is important in the event that there are multiple removals...
+        // eg we want to remove switch before dimmer, then dimmer if color is present
+        // If device creates both channels, then we keep the one on the right (ie map.value).
+        channelConsolidation = new LinkedHashMap<String, String>();
+
+        // Remove ON/OFF if we support LEVEL
+        channelConsolidation.put(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL,
+                ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF);
+        // Remove LEVEL if we support COLOR
+        channelConsolidation.put(ZigBeeBindingConstants.CHANNEL_COLOR_COLOR,
+                ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL);
     }
 
     /**
@@ -70,8 +89,8 @@ public class ZigBeeChannelConverterlFactory {
      * @return
      */
     @SuppressWarnings("unchecked")
-    public List<Channel> getChannels(ThingUID thingUID, ZigBeeEndpoint endpoint) {
-        List<Channel> channels = new ArrayList<Channel>();
+    public Collection<Channel> getChannels(ThingUID thingUID, ZigBeeEndpoint endpoint) {
+        Map<String, Channel> channels = new HashMap<String, Channel>();
 
         Constructor<? extends ZigBeeBaseChannelConverter> constructor;
         for (Class<?> converterClass : channelMap.values()) {
@@ -81,14 +100,25 @@ public class ZigBeeChannelConverterlFactory {
 
                 Channel channel = converter.getChannel(thingUID, endpoint);
                 if (channel != null) {
-                    channels.add(channel);
+                    channels.put(channel.getChannelTypeUID().getId().toString(), channel);
                 }
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                 logger.debug("Exception while getting channels: ", e);
             }
         }
-        return channels;
+
+        // Perform a channel consolidation at endpoint level to remove unnecessary channels.
+        // This removes channels that are covered through inheritance.
+        for (String consolidationChannel : channelConsolidation.keySet()) {
+            if (channels.containsKey(consolidationChannel)
+                    && channels.containsKey(channelConsolidation.get(consolidationChannel))) {
+                logger.debug("{}: Removing channel {} in favor of {}", endpoint.getIeeeAddress(),
+                        channelConsolidation.get(consolidationChannel), consolidationChannel);
+                channels.remove(channelConsolidation.get(consolidationChannel));
+            }
+        }
+        return channels.values();
     }
 
     /**
@@ -117,7 +147,7 @@ public class ZigBeeChannelConverterlFactory {
             instance.initialize(thingHandler, channelUid, coordinatorHandler, ieeeAddress, endpointId);
             return instance;
         } catch (Exception e) {
-            logger.debug("Unable to create channel " + channelUid, e);
+            logger.error("{}: Unable to create channel ", channelUid, e);
         }
 
         return null;
