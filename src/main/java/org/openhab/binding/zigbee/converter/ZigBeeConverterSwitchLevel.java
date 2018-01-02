@@ -48,7 +48,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
             logger.error("{}: Error opening device level controls", endpoint.getIeeeAddress());
             return false;
         }
-        clusterOnOff = (ZclOnOffCluster) endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
+        clusterOnOff = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
         if (clusterLevelControl == null) {
             logger.debug("{}: Error opening device onoff controls - will use level cluster", endpoint.getIeeeAddress());
         }
