@@ -270,6 +270,9 @@ public class ZigBeeThingHandler extends BaseThingHandler
     @Override
     public void dispose() {
         logger.debug("{}: Handler dispose.", nodeIeeeAddress);
+
+        stopPolling();
+
         if (firmwareRegistration != null) {
             firmwareRegistration.unregister();
         }
@@ -283,6 +286,16 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
         for (ZigBeeBaseChannelConverter channel : channels.values()) {
             channel.disposeConverter();
+        }
+    }
+
+    private void stopPolling() {
+        synchronized (pollingSync) {
+            if (pollingJob != null) {
+                pollingJob.cancel(true);
+                pollingJob = null;
+                logger.debug("{}: Polling stopped", nodeIeeeAddress);
+            }
         }
     }
 
@@ -318,10 +331,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
         };
 
         synchronized (pollingSync) {
-            if (pollingJob != null) {
-                pollingJob.cancel(true);
-                pollingJob = null;
-            }
+            stopPolling();
 
             if (pollingPeriod < POLLING_PERIOD_MIN) {
                 logger.debug("{}: Polling period was set below minimum value. Using minimum.", nodeIeeeAddress);
@@ -333,9 +343,10 @@ public class ZigBeeThingHandler extends BaseThingHandler
                 pollingPeriod = POLLING_PERIOD_MAX;
             }
 
-            pollingJob = scheduler.scheduleAtFixedRate(pollingRunnable, pollingPeriod * 1000, pollingPeriod * 1000,
-                    TimeUnit.MILLISECONDS);
-            logger.debug("{}: Polling intialised at {} seconds", nodeIeeeAddress, pollingPeriod);
+            pollingJob = scheduler.scheduleAtFixedRate(pollingRunnable,
+                    pollingPeriod * 1000 + (int) (Math.random() * 3000),
+                    pollingPeriod * 1000 + (int) (Math.random() * 1000), TimeUnit.MILLISECONDS);
+            logger.debug("{}: Polling initialised at {} seconds", nodeIeeeAddress, pollingPeriod);
         }
     }
 
