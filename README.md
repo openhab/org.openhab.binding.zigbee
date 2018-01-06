@@ -1,10 +1,12 @@
 # ZigBee Binding
 
-The ZigBee binding supports an interface to a wireless ZigBee home automation network. 
+The ZigBee binding supports an interface to a wireless ZigBee home automation network and allows ZigBee devices from numerous manufacturers to be used without a system specific gateway.
 
 ## Supported Things
 
 ### Coordinators
+
+A ZigBee Coordinator is the network controller, and is therefore the heart of the ZigBee network. It also acts as the trust centre to control security access to the network.
 
 Coordinators need to be installed manually and the serial port must be set.
 
@@ -55,7 +57,7 @@ The following devices have been tested with the binding
 
 ## Discovery
 
-Once the binding is authorized, and an adapter is added, it automatically reads all devices that are set up on the ZigBee controller and puts them in the Inbox. When the binding is put into discovery mode, the network will have join enabled for 60 seconds.
+Once the binding is authorized, and an adapter is added, it automatically reads all devices that are set up on the ZigBee controller and puts them in the Inbox. When the binding is put into discovery mode via the user interface, the network will have join enabled for 60 seconds.
 
 
 ## Thing Configuration
@@ -89,3 +91,15 @@ The following channels are supported -:
 ### Updates
 
 The binding will attempt to configure a connection with the device to receive automatic and instantaneous reports when the device status changes. Should this configuration fail, the binding will resort to using a fast polling (note that "fast" is approximately 10 seconds at this time). 
+
+
+## When things don't appear to be working
+
+When things don't appear to be working as expected you should check the logs to try and find what is happening. Debug logging can be enabled with the following Karaf commands -:
+
+```
+log:set debug org.openhab.binding.zigbee
+log:set debug com.zsmartsystems.zigbee
+```
+
+This will log data into the standard openhab.log file.
