@@ -157,8 +157,8 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService
                             + properties.get(ZigBeeBindingConstants.THING_PROPERTY_MODEL).trim();
                 }
 
-                logger.debug("{}: Update ZigBee device {} with bridge {}", node.getIeeeAddress(), thingTypeUID,
-                        bridgeUID);
+                logger.debug("{}: Update ZigBee device {} with bridge {}, label {}", node.getIeeeAddress(),
+                        thingTypeUID, bridgeUID, label);
 
                 Map<String, Object> objProperties = new HashMap<String, Object>(properties);
                 objProperties.put(ZigBeeBindingConstants.CONFIGURATION_MACADDRESS, node.getIeeeAddress().toString());
