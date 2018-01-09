@@ -26,7 +26,6 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclLevelControlCluster;
-import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
@@ -37,7 +36,6 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterSwitchLevel.class);
 
-    private ZclOnOffCluster clusterOnOff;
     private ZclLevelControlCluster clusterLevelControl;
     private ZclLevelControlConfig configLevelControl;
 
@@ -47,10 +45,6 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         if (clusterLevelControl == null) {
             logger.error("{}: Error opening device level controls", endpoint.getIeeeAddress());
             return false;
-        }
-        clusterOnOff = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
-        if (clusterLevelControl == null) {
-            logger.debug("{}: Error opening device onoff controls - will use level cluster", endpoint.getIeeeAddress());
         }
 
         try {
@@ -71,27 +65,6 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         // Add a listener, then request the status
         clusterLevelControl.addAttributeListener(this);
         clusterLevelControl.getCurrentLevel(0);
-
-        if (clusterOnOff != null) {
-            try {
-                CommandResult bindResponse = clusterOnOff.bind().get();
-                if (bindResponse.isSuccess()) {
-                    // Configure reporting - no faster than once per second - no slower than 10 minutes.
-                    CommandResult reportingResponse = clusterOnOff.setOnOffReporting(1, 600).get();
-                    if (reportingResponse.isError()) {
-                        pollingPeriod = POLLING_PERIOD_HIGH;
-                    }
-                } else {
-                    pollingPeriod = POLLING_PERIOD_HIGH;
-                }
-            } catch (InterruptedException | ExecutionException e) {
-                logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
-            }
-
-            // Add a listener, then request the status
-            clusterOnOff.addAttributeListener(this);
-            clusterOnOff.getOnOff(0);
-        }
 
         // Create a configuration handler and get the available options
         configLevelControl = new ZclLevelControlConfig(clusterLevelControl);
@@ -117,15 +90,6 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
             level = ((PercentType) command).intValue();
         } else if (command instanceof OnOffType) {
             OnOffType cmdOnOff = (OnOffType) command;
-            if (clusterOnOff != null) {
-                if (cmdOnOff == OnOffType.ON) {
-                    clusterOnOff.onCommand();
-                } else {
-                    clusterOnOff.offCommand();
-                }
-                return;
-            }
-
             if (cmdOnOff == OnOffType.ON) {
                 level = 100;
             } else {
@@ -164,14 +128,6 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
                 updateChannelState(new PercentType(value * 100 / 254));
             }
             return;
-        }
-        if (attribute.getCluster() == ZclClusterType.ON_OFF && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
-            Boolean value = (Boolean) attribute.getLastValue();
-            if (value != null && value == true) {
-                updateChannelState(OnOffType.ON);
-            } else {
-                updateChannelState(OnOffType.OFF);
-            }
         }
     }
 }
