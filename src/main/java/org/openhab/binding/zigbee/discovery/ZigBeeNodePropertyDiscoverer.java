@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
@@ -32,7 +33,10 @@ import com.zsmartsystems.zigbee.zdo.field.PowerDescriptor;
 public class ZigBeeNodePropertyDiscoverer {
     private Logger logger = LoggerFactory.getLogger(ZigBeeNodePropertyDiscoverer.class);
 
-    public Map<String, String> getProperties(final ZigBeeCoordinatorHandler coordinatorHandler, final ZigBeeNode node) {
+    public @NonNull Map<String, String> getProperties(final ZigBeeCoordinatorHandler coordinatorHandler,
+            final ZigBeeNode node) {
+        Map<String, String> properties = new HashMap<String, String>();
+
         logger.debug("{}: ZigBee node property discovery start", node.getIeeeAddress());
 
         // Create a list of endpoints for the discovery service to work with
@@ -41,11 +45,10 @@ public class ZigBeeNodePropertyDiscoverer {
         // Make sure the device has some endpoints!
         if (endpoints.size() == 0) {
             logger.debug("{}: Node has no endpoints", node.getIeeeAddress());
-            return null;
+            return properties;
         }
 
         // Find an endpoint that supports the BASIC cluster and get device information
-        Map<String, String> properties = new HashMap<String, String>();
         ZclBasicCluster basicCluster = null;
 
         for (ZigBeeEndpoint device : endpoints) {
@@ -57,7 +60,7 @@ public class ZigBeeNodePropertyDiscoverer {
 
         if (basicCluster == null) {
             logger.debug("{}: Node doesn't support basic cluster", node.getIeeeAddress());
-            return null;
+            return properties;
         }
 
         logger.debug("{}: ZigBee node property discovery using {}", node.getIeeeAddress(),

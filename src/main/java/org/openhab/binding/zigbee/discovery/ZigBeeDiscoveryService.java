@@ -17,6 +17,7 @@ import org.eclipse.smarthome.config.discovery.DiscoveryResult;
 import org.eclipse.smarthome.config.discovery.DiscoveryResultBuilder;
 import org.eclipse.smarthome.config.discovery.DiscoveryServiceCallback;
 import org.eclipse.smarthome.config.discovery.ExtendedDiscoveryService;
+import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
@@ -151,13 +152,13 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService
                 Map<String, String> properties = propertyDiscoverer.getProperties(coordinatorHandler, node);
 
                 // If we know the manufacturer and model, then give this device a name and a thing type
-                if ((properties.get(ZigBeeBindingConstants.THING_PROPERTY_MANUFACTURER) != null)
-                        && (properties.get(ZigBeeBindingConstants.THING_PROPERTY_MODEL) != null)) {
-                    label = properties.get(ZigBeeBindingConstants.THING_PROPERTY_MANUFACTURER).trim() + " "
-                            + properties.get(ZigBeeBindingConstants.THING_PROPERTY_MODEL).trim();
+                if ((properties.get(Thing.PROPERTY_VENDOR) != null)
+                        && (properties.get(Thing.PROPERTY_MODEL_ID) != null)) {
+                    label = properties.get(Thing.PROPERTY_VENDOR).trim() + " "
+                            + properties.get(Thing.PROPERTY_MODEL_ID).trim();
                 }
 
-                logger.debug("{}: Update ZigBee device {} with bridge {}, label {}", node.getIeeeAddress(),
+                logger.debug("{}: Update ZigBee device {} with bridge {}, label '{}'", node.getIeeeAddress(),
                         thingTypeUID, bridgeUID, label);
 
                 Map<String, Object> objProperties = new HashMap<String, Object>(properties);

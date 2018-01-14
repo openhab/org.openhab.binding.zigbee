@@ -84,7 +84,7 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * Standard high rate polling period (in seconds).
      */
-    protected int POLLING_PERIOD_HIGH = 10;
+    protected int POLLING_PERIOD_HIGH = 30;
 
     /**
      * The {@link ZigBeeThingHandler} to which this channel belongs.
