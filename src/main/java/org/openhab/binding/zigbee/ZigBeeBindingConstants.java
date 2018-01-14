@@ -68,8 +68,6 @@ public class ZigBeeBindingConstants {
     public static final String ITEM_TYPE_DIMMER = "Dimmer";
     public static final String ITEM_TYPE_SWITCH = "Switch";
 
-    public static final String THING_PROPERTY_MANUFACTURER = "zigbee_manufacturer";
-    public static final String THING_PROPERTY_MODEL = "zigbee_model";
     public static final String THING_PROPERTY_HWVERSION = "zigbee_hwversion";
     public static final String THING_PROPERTY_STKVERSION = "zigbee_stkversion";
     public static final String THING_PROPERTY_ZCLVERSION = "zigbee_zclversion";
