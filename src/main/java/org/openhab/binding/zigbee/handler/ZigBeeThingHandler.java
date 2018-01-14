@@ -103,7 +103,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
     /**
      * A set of channels that have been linked to items. This is used to ensure we only poll channels that are linked to
-     * keep netowkr activity to a minimum.
+     * keep network activity to a minimum.
      */
     private final Set<ChannelUID> thingChannelsPoll = new HashSet<ChannelUID>();
 
@@ -124,7 +124,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
     @Override
     public void initialize() {
         final String configAddress = (String) getConfig().get(ZigBeeBindingConstants.CONFIGURATION_MACADDRESS);
-        logger.debug("Initializing ZigBee thing handler {}, Ieee=\"{}\".", getThing().getUID(), configAddress);
+        logger.debug("{}: Initializing ZigBee thing handler {}", configAddress, getThing().getUID());
 
         if (configAddress == null || configAddress.length() == 0) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
@@ -168,12 +168,12 @@ public class ZigBeeThingHandler extends BaseThingHandler
         }, 10, TimeUnit.MILLISECONDS);
     }
 
-    private void doNodeInitialisation() {
+    private synchronized void doNodeInitialisation() {
         if (nodeInitialised) {
             return;
         }
 
-        logger.debug("{}: Initialising ZigBee Thing handler.", nodeIeeeAddress);
+        logger.debug("{}: Start initialising ZigBee Thing handler", nodeIeeeAddress);
 
         // Load the node information
         ZigBeeNode node = coordinatorHandler.getNode(nodeIeeeAddress);
@@ -265,6 +265,8 @@ public class ZigBeeThingHandler extends BaseThingHandler
         startPolling();
 
         nodeInitialised = true;
+
+        logger.debug("{}: Done initialising ZigBee Thing handler", nodeIeeeAddress);
     }
 
     @Override
