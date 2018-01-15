@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
@@ -33,9 +34,51 @@ import com.zsmartsystems.zigbee.zdo.field.PowerDescriptor;
 public class ZigBeeNodePropertyDiscoverer {
     private Logger logger = LoggerFactory.getLogger(ZigBeeNodePropertyDiscoverer.class);
 
+    private Map<String, String> properties = new HashMap<String, String>();
+
+    private boolean alwaysUpdate = false;
+
+    /**
+     * Sets initial properties
+     *
+     * @param property
+     * @param value If set to null the property will be removed
+     */
+    public void setProperty(@NonNull String property, @Nullable String value) {
+        if (value == null) {
+            properties.remove(property);
+        } else {
+            properties.put(property, value);
+        }
+    }
+
+    /**
+     * Sets the initial properties to be updated
+     *
+     * @param properties
+     */
+    public void setProperties(@NonNull Map<@NonNull String, @NonNull String> properties) {
+        this.properties.putAll(properties);
+    }
+
+    /**
+     * If alwaysUpdate is true, then properties will be updated even if they are known.
+     *
+     * @param alwaysUpdate
+     */
+    public void setAlwaysUpdate(boolean alwaysUpdate) {
+        this.alwaysUpdate = alwaysUpdate;
+    }
+
+    /**
+     * Gets the properties from the device
+     *
+     * @param coordinatorHandler
+     * @param node
+     * @return a {@link Map} of properties or an empty map if there was an error
+     */
     public @NonNull Map<String, String> getProperties(final ZigBeeCoordinatorHandler coordinatorHandler,
             final ZigBeeNode node) {
-        Map<String, String> properties = new HashMap<String, String>();
 
         logger.debug("{}: ZigBee node property discovery start", node.getIeeeAddress());
 
@@ -66,52 +109,58 @@ public class ZigBeeNodePropertyDiscoverer {
         logger.debug("{}: ZigBee node property discovery using {}", node.getIeeeAddress(),
                 basicCluster.getZigBeeAddress());
 
-        String manufacturer = basicCluster.getManufacturerName(Long.MAX_VALUE);
-        if (manufacturer != null) {
-            properties.put(Thing.PROPERTY_VENDOR, manufacturer);
-        } else {
-            logger.debug("{}: Manufacturer request timeout", node.getIeeeAddress());
+        if (alwaysUpdate || properties.get(Thing.PROPERTY_VENDOR) == null) {
+            String manufacturer = basicCluster.getManufacturerName(Long.MAX_VALUE);
+            if (manufacturer != null) {
+                properties.put(Thing.PROPERTY_VENDOR, manufacturer);
+            } else {
+                logger.debug("{}: Manufacturer request timeout", node.getIeeeAddress());
+            }
         }
 
-        String model = basicCluster.getModelIdentifier(Long.MAX_VALUE);
-        if (model != null) {
-            properties.put(Thing.PROPERTY_MODEL_ID, model);
-        } else {
-            logger.debug("{}: Model request timeout", node.getIeeeAddress());
-        }
-        Integer hwVersion = basicCluster.getHwVersion(Long.MAX_VALUE);
-        if (hwVersion != null) {
-            properties.put(Thing.PROPERTY_HARDWARE_VERSION, hwVersion.toString());
-        } else {
-            logger.debug("{}: Hardware version request timeout", node.getIeeeAddress());
+        if (alwaysUpdate || properties.get(Thing.PROPERTY_MODEL_ID) == null) {
+            String model = basicCluster.getModelIdentifier(Long.MAX_VALUE);
+            if (model != null) {
+                properties.put(Thing.PROPERTY_MODEL_ID, model);
+            } else {
+                logger.debug("{}: Model request timeout", node.getIeeeAddress());
+            }
         }
 
-        Integer stkVersion = basicCluster.getStackVersion(Long.MAX_VALUE);
-        if (stkVersion != null) {
-            properties.put(ZigBeeBindingConstants.THING_PROPERTY_STKVERSION, stkVersion.toString());
-        } else {
-            logger.debug("{}: Stack version request timeout", node.getIeeeAddress());
+        if (alwaysUpdate || properties.get(Thing.PROPERTY_HARDWARE_VERSION) == null) {
+            Integer hwVersion = basicCluster.getHwVersion(Long.MAX_VALUE);
+            if (hwVersion != null) {
+                properties.put(Thing.PROPERTY_HARDWARE_VERSION, hwVersion.toString());
+            } else {
+                logger.debug("{}: Hardware version request timeout", node.getIeeeAddress());
+            }
         }
 
-        Integer zclVersion = basicCluster.getZclVersion(Long.MAX_VALUE);
-        if (zclVersion != null) {
-            properties.put(ZigBeeBindingConstants.THING_PROPERTY_ZCLVERSION, zclVersion.toString());
-        } else {
-            logger.debug("{}: ZCL version request timeout", node.getIeeeAddress());
+        if (alwaysUpdate || properties.get(ZigBeeBindingConstants.THING_PROPERTY_STKVERSION) == null) {
+            Integer stkVersion = basicCluster.getStackVersion(Long.MAX_VALUE);
+            if (stkVersion != null) {
+                properties.put(ZigBeeBindingConstants.THING_PROPERTY_STKVERSION, stkVersion.toString());
+            } else {
+                logger.debug("{}: Stack version request timeout", node.getIeeeAddress());
+            }
         }
 
-        Integer appVersion = basicCluster.getApplicationVersion(Long.MAX_VALUE);
-        if (appVersion != null) {
-            properties.put(ZigBeeBindingConstants.THING_PROPERTY_APPVERSION, appVersion.toString());
-        } else {
-            logger.debug("{}: Application version request timeout", node.getIeeeAddress());
+        if (alwaysUpdate || properties.get(ZigBeeBindingConstants.THING_PROPERTY_ZCLVERSION) == null) {
+            Integer zclVersion = basicCluster.getZclVersion(Long.MAX_VALUE);
+            if (zclVersion != null) {
+                properties.put(ZigBeeBindingConstants.THING_PROPERTY_ZCLVERSION, zclVersion.toString());
+            } else {
+                logger.debug("{}: ZCL version request timeout", node.getIeeeAddress());
+            }
         }
 
-        String dateCode = basicCluster.getDateCode(Long.MAX_VALUE);
-        if (dateCode != null) {
-            properties.put(ZigBeeBindingConstants.THING_PROPERTY_DATECODE, dateCode);
-        } else {
-            logger.debug("{}: Date code request timeout", node.getIeeeAddress());
+        if (alwaysUpdate || properties.get(ZigBeeBindingConstants.THING_PROPERTY_DATECODE) == null) {
+            String dateCode = basicCluster.getDateCode(Long.MAX_VALUE);
+            if (dateCode != null) {
+                properties.put(ZigBeeBindingConstants.THING_PROPERTY_DATECODE, dateCode);
+            } else {
+                logger.debug("{}: Date code request timeout", node.getIeeeAddress());
+            }
         }
 
         if (node.getLogicalType() != null) {
@@ -119,21 +168,23 @@ public class ZigBeeNodePropertyDiscoverer {
         }
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_NETWORKADDRESS, node.getNetworkAddress().toString());
 
-        // Find an OTA client if the device supports OTA upgrades
-        ZclOtaUpgradeCluster otaCluster = null;
-        for (ZigBeeEndpoint endpoint : node.getEndpoints()) {
-            otaCluster = (ZclOtaUpgradeCluster) endpoint.getOutputCluster(ZclOtaUpgradeCluster.CLUSTER_ID);
-            if (otaCluster != null) {
-                break;
+        if (alwaysUpdate || properties.get(Thing.PROPERTY_FIRMWARE_VERSION) != null) {
+            // Find an OTA client if the device supports OTA upgrades
+            ZclOtaUpgradeCluster otaCluster = null;
+            for (ZigBeeEndpoint endpoint : node.getEndpoints()) {
+                otaCluster = (ZclOtaUpgradeCluster) endpoint.getOutputCluster(ZclOtaUpgradeCluster.CLUSTER_ID);
+                if (otaCluster != null) {
+                    break;
+                }
             }
-        }
 
-        if (otaCluster != null) {
-            Integer fileVersion = otaCluster.getCurrentFileVersion(Long.MAX_VALUE);
-            if (fileVersion != null) {
-                properties.put(Thing.PROPERTY_FIRMWARE_VERSION, String.format("%08X", fileVersion));
-            } else {
-                logger.debug("{}: OTA firmware request timeout", node.getIeeeAddress());
+            if (otaCluster != null) {
+                Integer fileVersion = otaCluster.getCurrentFileVersion(Long.MAX_VALUE);
+                if (fileVersion != null) {
+                    properties.put(Thing.PROPERTY_FIRMWARE_VERSION, String.format("%08X", fileVersion));
+                } else {
+                    logger.debug("{}: OTA firmware request timeout", node.getIeeeAddress());
+                }
             }
         }
 
@@ -153,4 +204,5 @@ public class ZigBeeNodePropertyDiscoverer {
 
         return properties;
     }
+
 }

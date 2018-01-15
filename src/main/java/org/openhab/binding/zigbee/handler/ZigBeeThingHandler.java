@@ -245,10 +245,9 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
         // Update the general properties
         ZigBeeNodePropertyDiscoverer propertyDiscoverer = new ZigBeeNodePropertyDiscoverer();
+        propertyDiscoverer.setProperties(editProperties());
         Map<String, String> newProperties = propertyDiscoverer.getProperties(coordinatorHandler, node);
-        Map<String, String> orgProperties = editProperties();
-        orgProperties.putAll(newProperties);
-        updateProperties(orgProperties);
+        updateProperties(newProperties);
 
         // Update the binding table.
         // We're not doing anything with the information here, but we want it up to date so it's ready for use later.
