@@ -98,6 +98,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     private boolean macAddressSet = false;
 
+    private final int MESH_UPDATE_TIME = 300;
+
     /**
      * Set to true on startup if we want to reinitialize the network
      */
@@ -105,7 +107,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     private ScheduledFuture<?> restartJob = null;
 
-    private ZigBeeNetworkMeshMonitor meshMonitor;
+    private ZigBeeNetworkMeshMonitor meshMonitor = null;
 
     private final TranslationProvider translationProvider;
 
@@ -262,6 +264,10 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             restartJob.cancel(true);
         }
 
+        if (meshMonitor != null) {
+            meshMonitor.shutdown();
+        }
+
         if (networkManager != null) {
             synchronized (listeners) {
                 for (ZigBeeNetworkNodeListener listener : listeners) {
@@ -394,12 +400,14 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         initializeDongleSpecific();
 
-        // Start the mesh monitor
-        meshMonitor = new ZigBeeNetworkMeshMonitor(networkManager);
-        meshMonitor.startup(90);
-
         // Add the IAS Zone cluster to the network manager so we respond to the MatchDescriptor
         networkManager.addSupportedCluster(ZclIasZoneCluster.CLUSTER_ID);
+
+        restartJob = scheduler.schedule(() -> {
+            // Start the mesh monitor
+            meshMonitor = new ZigBeeNetworkMeshMonitor(networkManager);
+            meshMonitor.startup(MESH_UPDATE_TIME);
+        }, MESH_UPDATE_TIME, TimeUnit.SECONDS);
     }
 
     private void startZigBeeNetwork() {
