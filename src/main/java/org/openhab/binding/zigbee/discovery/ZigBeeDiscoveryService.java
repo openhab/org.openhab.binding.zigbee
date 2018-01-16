@@ -113,16 +113,21 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService
             return;
         }
 
+        ThingTypeUID thingTypeUID = ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE;
+        ThingUID bridgeUID = coordinatorHandler.getThing().getUID();
+
+        String thingId = node.getIeeeAddress().toString().toLowerCase().replaceAll("[^a-z0-9_/]", "");
+        ThingUID thingUID = new ThingUID(thingTypeUID, bridgeUID, thingId);
+
+        // If this already exists as a thing, then no need to rediscover
+        if (discoveryServiceCallback != null && discoveryServiceCallback.getExistingThing(thingUID) != null) {
+            return;
+        }
+
         Runnable pollingRunnable = new Runnable() {
             @Override
             public void run() {
                 logger.info("{}: Starting ZigBee device discovery", node.getIeeeAddress());
-
-                ThingTypeUID thingTypeUID = ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE;
-                ThingUID bridgeUID = coordinatorHandler.getThing().getUID();
-
-                String thingId = node.getIeeeAddress().toString().toLowerCase().replaceAll("[^a-z0-9_/]", "");
-                ThingUID thingUID = new ThingUID(thingTypeUID, bridgeUID, thingId);
 
                 // Set the default label
                 String label = "Unknown ZigBee Device " + node.getIeeeAddress();
