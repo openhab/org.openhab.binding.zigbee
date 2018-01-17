@@ -693,7 +693,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         logger.debug("{}: ZigBee leave command to {}", address, node.getNetworkAddress());
 
         networkManager.leave(node.getNetworkAddress(), node.getIeeeAddress());
-        // networkManager.leave(ZigBeeBroadcastDestination.BROADCAST_ALL_DEVICES.getKey(), node.getIeeeAddress());
         return true;
     }
 

@@ -226,6 +226,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
                     continue;
                 }
 
+                logger.debug("{}: Initializing channel {} with {}", nodeIeeeAddress, channel.getUID(), handler);
                 handler.initializeConverter();
 
                 // TODO: Update the channel configuration from the device if method available
@@ -242,6 +243,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.HANDLER_INITIALIZING_ERROR);
             return;
         }
+        logger.debug("{}: Channel initialisation complete", nodeIeeeAddress);
 
         // Update the general properties
         ZigBeeNodePropertyDiscoverer propertyDiscoverer = new ZigBeeNodePropertyDiscoverer();
@@ -365,6 +367,12 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
         // We keep track of what channels are used and only poll channels that the framework is using
         thingChannelsPoll.remove(channelUID);
+    }
+
+    @Override
+    public void handleRemoval() {
+        coordinatorHandler.leave(nodeIeeeAddress);
+        updateStatus(ThingStatus.REMOVED);
     }
 
     @Override

@@ -97,7 +97,7 @@
                 <options>
                     <option value="TC_JOIN_DENY">Deny all joins</option>
                     <option value="TC_JOIN_SECURE">Allow only secure joining</option>
-                    <option value="TC_JOIN_INSECURE">All all joins</option>
+                    <option value="TC_JOIN_INSECURE">Allow all joins</option>
                 </options>
                 <default>TC_JOIN_SECURE</default>
                 <advanced>true</advanced>
