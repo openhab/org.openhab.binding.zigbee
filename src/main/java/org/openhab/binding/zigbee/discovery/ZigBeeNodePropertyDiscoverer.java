@@ -168,7 +168,7 @@ public class ZigBeeNodePropertyDiscoverer {
         }
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_NETWORKADDRESS, node.getNetworkAddress().toString());
 
-        if (alwaysUpdate || properties.get(Thing.PROPERTY_FIRMWARE_VERSION) != null) {
+        if (alwaysUpdate || properties.get(Thing.PROPERTY_FIRMWARE_VERSION) == null) {
             // Find an OTA client if the device supports OTA upgrades
             ZclOtaUpgradeCluster otaCluster = null;
             for (ZigBeeEndpoint endpoint : node.getEndpoints()) {

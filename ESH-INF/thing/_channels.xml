@@ -24,14 +24,23 @@
         </config-description>
     </channel-type>
 
-	<!-- Color Temperature Channel -->
-	<channel-type id="color_temperature">
-		<item-type>Dimmer</item-type>
-		<label>Color Temperature</label>
-		<description>The color temperature channel allows to set the color
+    <!-- Color Temperature Channel -->
+    <channel-type id="color_temperature">
+        <item-type>Dimmer</item-type>
+        <label>Color Temperature</label>
+        <description>The color temperature channel allows to set the color
             temperature of a light from 0 (cold) to 100 (warm).</description>
-		<category>ColorLight</category>
-	</channel-type>
+        <category>ColorLight</category>
+    </channel-type>
+    
+    <!-- Electrical Measurement Active Power -->
+    <channel-type id="electrical_activepower">
+        <item-type>Number</item-type>
+        <label>Total Active Power</label>
+        <description>The total power consumed by the device</description>
+        <category>Energy</category>
+        <state pattern="%.1f" readOnly="true"></state>
+    </channel-type>
 
     <!-- IAS Contact Channel -->
     <channel-type id="ias_contactportal1">

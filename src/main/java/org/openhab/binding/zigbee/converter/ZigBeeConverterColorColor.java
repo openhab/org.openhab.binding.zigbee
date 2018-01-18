@@ -345,17 +345,13 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
         try {
             if (!clusterColorControl.discoverAttributes(false).get()) {
-                logger.warn(
-                        "{}: Cannot determine whether device supports RGB color. Assuming it does by now (checking again later)",
-                        endpoint.getIeeeAddress());
-            } else if (!clusterColorControl.getSupportedAttributes().contains(ZclColorControlCluster.ATTR_CURRENTHUE)
-                    && !clusterColorControl.getSupportedAttributes().contains(ZclColorControlCluster.ATTR_CURRENTX)) {
+                logger.warn("{}: Failed discovering attributes in color control cluster", endpoint.getIeeeAddress());
+            } else if (!clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_CURRENTHUE)
+                    && !clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_CURRENTX)) {
                 return null;
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.warn(
-                    "{}: Exception checking whether device supports RGB color. Assuming it does by now (checking again later)",
-                    endpoint.getIeeeAddress(), e);
+            logger.warn("{}: Exception discovering attributes in color control cluster", endpoint.getIeeeAddress(), e);
         }
 
         return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_COLOR_COLOR,
