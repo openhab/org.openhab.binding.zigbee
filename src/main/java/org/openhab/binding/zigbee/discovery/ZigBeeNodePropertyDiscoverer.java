@@ -36,6 +36,7 @@ public class ZigBeeNodePropertyDiscoverer {
 
     private Map<String, String> properties = new HashMap<String, String>();
 
+    private int maxRetries = 3;
     private boolean alwaysUpdate = false;
 
     /**
@@ -110,20 +111,26 @@ public class ZigBeeNodePropertyDiscoverer {
                 basicCluster.getZigBeeAddress());
 
         if (alwaysUpdate || properties.get(Thing.PROPERTY_VENDOR) == null) {
-            String manufacturer = basicCluster.getManufacturerName(Long.MAX_VALUE);
-            if (manufacturer != null) {
-                properties.put(Thing.PROPERTY_VENDOR, manufacturer);
-            } else {
-                logger.debug("{}: Manufacturer request timeout", node.getIeeeAddress());
+            for (int retry = 0; retry < maxRetries; retry++) {
+                String manufacturer = basicCluster.getManufacturerName(Long.MAX_VALUE);
+                if (manufacturer != null) {
+                    properties.put(Thing.PROPERTY_VENDOR, manufacturer);
+                    break;
+                } else {
+                    logger.debug("{}: Manufacturer request timeout (retry {})", node.getIeeeAddress(), retry);
+                }
             }
         }
 
         if (alwaysUpdate || properties.get(Thing.PROPERTY_MODEL_ID) == null) {
-            String model = basicCluster.getModelIdentifier(Long.MAX_VALUE);
-            if (model != null) {
-                properties.put(Thing.PROPERTY_MODEL_ID, model);
-            } else {
-                logger.debug("{}: Model request timeout", node.getIeeeAddress());
+            for (int retry = 0; retry < maxRetries; retry++) {
+                String model = basicCluster.getModelIdentifier(Long.MAX_VALUE);
+                if (model != null) {
+                    properties.put(Thing.PROPERTY_MODEL_ID, model);
+                    break;
+                } else {
+                    logger.debug("{}: Model request timeout (retry {})", node.getIeeeAddress(), retry);
+                }
             }
         }
 
@@ -168,23 +175,21 @@ public class ZigBeeNodePropertyDiscoverer {
         }
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_NETWORKADDRESS, node.getNetworkAddress().toString());
 
-        if (alwaysUpdate || properties.get(Thing.PROPERTY_FIRMWARE_VERSION) == null) {
-            // Find an OTA client if the device supports OTA upgrades
-            ZclOtaUpgradeCluster otaCluster = null;
-            for (ZigBeeEndpoint endpoint : node.getEndpoints()) {
-                otaCluster = (ZclOtaUpgradeCluster) endpoint.getOutputCluster(ZclOtaUpgradeCluster.CLUSTER_ID);
-                if (otaCluster != null) {
-                    break;
-                }
-            }
-
+        // Find an OTA client if the device supports OTA upgrades
+        ZclOtaUpgradeCluster otaCluster = null;
+        for (ZigBeeEndpoint endpoint : node.getEndpoints()) {
+            otaCluster = (ZclOtaUpgradeCluster) endpoint.getOutputCluster(ZclOtaUpgradeCluster.CLUSTER_ID);
             if (otaCluster != null) {
-                Integer fileVersion = otaCluster.getCurrentFileVersion(Long.MAX_VALUE);
-                if (fileVersion != null) {
-                    properties.put(Thing.PROPERTY_FIRMWARE_VERSION, String.format("%08X", fileVersion));
-                } else {
-                    logger.debug("{}: OTA firmware request timeout", node.getIeeeAddress());
-                }
+                break;
+            }
+        }
+
+        if (otaCluster != null) {
+            Integer fileVersion = otaCluster.getCurrentFileVersion(Long.MAX_VALUE);
+            if (fileVersion != null) {
+                properties.put(Thing.PROPERTY_FIRMWARE_VERSION, String.format("%08X", fileVersion));
+            } else {
+                logger.debug("{}: OTA firmware request timeout", node.getIeeeAddress());
             }
         }
 

@@ -101,6 +101,8 @@ public class ZigBeeThingHandler extends BaseThingHandler
     private final int POLLING_PERIOD_DEFAULT = 1800;
     private int pollingPeriod = POLLING_PERIOD_DEFAULT;
 
+    private boolean firmwareUpdateInProgress = false;
+
     /**
      * A set of channels that have been linked to items. This is used to ensure we only poll channels that are linked to
      * keep network activity to a minimum.
@@ -133,7 +135,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
         }
         nodeIeeeAddress = new IeeeAddress(configAddress);
 
-        updateStatus(ThingStatus.UNKNOWN);
+        updateStatus(ThingStatus.OFFLINE);
 
         if (getBridge() != null) {
             bridgeStatusChanged(getBridge().getStatusInfo());
@@ -436,6 +438,9 @@ public class ZigBeeThingHandler extends BaseThingHandler
      * @param state the new {link State}
      */
     public void setChannelState(ChannelUID channel, State state) {
+        if (firmwareUpdateInProgress) {
+            return;
+        }
         updateState(channel, state);
         updateStatus(ThingStatus.ONLINE);
     }
@@ -560,11 +565,6 @@ public class ZigBeeThingHandler extends BaseThingHandler
     public void updateFirmware(Firmware firmware, ProgressCallback progressCallback) {
         logger.debug("{}: Update firmware with {}", nodeIeeeAddress, firmware.getVersion());
 
-        updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.FIRMWARE_UPDATING);
-
-        // Define the sequence of the firmware update so that external consumers can listen for the progress
-        progressCallback.defineSequence(ProgressStep.DOWNLOADING, ProgressStep.TRANSFERRING, ProgressStep.UPDATING);
-
         // Find an OTA client if the device supports OTA upgrades
         ZigBeeNode node = coordinatorHandler.getNode(nodeIeeeAddress);
         if (node == null) {
@@ -602,6 +602,13 @@ public class ZigBeeThingHandler extends BaseThingHandler
             return;
         }
 
+        // Set ourselves offline, and prevent going back online
+        firmwareUpdateInProgress = true;
+        updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.FIRMWARE_UPDATING);
+
+        // Define the sequence of the firmware update so that external consumers can listen for the progress
+        progressCallback.defineSequence(ProgressStep.TRANSFERRING, ProgressStep.REBOOTING);
+
         ZigBeeOtaFile otaFile = new ZigBeeOtaFile(firmware.getBytes());
         otaServer.setFirmware(otaFile);
 
@@ -609,20 +616,23 @@ public class ZigBeeThingHandler extends BaseThingHandler
         progressCallback.next();
 
         final ZigBeeOtaServer finalOtaServer = otaServer;
+        final ZclOtaUpgradeCluster finalOtaCluster = otaCluster;
         otaServer.addListener(new ZigBeeOtaStatusCallback() {
             @Override
-            public void otaStatusUpdate(ZigBeeOtaServerStatus status) {
+            public void otaStatusUpdate(ZigBeeOtaServerStatus status, int percent) {
+                logger.debug("{}: OTA transfer status update {}, percent={}", nodeIeeeAddress, status, percent);
                 switch (status) {
                     case OTA_WAITING:
-                        // progressCallback.next();
+                        // DOWNLOADING
+                        progressCallback.next();
                         return;
                     case OTA_TRANSFER_IN_PROGRESS:
-                        // TRANSFERRING
-                        progressCallback.next();
+                        progressCallback.update(percent);
                         return;
                     case OTA_TRANSFER_COMPLETE:
-                        // UPDATING
+                        // REBOOTING
                         progressCallback.next();
+                        progressCallback.update(100);
                         return;
                     case OTA_UPGRADE_COMPLETE:
                         progressCallback.success();
@@ -638,7 +648,20 @@ public class ZigBeeThingHandler extends BaseThingHandler
                 }
 
                 // OTA transfer is complete, cancelled or failed
+                firmwareUpdateInProgress = false;
                 finalOtaServer.cancelUpgrade();
+
+                for (int retry = 0; retry < 3; retry++) {
+                    Integer fileVersion = finalOtaCluster.getCurrentFileVersion(Long.MAX_VALUE);
+                    if (fileVersion != null) {
+                        updateProperty(Thing.PROPERTY_FIRMWARE_VERSION, String.format("%08X", fileVersion));
+                        break;
+                    } else {
+                        logger.debug("{}: OTA firmware request timeout (retry {})", node.getIeeeAddress(), retry);
+                    }
+                }
+
+                updateStatus(ThingStatus.ONLINE);
             }
         });
     }
