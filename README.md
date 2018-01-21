@@ -48,11 +48,13 @@ The following devices have been tested with the binding
 | GE Bulbs                   |                                |
 | Hue Bulbs                  | Color LED Bulb                 |
 | Hue Motion Sensor          | Motion and Luminance sensor    |
+| Innr Bulbs                 |                                |
 | Osram Bulbs                |                                |
 | SmartThings Plug           | Metered Plug                   |
 | SmartThings Motion Sensor  | Motion and Temperature sensor  |
 | SmartThings Contact Sensor | Contact and Temperature sensor |
 | Tradfri Bulbs              |                                |
+| Tradfri Motion Sensor      |                                |
 
 
 
@@ -105,3 +107,5 @@ log:set debug com.zsmartsystems.zigbee
 ```
 
 This will log data into the standard openhab.log file.
+
+Note that logs can only show what is happening at a high level - it can't show all data exchanges between the device and the coordinator - just what the coordinator sends to the binding. For this reason it can be difficult to debug issues where devices are not joining the network.
