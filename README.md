@@ -60,7 +60,7 @@ The following devices have been tested with the binding
 
 ## Discovery
 
-Once the binding is authorized, and an adapter is added, it automatically reads all devices that are set up on the ZigBee controller and puts them in the Inbox. When the binding is put into discovery mode via the user interface, the network will have join enabled for 60 seconds.
+Once the binding is installed, and an adapter is added, it automatically reads all devices that are set up on the ZigBee controller and puts them in the Inbox. When the binding is put into discovery mode via the user interface, the network will have join enabled for 60 seconds.
 
 
 ## Thing Configuration

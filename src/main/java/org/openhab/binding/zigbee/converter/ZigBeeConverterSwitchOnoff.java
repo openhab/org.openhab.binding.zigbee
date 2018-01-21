@@ -103,7 +103,12 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
     public void disposeConverter() {
         logger.debug("{}: Closing device on/off cluster", endpoint.getIeeeAddress());
 
-        clusterOnOffServer.removeAttributeListener(this);
+        if (clusterOnOffClient != null) {
+            clusterOnOffClient.removeAttributeListener(this);
+        }
+        if (clusterOnOffServer != null) {
+            clusterOnOffServer.removeAttributeListener(this);
+        }
     }
 
     @Override
