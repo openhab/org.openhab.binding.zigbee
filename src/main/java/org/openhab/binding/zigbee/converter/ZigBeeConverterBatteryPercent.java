@@ -81,8 +81,18 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
         if (powerCluster == null) {
             return null;
         }
-        if (!powerCluster.isAttributeSupported(ZclPowerConfigurationCluster.ATTR_BATTERYPERCENTAGEREMAINING)) {
-            return null;
+
+        try {
+            if (!powerCluster.discoverAttributes(false).get()) {
+                logger.warn("{}: Failed discovering attributes in power configuration cluster",
+                        endpoint.getIeeeAddress());
+            } else if (!powerCluster
+                    .isAttributeSupported(ZclPowerConfigurationCluster.ATTR_BATTERYPERCENTAGEREMAINING)) {
+                return null;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.warn("{}: Exception discovering attributes in power configuration cluster",
+                    endpoint.getIeeeAddress(), e);
         }
 
         return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_POWER_BATTERYPERCENT,
