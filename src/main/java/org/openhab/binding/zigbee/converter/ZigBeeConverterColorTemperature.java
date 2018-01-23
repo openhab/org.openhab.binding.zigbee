@@ -7,6 +7,8 @@
  */
 package org.openhab.binding.zigbee.converter;
 
+import java.util.concurrent.ExecutionException;
+
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.thing.Channel;
@@ -46,7 +48,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
         clusterColorControl.getColorTemperature(0);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        clusterColorControl.setCurrentHueReporting(1, 600, 1);
+        clusterColorControl.setColorTemperatureReporting(1, 600, 1);
 
         return true;
     }
@@ -82,9 +84,21 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
-        if (endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID) == null) {
+        clusterColorControl = (ZclColorControlCluster) endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID);
+        if (clusterColorControl == null) {
             return null;
         }
+
+        try {
+            if (!clusterColorControl.discoverAttributes(false).get()) {
+                logger.warn("{}: Failed discovering attributes in color control cluster", endpoint.getIeeeAddress());
+            } else if (!clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_COLORTEMPERATURE)) {
+                return null;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.warn("{}: Exception discovering attributes in color control cluster", endpoint.getIeeeAddress(), e);
+        }
+
         return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_COLOR_TEMPERATURE,
                 ZigBeeBindingConstants.ITEM_TYPE_DIMMER, "Color Temperature");
     }
