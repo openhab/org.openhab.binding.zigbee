@@ -14,6 +14,7 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
 import org.eclipse.smarthome.config.core.Configuration;
+import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
@@ -273,17 +274,34 @@ public abstract class ZigBeeBaseChannelConverter {
         Map<String, String> properties = new HashMap<String, String>();
         properties.put(ZigBeeBindingConstants.CHANNEL_PROPERTY_ENDPOINT, Integer.toString(endpoint.getEndpointId()));
         ChannelTypeUID channelTypeUID;
-        // if (channelType.contains(":")) {
         channelTypeUID = new ChannelTypeUID(channelType);
-        channelType = channelType.substring(channelType.indexOf(":") + 1, channelType.length());
-        // } else {
-        // channelTypeUID = new ChannelTypeUID(ZigBeeBindingConstants.BINDING_ID, channelType);
-        // }
+        String[] channelTypeSplit = channelType.split(":");
+        String channelName = channelTypeSplit[1].replace("-", "_");
 
         return ChannelBuilder
                 .create(new ChannelUID(thingUID,
-                        endpoint.getIeeeAddress() + "_" + endpoint.getEndpointId() + "_" + channelType), itemType)
+                        endpoint.getIeeeAddress() + "_" + endpoint.getEndpointId() + "_" + channelName), itemType)
                 .withType(channelTypeUID).withLabel(label).withProperties(properties).build();
+    }
+
+    /**
+     * Converts a ZigBee 8 bit level as used in Level Control cluster and others to a percentage
+     *
+     * @param level an integer between 0 and 254
+     * @return the scaled {@link PercentType}
+     */
+    protected PercentType levelToPercent(int level) {
+        return new PercentType((int) (level * 100.0 / 254.0 + 0.5));
+    }
+
+    /**
+     * Converts a {@link PercentType} to an 8 bit level scaled between 0 and 254
+     *
+     * @param percent the {@link PercentType} to convert
+     * @return a scaled value between 0 and 254
+     */
+    protected int percentToLevel(PercentType percent) {
+        return (int) (percent.floatValue() * 254.0f / 100.0f + 0.5f);
     }
 
     /**

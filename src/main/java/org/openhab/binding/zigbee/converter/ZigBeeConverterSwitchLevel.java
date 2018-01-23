@@ -85,19 +85,23 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
 
     @Override
     public void handleCommand(final Command command) {
-        int level = 0;
+        PercentType percent;
         if (command instanceof PercentType) {
-            level = ((PercentType) command).intValue();
+            percent = (PercentType) command;
         } else if (command instanceof OnOffType) {
             OnOffType cmdOnOff = (OnOffType) command;
             if (cmdOnOff == OnOffType.ON) {
-                level = 100;
+                percent = PercentType.HUNDRED;
             } else {
-                level = 0;
+                percent = PercentType.ZERO;
             }
+        } else {
+            logger.warn("{}: Level converter only accepts PercentType and OnOffType - not {}",
+                    endpoint.getIeeeAddress(), command.getClass().getSimpleName());
+            return;
         }
 
-        clusterLevelControl.moveToLevelWithOnOffCommand((int) (level * 254.0 / 100.0 + 0.5),
+        clusterLevelControl.moveToLevelWithOnOffCommand(percentToLevel(percent),
                 configLevelControl.getDefaultTransitionTime());
     }
 
@@ -123,9 +127,9 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.LEVEL_CONTROL
                 && attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
-            Integer value = (Integer) attribute.getLastValue();
-            if (value != null) {
-                updateChannelState(new PercentType(value * 100 / 254));
+            Integer level = (Integer) attribute.getLastValue();
+            if (level != null) {
+                updateChannelState(levelToPercent(level));
             }
             return;
         }

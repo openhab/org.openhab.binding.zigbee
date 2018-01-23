@@ -102,7 +102,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             } else if (clusterColorControl.getSupportedAttributes().contains(ZclColorControlCluster.ATTR_CURRENTX)) {
                 logger.debug("{}: Device supports XY color set of commands", endpoint.getIeeeAddress());
                 supportsHue = false;
-                delayedColorChange = true; // By now, only for XY lights till this is configurable
+                delayedColorChange = true; // For now, only for XY lights till this is configurable
             } else {
                 logger.warn("{}: Device does not support RGB color", endpoint.getIeeeAddress());
                 return false;
@@ -262,7 +262,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         currentHSB = new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), brightness);
         lastBrightness = brightness;
 
-        int level = (int) (brightness.floatValue() * 254.0f / 100.0f + 0.5f);
+        int level = percentToLevel(brightness);
 
         if (clusterOnOff != null) {
             clusterLevelControl.moveToLevelWithOnOffCommand(level, configLevelControl.getDefaultTransitionTime()).get();
@@ -275,7 +275,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         HSBType oldHSB = currentHSB;
         currentHSB = new HSBType(color.getHue(), color.getSaturation(), oldHSB.getBrightness());
         int hue = (int) (color.getHue().floatValue() * 254.0f / 360.0f + 0.5f);
-        int saturation = (int) (color.getSaturation().floatValue() * 254.0f / 100.0f + 0.5f);
+        int saturation = percentToLevel(color.getSaturation());
 
         clusterColorControl
                 .moveToHueAndSaturationCommand(hue, saturation, configLevelControl.getDefaultTransitionTime()).get();
@@ -363,7 +363,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     }
 
     private void updateBrightness(PercentType brightness) {
-        // Extra temp variable to avoid thread sync concurrency issues on currentUSB
+        // Extra temp variable to avoid thread sync concurrency issues on currentHSB
         HSBType oldHSB = currentHSB;
         HSBType newHSB = new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), brightness);
         currentHSB = newHSB;
@@ -372,7 +372,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     }
 
     private void updateColorHSB(DecimalType hue, PercentType saturation) {
-        // Extra temp variable to avoid thread sync concurrency issues on currentUSB
+        // Extra temp variable to avoid thread sync concurrency issues on currentHSB
         HSBType oldHSB = currentHSB;
         HSBType newHSB = new HSBType(hue, saturation, oldHSB.getBrightness());
         currentHSB = newHSB;
@@ -424,8 +424,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                     }
                 } else if (attribute.getCluster().getId() == ZclLevelControlCluster.CLUSTER_ID) {
                     if (attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
-                        Integer value = (Integer) attribute.getLastValue();
-                        PercentType brightness = new PercentType(Float.valueOf(value * 100.0f / 254.0f).toString());
+                        PercentType brightness = levelToPercent((Integer) attribute.getLastValue());
                         updateBrightness(brightness);
                     }
                 } else if (attribute.getCluster().getId() == ZclColorControlCluster.CLUSTER_ID) {
