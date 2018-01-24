@@ -42,32 +42,34 @@ public class ZigBeeBindingConstants {
     public final static Set<ThingTypeUID> SUPPORTED_THING_TYPES = Sets.newHashSet(THING_TYPE_GENERIC_DEVICE);
 
     // List of Channel UIDs
-    public static final String CHANNEL_SWITCH_ONOFF = "switch_onoff";
-    public static final String CHANNEL_SWITCH_LEVEL = "switch_level";
+    public static final String CHANNEL_SWITCH_ONOFF = "zigbee:switch_onoff";
+    public static final String CHANNEL_SWITCH_LEVEL = "zigbee:switch_level";
 
-    public static final String CHANNEL_COLOR_COLOR = "color_color";
-    public static final String CHANNEL_COLOR_TEMPERATURE = "color_temperature";
+    public static final String CHANNEL_COLOR_COLOR = "zigbee:color_color";
+    public static final String CHANNEL_COLOR_TEMPERATURE = "zigbee:color_temperature";
 
-    public static final String CHANNEL_ILLUMINANCE_VALUE = "measurement_illuminance";
-    public static final String CHANNEL_TEMPERATURE_VALUE = "measurement_temperature";
-    public static final String CHANNEL_HUMIDITY_VALUE = "measurement_relativehumidity";
+    public static final String CHANNEL_ILLUMINANCE_VALUE = "zigbee:measurement_illuminance";
+    public static final String CHANNEL_TEMPERATURE_VALUE = "zigbee:measurement_temperature";
+    public static final String CHANNEL_HUMIDITY_VALUE = "zigbee:measurement_relativehumidity";
 
-    public static final String CHANNEL_OCCUPANCY_SENSOR = "sensor_occupancy";
+    public static final String CHANNEL_OCCUPANCY_SENSOR = "zigbee:sensor_occupancy";
 
-    public static final String CHANNEL_IAS_CONTACT_PORTAL1 = "ias_contactportal1";
-    public static final String CHANNEL_IAS_CONTACT_PORTAL2 = "ias_contactportal2";
-    public static final String CHANNEL_IAS_MOTION_INTRUSION = "ias_motionintrusion";
-    public static final String CHANNEL_IAS_MOTION_PRESENCE = "ias_motionpresence";
+    public static final String CHANNEL_IAS_CONTACT_PORTAL1 = "zigbee:ias_contactportal1";
+    public static final String CHANNEL_IAS_CONTACT_PORTAL2 = "zigbee:ias_contactportal2";
+    public static final String CHANNEL_IAS_MOTION_INTRUSION = "zigbee:ias_motionintrusion";
+    public static final String CHANNEL_IAS_MOTION_PRESENCE = "zigbee:ias_motionpresence";
+    public static final String CHANNEL_IAS_STANDARDCIE_SYSTEM = "zigbee:ias_standard_system";
 
-    public static final String CHANNEL_ELECTRICAL_ACTIVEPOWER = "electrical_activepower";
+    public static final String CHANNEL_ELECTRICAL_ACTIVEPOWER = "zigbee:electrical_activepower";
 
-    public static final String CHANNEL_POWER_BATTERYPERCENT = "power_batterypercent";
+    public static final String CHANNEL_POWER_BATTERYPERCENT = "system:battery-level";
 
     public static final String CHANNEL_PROPERTY_ENDPOINT = "zigbee_endpoint";
 
     public static final String ITEM_TYPE_COLOR = "Color";
-    public static final String ITEM_TYPE_NUMBER = "Number";
+    public static final String ITEM_TYPE_CONTACT = "Contact";
     public static final String ITEM_TYPE_DIMMER = "Dimmer";
+    public static final String ITEM_TYPE_NUMBER = "Number";
     public static final String ITEM_TYPE_SWITCH = "Switch";
 
     public static final String THING_PROPERTY_STKVERSION = "zigbee_stkversion";

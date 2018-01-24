@@ -103,6 +103,11 @@ public abstract class ZigBeeBaseChannelConverter {
     protected List<ConfigDescriptionParameter> configOptions = null;
 
     /**
+     * The channel
+     */
+    protected Channel channel = null;
+
+    /**
      * The {@link ChannelUID} for this converter
      */
     protected ChannelUID channelUID = null;
@@ -132,20 +137,21 @@ public abstract class ZigBeeBaseChannelConverter {
      * Creates the converter handler
      *
      * @param thing the {@link ZigBeeThingHandler} the channel is part of
-     * @param channelUID the {@link channelUID} for the channel
+     * @param channel the {@link Channel} for the channel
      * @param coordinator the {@link ZigBeeCoordinatorHandler} this endpoint is part of
      * @param address the {@link IeeeAddress} of the node
      * @param endpointId the endpoint this channel is linked to
      * @return true if the handler was created successfully - false otherwise
      */
-    public void initialize(ZigBeeThingHandler thing, ChannelUID channelUID, ZigBeeCoordinatorHandler coordinator,
+    public void initialize(ZigBeeThingHandler thing, Channel channel, ZigBeeCoordinatorHandler coordinator,
             IeeeAddress address, int endpointId) {
         this.endpoint = coordinator.getEndpoint(address, endpointId);
         if (this.endpoint == null) {
             throw new IllegalArgumentException("Device was not found");
         }
         this.thing = thing;
-        this.channelUID = channelUID;
+        this.channel = channel;
+        this.channelUID = channel.getUID();
         this.coordinator = coordinator;
     }
 
@@ -266,7 +272,13 @@ public abstract class ZigBeeBaseChannelConverter {
             String label) {
         Map<String, String> properties = new HashMap<String, String>();
         properties.put(ZigBeeBindingConstants.CHANNEL_PROPERTY_ENDPOINT, Integer.toString(endpoint.getEndpointId()));
-        ChannelTypeUID channelTypeUID = new ChannelTypeUID(ZigBeeBindingConstants.BINDING_ID, channelType);
+        ChannelTypeUID channelTypeUID;
+        // if (channelType.contains(":")) {
+        channelTypeUID = new ChannelTypeUID(channelType);
+        channelType = channelType.substring(channelType.indexOf(":") + 1, channelType.length());
+        // } else {
+        // channelTypeUID = new ChannelTypeUID(ZigBeeBindingConstants.BINDING_ID, channelType);
+        // }
 
         return ChannelBuilder
                 .create(new ChannelUID(thingUID,

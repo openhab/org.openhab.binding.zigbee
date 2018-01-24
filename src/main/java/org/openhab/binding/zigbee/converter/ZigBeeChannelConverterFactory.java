@@ -15,7 +15,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.eclipse.smarthome.core.thing.Channel;
-import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
@@ -101,11 +100,11 @@ public class ZigBeeChannelConverterFactory {
 
                 Channel channel = converter.getChannel(thingUID, endpoint);
                 if (channel != null) {
-                    channels.put(channel.getChannelTypeUID().getId().toString(), channel);
+                    channels.put(channel.getChannelTypeUID().toString(), channel);
                 }
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                logger.debug("Exception while getting channels: ", e);
+                logger.debug("{}: Exception while getting channels: ", endpoint.getIeeeAddress(), e);
             }
         }
 
@@ -126,29 +125,28 @@ public class ZigBeeChannelConverterFactory {
      * Creates a channel converter for the requested {@link ChannelTypeUID}
      *
      * @param thingHandler the {@link ZigBeeThingHandler} for this channel
-     * @param channelTypeUid the {@link ChannelTypeUID} to create the converter for
-     * @param channelUid the {@link ChannelUID} to create the converter for
+     * @param channel the {@link Channel} to create the converter for
      * @param coordinatorHandler the {@link ZigBeeCoordinatorHandler}
      * @param ieeeAddress the {@link IeeeAddress} of the device
      * @param endpointId the endpoint ID for this channel on the device
      * @return the {@link ZigBeeBaseChannelConverter} or null if the channel is not supported
      */
-    public ZigBeeBaseChannelConverter createConverter(ZigBeeThingHandler thingHandler, ChannelTypeUID channelTypeUid,
-            ChannelUID channelUid, ZigBeeCoordinatorHandler coordinatorHandler, IeeeAddress ieeeAddress,
-            int endpointId) {
+    public ZigBeeBaseChannelConverter createConverter(ZigBeeThingHandler thingHandler, Channel channel,
+            ZigBeeCoordinatorHandler coordinatorHandler, IeeeAddress ieeeAddress, int endpointId) {
         Constructor<? extends ZigBeeBaseChannelConverter> constructor;
         try {
-            if (channelMap.get(channelTypeUid.getId()) == null) {
-                logger.debug("Channel converter for channel type {} is not implemented!", channelUid.getId());
+            if (channelMap.get(channel.getChannelTypeUID().toString()) == null) {
+                logger.debug("{}: Channel converter for channel type {} is not implemented!", ieeeAddress,
+                        channel.getUID().getId());
                 return null;
             }
-            constructor = channelMap.get(channelTypeUid.getId()).getConstructor();
+            constructor = channelMap.get(channel.getChannelTypeUID().toString()).getConstructor();
             ZigBeeBaseChannelConverter instance = constructor.newInstance();
 
-            instance.initialize(thingHandler, channelUid, coordinatorHandler, ieeeAddress, endpointId);
+            instance.initialize(thingHandler, channel, coordinatorHandler, ieeeAddress, endpointId);
             return instance;
         } catch (Exception e) {
-            logger.error("{}: Unable to create channel ", channelUid, e);
+            logger.error("{}: Unable to create channel {}", ieeeAddress, channel.getUID(), e);
         }
 
         return null;

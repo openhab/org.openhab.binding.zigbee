@@ -57,7 +57,10 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
 
-        cluster.getBatteryPercentageRemaining(0);
+        Integer value = cluster.getBatteryPercentageRemaining(0);
+        if (value != null) {
+            updateChannelState(new PercentType(value));
+        }
 
         return true;
     }
@@ -86,6 +89,7 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
             if (!powerCluster.discoverAttributes(false).get()) {
                 logger.warn("{}: Failed discovering attributes in power configuration cluster",
                         endpoint.getIeeeAddress());
+                return null;
             } else if (!powerCluster
                     .isAttributeSupported(ZclPowerConfigurationCluster.ATTR_BATTERYPERCENTAGEREMAINING)) {
                 return null;
@@ -96,7 +100,7 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
         }
 
         return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_POWER_BATTERYPERCENT,
-                ZigBeeBindingConstants.CHANNEL_POWER_BATTERYPERCENT, "Battery Percent");
+                ZigBeeBindingConstants.ITEM_TYPE_NUMBER, "Battery Percent");
     }
 
     @Override
