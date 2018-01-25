@@ -220,8 +220,8 @@ public class ZigBeeThingHandler extends BaseThingHandler
                 // Process the channel properties
                 Map<String, String> properties = channel.getProperties();
 
-                ZigBeeBaseChannelConverter handler = factory.createConverter(this, channel.getChannelTypeUID(),
-                        channel.getUID(), coordinatorHandler, node.getIeeeAddress(),
+                ZigBeeBaseChannelConverter handler = factory.createConverter(this, channel, coordinatorHandler,
+                        node.getIeeeAddress(),
                         Integer.parseInt(properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_ENDPOINT)));
                 if (handler == null) {
                     logger.debug("{}: No handler found for {}", nodeIeeeAddress, channel.getUID());
@@ -407,23 +407,29 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
         // Check that we have a coordinator to work through
         if (coordinatorHandler == null) {
-            logger.debug("Coordinator handler not found. Cannot handle command without coordinator.");
+            logger.debug("{}: Coordinator handler not found. Cannot handle command without coordinator.",
+                    nodeIeeeAddress);
             updateStatus(ThingStatus.OFFLINE);
             return;
         }
 
         ZigBeeBaseChannelConverter handler = channels.get(channelUID);
         if (handler == null) {
-            logger.debug("No handler found for {}", channelUID);
+            logger.debug("{}: No handler found for {}", nodeIeeeAddress, channelUID);
             return;
         }
 
         Runnable commandHandler = new Runnable() {
             @Override
             public void run() {
-                if (command == RefreshType.REFRESH) {
-                } else {
-                    handler.handleCommand(command);
+                try {
+                    if (command == RefreshType.REFRESH) {
+                        handler.handleRefresh();
+                    } else {
+                        handler.handleCommand(command);
+                    }
+                } catch (Exception e) {
+                    logger.debug("{}: Exception sending command to channel {}", nodeIeeeAddress, channelUID, e);
                 }
             }
         };
@@ -536,10 +542,6 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
     @Override
     public ConfigDescription getConfigDescription(URI uri, Locale locale) {
-        if (uri == null) {
-            return null;
-        }
-
         if ("channel".equals(uri.getScheme()) == false) {
             return null;
         }
