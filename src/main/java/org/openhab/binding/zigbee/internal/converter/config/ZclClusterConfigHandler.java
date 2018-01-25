@@ -1,4 +1,4 @@
-package org.openhab.binding.zigbee.converter.config;
+package org.openhab.binding.zigbee.internal.converter.config;
 
 import java.util.List;
 

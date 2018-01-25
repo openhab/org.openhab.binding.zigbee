@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.zigbee.converter;
+package org.openhab.binding.zigbee.internal.converter;
 
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
@@ -16,24 +16,25 @@ import com.zsmartsystems.zigbee.zcl.ZclCommandListener;
 import com.zsmartsystems.zigbee.zcl.clusters.iaszone.ZoneTypeEnum;
 
 /**
- * Converter for the IAS Standard CIE System sensor.
+ * Converter for the IAS presence sensor.
  *
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeConverterIasCieSystem extends ZigBeeConverterIas implements ZclCommandListener {
+public class ZigBeeConverterIasMotionPresence extends ZigBeeConverterIas implements ZclCommandListener {
     @Override
     public boolean initializeConverter() {
+        bitTest = CIE_ALARM2;
         return super.initializeConverter();
     }
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
-        if (!supportsIasChannel(endpoint, ZoneTypeEnum.STANDARD_CIE)) {
+        if (!supportsIasChannel(endpoint, ZoneTypeEnum.MOTION_SENSOR)) {
             return null;
         }
 
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_IAS_STANDARDCIE_SYSTEM,
-                ZigBeeBindingConstants.ITEM_TYPE_SWITCH, "CIE Standard System Alarm");
+        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_IAS_MOTION_PRESENCE,
+                ZigBeeBindingConstants.ITEM_TYPE_SWITCH, "Motion Presence");
     }
 }
