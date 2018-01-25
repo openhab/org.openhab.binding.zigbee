@@ -265,9 +265,9 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         int level = (int) (brightness.floatValue() * 254.0f / 100.0f + 0.5f);
 
         if (clusterOnOff != null) {
-            clusterLevelControl.moveToLevelWithOnOffCommand(level, 10).get();
+            clusterLevelControl.moveToLevelWithOnOffCommand(level, configLevelControl.getDefaultTransitionTime()).get();
         } else {
-            clusterLevelControl.moveToLevelCommand(level, 10).get();
+            clusterLevelControl.moveToLevelCommand(level, configLevelControl.getDefaultTransitionTime()).get();
         }
     }
 
@@ -277,7 +277,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         int hue = (int) (color.getHue().floatValue() * 254.0f / 360.0f + 0.5f);
         int saturation = (int) (color.getSaturation().floatValue() * 254.0f / 100.0f + 0.5f);
 
-        clusterColorControl.moveToHueAndSaturationCommand(hue, saturation, 10).get();
+        clusterColorControl
+                .moveToHueAndSaturationCommand(hue, saturation, configLevelControl.getDefaultTransitionTime()).get();
     }
 
     private void changeColorXY(HSBType color) throws InterruptedException, ExecutionException {
@@ -291,7 +292,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         int x = (int) (xy[0].floatValue() / 100.0f * 65536.0f + 0.5f); // up to 65279
         int y = (int) (xy[1].floatValue() / 100.0f * 65536.0f + 0.5f); // up to 65279
 
-        clusterColorControl.moveToColorCommand(x, y, 10).get();
+        clusterColorControl.moveToColorCommand(x, y, configLevelControl.getDefaultTransitionTime()).get();
     }
 
     @Override
@@ -338,7 +339,6 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
         clusterColorControl = (ZclColorControlCluster) endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID);
-
         if (clusterColorControl == null) {
             return null;
         }
