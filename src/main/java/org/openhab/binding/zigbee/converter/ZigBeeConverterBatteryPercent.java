@@ -9,7 +9,7 @@ package org.openhab.binding.zigbee.converter;
 
 import java.util.concurrent.ExecutionException;
 
-import org.eclipse.smarthome.core.library.types.PercentType;
+import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
@@ -59,7 +59,7 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
 
         Integer value = cluster.getBatteryPercentageRemaining(0);
         if (value != null) {
-            updateChannelState(new PercentType(value));
+            updateChannelState(new DecimalType(value));
         }
 
         return true;
@@ -113,7 +113,7 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
                 return;
             }
 
-            updateChannelState(new PercentType(value));
+            updateChannelState(new DecimalType(value));
         }
     }
 }
