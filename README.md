@@ -42,19 +42,22 @@ The thing type is ```coordinator_telegesis```.
 
 The following devices have been tested with the binding
 
-| Device                     | Description                    |
-|----------------------------|--------------------------------|
-| Busch-Jaeger 6711          | Relay Insert                   |
-| GE Bulbs                   |                                |
-| Hue Bulbs                  | Color LED Bulb                 |
-| Hue Motion Sensor          | Motion and Luminance sensor    |
-| Innr Bulbs                 |                                |
-| Osram Bulbs                |                                |
-| SmartThings Plug           | Metered Plug                   |
-| SmartThings Motion Sensor  | Motion and Temperature sensor  |
-| SmartThings Contact Sensor | Contact and Temperature sensor |
-| Tradfri Bulbs              |                                |
-| Tradfri Motion Sensor      |                                |
+| Device                     | Description                                   |
+|----------------------------|-----------------------------------------------|
+| Busch-Jaeger 6711          | Relay Insert                                  |
+| Busch-Jaeger 6735          | Control Element (1-channel)                   |
+| Busch-Jaeger 6735/01       | Control Element (1-channel, battery-operated) |
+| Busch-Jaeger 6736          | Control Element (2-channel)                   |
+| GE Bulbs                   |                                               |
+| Hue Bulbs                  | Color LED Bulb                                |
+| Hue Motion Sensor          | Motion and Luminance sensor                   |
+| Innr Bulbs                 |                                               |
+| Osram Bulbs                |                                               |
+| SmartThings Plug           | Metered Plug                                  |
+| SmartThings Motion Sensor  | Motion and Temperature sensor                 |
+| SmartThings Contact Sensor | Contact and Temperature sensor                |
+| Tradfri Bulbs              |                                               |
+| Tradfri Motion Sensor      |                                               |
 
 
 
