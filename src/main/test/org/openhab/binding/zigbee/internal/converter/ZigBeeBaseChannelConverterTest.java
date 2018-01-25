@@ -5,14 +5,14 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.zigbee.converter;
+package org.openhab.binding.zigbee.internal.converter;
 
 import static org.junit.Assert.assertEquals;
 
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.junit.Test;
-import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
-import org.openhab.binding.zigbee.converter.ZigBeeConverterSwitchLevel;
+import org.openhab.binding.zigbee.internal.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.internal.converter.ZigBeeConverterSwitchLevel;
 
 /**
  * Test of the ZigBeeBaseChannelConverter

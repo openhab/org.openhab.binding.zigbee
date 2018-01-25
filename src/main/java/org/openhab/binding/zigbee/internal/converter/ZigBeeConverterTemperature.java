@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.zigbee.converter;
+package org.openhab.binding.zigbee.internal.converter;
 
 import java.math.BigDecimal;
 
@@ -19,26 +19,26 @@ import org.slf4j.LoggerFactory;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
-import com.zsmartsystems.zigbee.zcl.clusters.ZclIlluminanceMeasurementCluster;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclTemperatureMeasurementCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
- * Converter for the illuminance channel
+ * Converter for the temperature channel
  *
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
-    private Logger logger = LoggerFactory.getLogger(ZigBeeConverterIlluminance.class);
+public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
+    private Logger logger = LoggerFactory.getLogger(ZigBeeConverterTemperature.class);
 
-    private ZclIlluminanceMeasurementCluster cluster;
+    private ZclTemperatureMeasurementCluster cluster;
 
     @Override
     public boolean initializeConverter() {
-        cluster = (ZclIlluminanceMeasurementCluster) endpoint
-                .getInputCluster(ZclIlluminanceMeasurementCluster.CLUSTER_ID);
+        cluster = (ZclTemperatureMeasurementCluster) endpoint
+                .getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID);
         if (cluster == null) {
-            logger.error("{}: Error opening device illuminance measurement cluster", endpoint.getIeeeAddress());
+            logger.error("{}: Error opening device temperature measurement cluster", endpoint.getIeeeAddress());
             return false;
         }
 
@@ -49,7 +49,7 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
         cluster.getMeasuredValue(60);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        cluster.setMeasuredValueReporting(1, 600, 1);
+        cluster.setMeasuredValueReporting(1, 600, 0.1);
         return true;
     }
 
@@ -60,23 +60,23 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
 
     @Override
     public void handleRefresh() {
-        cluster.getMeasuredValue(0);
+        cluster.getMeasuredValue(60);
     }
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
-        if (endpoint.getInputCluster(ZclIlluminanceMeasurementCluster.CLUSTER_ID) == null) {
+        if (endpoint.getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID) == null) {
             return null;
         }
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_ILLUMINANCE_VALUE,
-                ZigBeeBindingConstants.ITEM_TYPE_NUMBER, "Illuminance");
+        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE,
+                ZigBeeBindingConstants.ITEM_TYPE_NUMBER, "Temperature");
     }
 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.ILLUMINANCE_MEASUREMENT
-                && attribute.getId() == ZclIlluminanceMeasurementCluster.ATTR_MEASUREDVALUE) {
+        if (attribute.getCluster() == ZclClusterType.TEMPERATURE_MEASUREMENT
+                && attribute.getId() == ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {
                 updateChannelState(new DecimalType(BigDecimal.valueOf(value, 2)));
