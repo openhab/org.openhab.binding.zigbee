@@ -2,6 +2,7 @@ package org.openhab.binding.zigbee.converter;
 
 import static org.junit.Assert.assertEquals;
 
+import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.types.State;
 import org.junit.Test;
@@ -10,6 +11,7 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.binding.zigbee.internal.converter.ZigBeeConverterSwitchOnoff;
 
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
@@ -35,8 +37,8 @@ public class ZigBeeConverterSwitchOnoffTest {
         ArgumentCaptor<ChannelUID> channelCapture = ArgumentCaptor.forClass(ChannelUID.class);
         ArgumentCaptor<State> stateCapture = ArgumentCaptor.forClass(State.class);
         ZigBeeThingHandler thingHandler = Mockito.mock(ZigBeeThingHandler.class);
-        converter.initialize(thingHandler, new ChannelUID("a:b:c:d"), coordinatorHandler,
-                new IeeeAddress("1234567890ABCDEF"), 1);
+        Channel channel = new Channel(new ChannelUID("a:b:c:d"), "");
+        converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
         ZclAttribute attribute = new ZclAttribute(ZclClusterType.ON_OFF, 0, "OnOff", ZclDataType.BOOLEAN, false, false,
                 false, false);
         converter.attributeUpdated(attribute);
