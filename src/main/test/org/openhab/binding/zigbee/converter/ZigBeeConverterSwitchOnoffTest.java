@@ -24,23 +24,25 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclDataType;
  *
  */
 public class ZigBeeConverterSwitchOnoffTest {
+
     @Test
     public void testAttributeUpdated() {
         ZigBeeEndpoint endpoint = Mockito.mock(ZigBeeEndpoint.class);
         ZigBeeCoordinatorHandler coordinatorHandler = Mockito.mock(ZigBeeCoordinatorHandler.class);
-        Mockito.when(coordinatorHandler.getEndpoint(Matchers.any(), Matchers.any())).thenReturn(endpoint);
+        Mockito.when(coordinatorHandler.getEndpoint(Matchers.any(), Matchers.anyInt())).thenReturn(endpoint);
 
         ZigBeeConverterSwitchOnoff converter = new ZigBeeConverterSwitchOnoff();
         ArgumentCaptor<ChannelUID> channelCapture = ArgumentCaptor.forClass(ChannelUID.class);
         ArgumentCaptor<State> stateCapture = ArgumentCaptor.forClass(State.class);
         ZigBeeThingHandler thingHandler = Mockito.mock(ZigBeeThingHandler.class);
-        converter.initialize(thingHandler, new ChannelUID("a:b"), coordinatorHandler,
+        converter.initialize(thingHandler, new ChannelUID("a:b:c:d"), coordinatorHandler,
                 new IeeeAddress("1234567890ABCDEF"), 1);
         ZclAttribute attribute = new ZclAttribute(ZclClusterType.ON_OFF, 0, "OnOff", ZclDataType.BOOLEAN, false, false,
                 false, false);
         converter.attributeUpdated(attribute);
-        Mockito.verify(thingHandler, Mockito.times(1)).handleUpdate(channelCapture.capture(), stateCapture.capture());
+        Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
 
-        assertEquals(new ChannelUID("a:b"), channelCapture.getValue());
+        assertEquals(new ChannelUID("a:b:c:d"), channelCapture.getValue());
     }
 }
