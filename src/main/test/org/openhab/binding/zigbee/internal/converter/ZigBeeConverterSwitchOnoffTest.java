@@ -1,4 +1,4 @@
-package org.openhab.binding.zigbee.converter;
+package org.openhab.binding.zigbee.internal.converter;
 
 import static org.junit.Assert.assertEquals;
 

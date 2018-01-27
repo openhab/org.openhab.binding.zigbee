@@ -51,15 +51,16 @@ The following devices have been tested with the binding
 | GE Bulbs                   |                                                   |
 | Hue Bulbs                  | Color LED Bulb                                    |
 | Hue Motion Sensor          | Motion and Luminance sensor                       |
-| Innr Bulbs                 |                                                   |
+| Innr Bulbs                 | *note1*                                           |
 | Osram Bulbs                |                                                   |
 | SmartThings Plug           | Metered Plug                                      |
 | SmartThings Motion Sensor  | CentraLite 3325-S Motion and Temperature sensor   |
 | SmartThings Contact Sensor | Contact and Temperature sensor                    |
 | Tradfri Bulbs              |                                                   |
 | Tradfri Motion Sensor      |                                                   |
+| Trust Bulbs                | *note1*                                           |
 
-
+Note 1: Some bulbs may not work with the Telegesis dongle.
 
 ## Discovery
 
@@ -90,6 +91,7 @@ The following channels are supported -:
 | ias_contactportal1 | ```IAS_ZONE``` (0x0500) | Switch |  |
 | ias_motionintrusion | ```IAS_ZONE``` (0x0500) | Switch |  |
 | ias_motionpresence | ```IAS_ZONE``` (0x0500) | Switch |  |
+| ias_standard_system | ```IAS_ZONE``` (0x0500) | Switch |  |
 | measurement_illuminance | ```ILLUMINANCE_MEASUREMENT``` (0x0400) | Number |   |
 | measurement_temperature | ```TEMPERATURE_MEASUREMENT``` (0x0402) | Number |   |
 | sensor_occupancy   | ```OCCUPANCY_SENSING``` (0x0406) | Switch  |  |

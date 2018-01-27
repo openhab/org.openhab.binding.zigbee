@@ -5,9 +5,9 @@
 	<classpathentry kind="src" output="target/test-classes" path="src/main/test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="lib/com.zsmartsystems.zigbee-1.0.3-SNAPSHOT.jar" sourcepath="lib/com.zsmartsystems.zigbee-1.0.3-SNAPSHOT-sources.jar"/>
-	<classpathentry kind="lib" path="lib/com.zsmartsystems.zigbee.dongle.cc2531-1.0.3-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="lib/com.zsmartsystems.zigbee.dongle.ember-1.0.3-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="lib/com.zsmartsystems.zigbee.dongle.telegesis-1.0.3-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/com.zsmartsystems.zigbee-1.0.4-SNAPSHOT.jar" sourcepath="lib/com.zsmartsystems.zigbee-1.0.4-SNAPSHOT-sources.jar"/>
+	<classpathentry kind="lib" path="lib/com.zsmartsystems.zigbee.dongle.cc2531-1.0.4-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/com.zsmartsystems.zigbee.dongle.ember-1.0.4-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/com.zsmartsystems.zigbee.dongle.telegesis-1.0.4-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="target/test-classes"/>
 </classpath>

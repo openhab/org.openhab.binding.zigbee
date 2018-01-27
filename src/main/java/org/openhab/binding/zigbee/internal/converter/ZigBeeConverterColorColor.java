@@ -34,10 +34,11 @@ import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclLevelControlCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
+import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorCapabilitiesEnum;
 
 /**
  *
- * @author Chris Jackson - Initial Contribution
+ * @author Chris Jackson - Initial Contribution. Improvements in detection of device functionality.
  * @author Pedro Garcia - Added CIE XY color support
  *
  */
@@ -345,7 +346,26 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
         try {
             if (!clusterColorControl.discoverAttributes(false).get()) {
-                logger.warn("{}: Failed discovering attributes in color control cluster", endpoint.getIeeeAddress());
+                // Device is not supporting attribute reporting - instead, just read the attributes
+                Integer capabilities = clusterColorControl.getColorCapabilities(Integer.MAX_VALUE);
+                if (capabilities != null && ((capabilities & (ColorCapabilitiesEnum.HUE_AND_SATURATION.getKey()
+                        | ColorCapabilitiesEnum.XY_ATTRIBUTE.getKey())) == 0)) {
+                    // No support for hue or XY
+                    return null;
+                }
+                if (clusterColorControl.getCurrentX(0) == null && clusterColorControl.getCurrentHue(0) == null) {
+                    return null;
+                }
+            } else if (clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_COLORCAPABILITIES)) {
+                // If the device is reporting is capabilities, then use this over attribute detection
+                // The color control cluster is required to always support XY attributes, so a non-color bulb is still
+                // detected as a color bulb in this case.
+                Integer capabilities = clusterColorControl.getColorCapabilities(Integer.MAX_VALUE);
+                if ((capabilities != null) && (capabilities & (ColorCapabilitiesEnum.HUE_AND_SATURATION.getKey()
+                        | ColorCapabilitiesEnum.XY_ATTRIBUTE.getKey())) == 0) {
+                    // No support for hue or XY
+                    return null;
+                }
             } else if (!clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_CURRENTHUE)
                     && !clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_CURRENTX)) {
                 return null;
