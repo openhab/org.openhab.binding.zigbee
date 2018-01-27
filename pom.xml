@@ -1,12 +1,13 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-
 	<parent>
 		<groupId>org.openhab</groupId>
 		<artifactId>pom-tycho</artifactId>
-		<version>2.2.0</version>
-		<relativePath/>
+		<version>2.3.0-SNAPSHOT</version>
+		<relativePath />
 	</parent>
 
 	<groupId>org.openhab.binding</groupId>
@@ -14,7 +15,6 @@
 
 	<name>ZigBee Binding</name>
 	<packaging>eclipse-plugin</packaging>
-	<version>2.3.0-SNAPSHOT</version>
 
 	<properties>
 		<report.fail.on.error>false</report.fail.on.error>
@@ -78,6 +78,64 @@
 				</executions>
 			</plugin>
 		</plugins>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-compiler-plugin</artifactId>
+										<versionRange>[3.5.1,)</versionRange>
+										<goals>
+											<goal>testCompile</goal>
+											<goal>compile</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.eclipse.tycho</groupId>
+										<artifactId>tycho-packaging-plugin</artifactId>
+										<versionRange>[1.0.0,)</versionRange>
+										<goals>
+											<goal>build-qualifier</goal>
+											<goal>validate-version</goal>
+											<goal>validate-id</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.eclipse.tycho</groupId>
+										<artifactId>tycho-compiler-plugin</artifactId>
+										<versionRange>[1.0.0,)</versionRange>
+										<goals>
+											<goal>compile</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 
 	<dependencies>
@@ -99,10 +157,31 @@
 			<version>1.7.2</version>
 			<scope>test</scope>
 		</dependency>
+		
+        <dependency>
+            <groupId>com.zsmartsystems.zigbee</groupId>
+            <artifactId>com.zsmartsystems.zigbee</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zsmartsystems.zigbee</groupId>
+            <artifactId>com.zsmartsystems.zigbee.dongle.telegesis</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zsmartsystems.zigbee</groupId>
+            <artifactId>com.zsmartsystems.zigbee.dongle.ember</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zsmartsystems.zigbee</groupId>
+            <artifactId>com.zsmartsystems.zigbee.dongle.cc2531</artifactId>
+            <version>1.0.3</version>
+        </dependency>
 	</dependencies>
 
 	<pluginRepositories>
-	  <pluginRepository>
+		<pluginRepository>
 			<id>jcenter</id>
 			<name>JCenter Repository</name>
 			<url>https://jcenter.bintray.com/</url>
@@ -113,23 +192,24 @@
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
-	  </pluginRepository>
-	  <pluginRepository>
-		  <id>artifactory</id>
-		  <name>JFrog Artifactory Repository</name>
-		  <url>https://openhab.jfrog.io/openhab/libs-release</url>
-		  <releases>
-			  <enabled>true</enabled>
-			  <updatePolicy>never</updatePolicy>
-		  </releases>
-		  <snapshots>
-			  <enabled>false</enabled>
-		  </snapshots>
-	  </pluginRepository>
+		</pluginRepository>
+		<pluginRepository>
+			<id>artifactory</id>
+			<name>JFrog Artifactory Repository</name>
+			<url>https://openhab.jfrog.io/openhab/libs-release</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+
 	</pluginRepositories>
 
 	<repositories>
-		
+
 		<!-- releases -->
 		<repository>
 			<id>jcenter</id>
@@ -183,6 +263,16 @@
 			<id>p2-openhab-deps-repo</id>
 			<url>https://dl.bintray.com/openhab/p2/openhab-deps-repo/${ohdr.version}</url>
 			<layout>p2</layout>
+		</repository>
+
+		<!-- Z-Smart Systems ZigBee Framework -->
+		<repository>
+			<id>bintray-zsmartsystems-com.zsmartsystems</id>
+			<name>zsmartsystems-bintray</name>
+			<url>https://dl.bintray.com/zsmartsystems/com.zsmartsystems</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
 		</repository>
 
 	</repositories>
