@@ -26,7 +26,7 @@ Describe your issue. Try and be clear and avoid jumping to conclusions about the
 | Hardware         |                                                                                |
 | Memory           |                                                                                |
 | Java version     |                                                                                |
-| Devices          |                                                                                |
+| Devices          | Provide all device types and their addresses                                   |
 
 ### Logs
 
