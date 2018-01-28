@@ -72,7 +72,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
         clusterColorControl.addAttributeListener(this);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        clusterColorControl.setColorTemperatureReporting(1, 600, 1);
+        clusterColorControl.setColorTemperatureReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1);
 
         return true;
     }

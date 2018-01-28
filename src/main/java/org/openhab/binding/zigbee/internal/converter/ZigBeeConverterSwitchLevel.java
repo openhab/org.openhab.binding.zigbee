@@ -51,7 +51,8 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
             CommandResult bindResponse = clusterLevelControl.bind().get();
             if (bindResponse.isSuccess()) {
                 // Configure reporting - no faster than once per second - no slower than 10 minutes.
-                CommandResult reportingResponse = clusterLevelControl.setCurrentLevelReporting(1, 600, 1).get();
+                CommandResult reportingResponse = clusterLevelControl
+                        .setCurrentLevelReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
                 if (reportingResponse.isError()) {
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }

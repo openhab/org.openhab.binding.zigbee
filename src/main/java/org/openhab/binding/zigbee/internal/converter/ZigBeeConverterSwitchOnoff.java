@@ -60,7 +60,8 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
                 CommandResult bindResponse = clusterOnOffServer.bind().get();
                 if (bindResponse.isSuccess()) {
                     // Configure reporting - no faster than once per second - no slower than 10 minutes.
-                    CommandResult reportingResponse = clusterOnOffServer.setOnOffReporting(1, 600).get();
+                    CommandResult reportingResponse = clusterOnOffServer.setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX)
+                            .get();
                     if (reportingResponse.isError()) {
                         pollingPeriod = POLLING_PERIOD_HIGH;
                     }
@@ -80,7 +81,8 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
                 CommandResult bindResponse = clusterOnOffClient.bind().get();
                 if (bindResponse.isSuccess()) {
                     // Configure reporting - no faster than once per second - no slower than 10 minutes.
-                    CommandResult reportingResponse = clusterOnOffClient.setOnOffReporting(1, 600).get();
+                    CommandResult reportingResponse = clusterOnOffClient.setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX)
+                            .get();
                     if (reportingResponse.isError()) {
                         pollingPeriod = POLLING_PERIOD_HIGH;
                     }

@@ -48,7 +48,7 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
         cluster.addAttributeListener(this);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        cluster.setMeasuredValueReporting(1, 600, 0.1);
+        cluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1);
         return true;
     }
 
@@ -59,7 +59,7 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
 
     @Override
     public void handleRefresh() {
-        cluster.getMeasuredValue(60);
+        cluster.getMeasuredValue(0);
     }
 
     @Override
