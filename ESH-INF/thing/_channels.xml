@@ -61,7 +61,7 @@
         <state readOnly="true">
         </state>
     </channel-type>
-    
+
     <!-- IAS Motion Presence Channel -->
     <channel-type id="ias_motionpresence">
         <item-type>Switch</item-type>
@@ -71,7 +71,17 @@
         <state readOnly="true">
         </state>
     </channel-type>
-    
+
+    <!-- IAS System Alarm Channel -->
+    <channel-type id="ias_standard_system">
+        <item-type>Switch</item-type>
+        <label>System Alarm</label>
+        <description></description>
+        <category></category>
+        <state readOnly="true">
+        </state>
+    </channel-type>
+
     <!-- Illuminance Channel -->
     <channel-type id="measurement_illuminance">
         <item-type>Number</item-type>
