@@ -73,7 +73,6 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
 
             // Add a listener, then request the status
             clusterOnOffServer.addAttributeListener(this);
-            clusterOnOffServer.getOnOff(0);
         }
 
         if (clusterOnOffClient != null) {

@@ -125,8 +125,6 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                 pollingPeriod = POLLING_PERIOD_HIGH;
             }
             if (supportsHue) {
-                clusterColorControl.getCurrentHue(0);
-                clusterColorControl.getCurrentSaturation(0);
                 CommandResult reportResponse = clusterColorControl.setCurrentHueReporting(1, 600, 1).get();
                 if (!reportResponse.isSuccess()) {
                     pollingPeriod = POLLING_PERIOD_HIGH;
@@ -136,8 +134,6 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }
             } else {
-                clusterColorControl.getCurrentX(0);
-                clusterColorControl.getCurrentY(0);
                 clusterColorControl.setCurrentXReporting(1, 600, 1).get();
                 clusterColorControl.setCurrentYReporting(1, 600, 1).get();
             }
@@ -169,7 +165,6 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                 if (!bindResponse.isSuccess()) {
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }
-                clusterOnOff.getOnOff(0);
                 CommandResult reportResponse = clusterOnOff.setOnOffReporting(1, 600).get();
                 if (!reportResponse.isSuccess()) {
                     pollingPeriod = POLLING_PERIOD_HIGH;

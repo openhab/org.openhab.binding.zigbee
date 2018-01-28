@@ -45,7 +45,6 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
 
         // Add a listener, then request the status
         clusterOccupancy.addAttributeListener(this);
-        clusterOccupancy.getOccupancy(0);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
         clusterOccupancy.setOccupancyReporting(1, 600);

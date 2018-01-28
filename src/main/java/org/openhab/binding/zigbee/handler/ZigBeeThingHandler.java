@@ -348,9 +348,10 @@ public class ZigBeeThingHandler extends BaseThingHandler
                 pollingPeriod = POLLING_PERIOD_MAX;
             }
 
-            pollingJob = scheduler.scheduleAtFixedRate(pollingRunnable,
-                    pollingPeriod * 1000 + (int) (Math.random() * 3000),
-                    pollingPeriod * 1000 + (int) (Math.random() * 1000), TimeUnit.MILLISECONDS);
+            // Polling starts almost immediately to get an immediate refresh
+            // Add some random element to the period so that all things aren't synchronised
+            pollingJob = scheduler.scheduleAtFixedRate(pollingRunnable, (int) (Math.random() * 3000),
+                    pollingPeriod * 1000 + (int) (Math.random() * 3000), TimeUnit.MILLISECONDS);
             logger.debug("{}: Polling initialised at {} seconds", nodeIeeeAddress, pollingPeriod);
         }
     }

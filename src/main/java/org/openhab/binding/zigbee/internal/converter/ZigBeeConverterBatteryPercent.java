@@ -57,11 +57,6 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
 
-        Integer value = cluster.getBatteryPercentageRemaining(0);
-        if (value != null) {
-            updateChannelState(new DecimalType(value));
-        }
-
         return true;
     }
 
