@@ -58,7 +58,6 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter impl
 
         // Add a listener, then request the status
         clusterIasZone.addCommandListener(this);
-        clusterIasZone.getZoneStatus(0);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
         ZclAttribute attribute = clusterIasZone.getAttribute(ZclIasZoneCluster.ATTR_ZONESTATUS);

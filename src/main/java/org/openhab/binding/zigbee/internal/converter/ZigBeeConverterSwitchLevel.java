@@ -64,7 +64,6 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
 
         // Add a listener, then request the status
         clusterLevelControl.addAttributeListener(this);
-        clusterLevelControl.getCurrentLevel(0);
 
         // Create a configuration handler and get the available options
         configLevelControl = new ZclLevelControlConfig(clusterLevelControl);

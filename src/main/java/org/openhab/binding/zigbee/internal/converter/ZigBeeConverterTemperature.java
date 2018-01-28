@@ -46,7 +46,6 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
 
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
-        cluster.getMeasuredValue(60);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
         cluster.setMeasuredValueReporting(1, 600, 0.1);

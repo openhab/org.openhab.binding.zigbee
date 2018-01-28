@@ -74,7 +74,6 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
 
         // Add a listener, then request the status
         clusterMeasurement.addAttributeListener(this);
-        clusterMeasurement.getActivePower(0);
 
         return true;
     }
