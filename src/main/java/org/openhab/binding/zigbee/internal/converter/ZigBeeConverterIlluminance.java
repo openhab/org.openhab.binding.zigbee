@@ -48,7 +48,7 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
         cluster.addAttributeListener(this);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        cluster.setMeasuredValueReporting(1, 600, 1);
+        cluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1);
         return true;
     }
 

@@ -54,7 +54,8 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
                 ZclAttribute attribute = clusterMeasurement
                         .getAttribute(ZclElectricalMeasurementCluster.ATTR_ACTIVEPOWER);
                 // Configure reporting - no faster than once per second - no slower than 10 minutes.
-                CommandResult reportingResponse = clusterMeasurement.setReporting(attribute, 3, 600, 1).get();
+                CommandResult reportingResponse = clusterMeasurement.setReporting(attribute, 3, REPORTING_PERIOD_DEFAULT_MAX, 1)
+                        .get();
                 if (reportingResponse.isError()) {
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }

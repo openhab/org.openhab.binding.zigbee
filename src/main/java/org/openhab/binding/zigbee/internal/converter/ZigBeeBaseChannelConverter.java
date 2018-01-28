@@ -78,14 +78,19 @@ public abstract class ZigBeeBaseChannelConverter {
     private Logger logger = LoggerFactory.getLogger(ZigBeeBaseChannelConverter.class);
 
     /**
+     * Default maximum reporting period
+     */
+    protected final int REPORTING_PERIOD_DEFAULT_MAX = 7200;
+
+    /**
      * Default polling period (in seconds).
      */
-    protected int POLLING_PERIOD_DEFAULT = 600;
+    protected final int POLLING_PERIOD_DEFAULT = 7200;
 
     /**
      * Standard high rate polling period (in seconds).
      */
-    protected int POLLING_PERIOD_HIGH = 30;
+    protected final int POLLING_PERIOD_HIGH = 60;
 
     /**
      * The {@link ZigBeeThingHandler} to which this channel belongs.
