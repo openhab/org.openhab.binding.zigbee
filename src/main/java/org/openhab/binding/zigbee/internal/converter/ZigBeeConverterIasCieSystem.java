@@ -24,6 +24,7 @@ import com.zsmartsystems.zigbee.zcl.clusters.iaszone.ZoneTypeEnum;
 public class ZigBeeConverterIasCieSystem extends ZigBeeConverterIas implements ZclCommandListener {
     @Override
     public boolean initializeConverter() {
+        bitTest = CIE_ALARM1;
         return super.initializeConverter();
     }
 

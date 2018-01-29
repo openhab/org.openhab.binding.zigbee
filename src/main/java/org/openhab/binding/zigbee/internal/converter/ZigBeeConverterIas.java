@@ -31,8 +31,11 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter impl
 
     private ZclIasZoneCluster clusterIasZone;
 
-    protected int bitTest = 0;
+    protected int bitTest = CIE_ALARM1;
 
+    /**
+     * CIE Zone Status Attribute flags
+     */
     protected static final int CIE_ALARM1 = 0x0001;
     protected static final int CIE_ALARM2 = 0x0002;
     protected static final int CIE_TAMPER = 0x0004;
