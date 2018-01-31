@@ -125,12 +125,13 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                 pollingPeriod = POLLING_PERIOD_HIGH;
             }
             if (supportsHue) {
-                CommandResult reportResponse = clusterColorControl.setCurrentHueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1)
-                        .get();
+                CommandResult reportResponse = clusterColorControl
+                        .setCurrentHueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
                 if (!reportResponse.isSuccess()) {
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }
-                reportResponse = clusterColorControl.setCurrentSaturationReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                reportResponse = clusterColorControl.setCurrentSaturationReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1)
+                        .get();
                 if (!reportResponse.isSuccess()) {
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }
@@ -149,9 +150,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                 if (!bindResponse.isSuccess()) {
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }
-                clusterLevelControl.getCurrentLevel(0);
-                CommandResult reportResponse = clusterLevelControl.setCurrentLevelReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1)
-                        .get();
+                CommandResult reportResponse = clusterLevelControl
+                        .setCurrentLevelReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
                 if (!reportResponse.isSuccess()) {
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }
@@ -336,7 +336,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
-        clusterColorControl = (ZclColorControlCluster) endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID);
+        ZclColorControlCluster clusterColorControl = (ZclColorControlCluster) endpoint
+                .getInputCluster(ZclColorControlCluster.CLUSTER_ID);
         if (clusterColorControl == null) {
             return null;
         }
@@ -344,20 +345,22 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         try {
             if (!clusterColorControl.discoverAttributes(false).get()) {
                 // Device is not supporting attribute reporting - instead, just read the attributes
-                Integer capabilities = clusterColorControl.getColorCapabilities(Integer.MAX_VALUE);
+                Integer capabilities = clusterColorControl.getColorCapabilities(Long.MAX_VALUE);
+                if (capabilities == null && clusterColorControl.getCurrentX(Long.MAX_VALUE) == null
+                        && clusterColorControl.getCurrentHue(Long.MAX_VALUE) == null) {
+                    return null;
+                }
                 if (capabilities != null && ((capabilities & (ColorCapabilitiesEnum.HUE_AND_SATURATION.getKey()
                         | ColorCapabilitiesEnum.XY_ATTRIBUTE.getKey())) == 0)) {
                     // No support for hue or XY
                     return null;
                 }
-                if (clusterColorControl.getCurrentX(0) == null && clusterColorControl.getCurrentHue(0) == null) {
-                    return null;
-                }
+
             } else if (clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_COLORCAPABILITIES)) {
                 // If the device is reporting is capabilities, then use this over attribute detection
                 // The color control cluster is required to always support XY attributes, so a non-color bulb is still
                 // detected as a color bulb in this case.
-                Integer capabilities = clusterColorControl.getColorCapabilities(Integer.MAX_VALUE);
+                Integer capabilities = clusterColorControl.getColorCapabilities(Long.MAX_VALUE);
                 if ((capabilities != null) && (capabilities & (ColorCapabilitiesEnum.HUE_AND_SATURATION.getKey()
                         | ColorCapabilitiesEnum.XY_ATTRIBUTE.getKey())) == 0) {
                     // No support for hue or XY
@@ -462,7 +465,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                     } else if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTX) {
                         Integer value = (Integer) attribute.getLastValue();
                         float x = value / 65536.0f;
-                        if (Math.abs(x - lastX)  < .0000001) {
+                        if (Math.abs(x - lastX) < .0000001) {
                             lastX = x;
                             xChanged = true;
                         }

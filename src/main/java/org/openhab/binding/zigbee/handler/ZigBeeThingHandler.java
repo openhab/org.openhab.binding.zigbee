@@ -158,14 +158,20 @@ public class ZigBeeThingHandler extends BaseThingHandler
             return;
         }
 
-        logger.debug("{}: Start initialising ZigBee Thing handler", nodeIeeeAddress);
-
-        // Load the node information
         ZigBeeNode node = coordinatorHandler.getNode(nodeIeeeAddress);
         if (node == null) {
+            logger.debug("{}: Node not found - deferring handler initialisation", nodeIeeeAddress);
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE, ZigBeeBindingConstants.OFFLINE_NODE_NOT_FOUND);
             return;
         }
+        if (!node.isDiscovered()) {
+            logger.debug("{}: Node has not finished discovery", nodeIeeeAddress);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE,
+                    ZigBeeBindingConstants.OFFLINE_DISCOVERY_INCOMPLETE);
+            return;
+        }
+
+        logger.debug("{}: Start initialising ZigBee Thing handler", nodeIeeeAddress);
 
         // Create the channel factory
         ZigBeeChannelConverterFactory factory = new ZigBeeChannelConverterFactory();
@@ -174,6 +180,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
         // Process all the endpoints for this device and add all channels as derived from the supported clusters
         List<Channel> nodeChannels = new ArrayList<Channel>();
         for (ZigBeeEndpoint endpoint : coordinatorHandler.getNodeEndpoints(nodeIeeeAddress)) {
+            logger.debug("{}: Checking endpoint {} channels", nodeIeeeAddress, endpoint.getEndpointId());
             nodeChannels.addAll(factory.getChannels(getThing().getUID(), endpoint));
         }
 
@@ -189,9 +196,17 @@ public class ZigBeeThingHandler extends BaseThingHandler
             List<ChannelUID> newChannelUidList = new ArrayList<ChannelUID>();
             for (Channel channel : nodeChannels) {
                 newChannelUidList.add(channel.getUID());
+
+                // Add the configuration from the existing channel into the new channel
+                Channel currentChannel = getThing().getChannel(channel.getUID().toString());
+                if (currentChannel != null) {
+                    channel.getConfiguration().setProperties(currentChannel.getConfiguration().getProperties());
+                }
             }
+
             if (!newChannelUidList.equals(oldChannelUidList)) {
-                logger.debug("{}: Updating thing definition as channels have changed", nodeIeeeAddress);
+                logger.debug("{}: Updating thing definition as channels have changed from {} to {}", nodeIeeeAddress,
+                        oldChannelUidList, newChannelUidList);
                 ThingBuilder thingBuilder = editThing();
                 thingBuilder.withChannels(nodeChannels).withConfiguration(getConfig());
                 updateThing(thingBuilder.build());
@@ -212,6 +227,8 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
                 logger.debug("{}: Initializing channel {} with {}", nodeIeeeAddress, channel.getUID(), handler);
                 handler.initializeConverter();
+
+                handler.handleRefresh();
 
                 // TODO: Update the channel configuration from the device if method available
                 handler.updateConfiguration(channel.getConfiguration());
@@ -252,6 +269,9 @@ public class ZigBeeThingHandler extends BaseThingHandler
         nodeInitialised = true;
 
         logger.debug("{}: Done initialising ZigBee Thing handler", nodeIeeeAddress);
+
+        // Save the network state
+        coordinatorHandler.serializeNetwork();
     }
 
     @Override
@@ -270,6 +290,9 @@ public class ZigBeeThingHandler extends BaseThingHandler
         for (ZigBeeBaseChannelConverter channel : channels.values()) {
             channel.disposeConverter();
         }
+        channels.clear();
+
+        nodeInitialised = false;
     }
 
     private void stopPolling() {
@@ -328,9 +351,10 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
             // Polling starts almost immediately to get an immediate refresh
             // Add some random element to the period so that all things aren't synchronised
-            pollingJob = scheduler.scheduleAtFixedRate(pollingRunnable, new Random().nextInt(3000),
-                    pollingPeriod * 1000 + new Random().nextInt(3000), TimeUnit.MILLISECONDS);
-            logger.debug("{}: Polling initialised at {} seconds", nodeIeeeAddress, pollingPeriod);
+            int pollingPeriodMs = pollingPeriod * 1000 + new Random().nextInt(pollingPeriod * 100);
+            pollingJob = scheduler.scheduleAtFixedRate(pollingRunnable, new Random().nextInt(pollingPeriodMs),
+                    pollingPeriodMs, TimeUnit.MILLISECONDS);
+            logger.debug("{}: Polling initialised at {}ms", nodeIeeeAddress, pollingPeriodMs);
         }
     }
 
@@ -423,6 +447,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
      * @param state the new {link State}
      */
     public void setChannelState(ChannelUID channel, State state) {
+        logger.debug("{}: Updating ZigBee channel state {} to {}", nodeIeeeAddress, channel, state);
         if (firmwareUpdateInProgress) {
             return;
         }
@@ -447,11 +472,11 @@ public class ZigBeeThingHandler extends BaseThingHandler
         Map<String, String> properties = editProperties();
 
         StringBuilder jsonBuilder = new StringBuilder();
-        jsonBuilder.append("[");
+        jsonBuilder.append('[');
         boolean first = true;
         for (NeighborTable neighbor : node.getNeighbors()) {
             if (!first) {
-                jsonBuilder.append(",");
+                jsonBuilder.append(',');
             }
             first = false;
 
@@ -463,15 +488,15 @@ public class ZigBeeThingHandler extends BaseThingHandler
             object.put("joining", neighbor.getPermitJoining());
             jsonBuilder.append(ZigBeeBindingConstants.propertiesToJson(object));
         }
-        jsonBuilder.append("]");
+        jsonBuilder.append(']');
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_NEIGHBORS, jsonBuilder.toString());
 
         jsonBuilder = new StringBuilder();
-        jsonBuilder.append("[");
+        jsonBuilder.append('[');
         first = true;
         for (RoutingTable route : node.getRoutes()) {
             if (!first) {
-                jsonBuilder.append(",");
+                jsonBuilder.append(',');
             }
             first = false;
 
@@ -481,7 +506,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
             object.put("state", route.getStatus());
             jsonBuilder.append(ZigBeeBindingConstants.propertiesToJson(object));
         }
-        jsonBuilder.append("]");
+        jsonBuilder.append(']');
 
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_ROUTES, jsonBuilder.toString());
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_ASSOCIATEDDEVICES, node.getAssociatedDevices().toString());

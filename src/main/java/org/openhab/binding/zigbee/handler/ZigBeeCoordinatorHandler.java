@@ -84,6 +84,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     private Class<?> serializerClass;
     private Class<?> deserializerClass;
 
+    private ZigBeeNetworkStateSerializer networkStateSerializer;
+
     protected ZigBeeKey networkKey;
 
     private TransportConfig transportConfig;
@@ -300,7 +302,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         logger.debug("Initialising ZigBee coordinator");
 
         String networkId = getThing().getUID().toString().replaceAll(":", "_");
-        ZigBeeNetworkStateSerializer networkStateSerializer = new ZigBeeNetworkStateSerializerImpl(networkId);
+        networkStateSerializer = new ZigBeeNetworkStateSerializerImpl(networkId);
 
         // Configure the network manager
         networkManager = new ZigBeeNetworkManager(zigbeeTransport);
@@ -486,6 +488,11 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     public void nodeAdded(ZigBeeNode node) {
         // This adds extra services to the clusters.
         ZigBeeNode coordinator = networkManager.getNode(0);
+        if (coordinator == null) {
+            logger.debug("{}: Coordinator not found when adding node", node.getIeeeAddress());
+            return;
+        }
+
         for (ZigBeeEndpoint endpoint : node.getEndpoints()) {
             if (endpoint.getInputCluster(ZclIasZoneCluster.CLUSTER_ID) != null) {
                 logger.debug("{}: Adding IAS CIE", node.getIeeeAddress());
@@ -689,6 +696,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             return;
         }
         networkManager.rediscoverNode(nodeIeeeAddress);
+    }
+
+    public void serializeNetwork() {
+        if (networkStateSerializer != null) {
+            networkStateSerializer.serialize(networkManager);
+        }
     }
 
 }

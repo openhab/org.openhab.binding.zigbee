@@ -82,9 +82,11 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
 
         try {
             if (!powerCluster.discoverAttributes(false).get()) {
-                logger.warn("{}: Failed discovering attributes in power configuration cluster",
+                logger.debug("{}: Failed discovering attributes in power configuration cluster",
                         endpoint.getIeeeAddress());
-                return null;
+                if (cluster.getBatteryPercentageRemaining(Long.MAX_VALUE) == null) {
+                    return null;
+                }
             } else if (!powerCluster
                     .isAttributeSupported(ZclPowerConfigurationCluster.ATTR_BATTERYPERCENTAGEREMAINING)) {
                 return null;

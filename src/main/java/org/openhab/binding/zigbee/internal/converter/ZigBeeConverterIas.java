@@ -93,7 +93,7 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter impl
 
         Integer zoneTypeId = null;
         for (int retry = 0; retry < 3; retry++) {
-            zoneTypeId = cluster.getZoneType(Integer.MAX_VALUE);
+            zoneTypeId = cluster.getZoneType(Long.MAX_VALUE);
             if (zoneTypeId != null) {
                 break;
             }
