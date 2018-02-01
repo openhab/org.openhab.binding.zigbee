@@ -108,6 +108,7 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
         }
 
         final File file = new File(networkStateFilePath + "/" + networkStateFileName + networkId + ".xml");
+        file.getParentFile().mkdirs();
         try {
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
             stream.marshal(destinations, new PrettyPrintWriter(writer));
