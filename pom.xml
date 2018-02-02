@@ -14,10 +14,15 @@
 	<artifactId>org.openhab.binding.zigbee</artifactId>
 
 	<name>ZigBee Binding</name>
-	<packaging>eclipse-plugin</packaging>
+	<packaging>pom</packaging> 
+
+    <modules>
+        <module>org.openhab.binding.ember</module>
+    </modules>
 
 	<properties>
 		<report.fail.on.error>false</report.fail.on.error>
+		<zigbee.version>1.0.3</zigbee.version>
 	</properties>
 
 	<scm>
@@ -162,7 +167,9 @@
             <groupId>com.zsmartsystems.zigbee</groupId>
             <artifactId>com.zsmartsystems.zigbee</artifactId>
             <version>1.0.3</version>
+            <type>pom</type>
         </dependency>
+        <!--
         <dependency>
             <groupId>com.zsmartsystems.zigbee</groupId>
             <artifactId>com.zsmartsystems.zigbee.dongle.telegesis</artifactId>
@@ -178,6 +185,7 @@
             <artifactId>com.zsmartsystems.zigbee.dongle.cc2531</artifactId>
             <version>1.0.3</version>
         </dependency>
+        -->
 	</dependencies>
 
 	<pluginRepositories>
@@ -193,18 +201,18 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</pluginRepository>
-		<pluginRepository>
-			<id>artifactory</id>
-			<name>JFrog Artifactory Repository</name>
-			<url>https://openhab.jfrog.io/openhab/libs-release</url>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</pluginRepository>
+        <pluginRepository>
+            <id>artifactory</id>
+            <name>JFrog Artifactory Repository</name>
+            <url>https://openhab.jfrog.io/openhab/libs-release</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
 
 	</pluginRepositories>
 
