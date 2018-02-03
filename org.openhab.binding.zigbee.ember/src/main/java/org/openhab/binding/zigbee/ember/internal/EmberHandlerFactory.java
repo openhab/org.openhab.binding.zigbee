@@ -13,17 +13,26 @@
 package org.openhab.binding.zigbee.ember.internal;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.smarthome.config.discovery.DiscoveryService;
+import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
+import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
-import org.openhab.binding.zigbee.ember.BindingConstants;
+import org.openhab.binding.zigbee.discovery.ZigBeeDiscoveryService;
+import org.openhab.binding.zigbee.ember.EmberBindingConstants;
 import org.openhab.binding.zigbee.ember.handler.EmberHandler;
+import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Component;
 
 /**
@@ -32,12 +41,13 @@ import org.osgi.service.component.annotations.Component;
  *
  * @author Chris Jackson - Initial contribution
  */
-@Component(service = ThingHandlerFactory.class, immediate = true, configurationPid = "binding.org.openhab.binding.zigbee.ember")
+@Component(service = ThingHandlerFactory.class, immediate = true, configurationPid = "org.openhab.binding.zigbee.ember")
 @NonNullByDefault
 public class EmberHandlerFactory extends BaseThingHandlerFactory {
+    private Map<ThingUID, ServiceRegistration<?>> discoveryServiceRegs = new HashMap<>();
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections
-            .singleton(BindingConstants.THING_TYPE_SAMPLE);
+            .singleton(EmberBindingConstants.THING_TYPE_SAMPLE);
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -48,8 +58,19 @@ public class EmberHandlerFactory extends BaseThingHandlerFactory {
     protected @Nullable ThingHandler createHandler(Thing thing) {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
-        if (thingTypeUID.equals(BindingConstants.THING_TYPE_SAMPLE)) {
-            return new EmberHandler(thing);
+        ZigBeeCoordinatorHandler coordinator = null;
+        if (thingTypeUID.equals(EmberBindingConstants.THING_TYPE_SAMPLE)) {
+            coordinator = new EmberHandler((Bridge) thing);
+        }
+
+        if (coordinator != null) {
+            ZigBeeDiscoveryService discoveryService = new ZigBeeDiscoveryService(coordinator);
+            discoveryService.activate();
+
+            discoveryServiceRegs.put(coordinator.getThing().getUID(), bundleContext.registerService(
+                    DiscoveryService.class.getName(), discoveryService, new Hashtable<String, Object>()));
+
+            return coordinator;
         }
 
         return null;

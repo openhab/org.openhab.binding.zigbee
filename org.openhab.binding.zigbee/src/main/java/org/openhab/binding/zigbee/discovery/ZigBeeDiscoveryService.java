@@ -23,7 +23,6 @@ import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
-import org.openhab.binding.zigbee.internal.ZigBeeNodePropertyDiscoverer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

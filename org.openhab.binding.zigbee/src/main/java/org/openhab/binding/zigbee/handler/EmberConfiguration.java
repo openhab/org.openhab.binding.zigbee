@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.zigbee.ember.internal;
+package org.openhab.binding.zigbee.handler;
 
 /**
  * The {@link oEmberConfiguration} class contains fields mapping thing configuration
@@ -19,6 +19,11 @@ package org.openhab.binding.zigbee.ember.internal;
  * @author Chris Jackson - Initial contribution
  */
 public class EmberConfiguration {
-    public String port;
-    public Integer baud;
+    public String zigbee_port;
+    public Integer zigbee_baud;
+    public Integer channel;
+    public Integer panid;
+    public String extendedPanid;
+    public String networkKey;
+    public Boolean Initialise;
 }

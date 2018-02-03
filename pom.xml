@@ -1,206 +1,133 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.openhab</groupId>
-		<artifactId>pom-tycho</artifactId>
-		<version>2.3.0-SNAPSHOT</version>
-		<relativePath />
-	</parent>
-
-	<groupId>org.openhab.binding</groupId>
-	<artifactId>org.openhab.binding.zigbee</artifactId>
-
-	<name>ZigBee Binding</name>
-	<packaging>pom</packaging> 
-
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.openhab</groupId>
+        <artifactId>pom-tycho</artifactId>
+        <version>2.3.0-SNAPSHOT</version>
+        <relativePath />
+    </parent>
+    
+    <groupId>org.openhab.binding.zigbee</groupId>
+    <artifactId>org.openhab.binding.zigbee.parent</artifactId>
+    
+    <name>ZigBee Binding Parent POM</name>
+    <packaging>pom</packaging>
+    
     <modules>
-        <module>org.openhab.binding.ember</module>
+        <module>org.openhab.binding.zigbee</module>
+        <module>org.openhab.binding.zigbee.ember</module>
     </modules>
-
-	<properties>
-		<report.fail.on.error>false</report.fail.on.error>
-		<zigbee.version>1.0.3</zigbee.version>
-	</properties>
-
-	<scm>
-		<connection>scm:git:${scm.gitBaseUrl}/org.openhab.binding.zigbee.git</connection>
-		<developerConnection>scm:git:${scm.gitBaseUrl}/org.openhab.binding.zigbee.git</developerConnection>
-		<url>https://github.com/openhab/org.openhab.binding.zigbee</url>
-		<tag>HEAD</tag>
-	</scm>
-
-	<distributionManagement>
-		<repository>
-			<id>bintray</id>
-			<url>https://api.bintray.com/maven/openhab/mvn/org.openhab.binding.zigbee/;publish=1</url>
-		</repository>
-		<snapshotRepository>
-			<id>jfrog</id>
-			<url>https://openhab.jfrog.io/openhab/libs-snapshot-local</url>
-		</snapshotRepository>
-	</distributionManagement>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.19.1</version>
-				<executions>
-					<execution>
-						<id>test</id>
-						<phase>test</phase>
-						<configuration>
-							<includes>
-								<include>**/*Test.java</include>
-							</includes>
-						</configuration>
-						<goals>
-							<goal>test</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.5.1</version>
-				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
-				</configuration>
-				<executions>
-					<execution>
-						<id>compiletests</id>
-						<phase>test-compile</phase>
-						<goals>
-							<goal>testCompile</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-		<pluginManagement>
-			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.apache.maven.plugins</groupId>
-										<artifactId>maven-compiler-plugin</artifactId>
-										<versionRange>[3.5.1,)</versionRange>
-										<goals>
-											<goal>testCompile</goal>
-											<goal>compile</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.eclipse.tycho</groupId>
-										<artifactId>tycho-packaging-plugin</artifactId>
-										<versionRange>[1.0.0,)</versionRange>
-										<goals>
-											<goal>build-qualifier</goal>
-											<goal>validate-version</goal>
-											<goal>validate-id</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.eclipse.tycho</groupId>
-										<artifactId>tycho-compiler-plugin</artifactId>
-										<versionRange>[1.0.0,)</versionRange>
-										<goals>
-											<goal>compile</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
-
-	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
-			<version>1.10.19</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-			<version>1.7.2</version>
-			<scope>test</scope>
-		</dependency>
-		
+    
+    <properties>
+        <report.fail.on.error>false</report.fail.on.error>
+        <zigbee.version>1.0.4-SNAPSHOT</zigbee.version>
+    </properties>
+    
+    <scm>
+        <connection>scm:git:${scm.gitBaseUrl}/org.openhab.binding.zigbee.git</connection>
+        <developerConnection>scm:git:${scm.gitBaseUrl}/org.openhab.binding.zigbee.git</developerConnection>
+        <url>https://github.com/openhab/org.openhab.binding.zigbee</url>
+        <tag>HEAD</tag>
+    </scm>
+    
+    <distributionManagement>
+        <repository>
+            <id>bintray</id>
+            <url>https://api.bintray.com/maven/openhab/mvn/org.openhab.binding.zigbee/;publish=1</url>
+        </repository>
+        <snapshotRepository>
+            <id>jfrog</id>
+            <url>https://openhab.jfrog.io/openhab/libs-snapshot-local</url>
+        </snapshotRepository>
+    </distributionManagement>
+    
+    <build>
+        <testSourceDirectory>src/test</testSourceDirectory>
+        
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.19.1</version>
+                <executions>
+                    <execution>
+                        <id>test</id>
+                        <phase>test</phase>
+                        <configuration>
+                            <includes>
+                                <include>**/*Test.java</include>
+                            </includes>
+                        </configuration>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>compiletests</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.10.19</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.2</version>
+            <scope>test</scope>
+        </dependency>
+        
         <dependency>
             <groupId>com.zsmartsystems.zigbee</groupId>
             <artifactId>com.zsmartsystems.zigbee</artifactId>
-            <version>1.0.3</version>
-            <type>pom</type>
+            <version>${zigbee.version}</version>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>com.zsmartsystems.zigbee</groupId>
-            <artifactId>com.zsmartsystems.zigbee.dongle.telegesis</artifactId>
-            <version>1.0.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.zsmartsystems.zigbee</groupId>
-            <artifactId>com.zsmartsystems.zigbee.dongle.ember</artifactId>
-            <version>1.0.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.zsmartsystems.zigbee</groupId>
-            <artifactId>com.zsmartsystems.zigbee.dongle.cc2531</artifactId>
-            <version>1.0.3</version>
-        </dependency>
-        -->
-	</dependencies>
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>jcenter</id>
-			<name>JCenter Repository</name>
-			<url>https://jcenter.bintray.com/</url>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</pluginRepository>
+    </dependencies>
+    
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jcenter</id>
+            <name>JCenter Repository</name>
+            <url>https://jcenter.bintray.com/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
         <pluginRepository>
             <id>artifactory</id>
             <name>JFrog Artifactory Repository</name>
@@ -213,76 +140,76 @@
                 <enabled>false</enabled>
             </snapshots>
         </pluginRepository>
-
-	</pluginRepositories>
-
-	<repositories>
-
-		<!-- releases -->
-		<repository>
-			<id>jcenter</id>
-			<name>JCenter Repository</name>
-			<url>https://jcenter.bintray.com/</url>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-
-		<repository>
-			<id>openhab-artifactory-release</id>
-			<name>JFrog Artifactory Repository</name>
-			<url>https://openhab.jfrog.io/openhab/libs-release</url>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-
-		<!-- snapshots -->
-		<repository>
-			<id>openhab-artifactory-snapshot</id>
-			<name>JFrog Artifactory Repository</name>
-			<url>https://openhab.jfrog.io/openhab/libs-snapshot</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-			</snapshots>
-		</repository>
-
-		<!-- SmartHome p2 repository -->
-		<repository>
-			<id>p2-smarthome</id>
-			<url>https://openhab.jfrog.io/openhab/eclipse-smarthome-stable</url>
-			<layout>p2</layout>
-		</repository>
-
-		<!-- openHAB dependencies p2 repository -->
-		<repository>
-			<id>p2-openhab-deps-repo</id>
-			<url>https://dl.bintray.com/openhab/p2/openhab-deps-repo/${ohdr.version}</url>
-			<layout>p2</layout>
-		</repository>
-
-		<!-- Z-Smart Systems ZigBee Framework -->
-		<repository>
-			<id>bintray-zsmartsystems-com.zsmartsystems</id>
-			<name>zsmartsystems-bintray</name>
-			<url>https://dl.bintray.com/zsmartsystems/com.zsmartsystems</url>
+        
+    </pluginRepositories>
+    
+    <repositories>
+        
+        <!-- releases -->
+        <repository>
+            <id>jcenter</id>
+            <name>JCenter Repository</name>
+            <url>https://jcenter.bintray.com/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-		</repository>
-
-	</repositories>
-
+        </repository>
+        
+        <repository>
+            <id>openhab-artifactory-release</id>
+            <name>JFrog Artifactory Repository</name>
+            <url>https://openhab.jfrog.io/openhab/libs-release</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        
+        <!-- snapshots -->
+        <repository>
+            <id>openhab-artifactory-snapshot</id>
+            <name>JFrog Artifactory Repository</name>
+            <url>https://openhab.jfrog.io/openhab/libs-snapshot</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+        
+        <!-- SmartHome p2 repository -->
+        <repository>
+            <id>p2-smarthome</id>
+            <url>https://openhab.jfrog.io/openhab/eclipse-smarthome-stable</url>
+            <layout>p2</layout>
+        </repository>
+        
+        <!-- openHAB dependencies p2 repository -->
+        <repository>
+            <id>p2-openhab-deps-repo</id>
+            <url>https://dl.bintray.com/openhab/p2/openhab-deps-repo/${ohdr.version}</url>
+            <layout>p2</layout>
+        </repository>
+        
+        <!-- Z-Smart Systems ZigBee Framework -->
+        <repository>
+            <id>bintray-zsmartsystems-com.zsmartsystems</id>
+            <name>zsmartsystems-bintray</name>
+            <url>https://dl.bintray.com/zsmartsystems/com.zsmartsystems</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        
+    </repositories>
+    
 </project>
