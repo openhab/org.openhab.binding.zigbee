@@ -19,6 +19,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
@@ -350,8 +351,8 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
             // Polling starts almost immediately to get an immediate refresh
             // Add some random element to the period so that all things aren't synchronised
-            pollingJob = scheduler.scheduleAtFixedRate(pollingRunnable, (int) (Math.random() * 3000),
-                    pollingPeriod * 1000 + (int) (Math.random() * 3000), TimeUnit.MILLISECONDS);
+            pollingJob = scheduler.scheduleAtFixedRate(pollingRunnable, new Random().nextInt(3000) ,
+                    pollingPeriod * 1000 + (int) new Random().nextInt(3000) , TimeUnit.MILLISECONDS);
             logger.debug("{}: Polling initialised at {} seconds", nodeIeeeAddress, pollingPeriod);
         }
     }
