@@ -111,12 +111,12 @@ public class ZigBeeChannelConverterFactory {
 
         // Perform a channel consolidation at endpoint level to remove unnecessary channels.
         // This removes channels that are covered through inheritance.
-        for (String consolidationChannel : channelConsolidation.keySet()) {
-            if (channels.containsKey(consolidationChannel)
-                    && channels.containsKey(channelConsolidation.get(consolidationChannel))) {
+        for (Map.Entry<String,String> consolidationChannel : channelConsolidation.entrySet()) {
+            if (channels.containsKey(consolidationChannel.getKey())
+                    && channels.containsKey(consolidationChannel.getValue())) {
                 logger.debug("{}: Removing channel {} in favor of {}", endpoint.getIeeeAddress(),
-                        channelConsolidation.get(consolidationChannel), consolidationChannel);
-                channels.remove(channelConsolidation.get(consolidationChannel));
+                        consolidationChannel.getValue(), consolidationChannel.getKey());
+                channels.remove(consolidationChannel.getValue());
             }
         }
         return channels.values();
