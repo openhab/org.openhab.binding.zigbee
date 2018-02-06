@@ -448,28 +448,28 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                     if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTHUE) {
                         Integer value = (Integer) attribute.getLastValue();
                         float hue = value * 360.0f / 254.0f;
-                        if (hue != lastHue) {
+                        if (Math.abs(hue - lastHue) < .0000001) {
                             lastHue = hue;
                             hueChanged = true;
                         }
                     } else if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTSATURATION) {
                         Integer value = (Integer) attribute.getLastValue();
                         float saturation = value * 100.0f / 254.0f;
-                        if (saturation != lastSaturation) {
+                        if (Math.abs(saturation - lastSaturation) < .0000001) {
                             lastSaturation = saturation;
                             saturationChanged = true;
                         }
                     } else if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTX) {
                         Integer value = (Integer) attribute.getLastValue();
                         float x = value / 65536.0f;
-                        if (x != lastX) {
+                        if (Math.abs(x - lastX)  < .0000001) {
                             lastX = x;
                             xChanged = true;
                         }
                     } else if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTY) {
                         Integer value = (Integer) attribute.getLastValue();
                         float y = value / 65536.0f;
-                        if (y != lastY) {
+                        if (Math.abs(y - lastY) < .0000001) {
                             lastY = y;
                             yChanged = true;
                         }
