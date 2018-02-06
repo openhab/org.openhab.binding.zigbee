@@ -68,7 +68,7 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
     protected ThingHandler createHandler(Thing thing) {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
-        logger.debug("Creating coordinator handler for {}", thing);
+        logger.debug("Creating coordinator handler for {}", thing.getUID());
 
         ZigBeeCoordinatorHandler coordinator = null;
 
