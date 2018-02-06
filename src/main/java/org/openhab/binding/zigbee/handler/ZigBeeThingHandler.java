@@ -93,7 +93,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
     private final TranslationProvider translationProvider;
 
-    private ServiceRegistration<FirmwareUpdateHandler> firmwareRegistration;
+    private ServiceRegistration firmwareRegistration;
 
     private final Object pollingSync = new Object();
     private ScheduledFuture<?> pollingJob = null;
