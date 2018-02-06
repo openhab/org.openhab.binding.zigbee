@@ -45,9 +45,9 @@ import org.eclipse.smarthome.core.types.RefreshType;
 import org.eclipse.smarthome.core.types.State;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
-import org.openhab.binding.zigbee.internal.ZigBeeActivator;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeChannelConverterFactory;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,7 +119,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
         if (translationProviderLocal == null) {
             return MessageFormat.format(constant, arguments);
         }
-        return translationProviderLocal.getText(ZigBeeActivator.getContext().getBundle(), constant, constant, null,
+        return translationProviderLocal.getText(FrameworkUtil.getBundle(this.getClass()), constant, constant, null,
                 arguments);
     }
 
