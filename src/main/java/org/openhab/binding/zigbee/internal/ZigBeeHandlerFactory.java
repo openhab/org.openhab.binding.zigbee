@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
 public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
     private final Logger logger = LoggerFactory.getLogger(ZigBeeHandlerFactory.class);
 
-    private Map<ThingUID, ServiceRegistration<?>> discoveryServiceRegs = new HashMap<>();
+    private Map<ThingUID, ServiceRegistration> discoveryServiceRegs = new HashMap<>();
 
     private TranslationProvider translationProvider;
 
@@ -68,7 +68,7 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
     protected ThingHandler createHandler(Thing thing) {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
-        logger.debug("Creating coordinator handler for {}", thing);
+        logger.debug("Creating coordinator handler for {}", thing.getUID());
 
         ZigBeeCoordinatorHandler coordinator = null;
 
@@ -108,7 +108,7 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
     @Override
     protected synchronized void removeHandler(ThingHandler thingHandler) {
         if (thingHandler instanceof ZigBeeCoordinatorHandler) {
-            ServiceRegistration<?> serviceReg = this.discoveryServiceRegs.get(thingHandler.getThing().getUID());
+            ServiceRegistration serviceReg = this.discoveryServiceRegs.get(thingHandler.getThing().getUID());
             if (serviceReg != null) {
                 // remove discovery service, if bridge handler is removed
                 ZigBeeDiscoveryService service = (ZigBeeDiscoveryService) bundleContext

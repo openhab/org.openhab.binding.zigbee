@@ -28,7 +28,10 @@ import org.slf4j.LoggerFactory;
 import com.zsmartsystems.zigbee.dongle.ember.ZigBeeDongleEzsp;
 import com.zsmartsystems.zigbee.serialization.DefaultDeserializer;
 import com.zsmartsystems.zigbee.serialization.DefaultSerializer;
+import com.zsmartsystems.zigbee.transport.ConcentratorConfig;
+import com.zsmartsystems.zigbee.transport.ConcentratorType;
 import com.zsmartsystems.zigbee.transport.TransportConfig;
+import com.zsmartsystems.zigbee.transport.TransportConfigOption;
 import com.zsmartsystems.zigbee.transport.ZigBeePort;
 import com.zsmartsystems.zigbee.transport.ZigBeePort.FlowControl;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareCallback;
@@ -80,6 +83,16 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler impl
                 Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
 
         TransportConfig config = new TransportConfig();
+
+        // Configure the concentrator
+        // Max Hops defaults to system max
+        ConcentratorConfig concentratorConfig = new ConcentratorConfig();
+        concentratorConfig.setType(ConcentratorType.LOW_RAM);
+        concentratorConfig.setMaxFailures(8);
+        concentratorConfig.setMaxHops(0);
+        concentratorConfig.setRefreshMinimum(60);
+        concentratorConfig.setRefreshMaximum(3600);
+        config.addOption(TransportConfigOption.CONCENTRATOR_CONFIG, concentratorConfig);
 
         startZigBee(dongle, config, DefaultSerializer.class, DefaultDeserializer.class);
     }

@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
+import  java.util.Collections;
 import java.util.TimeZone;
 
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
@@ -39,7 +40,7 @@ public class ZigBeeBindingConstants {
     // List of Thing Type UIDs
     public final static ThingTypeUID THING_TYPE_GENERIC_DEVICE = new ThingTypeUID(BINDING_ID, "device");
 
-    public final static Set<ThingTypeUID> SUPPORTED_THING_TYPES = Sets.newHashSet(THING_TYPE_GENERIC_DEVICE);
+    public final static Set<ThingTypeUID> SUPPORTED_THING_TYPES = Collections.unmodifiableSet(Sets.newHashSet(THING_TYPE_GENERIC_DEVICE));
 
     // List of Channel UIDs
     public static final String CHANNEL_SWITCH_ONOFF = "zigbee:switch_onoff";
@@ -150,16 +151,16 @@ public class ZigBeeBindingConstants {
         StringBuilder jsonBuilder = new StringBuilder();
         jsonBuilder.append("{");
         boolean first = true;
-        for (String key : object.keySet()) {
+        for (Map.Entry<String, Object> entry : object.entrySet()) {
             if (!first) {
                 jsonBuilder.append(",");
             }
             first = false;
 
             jsonBuilder.append("\"");
-            jsonBuilder.append(key);
+            jsonBuilder.append(entry.getKey());
             jsonBuilder.append("\":\"");
-            jsonBuilder.append(object.get(key));
+            jsonBuilder.append(entry.getValue());
             jsonBuilder.append("\"");
         }
         jsonBuilder.append("}");
