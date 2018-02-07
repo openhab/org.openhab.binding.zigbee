@@ -9,10 +9,10 @@ package org.openhab.binding.zigbee;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
-import  java.util.Collections;
 import java.util.TimeZone;
 
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
@@ -40,7 +40,8 @@ public class ZigBeeBindingConstants {
     // List of Thing Type UIDs
     public final static ThingTypeUID THING_TYPE_GENERIC_DEVICE = new ThingTypeUID(BINDING_ID, "device");
 
-    public final static Set<ThingTypeUID> SUPPORTED_THING_TYPES = Collections.unmodifiableSet(Sets.newHashSet(THING_TYPE_GENERIC_DEVICE));
+    public final static Set<ThingTypeUID> SUPPORTED_THING_TYPES = Collections
+            .unmodifiableSet(Sets.newHashSet(THING_TYPE_GENERIC_DEVICE));
 
     // List of Channel UIDs
     public static final String CHANNEL_SWITCH_ONOFF = "zigbee:switch_onoff";
@@ -108,11 +109,11 @@ public class ZigBeeBindingConstants {
     public final static Set<ThingTypeUID> SUPPORTED_BRIDGE_TYPES_UIDS = ImmutableSet.of(COORDINATOR_TYPE_CC2531,
             COORDINATOR_TYPE_EMBER, COORDINATOR_TYPE_TELEGESIS);
 
-    public final static String OFFLINE_NOT_INITIALIZED = "zigbee.status.offline_notinitialized";
-    public final static String OFFLINE_INITIALIZE_FAIL = "zigbee.status.offline_initializefail";
-    public final static String OFFLINE_STARTUP_FAIL = "zigbee.status.offline_startupfail";
-    public final static String OFFLINE_NO_ADDRESS = "zigbee.status.offline_noaddress";
-    public final static String OFFLINE_NODE_NOT_FOUND = "zigbee.status.offline_nodenotfound";
+    public final static String OFFLINE_NOT_INITIALIZED = "@text/zigbee.status.offline_notinitialized";
+    public final static String OFFLINE_INITIALIZE_FAIL = "@text/zigbee.status.offline_initializefail";
+    public final static String OFFLINE_STARTUP_FAIL = "@text/zigbee.status.offline_startupfail";
+    public final static String OFFLINE_NO_ADDRESS = "@text/zigbee.status.offline_noaddress";
+    public final static String OFFLINE_NODE_NOT_FOUND = "@text/zigbee.status.offline_nodenotfound";
 
     /**
      * Return an ISO 8601 combined date and time string for current date/time

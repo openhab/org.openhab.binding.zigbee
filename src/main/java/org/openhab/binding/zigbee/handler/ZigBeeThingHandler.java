@@ -8,7 +8,6 @@
 package org.openhab.binding.zigbee.handler;
 
 import java.net.URI;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.smarthome.config.core.ConfigDescription;
 import org.eclipse.smarthome.config.core.ConfigDescriptionProvider;
 import org.eclipse.smarthome.config.core.Configuration;
-import org.eclipse.smarthome.core.i18n.TranslationProvider;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -46,7 +44,6 @@ import org.eclipse.smarthome.core.types.RefreshType;
 import org.eclipse.smarthome.core.types.State;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
-import org.openhab.binding.zigbee.internal.ZigBeeActivator;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeChannelConverterFactory;
 import org.slf4j.Logger;
@@ -90,8 +87,6 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
     private boolean nodeInitialised = false;
 
-    private final TranslationProvider translationProvider;
-
     private final Object pollingSync = new Object();
     private ScheduledFuture<?> pollingJob = null;
     private final int POLLING_PERIOD_MIN = 5;
@@ -107,18 +102,8 @@ public class ZigBeeThingHandler extends BaseThingHandler
      */
     private final Set<ChannelUID> thingChannelsPoll = new HashSet<ChannelUID>();
 
-    public ZigBeeThingHandler(Thing zigbeeDevice, TranslationProvider translationProvider) {
+    public ZigBeeThingHandler(Thing zigbeeDevice) {
         super(zigbeeDevice);
-        this.translationProvider = translationProvider;
-    }
-
-    private String getI18nConstant(String constant, Object... arguments) {
-        TranslationProvider translationProviderLocal = translationProvider;
-        if (translationProviderLocal == null) {
-            return MessageFormat.format(constant, arguments);
-        }
-        return translationProviderLocal.getText(ZigBeeActivator.getContext().getBundle(), constant, constant, null,
-                arguments);
     }
 
     @Override
@@ -128,7 +113,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
         if (configAddress == null || configAddress.length() == 0) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-                    getI18nConstant(ZigBeeBindingConstants.OFFLINE_NO_ADDRESS));
+                    ZigBeeBindingConstants.OFFLINE_NO_ADDRESS);
             return;
         }
         nodeIeeeAddress = new IeeeAddress(configAddress);
@@ -178,8 +163,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
         // Load the node information
         ZigBeeNode node = coordinatorHandler.getNode(nodeIeeeAddress);
         if (node == null) {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE,
-                    getI18nConstant(ZigBeeBindingConstants.OFFLINE_NODE_NOT_FOUND));
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE, ZigBeeBindingConstants.OFFLINE_NODE_NOT_FOUND);
             return;
         }
 

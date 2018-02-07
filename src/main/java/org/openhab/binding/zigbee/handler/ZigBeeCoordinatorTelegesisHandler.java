@@ -12,7 +12,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.smarthome.core.i18n.TranslationProvider;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -57,8 +56,8 @@ public class ZigBeeCoordinatorTelegesisHandler extends ZigBeeCoordinatorHandler 
     private int portBaud;
     private ZigBeeDongleTelegesis dongle;
 
-    public ZigBeeCoordinatorTelegesisHandler(@NonNull Bridge coordinator, TranslationProvider translationProvider) {
-        super(coordinator, translationProvider);
+    public ZigBeeCoordinatorTelegesisHandler(@NonNull Bridge coordinator) {
+        super(coordinator);
     }
 
     @Override

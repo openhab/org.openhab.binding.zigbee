@@ -10,7 +10,6 @@ package org.openhab.binding.zigbee.handler;
 import java.math.BigDecimal;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.smarthome.core.i18n.TranslationProvider;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.ThingStatus;
@@ -53,8 +52,8 @@ public class ZigBeeCoordinatorEmberHandler extends ZigBeeCoordinatorHandler impl
     private String portId;
     private int portBaud;
 
-    public ZigBeeCoordinatorEmberHandler(@NonNull Bridge coordinator, TranslationProvider translationProvider) {
-        super(coordinator, translationProvider);
+    public ZigBeeCoordinatorEmberHandler(@NonNull Bridge coordinator) {
+        super(coordinator);
     }
 
     @Override
