@@ -9,5 +9,5 @@
 	<classpathentry kind="lib" path="lib/com.zsmartsystems.zigbee.dongle.cc2531-1.0.4-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/com.zsmartsystems.zigbee.dongle.ember-1.0.4-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/com.zsmartsystems.zigbee.dongle.telegesis-1.0.4-SNAPSHOT.jar"/>
-	<classpathentry kind="output" path="target/test-classes"/>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>

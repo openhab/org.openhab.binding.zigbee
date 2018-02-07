@@ -13,7 +13,6 @@ import java.util.Map;
 
 import org.eclipse.smarthome.config.core.ConfigDescriptionProvider;
 import org.eclipse.smarthome.config.discovery.DiscoveryService;
-import org.eclipse.smarthome.core.i18n.TranslationProvider;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
@@ -30,8 +29,6 @@ import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorTelegesisHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,17 +45,6 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
 
     private Map<ThingUID, ServiceRegistration> discoveryServiceRegs = new HashMap<>();
 
-    private TranslationProvider translationProvider;
-
-    @Reference(cardinality = ReferenceCardinality.OPTIONAL)
-    protected void setTranslationProvider(TranslationProvider i18nProvider) {
-        translationProvider = i18nProvider;
-    }
-
-    protected void unsetTranslationProvider(TranslationProvider i18nProvider) {
-        translationProvider = null;
-    }
-
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
         return ZigBeeBindingConstants.BINDING_ID.equals(thingTypeUID.getBindingId());
@@ -74,16 +60,16 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
 
         // Handle coordinators here
         if (thingTypeUID.equals(ZigBeeBindingConstants.COORDINATOR_TYPE_CC2531)) {
-            coordinator = new ZigBeeCoordinatorCC2531Handler((Bridge) thing, translationProvider);
+            coordinator = new ZigBeeCoordinatorCC2531Handler((Bridge) thing);
         }
         // if (thingTypeUID.equals(ZigBeeBindingConstants.COORDINATOR_TYPE_CONBEE)) {
         // coordinator = new ZigBeeCoordinatorConBeeHandler((Bridge) thing, translationProvider);
         // }
         if (thingTypeUID.equals(ZigBeeBindingConstants.COORDINATOR_TYPE_EMBER)) {
-            coordinator = new ZigBeeCoordinatorEmberHandler((Bridge) thing, translationProvider);
+            coordinator = new ZigBeeCoordinatorEmberHandler((Bridge) thing);
         }
         if (thingTypeUID.equals(ZigBeeBindingConstants.COORDINATOR_TYPE_TELEGESIS)) {
-            coordinator = new ZigBeeCoordinatorTelegesisHandler((Bridge) thing, translationProvider);
+            coordinator = new ZigBeeCoordinatorTelegesisHandler((Bridge) thing);
         }
 
         if (coordinator != null) {
@@ -97,7 +83,7 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
         }
 
         // Everything else gets handled in a single handler
-        ZigBeeThingHandler handler = new ZigBeeThingHandler(thing, translationProvider);
+        ZigBeeThingHandler handler = new ZigBeeThingHandler(thing);
 
         bundleContext.registerService(ConfigDescriptionProvider.class.getName(), handler,
                 new Hashtable<String, Object>());
