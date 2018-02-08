@@ -31,7 +31,7 @@ public class ZigBeeConverterSwitchOnoffTest {
     public void testAttributeUpdated() {
         ZigBeeEndpoint endpoint = Mockito.mock(ZigBeeEndpoint.class);
         ZigBeeCoordinatorHandler coordinatorHandler = Mockito.mock(ZigBeeCoordinatorHandler.class);
-        Mockito.when(coordinatorHandler.getEndpoint(Matchers.any(), Matchers.anyInt())).thenReturn(endpoint);
+        Mockito.when(coordinatorHandler.getEndpoint(Matchers.any(IeeeAddress.class), Matchers.anyInt())).thenReturn(endpoint);
 
         ZigBeeConverterSwitchOnoff converter = new ZigBeeConverterSwitchOnoff();
         ArgumentCaptor<ChannelUID> channelCapture = ArgumentCaptor.forClass(ChannelUID.class);
