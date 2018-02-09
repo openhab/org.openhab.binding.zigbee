@@ -75,8 +75,8 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
         // Create the path for serialization.
         if (!folder.exists()) {
             logger.debug("Creating ZigBee persistence folder {}", networkStateFilePath);
-            if(!folder.mkdirs()) {
-            		logger.error("Error while creating ZigBee persistence folder {}", networkStateFilePath);
+            if (!folder.mkdirs()) {
+                logger.error("Error while creating ZigBee persistence folder {}", networkStateFilePath);
             }
         }
 
@@ -111,9 +111,6 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
 
         final File file = new File(networkStateFilePath + "/" + networkStateFileName + networkId + ".xml");
 
-        if(!file.mkdirs()) {
-    		logger.error("Error while creating ZigBee persistence folder {}", networkStateFilePath);
-        }
         try {
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
             stream.marshal(destinations, new PrettyPrintWriter(writer));
