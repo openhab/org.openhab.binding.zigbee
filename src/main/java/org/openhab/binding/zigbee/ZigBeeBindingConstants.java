@@ -53,6 +53,7 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_ILLUMINANCE_VALUE = "zigbee:measurement_illuminance";
     public static final String CHANNEL_TEMPERATURE_VALUE = "zigbee:measurement_temperature";
     public static final String CHANNEL_HUMIDITY_VALUE = "zigbee:measurement_relativehumidity";
+    public static final String CHANNEL_PRESSURE_VALUE = "zigbee:measurement_pressure";
 
     public static final String CHANNEL_OCCUPANCY_SENSOR = "zigbee:sensor_occupancy";
 
@@ -86,7 +87,6 @@ public class ZigBeeBindingConstants {
     public static final String THING_PROPERTY_ROUTES = "zigbee_routes";
     public static final String THING_PROPERTY_NEIGHBORS = "zigbee_neighbors";
     public static final String THING_PROPERTY_LASTUPDATE = "zigbee_lastupdate";
-    public static final String THING_PROPERTY_PERMITJOINING = "zigbee_permitjoining";
     public static final String THING_PROPERTY_ASSOCIATEDDEVICES = "zigbee_devices";
 
     // List of all configuration parameters

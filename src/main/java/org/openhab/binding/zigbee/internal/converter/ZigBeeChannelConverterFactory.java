@@ -57,6 +57,7 @@ public class ZigBeeChannelConverterFactory {
         channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_COLOR, ZigBeeConverterColorColor.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_TEMPERATURE, ZigBeeConverterColorTemperature.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_ELECTRICAL_ACTIVEPOWER, ZigBeeConverterMeasurementPower.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_HUMIDITY_VALUE, ZigBeeConverterRelativeHumidity.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_CONTACT_PORTAL1, ZigBeeConverterIasContactPortal1.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_MOTION_INTRUSION, ZigBeeConverterIasMotionIntrusion.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_MOTION_PRESENCE, ZigBeeConverterIasMotionPresence.class);
@@ -64,6 +65,7 @@ public class ZigBeeChannelConverterFactory {
         channelMap.put(ZigBeeBindingConstants.CHANNEL_ILLUMINANCE_VALUE, ZigBeeConverterIlluminance.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_OCCUPANCY_SENSOR, ZigBeeConverterOccupancy.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_POWER_BATTERYPERCENT, ZigBeeConverterBatteryPercent.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_PRESSURE_VALUE, ZigBeeConverterAtmosphericPressure.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF, ZigBeeConverterSwitchOnoff.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL, ZigBeeConverterSwitchLevel.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE, ZigBeeConverterTemperature.class);
@@ -111,7 +113,7 @@ public class ZigBeeChannelConverterFactory {
 
         // Perform a channel consolidation at endpoint level to remove unnecessary channels.
         // This removes channels that are covered through inheritance.
-        for (Map.Entry<String,String> consolidationChannel : channelConsolidation.entrySet()) {
+        for (Map.Entry<String, String> consolidationChannel : channelConsolidation.entrySet()) {
             if (channels.containsKey(consolidationChannel.getKey())
                     && channels.containsKey(consolidationChannel.getValue())) {
                 logger.debug("{}: Removing channel {} in favor of {}", endpoint.getIeeeAddress(),
