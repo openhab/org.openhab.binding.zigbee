@@ -91,6 +91,16 @@
         <state pattern="%.1f" readOnly="true">
         </state>
     </channel-type>
+    
+    <!-- Atmospheric Pressure Channel -->
+    <channel-type id="measurement_pressure">
+        <item-type>Number</item-type>
+        <label>Atmospheric Pressure</label>
+        <description>Indicates the current pressure</description>
+        <category>Pressure</category>
+        <state pattern="%.1f" readOnly="true">
+        </state>
+    </channel-type>
 
     <!-- Humidity Channel -->
     <channel-type id="measurement_relativehumidity">

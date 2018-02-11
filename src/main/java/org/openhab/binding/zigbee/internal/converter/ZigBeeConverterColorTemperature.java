@@ -52,8 +52,8 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             return false;
         }
 
-        Integer kMin = clusterColorControl.getColorTemperatureMin(Integer.MAX_VALUE);
-        Integer kMax = clusterColorControl.getColorTemperatureMax(Integer.MAX_VALUE);
+        Integer kMin = clusterColorControl.getColorTemperatureMin(Long.MAX_VALUE);
+        Integer kMax = clusterColorControl.getColorTemperatureMax(Long.MAX_VALUE);
 
         if (kMin == null) {
             kelvinMin = CT_DEFAULT_MIN;
@@ -118,7 +118,8 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
-        clusterColorControl = (ZclColorControlCluster) endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID);
+        ZclColorControlCluster clusterColorControl = (ZclColorControlCluster) endpoint
+                .getInputCluster(ZclColorControlCluster.CLUSTER_ID);
         if (clusterColorControl == null) {
             return null;
         }
@@ -126,7 +127,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
         try {
             if (!clusterColorControl.discoverAttributes(false).get()) {
                 // Device is not supporting attribute reporting - instead, just read the attributes
-                Integer capabilities = clusterColorControl.getColorCapabilities(Integer.MAX_VALUE);
+                Integer capabilities = clusterColorControl.getColorCapabilities(Long.MAX_VALUE);
                 if (capabilities != null && (capabilities & ColorCapabilitiesEnum.COLOR_TEMPERATURE.getKey()) == 0) {
                     // No support for color temperature
                     return null;
@@ -136,7 +137,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
                 }
             } else if (clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_COLORCAPABILITIES)) {
                 // If the device is reporting is capabilities, then use this over attribute detection
-                Integer capabilities = clusterColorControl.getColorCapabilities(Integer.MAX_VALUE);
+                Integer capabilities = clusterColorControl.getColorCapabilities(Long.MAX_VALUE);
                 if (capabilities != null && (capabilities & ColorCapabilitiesEnum.COLOR_TEMPERATURE.getKey()) == 0) {
                     // No support for color temperature
                     return null;
