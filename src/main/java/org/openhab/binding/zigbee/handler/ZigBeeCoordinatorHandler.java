@@ -563,7 +563,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_ROUTES, jsonBuilder.toString());
 
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_ASSOCIATEDDEVICES, node.getAssociatedDevices().toString());
-        properties.put(ZigBeeBindingConstants.THING_PROPERTY_PERMITJOINING, Boolean.toString(node.isJoiningEnabled()));
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_LASTUPDATE,
                 ZigBeeBindingConstants.getISO8601StringForDate(node.getLastUpdateTime()));
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_NETWORKADDRESS, node.getNetworkAddress().toString());

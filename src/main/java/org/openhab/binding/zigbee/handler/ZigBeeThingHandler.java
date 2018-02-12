@@ -329,7 +329,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
             // Polling starts almost immediately to get an immediate refresh
             // Add some random element to the period so that all things aren't synchronised
             pollingJob = scheduler.scheduleAtFixedRate(pollingRunnable, new Random().nextInt(3000),
-                    pollingPeriod * 1000 + (int) new Random().nextInt(3000), TimeUnit.MILLISECONDS);
+                    pollingPeriod * 1000 + new Random().nextInt(3000), TimeUnit.MILLISECONDS);
             logger.debug("{}: Polling initialised at {} seconds", nodeIeeeAddress, pollingPeriod);
         }
     }
@@ -484,7 +484,6 @@ public class ZigBeeThingHandler extends BaseThingHandler
         jsonBuilder.append("]");
 
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_ROUTES, jsonBuilder.toString());
-        properties.put(ZigBeeBindingConstants.THING_PROPERTY_PERMITJOINING, Boolean.toString(node.isJoiningEnabled()));
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_ASSOCIATEDDEVICES, node.getAssociatedDevices().toString());
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_LASTUPDATE,
                 ZigBeeBindingConstants.getISO8601StringForDate(node.getLastUpdateTime()));
@@ -505,7 +504,6 @@ public class ZigBeeThingHandler extends BaseThingHandler
         // Clear some properties
         Map<String, String> properties = editProperties();
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_LASTUPDATE, "");
-        properties.put(ZigBeeBindingConstants.THING_PROPERTY_PERMITJOINING, "");
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_ROUTES, "[]");
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_NEIGHBORS, "[]");
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_ASSOCIATEDDEVICES, "[]");
