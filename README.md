@@ -44,7 +44,8 @@ The following devices have been tested with the binding
 
 | Device                     | Description                                       |
 |----------------------------|---------------------------------------------------|
-| Busch-Jaeger 6711          | Relay Insert                                      |
+| Busch-Jaeger 6711 U        | Relay Insert                                      |
+| Busch-Jaeger 6715 U        | LED-Dimmer Insert                                 |
 | Busch-Jaeger 6735          | Control Element (1-channel)                       |
 | Busch-Jaeger 6735/01       | Control Element (1-channel, battery-operated)     |
 | Busch-Jaeger 6736          | Control Element (2-channel)                       |
