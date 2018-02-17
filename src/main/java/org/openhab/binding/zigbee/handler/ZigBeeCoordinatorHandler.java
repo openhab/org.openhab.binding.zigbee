@@ -396,7 +396,11 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         restartJob = scheduler.schedule(() -> {
             logger.debug("ZigBee network starting");
             restartJob = null;
-            initialiseZigBee();
+            try {
+                initialiseZigBee();
+            } catch (Exception e) {
+                logger.error("Error initialising ZigBee coordinator", e);
+            }
         }, 1, TimeUnit.SECONDS);
     }
 
