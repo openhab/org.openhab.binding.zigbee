@@ -3,6 +3,15 @@
 	xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
 	xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
 
+    <!-- Battery Voltage -->
+    <channel-type id="battery_voltage">
+        <item-type>Number</item-type>
+        <label>Battery Voltage</label>
+        <description>The current battery voltage</description>
+        <category>Energy</category>
+        <state pattern="%.1f" readOnly="true"></state>
+    </channel-type>
+
     <!-- Color Channel -->
     <channel-type id="color_color">
         <item-type>Color</item-type>
