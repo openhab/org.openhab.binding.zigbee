@@ -66,6 +66,7 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_ELECTRICAL_ACTIVEPOWER = "zigbee:electrical_activepower";
 
     public static final String CHANNEL_POWER_BATTERYPERCENT = "system:battery-level";
+    public static final String CHANNEL_POWER_BATTERYVOLTAGE = "zigbee:battery_voltage";
 
     public static final String CHANNEL_PROPERTY_ENDPOINT = "zigbee_endpoint";
 
