@@ -68,6 +68,9 @@ Note 1: Some bulbs may not work with the Telegesis dongle.
 
 Once the binding is installed, and an adapter is added, it automatically reads all devices that are set up on the ZigBee controller and puts them in the Inbox. When the binding is put into discovery mode via the user interface, the network will have join enabled for 60 seconds.
 
+## Leave
+
+When a thing is deleted, the binding will attempt to remove the device from the network by sending the *leave* command on the network. 
 
 ## Thing Configuration
 

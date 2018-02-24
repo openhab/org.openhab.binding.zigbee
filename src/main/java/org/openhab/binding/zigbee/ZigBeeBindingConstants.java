@@ -115,6 +115,7 @@ public class ZigBeeBindingConstants {
     public final static String OFFLINE_STARTUP_FAIL = "@text/zigbee.status.offline_startupfail";
     public final static String OFFLINE_NO_ADDRESS = "@text/zigbee.status.offline_noaddress";
     public final static String OFFLINE_NODE_NOT_FOUND = "@text/zigbee.status.offline_nodenotfound";
+    public final static String OFFLINE_DISCOVERY_INCOMPLETE = "@text/zigbee.status.offline_discoveryincomplete";
 
     /**
      * Return an ISO 8601 combined date and time string for current date/time

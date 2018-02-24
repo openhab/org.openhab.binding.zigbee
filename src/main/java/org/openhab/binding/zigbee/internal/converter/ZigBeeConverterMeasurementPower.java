@@ -54,8 +54,8 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
                 ZclAttribute attribute = clusterMeasurement
                         .getAttribute(ZclElectricalMeasurementCluster.ATTR_ACTIVEPOWER);
                 // Configure reporting - no faster than once per second - no slower than 10 minutes.
-                CommandResult reportingResponse = clusterMeasurement.setReporting(attribute, 3, REPORTING_PERIOD_DEFAULT_MAX, 1)
-                        .get();
+                CommandResult reportingResponse = clusterMeasurement
+                        .setReporting(attribute, 3, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
                 if (reportingResponse.isError()) {
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }
@@ -66,8 +66,8 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
         }
 
-        divisor = clusterMeasurement.getAcPowerDivisor(Integer.MAX_VALUE);
-        multiplier = clusterMeasurement.getAcPowerMultiplier(Integer.MAX_VALUE);
+        divisor = clusterMeasurement.getAcPowerDivisor(Long.MAX_VALUE);
+        multiplier = clusterMeasurement.getAcPowerMultiplier(Long.MAX_VALUE);
         if (divisor == null || multiplier == null) {
             divisor = 1;
             multiplier = 1;

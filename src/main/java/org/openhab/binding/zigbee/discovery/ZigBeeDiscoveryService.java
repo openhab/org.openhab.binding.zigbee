@@ -89,12 +89,30 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService
             return;
         }
 
-        logger.debug("Starting ZigBee scan for {}", coordinatorHandler.getThing().getUID());
+        if (discoveryServiceCallback != null) {
+            for (ZigBeeNode node : coordinatorHandler.getNodes()) {
+                if (node.getNetworkAddress() == 0) {
+                    continue;
+                }
 
-        // Update the inbox with all devices we already know about
-        for (ZigBeeNode node : coordinatorHandler.getNodes()) {
-            nodeDiscovered(node);
+                ThingTypeUID thingTypeUID = ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE;
+                ThingUID bridgeUID = coordinatorHandler.getThing().getUID();
+
+                String thingId = node.getIeeeAddress().toString().toLowerCase().replaceAll("[^a-z0-9_/]", "");
+                ThingUID thingUID = new ThingUID(thingTypeUID, bridgeUID, thingId);
+
+                if (discoveryServiceCallback.getExistingThing(thingUID) != null
+                        || discoveryServiceCallback.getExistingDiscoveryResult(thingUID) != null) {
+                    continue;
+                }
+
+                logger.debug("{}: Discovery: Starting discovery for existing device {}", node.getIeeeAddress(),
+                        thingUID);
+                nodeDiscovered(node);
+            }
         }
+
+        logger.debug("Starting ZigBee scan for {}", coordinatorHandler.getThing().getUID());
 
         // Start the search for new devices
         coordinatorHandler.startDeviceDiscovery();
@@ -151,6 +169,11 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService
                     thingDiscovered(discoveryResult);
                 }
 
+                if (!node.isDiscovered()) {
+                    logger.debug("{}: Node discovery not complete", node.getIeeeAddress());
+                    return;
+                }
+
                 // Perform the device properties discovery
                 // This is designed to allow us to provide the users with more information about what the device is
                 ZigBeeNodePropertyDiscoverer propertyDiscoverer = new ZigBeeNodePropertyDiscoverer();
@@ -159,8 +182,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService
                 // If we know the manufacturer and model, then give this device a name and a thing type
                 if ((properties.get(Thing.PROPERTY_VENDOR) != null)
                         && (properties.get(Thing.PROPERTY_MODEL_ID) != null)) {
-                    label = properties.get(Thing.PROPERTY_VENDOR).trim() + " "
-                            + properties.get(Thing.PROPERTY_MODEL_ID).trim();
+                    label = properties.get(Thing.PROPERTY_VENDOR) + " " + properties.get(Thing.PROPERTY_MODEL_ID);
                 }
 
                 logger.debug("{}: Update ZigBee device {} with bridge {}, label '{}'", node.getIeeeAddress(),
@@ -172,6 +194,8 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService
                         .withProperties(objProperties).withBridge(bridgeUID).withLabel(label).build();
 
                 thingDiscovered(discoveryResult);
+
+                coordinatorHandler.serializeNetwork();
             }
         };
 
@@ -180,6 +204,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService
 
     @Override
     public void nodeAdded(ZigBeeNode node) {
+        logger.debug("{}: Discovery notification", node.getIeeeAddress());
         nodeDiscovered(node);
     }
 

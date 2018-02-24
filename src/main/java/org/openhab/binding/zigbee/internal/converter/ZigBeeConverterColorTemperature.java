@@ -128,11 +128,11 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             if (!clusterColorControl.discoverAttributes(false).get()) {
                 // Device is not supporting attribute reporting - instead, just read the attributes
                 Integer capabilities = clusterColorControl.getColorCapabilities(Long.MAX_VALUE);
-                if (capabilities != null && (capabilities & ColorCapabilitiesEnum.COLOR_TEMPERATURE.getKey()) == 0) {
-                    // No support for color temperature
+                if (capabilities == null && clusterColorControl.getColorTemperature(Long.MAX_VALUE) == null) {
                     return null;
                 }
-                if (clusterColorControl.getColorTemperature(0) == null) {
+                if (capabilities != null && (capabilities & ColorCapabilitiesEnum.COLOR_TEMPERATURE.getKey()) == 0) {
+                    // No support for color temperature
                     return null;
                 }
             } else if (clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_COLORCAPABILITIES)) {

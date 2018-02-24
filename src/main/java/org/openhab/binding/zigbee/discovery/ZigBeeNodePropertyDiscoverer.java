@@ -78,8 +78,7 @@ public class ZigBeeNodePropertyDiscoverer {
      * @param node
      * @return a {@link Map} of properties or an empty map if there was an error
      */
-    public @NonNull Map<String, String> getProperties(final ZigBeeCoordinatorHandler coordinatorHandler,
-            final ZigBeeNode node) {
+    public Map<String, String> getProperties(final ZigBeeCoordinatorHandler coordinatorHandler, final ZigBeeNode node) {
 
         logger.debug("{}: ZigBee node property discovery start", node.getIeeeAddress());
 
@@ -114,10 +113,10 @@ public class ZigBeeNodePropertyDiscoverer {
             for (int retry = 0; retry < maxRetries; retry++) {
                 String manufacturer = basicCluster.getManufacturerName(Long.MAX_VALUE);
                 if (manufacturer != null) {
-                    properties.put(Thing.PROPERTY_VENDOR, manufacturer);
+                    properties.put(Thing.PROPERTY_VENDOR, manufacturer.trim());
                     break;
                 } else {
-                    logger.debug("{}: Manufacturer request timeout (retry {})", node.getIeeeAddress(), retry);
+                    logger.debug("{}: Manufacturer request failed (retry {})", node.getIeeeAddress(), retry);
                 }
             }
         }
@@ -126,10 +125,10 @@ public class ZigBeeNodePropertyDiscoverer {
             for (int retry = 0; retry < maxRetries; retry++) {
                 String model = basicCluster.getModelIdentifier(Long.MAX_VALUE);
                 if (model != null) {
-                    properties.put(Thing.PROPERTY_MODEL_ID, model);
+                    properties.put(Thing.PROPERTY_MODEL_ID, model.trim());
                     break;
                 } else {
-                    logger.debug("{}: Model request timeout (retry {})", node.getIeeeAddress(), retry);
+                    logger.debug("{}: Model request failed (retry {})", node.getIeeeAddress(), retry);
                 }
             }
         }
@@ -139,7 +138,7 @@ public class ZigBeeNodePropertyDiscoverer {
             if (hwVersion != null) {
                 properties.put(Thing.PROPERTY_HARDWARE_VERSION, hwVersion.toString());
             } else {
-                logger.debug("{}: Hardware version request timeout", node.getIeeeAddress());
+                logger.debug("{}: Hardware version failed", node.getIeeeAddress());
             }
         }
 
@@ -148,7 +147,7 @@ public class ZigBeeNodePropertyDiscoverer {
             if (stkVersion != null) {
                 properties.put(ZigBeeBindingConstants.THING_PROPERTY_STKVERSION, stkVersion.toString());
             } else {
-                logger.debug("{}: Stack version request timeout", node.getIeeeAddress());
+                logger.debug("{}: Stack version failed", node.getIeeeAddress());
             }
         }
 
@@ -157,7 +156,7 @@ public class ZigBeeNodePropertyDiscoverer {
             if (zclVersion != null) {
                 properties.put(ZigBeeBindingConstants.THING_PROPERTY_ZCLVERSION, zclVersion.toString());
             } else {
-                logger.debug("{}: ZCL version request timeout", node.getIeeeAddress());
+                logger.debug("{}: ZCL version failed", node.getIeeeAddress());
             }
         }
 
@@ -166,7 +165,7 @@ public class ZigBeeNodePropertyDiscoverer {
             if (dateCode != null) {
                 properties.put(ZigBeeBindingConstants.THING_PROPERTY_DATECODE, dateCode);
             } else {
-                logger.debug("{}: Date code request timeout", node.getIeeeAddress());
+                logger.debug("{}: Date code failed", node.getIeeeAddress());
             }
         }
 
@@ -189,7 +188,7 @@ public class ZigBeeNodePropertyDiscoverer {
             if (fileVersion != null) {
                 properties.put(Thing.PROPERTY_FIRMWARE_VERSION, String.format("%08X", fileVersion));
             } else {
-                logger.debug("{}: OTA firmware request timeout", node.getIeeeAddress());
+                logger.debug("{}: OTA firmware failed", node.getIeeeAddress());
             }
         }
 
