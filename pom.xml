@@ -19,6 +19,9 @@
     <modules>
         <module>org.openhab.binding.zigbee</module>
         <module>org.openhab.binding.zigbee.ember</module>
+        <module>org.openhab.binding.zigbee.telegesis</module>
+        <module>org.openhab.binding.zigbee.cc2531</module>
+        <module>org.openhab.binding.zigbee.xbee</module>
     </modules>
     
     <properties>

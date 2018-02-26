@@ -47,7 +47,7 @@ public class EmberHandlerFactory extends BaseThingHandlerFactory {
     private Map<ThingUID, ServiceRegistration<?>> discoveryServiceRegs = new HashMap<>();
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections
-            .singleton(EmberBindingConstants.THING_TYPE_SAMPLE);
+            .singleton(EmberBindingConstants.THING_TYPE_EMBER);
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -59,7 +59,7 @@ public class EmberHandlerFactory extends BaseThingHandlerFactory {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
         ZigBeeCoordinatorHandler coordinator = null;
-        if (thingTypeUID.equals(EmberBindingConstants.THING_TYPE_SAMPLE)) {
+        if (thingTypeUID.equals(EmberBindingConstants.THING_TYPE_EMBER)) {
             coordinator = new EmberHandler((Bridge) thing);
         }
 

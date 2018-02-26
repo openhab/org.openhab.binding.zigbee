@@ -12,7 +12,7 @@ Export-Package:
  org.openhab.binding.zigbee.ember.handler
 Import-Package: com.zsmartsystems.zigbee,
  com.zsmartsystems.zigbee.dongle.ember,
- com.zsmartsystems.zigbee.serialization;version="1.0.5",
+ com.zsmartsystems.zigbee.serialization,
  com.zsmartsystems.zigbee.transport,
  gnu.io,
  org.eclipse.jdt.annotation;resolution:=optional,
@@ -29,6 +29,6 @@ Import-Package: com.zsmartsystems.zigbee,
  org.openhab.binding.zigbee,
  org.openhab.binding.zigbee.discovery,
  org.openhab.binding.zigbee.handler,
- org.osgi.framework;version="1.8.0",
+ org.osgi.framework,
  org.slf4j
 Service-Component: OSGI-INF/*.xml
