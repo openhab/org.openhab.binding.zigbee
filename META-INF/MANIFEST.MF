@@ -35,8 +35,8 @@ Service-Component: OSGI-INF/*.xml
 Export-Package: org.openhab.binding.zigbee,
  org.openhab.binding.zigbee.handler
 Bundle-ClassPath: .,
- lib/com.zsmartsystems.zigbee-1.0.4-SNAPSHOT.jar,
- lib/com.zsmartsystems.zigbee.dongle.ember-1.0.4-SNAPSHOT.jar,
- lib/com.zsmartsystems.zigbee.dongle.cc2531-1.0.4-SNAPSHOT.jar,
- lib/com.zsmartsystems.zigbee.dongle.telegesis-1.0.4-SNAPSHOT.jar
+ lib/com.zsmartsystems.zigbee-1.0.5-SNAPSHOT.jar,
+ lib/com.zsmartsystems.zigbee.dongle.ember-1.0.5-SNAPSHOT.jar,
+ lib/com.zsmartsystems.zigbee.dongle.cc2531-1.0.5-SNAPSHOT.jar,
+ lib/com.zsmartsystems.zigbee.dongle.telegesis-1.0.5-SNAPSHOT.jar
 Bundle-ActivationPolicy: lazy
