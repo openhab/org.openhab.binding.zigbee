@@ -110,7 +110,7 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
                 return null;
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.warn("{}: Exception discovering xattributes in electrical measurement cluster",
+            logger.warn("{}: Exception discovering attributes in electrical measurement cluster",
                     endpoint.getIeeeAddress(), e);
             return null;
         }

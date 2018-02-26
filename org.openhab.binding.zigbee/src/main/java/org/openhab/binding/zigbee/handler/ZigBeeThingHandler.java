@@ -71,12 +71,12 @@ public class ZigBeeThingHandler extends BaseThingHandler
     /**
      * Our logger
      */
-    private Logger logger = LoggerFactory.getLogger(ZigBeeThingHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(ZigBeeThingHandler.class);
 
     /**
      * The map of all the channels defined for this thing
      */
-    private Map<ChannelUID, ZigBeeBaseChannelConverter> channels = new HashMap<ChannelUID, ZigBeeBaseChannelConverter>();
+    private final Map<ChannelUID, ZigBeeBaseChannelConverter> channels = new HashMap<ChannelUID, ZigBeeBaseChannelConverter>();
 
     /**
      * The {@link IeeeAddress} for this device
@@ -580,7 +580,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
         ZigBeeEndpoint otaEndpoint = null;
         ZclOtaUpgradeCluster otaCluster = null;
         for (ZigBeeEndpoint endpoint : node.getEndpoints()) {
-            otaServer = (ZigBeeOtaServer) endpoint.getExtension(ZclOtaUpgradeCluster.CLUSTER_ID);
+            otaServer = (ZigBeeOtaServer) endpoint.getApplication(ZclOtaUpgradeCluster.CLUSTER_ID);
             if (otaServer != null) {
                 break;
             }
@@ -600,7 +600,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
         // Register the OTA server if it's not already registered
         if (otaServer == null && otaEndpoint != null) {
             otaServer = new ZigBeeOtaServer();
-            otaEndpoint.addExtension(otaServer);
+            otaEndpoint.addApplication(otaServer);
         } else {
             logger.debug("{}: Can't create OTA server", nodeIeeeAddress);
             return;

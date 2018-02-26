@@ -17,7 +17,6 @@ import java.util.TimeZone;
 
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 /**
@@ -30,12 +29,6 @@ public class ZigBeeBindingConstants {
 
     // Binding Name
     public static final String BINDING_ID = "zigbee";
-
-    // Coordinator (Bridges)
-    public final static ThingTypeUID COORDINATOR_TYPE_EMBER = new ThingTypeUID(BINDING_ID, "coordinator_ember");
-    // public final static ThingTypeUID COORDINATOR_TYPE_CONBEE = new ThingTypeUID(BINDING_ID, "coordinator_conbee");
-    public final static ThingTypeUID COORDINATOR_TYPE_CC2531 = new ThingTypeUID(BINDING_ID, "coordinator_cc2531");
-    public final static ThingTypeUID COORDINATOR_TYPE_TELEGESIS = new ThingTypeUID(BINDING_ID, "coordinator_telegesis");
 
     // List of Thing Type UIDs
     public final static ThingTypeUID THING_TYPE_GENERIC_DEVICE = new ThingTypeUID(BINDING_ID, "device");
@@ -104,11 +97,6 @@ public class ZigBeeBindingConstants {
     public final static String CONFIGURATION_MACADDRESS = "zigbee_macaddress";
     public final static String CONFIGURATION_JOINENABLE = "zigbee_joinenable";
     public final static String CONFIGURATION_LEAVE = "zigbee_leave";
-
-    public final static String CONFIGURATION_ZNP_MAGICNUMBER = "zigbee_znp_magicnumber";
-
-    public final static Set<ThingTypeUID> SUPPORTED_BRIDGE_TYPES_UIDS = ImmutableSet.of(COORDINATOR_TYPE_CC2531,
-            COORDINATOR_TYPE_EMBER, COORDINATOR_TYPE_TELEGESIS);
 
     public final static String OFFLINE_NOT_INITIALIZED = "@text/zigbee.status.offline_notinitialized";
     public final static String OFFLINE_INITIALIZE_FAIL = "@text/zigbee.status.offline_initializefail";

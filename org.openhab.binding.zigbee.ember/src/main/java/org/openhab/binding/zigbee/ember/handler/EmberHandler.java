@@ -12,7 +12,6 @@
  */
 package org.openhab.binding.zigbee.ember.handler;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.ThingStatusDetail;
@@ -38,7 +37,7 @@ import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareUpdate;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
 
 /**
- * The {@link org.openhab.binding.zigbee.emberHandler} is responsible for handling commands, which are
+ * The {@link EmberHandler} is responsible for handling commands, which are
  * sent to one of the channels.
  *
  * @author Chris Jackson - Initial contribution
@@ -46,9 +45,6 @@ import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
 // @NonNullByDefault
 public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUpdateHandler {
     private final Logger logger = LoggerFactory.getLogger(EmberHandler.class);
-
-    @Nullable
-    private EmberConfiguration config;
 
     public EmberHandler(Bridge coordinator) {
         super(coordinator);
@@ -61,17 +57,18 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
         // Call the parent to finish any global initialisation
         super.initialize();
 
-        config = getConfigAs(EmberConfiguration.class);
+        EmberConfiguration config = getConfigAs(EmberConfiguration.class);
 
-        ZigBeePort serialPort = new ZigBeeSerialPort(config.port, config.baud, FlowControl.FLOWCONTROL_OUT_RTSCTS);
+        ZigBeePort serialPort = new ZigBeeSerialPort(config.zigbee_port, config.zigbee_baud,
+                FlowControl.FLOWCONTROL_OUT_RTSCTS);
         final ZigBeeTransportTransmit dongle = new ZigBeeDongleEzsp(serialPort);
 
-        logger.debug("ZigBee Coordinator Ember opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.port,
+        logger.debug("ZigBee Ember Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
                 Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
 
-        TransportConfig config = new TransportConfig();
+        TransportConfig transportConfig = new TransportConfig();
 
-        startZigBee(dongle, config, DefaultSerializer.class, DefaultDeserializer.class);
+        startZigBee(dongle, transportConfig, DefaultSerializer.class, DefaultDeserializer.class);
     }
 
     @Override
