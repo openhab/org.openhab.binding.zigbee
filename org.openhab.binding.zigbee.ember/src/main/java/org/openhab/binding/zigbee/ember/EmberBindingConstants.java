@@ -27,6 +27,6 @@ public class EmberBindingConstants {
     private static final String BINDING_ID = "zigbee";
 
     // List of all Thing Type UIDs
-    public static final ThingTypeUID THING_TYPE_SAMPLE = new ThingTypeUID(BINDING_ID, "ember_coordinator");
+    public static final ThingTypeUID THING_TYPE_EMBER = new ThingTypeUID(BINDING_ID, "coordinator_ember");
 
 }

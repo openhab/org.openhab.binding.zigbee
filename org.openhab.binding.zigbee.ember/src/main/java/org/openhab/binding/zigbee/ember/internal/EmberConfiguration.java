@@ -13,12 +13,12 @@
 package org.openhab.binding.zigbee.ember.internal;
 
 /**
- * The {@link oEmberConfiguration} class contains fields mapping thing configuration
+ * The {@link EmberConfiguration} class contains fields mapping thing configuration
  * parameters.
  *
  * @author Chris Jackson - Initial contribution
  */
 public class EmberConfiguration {
-    public String port;
-    public Integer baud;
+    public String zigbee_port;
+    public Integer zigbee_baud;
 }

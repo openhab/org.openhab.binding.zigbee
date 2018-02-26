@@ -19,11 +19,14 @@
     <modules>
         <module>org.openhab.binding.zigbee</module>
         <module>org.openhab.binding.zigbee.ember</module>
+        <module>org.openhab.binding.zigbee.telegesis</module>
+        <module>org.openhab.binding.zigbee.cc2531</module>
+        <module>org.openhab.binding.zigbee.xbee</module>
     </modules>
     
     <properties>
         <report.fail.on.error>false</report.fail.on.error>
-        <zigbee.version>1.0.4-SNAPSHOT</zigbee.version>
+        <zigbee.version>1.0.5</zigbee.version>
     </properties>
     
     <scm>
@@ -112,6 +115,7 @@
             <groupId>com.zsmartsystems.zigbee</groupId>
             <artifactId>com.zsmartsystems.zigbee</artifactId>
             <version>${zigbee.version}</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
     

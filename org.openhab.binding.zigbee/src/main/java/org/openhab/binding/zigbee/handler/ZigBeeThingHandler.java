@@ -71,12 +71,12 @@ public class ZigBeeThingHandler extends BaseThingHandler
     /**
      * Our logger
      */
-    private Logger logger = LoggerFactory.getLogger(ZigBeeThingHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(ZigBeeThingHandler.class);
 
     /**
      * The map of all the channels defined for this thing
      */
-    private Map<ChannelUID, ZigBeeBaseChannelConverter> channels = new HashMap<ChannelUID, ZigBeeBaseChannelConverter>();
+    private final Map<ChannelUID, ZigBeeBaseChannelConverter> channels = new HashMap<ChannelUID, ZigBeeBaseChannelConverter>();
 
     /**
      * The {@link IeeeAddress} for this device

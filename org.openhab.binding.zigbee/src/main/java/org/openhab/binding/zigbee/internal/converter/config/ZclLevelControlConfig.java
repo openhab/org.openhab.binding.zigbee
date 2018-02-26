@@ -112,8 +112,8 @@ public class ZclLevelControlConfig implements ZclClusterConfigHandler {
     @Override
     public void updateConfiguration(@NonNull Configuration configuration, @NonNull Configuration updatedConfiguration) {
         for (String property : configuration.getProperties().keySet()) {
-            logger.debug("{}: Update configuration property {}->{}", cluster.getZigBeeAddress(), property,
-                    configuration.get(property));
+            logger.debug("{}: Update configuration property {}->{} ({})", cluster.getZigBeeAddress(), property,
+                    configuration.get(property), configuration.get(property).getClass().getSimpleName());
             switch (property) {
                 case CONFIG_ONOFFTRANSITIONTIME:
                     BigDecimal value = (BigDecimal) configuration.get(property);

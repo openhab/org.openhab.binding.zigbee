@@ -77,7 +77,7 @@ import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
  */
 public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         implements ZigBeeNetworkStateListener, ZigBeeNetworkNodeListener {
-    private Logger logger = LoggerFactory.getLogger(ZigBeeCoordinatorHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(ZigBeeCoordinatorHandler.class);
 
     protected int panId;
     protected int channelId;
@@ -97,7 +97,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     private TransportConfig transportConfig;
 
-    private Set<ZigBeeNetworkNodeListener> listeners = new HashSet<ZigBeeNetworkNodeListener>();
+    private final Set<ZigBeeNetworkNodeListener> listeners = new HashSet<ZigBeeNetworkNodeListener>();
 
     private boolean macAddressSet = false;
 
