@@ -89,6 +89,7 @@ public class ZigBeeBindingConstants {
     public final static String CONFIGURATION_CHANNEL = "zigbee_channel";
     public final static String CONFIGURATION_PORT = "zigbee_port";
     public final static String CONFIGURATION_BAUD = "zigbee_baud";
+    public final static String CONFIGURATION_FLOWCONTROL = "zigbee_flowcontrol";
     public static final String CONFIGURATION_NETWORKKEY = "zigbee_networkkey";
     public static final String CONFIGURATION_PASSWORD = "zigbee_password";
     public static final String CONFIGURATION_INITIALIZE = "zigbee_initialise";

@@ -12,7 +12,13 @@
  */
 package org.openhab.binding.zigbee.ember.handler;
 
+import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
+import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.thing.Bridge;
+import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.firmware.Firmware;
@@ -34,7 +40,6 @@ import com.zsmartsystems.zigbee.transport.ZigBeePort.FlowControl;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareCallback;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareStatus;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareUpdate;
-import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
 
 /**
  * The {@link EmberHandler} is responsible for handling commands, which are
@@ -45,6 +50,24 @@ import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
 // @NonNullByDefault
 public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUpdateHandler {
     private final Logger logger = LoggerFactory.getLogger(EmberHandler.class);
+
+    private final String ASH_RX_DAT = "ASH_RX_DAT";
+    private final String ASH_TX_DAT = "ASH_TX_DAT";
+    private final String ASH_RX_ACK = "ASH_RX_ACK";
+    private final String ASH_TX_ACK = "ASH_TX_ACK";
+    private final String ASH_RX_NAK = "ASH_RX_NAK";
+    private final String ASH_TX_NAK = "ASH_TX_NAK";
+
+    private final String UID_ASH_RX_DAT = "ember_ash_rx_data";
+    private final String UID_ASH_TX_DAT = "ember_ash_tx_data";
+    private final String UID_ASH_RX_ACK = "ember_ash_rx_ack";
+    private final String UID_ASH_TX_ACK = "ember_ash_tx_ack";
+    private final String UID_ASH_RX_NAK = "ember_ash_rx_nak";
+    private final String UID_ASH_TX_NAK = "ember_ash_tx_nak";
+
+    private ScheduledFuture<?> pollingJob = null;
+
+    private ZigBeeDongleEzsp dongle;
 
     public EmberHandler(Bridge coordinator) {
         super(coordinator);
@@ -59,9 +82,21 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
 
         EmberConfiguration config = getConfigAs(EmberConfiguration.class);
 
-        ZigBeePort serialPort = new ZigBeeSerialPort(config.zigbee_port, config.zigbee_baud,
-                FlowControl.FLOWCONTROL_OUT_RTSCTS);
-        final ZigBeeTransportTransmit dongle = new ZigBeeDongleEzsp(serialPort);
+        FlowControl flowControl;
+        switch (config.zigbee_flowcontrol) {
+            case 1: // Hardware
+                flowControl = FlowControl.FLOWCONTROL_OUT_RTSCTS;
+                break;
+            case 2: // Software
+                flowControl = FlowControl.FLOWCONTROL_OUT_XONOFF;
+                break;
+            default:
+                flowControl = FlowControl.FLOWCONTROL_OUT_NONE;
+                break;
+        }
+
+        ZigBeePort serialPort = new ZigBeeSerialPort(config.zigbee_port, config.zigbee_baud, flowControl);
+        dongle = new ZigBeeDongleEzsp(serialPort);
 
         logger.debug("ZigBee Ember Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
                 Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
@@ -69,6 +104,37 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
         TransportConfig transportConfig = new TransportConfig();
 
         startZigBee(dongle, transportConfig, DefaultSerializer.class, DefaultDeserializer.class);
+
+        Runnable pollingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Map<String, Long> counters = dongle.getCounters();
+
+                updateState(new ChannelUID(getThing().getUID(), UID_ASH_RX_DAT),
+                        new DecimalType(counters.get(ASH_RX_DAT)));
+                updateState(new ChannelUID(getThing().getUID(), UID_ASH_TX_DAT),
+                        new DecimalType(counters.get(ASH_TX_DAT)));
+                updateState(new ChannelUID(getThing().getUID(), UID_ASH_RX_ACK),
+                        new DecimalType(counters.get(ASH_RX_ACK)));
+                updateState(new ChannelUID(getThing().getUID(), UID_ASH_TX_ACK),
+                        new DecimalType(counters.get(ASH_TX_ACK)));
+                updateState(new ChannelUID(getThing().getUID(), UID_ASH_RX_NAK),
+                        new DecimalType(counters.get(ASH_RX_NAK)));
+                updateState(new ChannelUID(getThing().getUID(), UID_ASH_TX_NAK),
+                        new DecimalType(counters.get(ASH_TX_NAK)));
+            }
+        };
+
+        pollingJob = scheduler.scheduleAtFixedRate(pollingRunnable, 30, 30, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (pollingJob != null) {
+            pollingJob.cancel(true);
+            pollingJob = null;
+        }
     }
 
     @Override

@@ -33,6 +33,17 @@
                 </options>
             </parameter>
 
+            <parameter name="zigbee_flowcontrol" type="integer" required="true">
+                <label>Baud Rate</label>
+                <description>Serial Port Baud Rate</description>
+                <default>1</default>
+                <options>
+                    <option value="0">None</option>
+                    <option value="1">Hardware (CTS/RTS)</option>
+                    <option value="2">Software (XOn/XOff)</option>
+                </options>
+            </parameter>
+
             <parameter name="zigbee_initialise" type="boolean" groupName="network">
                 <label>Reset Controller</label>
                 <description>Resets the Controller and sets the configuration to the configured values.</description>
@@ -91,6 +102,56 @@
             </parameter>
 
         </config-description>
+
+        <channel-type id="ember_ash_rx_data">
+            <item-type>Number</item-type>
+            <label>Data frames received</label>
+            <state readOnly="true">
+            </state>
+        </channel-type>
+        
+        <channel-type id="ember_ash_tx_data">
+            <item-type>Number</item-type>
+            <label>Data frames sent</label>
+            <state readOnly="true">
+            </state>
+        </channel-type>
+
+        <channel-type id="ember_ash_rx_nak">
+            <item-type>Number</item-type>
+            <label>Nak frames received</label>
+            <state readOnly="true">
+            </state>
+        </channel-type>
+
+        <channel-type id="ember_ash_tx_nak">
+            <item-type>Number</item-type>
+            <label>Nak frames sent</label>
+            <state readOnly="true">
+            </state>
+        </channel-type>
+        
+        <channel-type id="ember_ash_rx_ack">
+            <item-type>Number</item-type>
+            <label>Ack frames received</label>
+            <state readOnly="true">
+            </state>
+        </channel-type>
+
+        <channel-type id="ember_ash_tx_ack">
+            <item-type>Number</item-type>
+            <label>Ack frames sent</label>
+            <state readOnly="true">
+            </state>
+        </channel-type>
+
+        <channel-type id="ember_ash_rx_err">
+            <item-type>Number</item-type>
+            <label>Err frames received</label>
+            <state readOnly="true">
+            </state>
+        </channel-type>
+
 	</bridge-type>
 	
 </thing:thing-descriptions>
