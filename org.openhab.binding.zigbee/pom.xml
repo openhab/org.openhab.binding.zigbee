@@ -9,16 +9,51 @@
 		<version>2.3.0-SNAPSHOT</version>
 	</parent>
 
-    <groupId>org.openhab.binding</groupId>
+	<groupId>org.openhab.binding</groupId>
 	<artifactId>org.openhab.binding.zigbee</artifactId>
 
 	<name>ZigBee Binding</name>
 	<packaging>eclipse-plugin</packaging>
 
 	<build>
+
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.0.2</version>
+				<executions>
+					<execution>
+						<id>copy</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+
+							<artifactItems>
+								<artifactItem>
+									<groupId>com.zsmartsystems.zigbee</groupId>
+									<artifactId>com.zsmartsystems.zigbee</artifactId>
+									<type>jar</type>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.basedir}/lib</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+
+
+
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    
+
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.openhab</groupId>
@@ -9,13 +9,13 @@
         <version>2.3.0-SNAPSHOT</version>
         <relativePath />
     </parent>
-    
+
     <groupId>org.openhab.binding.zigbee</groupId>
     <artifactId>org.openhab.binding.zigbee.parent</artifactId>
-    
+
     <name>ZigBee Binding Parent POM</name>
     <packaging>pom</packaging>
-    
+
     <modules>
         <module>org.openhab.binding.zigbee</module>
         <module>org.openhab.binding.zigbee.ember</module>
@@ -23,19 +23,19 @@
         <module>org.openhab.binding.zigbee.cc2531</module>
         <module>org.openhab.binding.zigbee.xbee</module>
     </modules>
-    
+
     <properties>
         <report.fail.on.error>false</report.fail.on.error>
         <zigbee.version>1.0.6</zigbee.version>
     </properties>
-    
+
     <scm>
         <connection>scm:git:${scm.gitBaseUrl}/org.openhab.binding.zigbee.git</connection>
         <developerConnection>scm:git:${scm.gitBaseUrl}/org.openhab.binding.zigbee.git</developerConnection>
         <url>https://github.com/openhab/org.openhab.binding.zigbee</url>
         <tag>HEAD</tag>
     </scm>
-    
+
     <distributionManagement>
         <repository>
             <id>bintray</id>
@@ -46,7 +46,7 @@
             <url>https://openhab.jfrog.io/openhab/libs-snapshot-local</url>
         </snapshotRepository>
     </distributionManagement>
-    
+
     <build>
         <testSourceDirectory>src/test</testSourceDirectory>
         
@@ -90,7 +90,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -110,7 +110,7 @@
             <version>1.7.2</version>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>com.zsmartsystems.zigbee</groupId>
             <artifactId>com.zsmartsystems.zigbee</artifactId>
@@ -118,7 +118,7 @@
             <type>jar</type>
         </dependency>
     </dependencies>
-    
+
     <pluginRepositories>
         <pluginRepository>
             <id>jcenter</id>
@@ -144,11 +144,11 @@
                 <enabled>false</enabled>
             </snapshots>
         </pluginRepository>
-        
+
     </pluginRepositories>
-    
+
     <repositories>
-        
+
         <!-- releases -->
         <repository>
             <id>jcenter</id>
@@ -162,7 +162,7 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        
+
         <repository>
             <id>openhab-artifactory-release</id>
             <name>JFrog Artifactory Repository</name>
@@ -175,7 +175,7 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        
+
         <!-- snapshots -->
         <repository>
             <id>openhab-artifactory-snapshot</id>
@@ -189,21 +189,21 @@
                 <updatePolicy>always</updatePolicy>
             </snapshots>
         </repository>
-        
+
         <!-- SmartHome p2 repository -->
         <repository>
             <id>p2-smarthome</id>
             <url>https://openhab.jfrog.io/openhab/eclipse-smarthome-stable</url>
             <layout>p2</layout>
         </repository>
-        
+
         <!-- openHAB dependencies p2 repository -->
         <repository>
             <id>p2-openhab-deps-repo</id>
             <url>https://dl.bintray.com/openhab/p2/openhab-deps-repo/${ohdr.version}</url>
             <layout>p2</layout>
         </repository>
-        
+
         <!-- Z-Smart Systems ZigBee Framework -->
         <repository>
             <id>bintray-zsmartsystems-com.zsmartsystems</id>
@@ -213,7 +213,7 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        
+
     </repositories>
     
 </project>
