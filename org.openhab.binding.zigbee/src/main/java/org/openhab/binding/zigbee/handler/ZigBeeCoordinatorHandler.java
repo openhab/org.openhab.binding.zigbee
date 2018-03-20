@@ -392,7 +392,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             // Persist the network configuration
             Configuration configuration = editConfiguration();
             configuration.put(CONFIGURATION_PANID, currentPanId);
-            configuration.put(CONFIGURATION_EXTENDEDPANID, currentExtendedPanId.toString());
+            if (currentExtendedPanId != null) {
+                configuration.put(CONFIGURATION_EXTENDEDPANID, currentExtendedPanId.toString());
+            }
             configuration.put(CONFIGURATION_CHANNEL, currentChannel);
 
             // If the thing is defined statically, then this will fail and we will never start!

@@ -110,7 +110,7 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
                 return;
             }
 
-            updateChannelState(new DecimalType(value));
+            updateChannelState(new DecimalType(value / 2));
         }
     }
 }

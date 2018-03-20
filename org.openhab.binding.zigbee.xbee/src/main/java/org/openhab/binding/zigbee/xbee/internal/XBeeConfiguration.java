@@ -21,4 +21,5 @@ package org.openhab.binding.zigbee.xbee.internal;
 public class XBeeConfiguration {
     public String zigbee_port;
     public Integer zigbee_baud;
+    public Integer zigbee_flowcontrol;
 }

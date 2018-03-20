@@ -8,23 +8,17 @@
 package org.openhab.binding.zigbee.internal;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.smarthome.config.core.ConfigDescriptionProvider;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
-import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.discovery.ZigBeeDiscoveryService;
-import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
-import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Component;
 
 /**
@@ -36,8 +30,6 @@ import org.osgi.service.component.annotations.Component;
  */
 @Component(immediate = true, service = { ThingHandlerFactory.class })
 public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
-    private Map<ThingUID, ServiceRegistration> discoveryServiceRegs = new HashMap<>();
-
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections
             .singleton(ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE);
 
@@ -60,22 +52,5 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
                 new Hashtable<String, Object>());
 
         return handler;
-    }
-
-    @Override
-    protected synchronized void removeHandler(ThingHandler thingHandler) {
-        if (thingHandler instanceof ZigBeeCoordinatorHandler) {
-            ServiceRegistration serviceReg = this.discoveryServiceRegs.get(thingHandler.getThing().getUID());
-            if (serviceReg != null) {
-                // remove discovery service, if bridge handler is removed
-                ZigBeeDiscoveryService service = (ZigBeeDiscoveryService) bundleContext
-                        .getService(serviceReg.getReference());
-                if (service != null) {
-                    service.deactivate();
-                }
-                serviceReg.unregister();
-                discoveryServiceRegs.remove(thingHandler.getThing().getUID());
-            }
-        }
     }
 }

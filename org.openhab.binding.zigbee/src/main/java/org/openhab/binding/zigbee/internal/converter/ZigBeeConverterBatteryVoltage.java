@@ -86,7 +86,7 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
             if (!powerCluster.discoverAttributes(false).get()) {
                 logger.debug("{}: Failed discovering attributes in power configuration cluster",
                         endpoint.getIeeeAddress());
-                if (cluster.getBatteryVoltage(Long.MAX_VALUE) == null) {
+                if (powerCluster.getBatteryVoltage(Long.MAX_VALUE) == null) {
                     return null;
                 }
             } else if (!powerCluster.isAttributeSupported(ZclPowerConfigurationCluster.ATTR_BATTERYVOLTAGE)) {

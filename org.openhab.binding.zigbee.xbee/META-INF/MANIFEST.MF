@@ -7,8 +7,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-SymbolicName: org.openhab.binding.zigbee.xbee;singleton:=true
 Bundle-Vendor: openHAB
 Bundle-Version: 2.3.0.qualifier
-Export-Package: 
- org.openhab.binding.zigbee.xbee,
+Export-Package: org.openhab.binding.zigbee.xbee,
  org.openhab.binding.zigbee.xbee.handler
 Import-Package: com.zsmartsystems.zigbee,
  com.zsmartsystems.zigbee.dongle.xbee,
