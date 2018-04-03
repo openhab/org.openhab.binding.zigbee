@@ -34,6 +34,7 @@ import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.ThingStatusInfo;
+import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.thing.binding.builder.ThingBuilder;
 import org.eclipse.smarthome.core.thing.binding.firmware.Firmware;
@@ -45,6 +46,8 @@ import org.eclipse.smarthome.core.types.RefreshType;
 import org.eclipse.smarthome.core.types.State;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
+import org.openhab.binding.zigbee.internal.ZigBeeDeviceConfigHandler;
+import org.openhab.binding.zigbee.internal.ZigBeeThingTypeMatcher;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeChannelConverterFactory;
 import org.slf4j.Logger;
@@ -97,14 +100,17 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
     private boolean firmwareUpdateInProgress = false;
 
+    private ZigBeeThingTypeMatcher thingTypeMatcher;
+
     /**
      * A set of channels that have been linked to items. This is used to ensure we only poll channels that are linked to
      * keep network activity to a minimum.
      */
-    private final Set<ChannelUID> thingChannelsPoll = new HashSet<ChannelUID>();
+    private final Set<ChannelUID> thingChannelsPoll = new HashSet<>();
 
-    public ZigBeeThingHandler(Thing zigbeeDevice) {
+    public ZigBeeThingHandler(Thing zigbeeDevice, ZigBeeThingTypeMatcher thingTypeMatcher) {
         super(zigbeeDevice);
+        this.thingTypeMatcher = thingTypeMatcher;
     }
 
     @Override
@@ -166,6 +172,8 @@ public class ZigBeeThingHandler extends BaseThingHandler
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE, ZigBeeBindingConstants.OFFLINE_NODE_NOT_FOUND);
             return;
         }
+
+        // Check if discovery is complete and we know all the services the node supports
         if (!node.isDiscovered()) {
             logger.debug("{}: Node has not finished discovery", nodeIeeeAddress);
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE,
@@ -175,18 +183,42 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
         logger.debug("{}: Start initialising ZigBee Thing handler", nodeIeeeAddress);
 
+        // Update the general properties
+        // This is required here to allow us to check for a static thing type before we check the dynamic configuration
+        ZigBeeNodePropertyDiscoverer propertyDiscoverer = new ZigBeeNodePropertyDiscoverer();
+        propertyDiscoverer.setProperties(editProperties());
+        Map<String, String> newProperties = propertyDiscoverer.getProperties(coordinatorHandler, node);
+        updateProperties(newProperties);
+
         // Create the channel factory
         ZigBeeChannelConverterFactory factory = new ZigBeeChannelConverterFactory();
+        List<Channel> nodeChannels;
 
-        // Create the channels from the device
-        // Process all the endpoints for this device and add all channels as derived from the supported clusters
-        List<Channel> nodeChannels = new ArrayList<Channel>();
-        for (ZigBeeEndpoint endpoint : coordinatorHandler.getNodeEndpoints(nodeIeeeAddress)) {
-            logger.debug("{}: Checking endpoint {} channels", nodeIeeeAddress, endpoint.getEndpointId());
-            nodeChannels.addAll(factory.getChannels(getThing().getUID(), endpoint));
+        // Check the thing-type registry to see if we match this thing with a static definition
+        ThingTypeUID thingTypeUid = thingTypeMatcher.matchThingType(newProperties);
+        if (thingTypeUid == null) {
+            // Dynamically create the channels from the device
+            // Process all the endpoints for this device and add all channels as derived from the supported clusters
+            nodeChannels = new ArrayList<>();
+            for (ZigBeeEndpoint endpoint : coordinatorHandler.getNodeEndpoints(nodeIeeeAddress)) {
+                logger.debug("{}: Checking endpoint {} channels", nodeIeeeAddress, endpoint.getEndpointId());
+                nodeChannels.addAll(factory.getChannels(getThing().getUID(), endpoint));
+            }
+            logger.debug("{}: Dynamically created {} channels", nodeIeeeAddress, nodeChannels.size());
+        } else if (getThing().getThingTypeUID().equals(thingTypeUid)) {
+            // We already have the correct thing type so just use the channels
+            nodeChannels = getThing().getChannels();
+            logger.debug("{}: Using static definition with existing {} channels", nodeIeeeAddress, nodeChannels.size());
+        } else {
+            // The current thing type is not what the matcher provided - change it
+            changeThingType(thingTypeUid, getConfig());
+            logger.debug("{}: Thing type changing from {} to {}", nodeIeeeAddress, getThing().getThingTypeUID(),
+                    thingTypeUid);
+
+            // The handler will be disposed so return
+            return;
         }
 
-        logger.debug("{}: Created {} channels", nodeIeeeAddress, nodeChannels.size());
         try {
             pollingPeriod = POLLING_PERIOD_MAX;
 
@@ -228,7 +260,10 @@ public class ZigBeeThingHandler extends BaseThingHandler
                 }
 
                 logger.debug("{}: Initializing channel {} with {}", nodeIeeeAddress, channel.getUID(), handler);
-                handler.initializeConverter();
+                if (handler.initializeConverter() == false) {
+                    logger.info("{}: Channel {} failed to initialise", nodeIeeeAddress, channel.getUID());
+                    continue;
+                }
 
                 handler.handleRefresh();
 
@@ -247,12 +282,6 @@ public class ZigBeeThingHandler extends BaseThingHandler
             return;
         }
         logger.debug("{}: Channel initialisation complete", nodeIeeeAddress);
-
-        // Update the general properties
-        ZigBeeNodePropertyDiscoverer propertyDiscoverer = new ZigBeeNodePropertyDiscoverer();
-        propertyDiscoverer.setProperties(editProperties());
-        Map<String, String> newProperties = propertyDiscoverer.getProperties(coordinatorHandler, node);
-        updateProperties(newProperties);
 
         // Update the binding table.
         // We're not doing anything with the information here, but we want it up to date so it's ready for use later.
@@ -395,13 +424,14 @@ public class ZigBeeThingHandler extends BaseThingHandler
                 case ZigBeeBindingConstants.CONFIGURATION_LEAVE:
                     coordinatorHandler.leave(nodeIeeeAddress);
                     break;
-                default:
-                    logger.warn("{}: Unhandled configuration parameter {}.", nodeIeeeAddress,
-                            configurationParameter.getKey());
-                    break;
             }
         }
 
+        ZigBeeNode node = coordinatorHandler.getNode(nodeIeeeAddress);
+        ZigBeeDeviceConfigHandler deviceConfigHandler = new ZigBeeDeviceConfigHandler(node);
+        Map<String, Object> updatedParameters = deviceConfigHandler.handleConfigurationUpdate(configurationParameters);
+
+        configuration.setProperties(updatedParameters);
         // Persist changes
         updateConfiguration(configuration);
     }
@@ -682,5 +712,4 @@ public class ZigBeeThingHandler extends BaseThingHandler
         // Always allow the firmware to be updated
         return true;
     }
-
 }

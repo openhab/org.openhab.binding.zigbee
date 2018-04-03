@@ -8,9 +8,7 @@
  */
 package org.openhab.binding.zigbee.internal;
 
-import java.util.Collections;
 import java.util.Hashtable;
-import java.util.Set;
 
 import org.eclipse.smarthome.config.core.ConfigDescriptionProvider;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -18,9 +16,13 @@ import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
+import org.eclipse.smarthome.core.thing.type.ThingTypeRegistry;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 
 /**
  * The {@link ZigBeeHandlerFactory} is responsible for creating things and thing
@@ -31,23 +33,30 @@ import org.osgi.service.component.annotations.Component;
  */
 @Component(immediate = true, service = { ThingHandlerFactory.class })
 public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
-    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections
-            .singleton(ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE);
+
+    private final ZigBeeThingTypeMatcher thingTypeMatcher = new ZigBeeThingTypeMatcher();
+
+    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
+    protected void setConfigDescriptionRegistry(ThingTypeRegistry thingTypeRegistry) {
+        thingTypeMatcher.setThingTypeRegistry(thingTypeRegistry);
+    }
+
+    protected void unsetConfigDescriptionRegistry(ThingTypeRegistry thingTypeRegistry) {
+        thingTypeMatcher.setThingTypeRegistry(thingTypeRegistry);
+    }
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
-        return SUPPORTED_THING_TYPES_UIDS.contains(thingTypeUID);
+        return ZigBeeBindingConstants.SUPPORTED_THING_TYPES.contains(thingTypeUID);
     }
 
     @Override
     protected ThingHandler createHandler(Thing thing) {
-        ThingTypeUID thingTypeUID = thing.getThingTypeUID();
-
-        if (!thingTypeUID.equals(ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE)) {
+        if (!ZigBeeBindingConstants.SUPPORTED_THING_TYPES.contains(thing.getThingTypeUID())) {
             return null;
         }
 
-        ZigBeeThingHandler handler = new ZigBeeThingHandler(thing);
+        ZigBeeThingHandler handler = new ZigBeeThingHandler(thing, thingTypeMatcher);
 
         bundleContext.registerService(ConfigDescriptionProvider.class.getName(), handler,
                 new Hashtable<String, Object>());

@@ -10,6 +10,7 @@ package org.openhab.binding.zigbee.internal.converter;
 
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
@@ -34,7 +35,11 @@ public class ZigBeeConverterIasMotionPresence extends ZigBeeConverterIas {
             return null;
         }
 
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_IAS_MOTION_PRESENCE,
-                ZigBeeBindingConstants.ITEM_TYPE_SWITCH, "Motion Presence");
+        return ChannelBuilder
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_IAS_MOTIONPRESENCE),
+                        ZigBeeBindingConstants.ITEM_TYPE_SWITCH)
+                .withType(ZigBeeBindingConstants.CHANNEL_IAS_MOTIONPRESENCE)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_IAS_MOTIONPRESENCE)
+                .withProperties(createProperties(endpoint)).build();
     }
 }
