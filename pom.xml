@@ -26,7 +26,6 @@
 
     <properties>
         <report.fail.on.error>false</report.fail.on.error>
-        <zigbee.version>1.0.8</zigbee.version>
     </properties>
 
     <scm>
@@ -109,13 +108,6 @@
             <artifactId>slf4j-simple</artifactId>
             <version>1.7.2</version>
             <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.zsmartsystems.zigbee</groupId>
-            <artifactId>com.zsmartsystems.zigbee</artifactId>
-            <version>${zigbee.version}</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
 
@@ -202,16 +194,6 @@
             <id>p2-openhab-deps-repo</id>
             <url>https://dl.bintray.com/openhab/p2/openhab-deps-repo/${ohdr.version}</url>
             <layout>p2</layout>
-        </repository>
-
-        <!-- Z-Smart Systems ZigBee Framework -->
-        <repository>
-            <id>bintray-zsmartsystems-com.zsmartsystems</id>
-            <name>zsmartsystems-bintray</name>
-            <url>https://dl.bintray.com/zsmartsystems/com.zsmartsystems</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
         </repository>
 
     </repositories>

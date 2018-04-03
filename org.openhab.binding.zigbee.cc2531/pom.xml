@@ -15,12 +15,4 @@
     <name>ZigBee CC2531 Coordinator Binding</name>
     <packaging>eclipse-plugin</packaging>
     
-    <dependencies>
-        <dependency>
-            <groupId>com.zsmartsystems.zigbee</groupId>
-            <artifactId>com.zsmartsystems.zigbee.dongle.cc2531</artifactId>
-            <version>${zigbee.version}</version>
-        </dependency>
-    </dependencies>
-    
 </project>

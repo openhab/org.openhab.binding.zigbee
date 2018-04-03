@@ -15,12 +15,4 @@
     <name>ZigBee XBee Coordinator Binding</name>
     <packaging>eclipse-plugin</packaging>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.zsmartsystems.zigbee</groupId>
-			<artifactId>com.zsmartsystems.zigbee.dongle.xbee</artifactId>
-			<version>${zigbee.version}</version>
-		</dependency>
-	</dependencies>
-    
 </project>
