@@ -43,25 +43,25 @@ public class ZigBeeChannelConverterFactory {
     /**
      * Map of all channels supported by the binding
      */
-    private final Map<String, Class<? extends ZigBeeBaseChannelConverter>> channelMap;
+    private final Map<ChannelTypeUID, Class<? extends ZigBeeBaseChannelConverter>> channelMap;
 
     /**
      * Map of all channels to be consolidated. Note that order is important.
      */
-    private final Map<String, String> channelConsolidation;
+    private final Map<ChannelTypeUID, ChannelTypeUID> channelConsolidation;
 
     public ZigBeeChannelConverterFactory() {
-        channelMap = new HashMap<String, Class<? extends ZigBeeBaseChannelConverter>>();
+        channelMap = new HashMap<>();
 
         // Add all the converters into the map...
         channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_COLOR, ZigBeeConverterColorColor.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_TEMPERATURE, ZigBeeConverterColorTemperature.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_ELECTRICAL_ACTIVEPOWER, ZigBeeConverterMeasurementPower.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_HUMIDITY_VALUE, ZigBeeConverterRelativeHumidity.class);
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_CONTACT_PORTAL1, ZigBeeConverterIasContactPortal1.class);
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_MOTION_INTRUSION, ZigBeeConverterIasMotionIntrusion.class);
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_MOTION_PRESENCE, ZigBeeConverterIasMotionPresence.class);
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_STANDARDCIE_SYSTEM, ZigBeeConverterIasCieSystem.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_CONTACTPORTAL1, ZigBeeConverterIasContactPortal1.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_MOTIONINTRUSION, ZigBeeConverterIasMotionIntrusion.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_MOTIONPRESENCE, ZigBeeConverterIasMotionPresence.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_STANDARDCIESYSTEM, ZigBeeConverterIasCieSystem.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_ILLUMINANCE_VALUE, ZigBeeConverterIlluminance.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_OCCUPANCY_SENSOR, ZigBeeConverterOccupancy.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_POWER_BATTERYPERCENT, ZigBeeConverterBatteryPercent.class);
@@ -75,7 +75,7 @@ public class ZigBeeChannelConverterFactory {
         // Note that order is important in the event that there are multiple removals...
         // eg we want to remove switch before dimmer, then dimmer if color is present
         // If device creates both channels, then we keep the one on the right (ie map.value).
-        channelConsolidation = new LinkedHashMap<String, String>();
+        channelConsolidation = new LinkedHashMap<>();
 
         // Remove ON/OFF if we support LEVEL
         channelConsolidation.put(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL,
@@ -114,7 +114,7 @@ public class ZigBeeChannelConverterFactory {
 
         // Perform a channel consolidation at endpoint level to remove unnecessary channels.
         // This removes channels that are covered through inheritance.
-        for (Map.Entry<String, String> consolidationChannel : channelConsolidation.entrySet()) {
+        for (Map.Entry<ChannelTypeUID, ChannelTypeUID> consolidationChannel : channelConsolidation.entrySet()) {
             if (channels.containsKey(consolidationChannel.getKey())
                     && channels.containsKey(consolidationChannel.getValue())) {
                 logger.debug("{}: Removing channel {} in favor of {}", endpoint.getIeeeAddress(),
@@ -139,7 +139,7 @@ public class ZigBeeChannelConverterFactory {
             ZigBeeCoordinatorHandler coordinatorHandler, IeeeAddress ieeeAddress, int endpointId) {
         Constructor<? extends ZigBeeBaseChannelConverter> constructor;
         try {
-            if (channelMap.get(channel.getChannelTypeUID().toString()) == null) {
+            if (channelMap.get(channel.getChannelTypeUID()) == null) {
                 logger.debug("{}: Channel converter for channel type {} is not implemented!", ieeeAddress,
                         channel.getUID().getId());
                 return null;

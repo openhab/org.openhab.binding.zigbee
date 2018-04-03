@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutionException;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,8 +98,12 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
                     endpoint.getIeeeAddress(), e);
         }
 
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_POWER_BATTERYVOLTAGE,
-                ZigBeeBindingConstants.ITEM_TYPE_NUMBER, "Battery Voltage");
+        return ChannelBuilder
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_POWER_BATTERYVOLTAGE),
+                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER)
+                .withType(ZigBeeBindingConstants.CHANNEL_POWER_BATTERYVOLTAGE)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_POWER_BATTERYVOLTAGE)
+                .withProperties(createProperties(endpoint)).build();
     }
 
     @Override

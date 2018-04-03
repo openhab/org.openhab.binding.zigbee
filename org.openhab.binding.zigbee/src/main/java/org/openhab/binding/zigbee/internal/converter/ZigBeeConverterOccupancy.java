@@ -10,6 +10,7 @@ package org.openhab.binding.zigbee.internal.converter;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,8 +69,13 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
         if (endpoint.getInputCluster(ZclOccupancySensingCluster.CLUSTER_ID) == null) {
             return null;
         }
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_OCCUPANCY_SENSOR,
-                ZigBeeBindingConstants.ITEM_TYPE_SWITCH, "Occupancy");
+
+        return ChannelBuilder
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_OCCUPANCY_SENSOR),
+                        ZigBeeBindingConstants.ITEM_TYPE_SWITCH)
+                .withType(ZigBeeBindingConstants.CHANNEL_OCCUPANCY_SENSOR)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_OCCUPANCY_SENSOR)
+                .withProperties(createProperties(endpoint)).build();
     }
 
     @Override

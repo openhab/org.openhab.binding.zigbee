@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,8 +68,12 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
         if (endpoint.getInputCluster(ZclIlluminanceMeasurementCluster.CLUSTER_ID) == null) {
             return null;
         }
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_ILLUMINANCE_VALUE,
-                ZigBeeBindingConstants.ITEM_TYPE_NUMBER, "Illuminance");
+        return ChannelBuilder
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_ILLUMINANCE_VALUE),
+                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER)
+                .withType(ZigBeeBindingConstants.CHANNEL_ILLUMINANCE_VALUE)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_ILLUMINANCE_VALUE)
+                .withProperties(createProperties(endpoint)).build();
     }
 
     @Override

@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
+import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
 
 import com.google.common.collect.Sets;
 
@@ -32,34 +33,88 @@ public class ZigBeeBindingConstants {
 
     // List of Thing Type UIDs
     public final static ThingTypeUID THING_TYPE_GENERIC_DEVICE = new ThingTypeUID(BINDING_ID, "device");
+    public final static ThingTypeUID THING_TYPE_PHILIPS_SML001 = new ThingTypeUID(BINDING_ID, "philips_sml001");
+    public final static ThingTypeUID THING_TYPE_SMARTTHINGS_MOTIONV4 = new ThingTypeUID(BINDING_ID,
+            "smartthings_motionv4");
 
-    public final static Set<ThingTypeUID> SUPPORTED_THING_TYPES = Collections
-            .unmodifiableSet(Sets.newHashSet(THING_TYPE_GENERIC_DEVICE));
+    public final static Set<ThingTypeUID> SUPPORTED_THING_TYPES = Collections.unmodifiableSet(
+            Sets.newHashSet(THING_TYPE_GENERIC_DEVICE, THING_TYPE_PHILIPS_SML001, THING_TYPE_SMARTTHINGS_MOTIONV4));
 
     // List of Channel UIDs
-    public static final String CHANNEL_SWITCH_ONOFF = "zigbee:switch_onoff";
-    public static final String CHANNEL_SWITCH_LEVEL = "zigbee:switch_level";
+    public static final String CHANNEL_NAME_SWITCH_ONOFF = "switch";
+    public static final String CHANNEL_LABEL_SWITCH_ONOFF = "Switch";
+    public static final ChannelTypeUID CHANNEL_SWITCH_ONOFF = new ChannelTypeUID("zigbee:switch_onoff");
 
-    public static final String CHANNEL_COLOR_COLOR = "zigbee:color_color";
-    public static final String CHANNEL_COLOR_TEMPERATURE = "zigbee:color_temperature";
+    public static final String CHANNEL_NAME_SWITCH_LEVEL = "dimmer";
+    public static final String CHANNEL_LABEL_SWITCH_LEVEL = "Level Control";
+    public static final ChannelTypeUID CHANNEL_SWITCH_LEVEL = new ChannelTypeUID("zigbee:switch_level");
 
-    public static final String CHANNEL_ILLUMINANCE_VALUE = "zigbee:measurement_illuminance";
-    public static final String CHANNEL_TEMPERATURE_VALUE = "zigbee:measurement_temperature";
-    public static final String CHANNEL_HUMIDITY_VALUE = "zigbee:measurement_relativehumidity";
-    public static final String CHANNEL_PRESSURE_VALUE = "zigbee:measurement_pressure";
+    public static final String CHANNEL_NAME_COLOR_COLOR = "color";
+    public static final String CHANNEL_LABEL_COLOR_COLOR = "Color";
+    public static final ChannelTypeUID CHANNEL_COLOR_COLOR = new ChannelTypeUID("zigbee:color_color");
 
-    public static final String CHANNEL_OCCUPANCY_SENSOR = "zigbee:sensor_occupancy";
+    public static final String CHANNEL_NAME_COLOR_TEMPERATURE = "colortemperature";
+    public static final String CHANNEL_LABEL_COLOR_TEMPERATURE = "Color Temperature";
+    public static final ChannelTypeUID CHANNEL_COLOR_TEMPERATURE = new ChannelTypeUID("zigbee:color_temperature");
 
-    public static final String CHANNEL_IAS_CONTACT_PORTAL1 = "zigbee:ias_contactportal1";
-    public static final String CHANNEL_IAS_CONTACT_PORTAL2 = "zigbee:ias_contactportal2";
-    public static final String CHANNEL_IAS_MOTION_INTRUSION = "zigbee:ias_motionintrusion";
-    public static final String CHANNEL_IAS_MOTION_PRESENCE = "zigbee:ias_motionpresence";
-    public static final String CHANNEL_IAS_STANDARDCIE_SYSTEM = "zigbee:ias_standard_system";
+    public static final String CHANNEL_NAME_ILLUMINANCE_VALUE = "illuminance";
+    public static final String CHANNEL_LABEL_ILLUMINANCE_VALUE = "Illuminance";
+    public static final ChannelTypeUID CHANNEL_ILLUMINANCE_VALUE = new ChannelTypeUID("zigbee:measurement_illuminance");
 
-    public static final String CHANNEL_ELECTRICAL_ACTIVEPOWER = "zigbee:electrical_activepower";
+    public static final String CHANNEL_NAME_TEMPERATURE_VALUE = "temperature";
+    public static final String CHANNEL_LABEL_TEMPERATURE_VALUE = "Temperature";
+    public static final ChannelTypeUID CHANNEL_TEMPERATURE_VALUE = new ChannelTypeUID("zigbee:measurement_temperature");
 
-    public static final String CHANNEL_POWER_BATTERYPERCENT = "system:battery-level";
-    public static final String CHANNEL_POWER_BATTERYVOLTAGE = "zigbee:battery_voltage";
+    public static final String CHANNEL_NAME_HUMIDITY_VALUE = "humidity";
+    public static final String CHANNEL_LABEL_HUMIDITY_VALUE = "Humidity";
+    public static final ChannelTypeUID CHANNEL_HUMIDITY_VALUE = new ChannelTypeUID(
+            "zigbee:measurement_relativehumidity");
+
+    public static final String CHANNEL_NAME_PRESSURE_VALUE = "pressure";
+    public static final String CHANNEL_LABEL_PRESSURE_VALUE = "Atmospheric Pressure";
+    public static final ChannelTypeUID CHANNEL_PRESSURE_VALUE = new ChannelTypeUID("zigbee:measurement_pressure");
+
+    public static final String CHANNEL_NAME_OCCUPANCY_SENSOR = "occupancy";
+    public static final String CHANNEL_LABEL_OCCUPANCY_SENSOR = "Occupancy";
+    public static final ChannelTypeUID CHANNEL_OCCUPANCY_SENSOR = new ChannelTypeUID("zigbee:sensor_occupancy");
+
+    public static final String CHANNEL_NAME_IAS_CONTACTPORTAL1 = "contact1";
+    public static final String CHANNEL_LABEL_IAS_CONTACTPORTAL1 = "Contact Portal 1";
+    public static final ChannelTypeUID CHANNEL_IAS_CONTACTPORTAL1 = new ChannelTypeUID("zigbee:ias_contactportal1");
+
+    public static final String CHANNEL_NAME_IAS_CONTACTPORTAL2 = "contact2";
+    public static final String CHANNEL_LABEL_IAS_CONTACTPORTAL2 = "Contact Portal 2";
+    public static final ChannelTypeUID CHANNEL_IAS_CONTACTPORTAL2 = new ChannelTypeUID("zigbee:ias_contactportal2");
+
+    public static final String CHANNEL_NAME_IAS_MOTIONINTRUSION = "intrusion";
+    public static final String CHANNEL_LABEL_IAS_MOTIONINTRUSION = "Motion Intrusion";
+    public static final ChannelTypeUID CHANNEL_IAS_MOTIONINTRUSION = new ChannelTypeUID("zigbee:ias_motionintrusion");
+
+    public static final String CHANNEL_NAME_IAS_MOTIONPRESENCE = "motion";
+    public static final String CHANNEL_LABEL_IAS_MOTIONPRESENCE = "Motion Presence";
+    public static final ChannelTypeUID CHANNEL_IAS_MOTIONPRESENCE = new ChannelTypeUID("zigbee:ias_motionpresence");
+
+    public static final String CHANNEL_NAME_IAS_STANDARDCIESYSTEM = "system";
+    public static final String CHANNEL_LABEL_IAS_STANDARDCIESYSTEM = "CIE System Alarm";
+    public static final ChannelTypeUID CHANNEL_IAS_STANDARDCIESYSTEM = new ChannelTypeUID("zigbee:ias_standard_system");
+
+    public static final String CHANNEL_NAME_ELECTRICAL_ACTIVEPOWER = "activepower";
+    public static final String CHANNEL_LABEL_ELECTRICAL_ACTIVEPOWER = "Total Active Power";
+    public static final ChannelTypeUID CHANNEL_ELECTRICAL_ACTIVEPOWER = new ChannelTypeUID(
+            "zigbee:electrical_activepower");
+
+    public static final String CHANNEL_NAME_ELECTRICAL_RMSVOLTAGE = "voltage";
+    public static final String CHANNEL_LABEL_ELECTRICAL_RMSVOLTAGE = "Voltage";
+    public static final ChannelTypeUID CHANNEL_ELECTRICAL_RMSVOLTAGE = new ChannelTypeUID(
+            "zigbee:electrical_rmsvoltage");
+
+    public static final String CHANNEL_NAME_POWER_BATTERYPERCENT = "batterylevel";
+    public static final String CHANNEL_LABEL_POWER_BATTERYPERCENT = "Battery Level";
+    public static final ChannelTypeUID CHANNEL_POWER_BATTERYPERCENT = new ChannelTypeUID("system:battery-level");
+
+    public static final String CHANNEL_NAME_POWER_BATTERYVOLTAGE = "batteryvoltage";
+    public static final String CHANNEL_LABEL_POWER_BATTERYVOLTAGE = "Battery Voltage";
+    public static final ChannelTypeUID CHANNEL_POWER_BATTERYVOLTAGE = new ChannelTypeUID("zigbee:battery_voltage");
 
     public static final String CHANNEL_PROPERTY_ENDPOINT = "zigbee_endpoint";
 

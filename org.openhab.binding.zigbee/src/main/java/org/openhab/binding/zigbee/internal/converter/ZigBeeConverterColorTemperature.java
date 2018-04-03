@@ -13,6 +13,7 @@ import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.State;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
@@ -149,8 +150,12 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             logger.warn("{}: Exception discovering attributes in color control cluster", endpoint.getIeeeAddress(), e);
         }
 
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_COLOR_TEMPERATURE,
-                ZigBeeBindingConstants.ITEM_TYPE_DIMMER, "Color Temperature");
+        return ChannelBuilder
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_COLOR_TEMPERATURE),
+                        ZigBeeBindingConstants.ITEM_TYPE_DIMMER)
+                .withType(ZigBeeBindingConstants.CHANNEL_COLOR_TEMPERATURE)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_COLOR_TEMPERATURE)
+                .withProperties(createProperties(endpoint)).build();
     }
 
     @Override
