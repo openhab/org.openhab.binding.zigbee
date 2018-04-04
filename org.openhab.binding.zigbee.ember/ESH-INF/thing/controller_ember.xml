@@ -22,6 +22,17 @@
                 <description>Serial Port</description>
             </parameter>
 
+            <parameter name="zigbee_flowcontrol" type="integer" required="true">
+                <label>Flow Control</label>
+                <description>Serial Port Flow Control</description>
+                <default>1</default>
+                <options>
+                    <option value="0">None</option>
+                    <option value="1">Hardware (CTS/RTS)</option>
+                    <option value="2">Software (XOn/XOff)</option>
+                </options>
+            </parameter>
+
             <parameter name="zigbee_baud" type="integer" required="true">
                 <label>Baud Rate</label>
                 <description>Serial Port Baud Rate</description>
