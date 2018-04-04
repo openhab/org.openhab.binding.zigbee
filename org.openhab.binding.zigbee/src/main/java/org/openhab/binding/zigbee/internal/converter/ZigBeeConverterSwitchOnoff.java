@@ -26,6 +26,7 @@ import com.zsmartsystems.zigbee.zcl.ZclCommand;
 import com.zsmartsystems.zigbee.zcl.ZclCommandListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OffCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.onoff.OffWithEffectCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OnCommand;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
@@ -60,8 +61,8 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
                 CommandResult bindResponse = clusterOnOffServer.bind().get();
                 if (bindResponse.isSuccess()) {
                     // Configure reporting - no faster than once per second - no slower than 10 minutes.
-                    CommandResult reportingResponse = clusterOnOffServer.setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX)
-                            .get();
+                    CommandResult reportingResponse = clusterOnOffServer
+                            .setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX).get();
                     if (reportingResponse.isError()) {
                         pollingPeriod = POLLING_PERIOD_HIGH;
                     }
@@ -81,8 +82,8 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
                 CommandResult bindResponse = clusterOnOffClient.bind().get();
                 if (bindResponse.isSuccess()) {
                     // Configure reporting - no faster than once per second - no slower than 10 minutes.
-                    CommandResult reportingResponse = clusterOnOffClient.setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX)
-                            .get();
+                    CommandResult reportingResponse = clusterOnOffClient
+                            .setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX).get();
                     if (reportingResponse.isError()) {
                         pollingPeriod = POLLING_PERIOD_HIGH;
                     }
@@ -171,7 +172,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
         if (command instanceof OnCommand) {
             updateChannelState(OnOffType.ON);
         }
-        if (command instanceof OffCommand) {
+        if (command instanceof OffCommand || command instanceof OffWithEffectCommand) {
             updateChannelState(OnOffType.OFF);
         }
     }
