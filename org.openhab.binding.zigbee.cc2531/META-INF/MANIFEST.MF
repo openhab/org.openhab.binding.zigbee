@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Bundle-ManifestVersion: 2
-Bundle-Name: ZigBee Ember Binding
+Bundle-Name: ZigBee CC2531 Binding
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-SymbolicName: org.openhab.binding.zigbee.cc2531;singleton:=true
 Bundle-Vendor: openHAB
