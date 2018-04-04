@@ -59,8 +59,20 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
 
         EmberConfiguration config = getConfigAs(EmberConfiguration.class);
 
-        ZigBeePort serialPort = new ZigBeeSerialPort(config.zigbee_port, config.zigbee_baud,
-                FlowControl.FLOWCONTROL_OUT_RTSCTS);
+        FlowControl flowControl;
+        switch (config.zigbee_flowcontrol) {
+            case 1: // Hardware
+                flowControl = FlowControl.FLOWCONTROL_OUT_RTSCTS;
+                break;
+            case 2: // Software
+                flowControl = FlowControl.FLOWCONTROL_OUT_XONOFF;
+                break;
+            default:
+                flowControl = FlowControl.FLOWCONTROL_OUT_NONE;
+                break;
+        }
+
+        ZigBeePort serialPort = new ZigBeeSerialPort(config.zigbee_port, config.zigbee_baud, flowControl);
         final ZigBeeTransportTransmit dongle = new ZigBeeDongleEzsp(serialPort);
 
         logger.debug("ZigBee Ember Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
