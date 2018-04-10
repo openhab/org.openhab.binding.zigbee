@@ -280,7 +280,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     }
 
     private void changeColorXY(HSBType color) throws InterruptedException, ExecutionException {
-        PercentType xy[] = ColorHelper.toXY(color);
+        PercentType xy[] = color.toXY();
 
         HSBType oldHSB = currentHSB;
         currentHSB = new HSBType(color.getHue(), color.getSaturation(), oldHSB.getBrightness());
@@ -400,7 +400,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     }
 
     private void updateColorXY(PercentType x, PercentType y) {
-        HSBType color = ColorHelper.fromXY(x.floatValue() / 100.0f, y.floatValue() / 100.0f);
+        HSBType color = HSBType.fromXY(x.floatValue() / 100.0f, y.floatValue() / 100.0f);
         logger.debug("{}: Update Color XY ({}, {}) -> HSV ({}, {}, {})", endpoint.getIeeeAddress(), x.toString(),
                 y.toString(), color.getHue(), color.getSaturation(), currentHSB.getBrightness());
         updateColorHSB(color.getHue(), color.getSaturation());
