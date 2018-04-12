@@ -12,7 +12,6 @@ import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.type.ThingType;
 import org.eclipse.smarthome.core.thing.type.ThingTypeBuilder;
 import org.eclipse.smarthome.core.thing.type.ThingTypeRegistry;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -26,7 +25,6 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 public class ZigBeeThingTypeMatcherTest {
     private final String THING_MATCHER_PROPERTY = "typeMatcher";
 
-    @Ignore
     @Test
     public void testMatcher() {
         ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
@@ -59,7 +57,7 @@ public class ZigBeeThingTypeMatcherTest {
                 .withProperties(properties).build());
 
         ThingTypeRegistry registry = Mockito.mock(ThingTypeRegistry.class);
-        Mockito.when(registry.getThingTypes(ArgumentMatchers.any(String.class))).thenReturn(things);
+        Mockito.when(registry.getThingTypes(Mockito.anyString())).thenReturn(things);
 
         matcher.setThingTypeRegistry(registry);
 

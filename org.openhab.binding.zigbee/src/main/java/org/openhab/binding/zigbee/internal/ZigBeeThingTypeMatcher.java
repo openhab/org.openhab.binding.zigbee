@@ -1,8 +1,16 @@
+/**
+ * Copyright (c) 2014-2017 by the respective copyright holders.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
 package org.openhab.binding.zigbee.internal;
 
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.smarthome.config.core.ConfigDescriptionRegistry;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
@@ -56,34 +64,55 @@ public class ZigBeeThingTypeMatcher {
             return null;
         }
 
-        ThingTypeUID matchedType = null;
-        Collection<ThingType> thingTypes = thingTypeRegistry.getThingTypes(ZigBeeBindingConstants.BINDING_ID);
-        for (ThingType thingType : thingTypes) {
-            int totalProperties = 0;
-            int matchedProperties = 0;
-            for (Entry<String, String> property : thingType.getProperties().entrySet()) {
-                String parts[] = property.getKey().split(":");
-                if (parts.length != 2 || !THING_MATCHER_PROPERTY.equals(parts[0])) {
-                    continue;
-                }
-                totalProperties++;
-                if (!property.getValue().equals(properties.get(parts[1]))) {
-                    break;
-                }
-                matchedProperties++;
-            }
+        ThingTypeUID matchedThingType = null;
 
-            if (matchedProperties == totalProperties && totalProperties != 0) {
-                if (matchedType != null) {
+        for (ThingType thingType : thingTypeRegistry.getThingTypes(ZigBeeBindingConstants.BINDING_ID)) {
+
+            if (propertiesMatchThingType(properties, thingType)) {
+                if (matchedThingType != null) {
                     // Don't allow duplicate matches
-                    logger.debug("Duplicate match {} and {}", matchedType, thingType.getUID());
+                    logger.debug("Duplicate match {} and {}", matchedThingType, thingType.getUID());
                     return null;
                 }
-                matchedType = thingType.getUID();
+                matchedThingType = thingType.getUID();
             }
         }
 
-        return matchedType;
+        return matchedThingType;
     }
 
+    private boolean propertiesMatchThingType(Map<String, String> properties, ThingType thingType) {
+        Set<RequiredProperty> requiredProperties = getRequiredProperties(thingType.getProperties());
+
+        // Do not consider thing types that do not specify any required properties.
+        if (requiredProperties.isEmpty()) {
+            return false;
+        }
+
+        return requiredProperties.stream()
+                .allMatch(requiredProperty -> requiredProperty.value.equals(properties.get(requiredProperty.name)));
+    }
+
+    private Set<RequiredProperty> getRequiredProperties(Map<String, String> thingProperties) {
+        Set<RequiredProperty> requiredProperties = new HashSet<>();
+
+        for (Entry<String, String> entry : thingProperties.entrySet()) {
+            String parts[] = entry.getKey().split(":");
+            if (parts.length == 2 && THING_MATCHER_PROPERTY.equals(parts[0])) {
+                requiredProperties.add(new RequiredProperty(parts[1], entry.getValue()));
+            }
+        }
+
+        return requiredProperties;
+    }
+
+    private class RequiredProperty {
+        public String name;
+        public String value;
+
+        public RequiredProperty(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
+    }
 }

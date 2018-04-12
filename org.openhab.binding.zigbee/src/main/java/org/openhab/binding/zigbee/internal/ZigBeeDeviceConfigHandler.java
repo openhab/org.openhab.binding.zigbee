@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +21,7 @@ import com.zsmartsystems.zigbee.zcl.ZclCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclDataType;
 
 /**
- * Class to handle ZigBee device configuration. This is a helper class used by the {@link ZigBeeThingTypeHandler} for
+ * Class to handle ZigBee device configuration. This is a helper class used by the {@link ZigBeeThingHandler} for
  * managing device configuration.
  *
  * @author Chris Jackson - Initial Contribution
@@ -32,6 +33,7 @@ public class ZigBeeDeviceConfigHandler {
      */
     private final Logger logger = LoggerFactory.getLogger(ZigBeeDeviceConfigHandler.class);
 
+    private final static String CONFIG_TYPE_ATTRIBUTE = "attribute";
     private final ZigBeeNode node;
 
     public ZigBeeDeviceConfigHandler(ZigBeeNode node) {
@@ -53,7 +55,11 @@ public class ZigBeeDeviceConfigHandler {
             // eg. attribute_02_in_0406_0030_18 = endpoint_direction_cluster_attribute_datatype
             String[] cfg = configurationParameter.getKey().split("_");
             switch (cfg[0]) {
-                case "attribute":
+                case CONFIG_TYPE_ATTRIBUTE:
+                    if (cfg.length < 6) {
+                        logger.warn("Config {} has insufficient parts", configurationParameter.getKey());
+                        break;
+                    }
                     int endpointId = Integer.parseInt(cfg[1], 16);
                     boolean direction = "in".equals(cfg[2]);
                     int clusterId = Integer.parseInt(cfg[3], 16);
