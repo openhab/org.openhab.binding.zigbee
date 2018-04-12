@@ -100,17 +100,14 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
     private boolean firmwareUpdateInProgress = false;
 
-    private ZigBeeThingTypeMatcher thingTypeMatcher;
-
     /**
      * A set of channels that have been linked to items. This is used to ensure we only poll channels that are linked to
      * keep network activity to a minimum.
      */
     private final Set<ChannelUID> thingChannelsPoll = new HashSet<>();
 
-    public ZigBeeThingHandler(Thing zigbeeDevice, ZigBeeThingTypeMatcher thingTypeMatcher) {
+    public ZigBeeThingHandler(Thing zigbeeDevice) {
         super(zigbeeDevice);
-        this.thingTypeMatcher = thingTypeMatcher;
     }
 
     @Override
@@ -186,7 +183,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
         // Update the general properties
         // This is required here to allow us to check for a static thing type before we check the dynamic configuration
         ZigBeeNodePropertyDiscoverer propertyDiscoverer = new ZigBeeNodePropertyDiscoverer();
-        propertyDiscoverer.setProperties(editProperties());
+        propertyDiscoverer.setProperties(getThing().getProperties());
         Map<String, String> newProperties = propertyDiscoverer.getProperties(coordinatorHandler, node);
         updateProperties(newProperties);
 
@@ -194,8 +191,9 @@ public class ZigBeeThingHandler extends BaseThingHandler
         ZigBeeChannelConverterFactory factory = new ZigBeeChannelConverterFactory();
         List<Channel> nodeChannels;
 
-        // Check the thing-type registry to see if we match this thing with a static definition
-        ThingTypeUID thingTypeUid = thingTypeMatcher.matchThingType(newProperties);
+        // Check the discovery data to see if we match this thing with a static definition
+        ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
+        ThingTypeUID thingTypeUid = matcher.matchThingType(newProperties);
         if (thingTypeUid == null) {
             // Dynamically create the channels from the device
             // Process all the endpoints for this device and add all channels as derived from the supported clusters

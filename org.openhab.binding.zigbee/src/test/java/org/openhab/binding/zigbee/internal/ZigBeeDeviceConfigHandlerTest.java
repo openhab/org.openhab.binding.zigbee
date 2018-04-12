@@ -1,3 +1,11 @@
+/**
+ * Copyright (c) 2010-2018 by the respective copyright holders.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
 package org.openhab.binding.zigbee.internal;
 
 import static org.junit.Assert.assertEquals;
@@ -5,7 +13,6 @@ import static org.junit.Assert.assertEquals;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
@@ -23,7 +30,6 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclDataType;
  */
 public class ZigBeeDeviceConfigHandlerTest {
 
-    @Ignore
     @Test
     public void test() {
         ZigBeeNode node = Mockito.mock(ZigBeeNode.class);
@@ -31,9 +37,9 @@ public class ZigBeeDeviceConfigHandlerTest {
         ZclCluster clusterIn = Mockito.mock(ZclCluster.class);
         ZclCluster clusterOut = Mockito.mock(ZclCluster.class);
 
-        Mockito.when(node.getEndpoint(ArgumentMatchers.anyInt())).thenReturn(endpoint);
-        Mockito.when(endpoint.getInputCluster(ArgumentMatchers.anyInt())).thenReturn(clusterIn);
-        Mockito.when(endpoint.getOutputCluster(ArgumentMatchers.anyInt())).thenReturn(clusterOut);
+        Mockito.when(node.getEndpoint(Mockito.anyInt())).thenReturn(endpoint);
+        Mockito.when(endpoint.getInputCluster(Mockito.anyInt())).thenReturn(clusterIn);
+        Mockito.when(endpoint.getOutputCluster(Mockito.anyInt())).thenReturn(clusterOut);
 
         ArgumentCaptor<Integer> attributeCapture = ArgumentCaptor.forClass(Integer.class);
         ArgumentCaptor<ZclDataType> dataTypeCapture = ArgumentCaptor.forClass(ZclDataType.class);

@@ -8,7 +8,6 @@
  */
 package org.openhab.binding.zigbee;
 
-import com.google.common.collect.Sets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -19,6 +18,8 @@ import java.util.TimeZone;
 
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
+
+import com.google.common.collect.Sets;
 
 /**
  * The {@link ZigBeeBindingConstants} class defines common constants, which are
@@ -78,13 +79,13 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_LABEL_OCCUPANCY_SENSOR = "Occupancy";
     public static final ChannelTypeUID CHANNEL_OCCUPANCY_SENSOR = new ChannelTypeUID("zigbee:sensor_occupancy");
 
-    public static final String CHANNEL_NAME_IAS_CONTACTPORTAL1 = "contact1";
-    public static final String CHANNEL_LABEL_IAS_CONTACTPORTAL1 = "Contact Portal 1";
-    public static final ChannelTypeUID CHANNEL_IAS_CONTACTPORTAL1 = new ChannelTypeUID("zigbee:ias_contactportal1");
-
     public static final String CHANNEL_NAME_IAS_CODETECTOR = "cosensor";
     public static final String CHANNEL_LABEL_IAS_CODETECTOR = "Carbon Monoxide Detector";
     public static final ChannelTypeUID CHANNEL_IAS_CODETECTOR = new ChannelTypeUID("zigbee:ias_cosensor");
+
+    public static final String CHANNEL_NAME_IAS_CONTACTPORTAL1 = "contact1";
+    public static final String CHANNEL_LABEL_IAS_CONTACTPORTAL1 = "Contact Portal 1";
+    public static final ChannelTypeUID CHANNEL_IAS_CONTACTPORTAL1 = new ChannelTypeUID("zigbee:ias_contactportal1");
 
     public static final String CHANNEL_NAME_IAS_CONTACTPORTAL2 = "contact2";
     public static final String CHANNEL_LABEL_IAS_CONTACTPORTAL2 = "Contact Portal 2";
@@ -101,6 +102,10 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_NAME_IAS_STANDARDCIESYSTEM = "system";
     public static final String CHANNEL_LABEL_IAS_STANDARDCIESYSTEM = "CIE System Alarm";
     public static final ChannelTypeUID CHANNEL_IAS_STANDARDCIESYSTEM = new ChannelTypeUID("zigbee:ias_standard_system");
+
+    public static final String CHANNEL_NAME_IAS_FIREINDICATION = "fire";
+    public static final String CHANNEL_LABEL_IAS_FIREINDICATION = "Fire Alarm";
+    public static final ChannelTypeUID CHANNEL_IAS_FIREINDICATION = new ChannelTypeUID("zigbee:ias_fire");
 
     public static final String CHANNEL_NAME_ELECTRICAL_ACTIVEPOWER = "activepower";
     public static final String CHANNEL_LABEL_ELECTRICAL_ACTIVEPOWER = "Total Active Power";
@@ -122,7 +127,8 @@ public class ZigBeeBindingConstants {
 
     public static final String CHANNEL_NAME_ELECTRICAL_RMSCURRENT = "current";
     public static final String CHANNEL_LABEL_ELECTRICAL_RMSCURRENT = "Current";
-    public static final String CHANNEL_ELECTRICAL_RMSCURRENT = "zigbee:electrical_rmscurrent";
+    public static final ChannelTypeUID CHANNEL_ELECTRICAL_RMSCURRENT = new ChannelTypeUID(
+            "zigbee:electrical_rmscurrent");
 
     public static final String CHANNEL_PROPERTY_ENDPOINT = "zigbee_endpoint";
 

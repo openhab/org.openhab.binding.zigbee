@@ -1,0 +1,2 @@
+philips_sml001,vendor=Philips,modelId=SML001
+smartthings_motionv4,vendor=SmartThings,modelId=motionv4

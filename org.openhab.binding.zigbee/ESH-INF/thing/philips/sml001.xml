@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="zigbee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
+    xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
+
+    <thing-type id="philips_sml001">
+        <label>Hue Motion Sensor</label>
+        <description>Hue Motion Illuminance and Temperature Sensor</description>
+
+        <channels>
+            <channel id="motion" typeId="sensor_occupancy">
+                <properties>
+                    <property name="zigbee_endpoint">2</property>
+                </properties>
+            </channel>
+
+            <channel id="illuminance" typeId="measurement_illuminance">
+                <properties>
+                    <property name="zigbee_endpoint">2</property>
+                </properties>
+            </channel>
+
+            <channel id="temperature" typeId="measurement_temperature">
+                <properties>
+                    <property name="zigbee_endpoint">2</property>
+                </properties>
+            </channel>
+
+            <channel id="battery_level" typeId="system.battery-level">
+                <properties>
+                    <property name="zigbee_endpoint">2</property>
+                </properties>
+            </channel>
+        </channels>
+
+    </thing-type>
+</thing:thing-descriptions>

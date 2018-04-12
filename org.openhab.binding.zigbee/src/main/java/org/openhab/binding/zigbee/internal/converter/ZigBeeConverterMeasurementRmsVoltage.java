@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,15 +114,12 @@ public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConve
             return null;
         }
 
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_ELECTRICAL_RMSVOLTAGE,
-                ZigBeeBindingConstants.ITEM_TYPE_NUMBER, ZigBeeBindingConstants.CHANNEL_LABEL_ELECTRICAL_RMSVOLTAGE);
-
-        // return ChannelBuilder
-        // .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_ELECTRICAL_RMSVOLTAGE),
-        // ZigBeeBindingConstants.ITEM_TYPE_NUMBER)
-        // .withType(ZigBeeBindingConstants.CHANNEL_ELECTRICAL_RMSVOLTAGE)
-        // .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_ELECTRICAL_RMSVOLTAGE)
-        // .withProperties(createProperties(endpoint)).build();
+        return ChannelBuilder
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_ELECTRICAL_RMSVOLTAGE),
+                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER)
+                .withType(ZigBeeBindingConstants.CHANNEL_ELECTRICAL_RMSVOLTAGE)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_ELECTRICAL_RMSVOLTAGE)
+                .withProperties(createProperties(endpoint)).build();
     }
 
     @Override
