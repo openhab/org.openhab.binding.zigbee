@@ -45,7 +45,7 @@ public class ZigBeeTelegesisUsbSerialDiscoveryParticipant implements UsbSerialDi
      * is used for the Telegesis ZigBee dongle model ETRX3USB+8M, as well as for one version of the QIVICON ZigBee stick
      * (which is also produced by Telegesis).
      */
-    public static final int QIVICON_DONGLE_V1_USB_PRODUCT_ID = 0x8293;
+    public static final int QIVICON_DONGLE_V1_AND_TELEGESIS_USB_PRODUCT_ID = 0x8293;
 
     /**
      * For the {@link ZigBeeTelegesisUsbSerialDiscoveryParticipant#SILICON_LABS_USB_VENDOR_ID}, this USB product ID
@@ -86,7 +86,7 @@ public class ZigBeeTelegesisUsbSerialDiscoveryParticipant implements UsbSerialDi
 
     private boolean isQiviconTelegesisDongle(UsbSerialDeviceInformation deviceInformation) {
         return deviceInformation.getVendorId() == SILICON_LABS_USB_VENDOR_ID
-                && (deviceInformation.getProductId() == QIVICON_DONGLE_V1_USB_PRODUCT_ID
+                && (deviceInformation.getProductId() == QIVICON_DONGLE_V1_AND_TELEGESIS_USB_PRODUCT_ID
                         || deviceInformation.getProductId() == QIVICON_DONGLE_V2_USB_PRODUCT_ID);
     }
 

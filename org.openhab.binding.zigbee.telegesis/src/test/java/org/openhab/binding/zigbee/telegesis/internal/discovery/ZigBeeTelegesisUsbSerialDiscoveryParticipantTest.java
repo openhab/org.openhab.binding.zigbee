@@ -13,7 +13,7 @@ import static org.junit.Assert.assertNull;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CONFIGURATION_BAUD;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CONFIGURATION_PORT;
 import static org.openhab.binding.zigbee.telegesis.TelegesisBindingConstants.THING_TYPE_TELEGESIS;
-import static org.openhab.binding.zigbee.telegesis.internal.discovery.ZigBeeTelegesisUsbSerialDiscoveryParticipant.QIVICON_DONGLE_V1_USB_PRODUCT_ID;
+import static org.openhab.binding.zigbee.telegesis.internal.discovery.ZigBeeTelegesisUsbSerialDiscoveryParticipant.QIVICON_DONGLE_V1_AND_TELEGESIS_USB_PRODUCT_ID;
 import static org.openhab.binding.zigbee.telegesis.internal.discovery.ZigBeeTelegesisUsbSerialDiscoveryParticipant.QIVICON_DONGLE_V2_USB_PRODUCT_ID;
 import static org.openhab.binding.zigbee.telegesis.internal.discovery.ZigBeeTelegesisUsbSerialDiscoveryParticipant.SILICON_LABS_USB_VENDOR_ID;
 
@@ -42,12 +42,12 @@ public class ZigBeeTelegesisUsbSerialDiscoveryParticipantTest {
     @Test
     public void testNonTelegesisDongleNotDiscovered() {
         assertNull(discoveryParticipant.getThingUID(forUsbDongle(SILICON_LABS_USB_VENDOR_ID, 0x1234)));
-        assertNull(discoveryParticipant.getThingUID(forUsbDongle(0xabcd, QIVICON_DONGLE_V1_USB_PRODUCT_ID)));
+        assertNull(discoveryParticipant.getThingUID(forUsbDongle(0xabcd, QIVICON_DONGLE_V1_AND_TELEGESIS_USB_PRODUCT_ID)));
         assertNull(discoveryParticipant.getThingUID(forUsbDongle(0xabcd, QIVICON_DONGLE_V2_USB_PRODUCT_ID)));
         assertNull(discoveryParticipant.getThingUID(forUsbDongle(0xabcd, 0x1234)));
         
         assertNull(discoveryParticipant.createResult(forUsbDongle(SILICON_LABS_USB_VENDOR_ID, 0x1234)));
-        assertNull(discoveryParticipant.createResult(forUsbDongle(0xabcd, QIVICON_DONGLE_V1_USB_PRODUCT_ID)));
+        assertNull(discoveryParticipant.createResult(forUsbDongle(0xabcd, QIVICON_DONGLE_V1_AND_TELEGESIS_USB_PRODUCT_ID)));
         assertNull(discoveryParticipant.createResult(forUsbDongle(0xabcd, QIVICON_DONGLE_V2_USB_PRODUCT_ID)));
         assertNull(discoveryParticipant.createResult(forUsbDongle(0xabcd, 0x1234)));
     }
@@ -58,7 +58,7 @@ public class ZigBeeTelegesisUsbSerialDiscoveryParticipantTest {
     @Test
     public void testTelegesisDongleV1DiscoveredThingUID() {
         ThingUID thingUID = discoveryParticipant.getThingUID(
-                forUsbDongle(SILICON_LABS_USB_VENDOR_ID, QIVICON_DONGLE_V1_USB_PRODUCT_ID, "serial", "/dev/ttyUSB0"));
+                forUsbDongle(SILICON_LABS_USB_VENDOR_ID, QIVICON_DONGLE_V1_AND_TELEGESIS_USB_PRODUCT_ID, "serial", "/dev/ttyUSB0"));
         
         assertNotNull(thingUID);
         assertEquals(thingUID, new ThingUID(THING_TYPE_TELEGESIS, "serial"));
@@ -70,7 +70,7 @@ public class ZigBeeTelegesisUsbSerialDiscoveryParticipantTest {
     @Test
     public void testTelegesisDongleV1DiscoveredDiscoveryResult() {
         DiscoveryResult discoveryResult = discoveryParticipant.createResult(
-                forUsbDongle(SILICON_LABS_USB_VENDOR_ID, QIVICON_DONGLE_V1_USB_PRODUCT_ID, "serial", "/dev/ttyUSB0"));
+                forUsbDongle(SILICON_LABS_USB_VENDOR_ID, QIVICON_DONGLE_V1_AND_TELEGESIS_USB_PRODUCT_ID, "serial", "/dev/ttyUSB0"));
         
         assertNotNull(discoveryResult);
         assertEquals(discoveryResult.getThingUID(), new ThingUID(THING_TYPE_TELEGESIS, "serial"));
