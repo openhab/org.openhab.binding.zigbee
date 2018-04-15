@@ -104,7 +104,7 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
         }
 
         try {
-            if (cluster.discoverAttributes(false).get() == false) {
+            if (!cluster.discoverAttributes(false).get()) {
                 logger.warn("{}: Failed discovering attributes in electrical measurement cluster",
                         endpoint.getIeeeAddress());
                 return null;

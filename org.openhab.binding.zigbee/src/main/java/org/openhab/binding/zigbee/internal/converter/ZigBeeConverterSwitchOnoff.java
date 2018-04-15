@@ -158,7 +158,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.ON_OFF && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
             Boolean value = (Boolean) attribute.getLastValue();
-            if (value != null && value == true) {
+            if (value != null && value) {
                 updateChannelState(OnOffType.ON);
             } else {
                 updateChannelState(OnOffType.OFF);

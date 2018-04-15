@@ -42,7 +42,7 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
     /**
      * The logger.
      */
-    private final static Logger logger = LoggerFactory.getLogger(ZigBeeSerialPort.class);
+    private final Logger logger = LoggerFactory.getLogger(ZigBeeSerialPort.class);
 
     /**
      * The portName portName.
@@ -75,9 +75,14 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
     private final FlowControl flowControl;
 
     /**
+     * The length of the receive buffer
+     */
+    private final int RX_BUFFER_LEN = 512;
+
+    /**
      * The circular fifo queue for receive data
      */
-    private int[] buffer = new int[512];
+    private final int[] buffer = new int[RX_BUFFER_LEN];
 
     /**
      * The receive buffer end pointer (where we put the newly received data)
@@ -90,14 +95,9 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
     private int start = 0;
 
     /**
-     * The length of the receive buffer
-     */
-    private int maxLength = 512;
-
-    /**
      * Synchronisation object for buffer queue manipulation
      */
-    private Object bufferSynchronisationObject = new Object();
+    private final Object bufferSynchronisationObject = new Object();
 
     /**
      * Constructor setting port name and baud rate.
@@ -231,7 +231,7 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
                 synchronized (bufferSynchronisationObject) {
                     if (start != end) {
                         int value = buffer[start++];
-                        if (start >= maxLength) {
+                        if (start >= RX_BUFFER_LEN) {
                             start = 0;
                         }
                         return value;
@@ -261,7 +261,7 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
                     int recv;
                     while ((recv = inputStream.read()) != -1) {
                         buffer[end++] = recv;
-                        if (end >= maxLength) {
+                        if (end >= RX_BUFFER_LEN) {
                             end = 0;
                         }
                     }
