@@ -48,7 +48,7 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
     /**
      * The logger.
      */
-    private final static Logger logger = LoggerFactory.getLogger(ZigBeeNetworkStateSerializerImpl.class);
+    private final Logger logger = LoggerFactory.getLogger(ZigBeeNetworkStateSerializerImpl.class);
 
     /**
      * The network state filename.
@@ -144,7 +144,7 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
 
         final File file = new File(networkStateFilePath + "/" + networkStateFileName + networkId + ".xml");
         boolean networkStateExists = file.exists();
-        if (networkStateExists == false) {
+        if (!networkStateExists) {
             logger.debug("Loading ZigBee network state: File does not exist");
             return;
         }

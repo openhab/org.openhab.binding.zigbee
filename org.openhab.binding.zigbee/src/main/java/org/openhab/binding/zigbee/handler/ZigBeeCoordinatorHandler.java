@@ -434,7 +434,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         for (Entry<String, Object> configurationParameter : configurationParameters.entrySet()) {
             switch (configurationParameter.getKey()) {
                 case ZigBeeBindingConstants.CONFIGURATION_JOINENABLE:
-                    if ((Boolean) configurationParameter.getValue() == true) {
+                    if ((Boolean) configurationParameter.getValue()) {
                         permitJoin(nodeIeeeAddress, 60);
                     }
                     break;
