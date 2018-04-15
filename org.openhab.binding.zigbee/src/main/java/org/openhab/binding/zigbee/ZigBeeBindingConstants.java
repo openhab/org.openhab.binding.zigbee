@@ -150,6 +150,7 @@ public class ZigBeeBindingConstants {
     public static final String THING_PROPERTY_NEIGHBORS = "zigbee_neighbors";
     public static final String THING_PROPERTY_LASTUPDATE = "zigbee_lastupdate";
     public static final String THING_PROPERTY_ASSOCIATEDDEVICES = "zigbee_devices";
+    public final static String THING_PROPERTY_INSTALLCODE = "zigbee_installcode";
 
     // List of all configuration parameters
     public final static String CONFIGURATION_PANID = "zigbee_panid";
