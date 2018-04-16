@@ -105,6 +105,11 @@ public class ZigBeeBindingConstants {
     public final static String OFFLINE_NO_ADDRESS = "@text/zigbee.status.offline_noaddress";
     public final static String OFFLINE_NODE_NOT_FOUND = "@text/zigbee.status.offline_nodenotfound";
     public final static String OFFLINE_DISCOVERY_INCOMPLETE = "@text/zigbee.status.offline_discoveryincomplete";
+    
+    // List of configuration values for flow control
+    public final static Integer FLOWCONTROL_CONFIG_NONE = Integer.valueOf(0);
+    public final static Integer FLOWCONTROL_CONFIG_HARDWARE_CTSRTS = Integer.valueOf(1);
+    public final static Integer FLOWCONTROL_CONFIG_SOFTWARE_XONXOFF = Integer.valueOf(2);
 
     /**
      * Return an ISO 8601 combined date and time string for current date/time

@@ -13,6 +13,7 @@
 package org.openhab.binding.zigbee.xbee.handler;
 
 import org.eclipse.smarthome.core.thing.Bridge;
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeSerialPort;
 import org.openhab.binding.zigbee.xbee.internal.XBeeConfiguration;
@@ -51,16 +52,12 @@ public class XBeeHandler extends ZigBeeCoordinatorHandler {
         XBeeConfiguration config = getConfigAs(XBeeConfiguration.class);
 
         FlowControl flowControl;
-        switch (config.zigbee_flowcontrol) {
-            case 1: // Hardware
-                flowControl = FlowControl.FLOWCONTROL_OUT_RTSCTS;
-                break;
-            case 2: // Software
-                flowControl = FlowControl.FLOWCONTROL_OUT_XONOFF;
-                break;
-            default:
-                flowControl = FlowControl.FLOWCONTROL_OUT_NONE;
-                break;
+        if (ZigBeeBindingConstants.FLOWCONTROL_CONFIG_HARDWARE_CTSRTS.equals(config.zigbee_flowcontrol)) {
+        	flowControl = FlowControl.FLOWCONTROL_OUT_RTSCTS;
+        } else if (ZigBeeBindingConstants.FLOWCONTROL_CONFIG_SOFTWARE_XONXOFF.equals(config.zigbee_flowcontrol)) {
+        	flowControl = FlowControl.FLOWCONTROL_OUT_XONOFF;
+        } else {
+        	flowControl = FlowControl.FLOWCONTROL_OUT_NONE;
         }
 
         ZigBeePort serialPort = new ZigBeeSerialPort(config.zigbee_port, config.zigbee_baud, flowControl);
