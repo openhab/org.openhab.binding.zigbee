@@ -116,10 +116,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
 
     @Override
     public Configuration updateConfiguration(@NonNull Configuration configuration) {
-        Configuration updatedConfiguration = new Configuration();
-        configLevelControl.updateConfiguration(configuration, updatedConfiguration);
-
-        return updatedConfiguration;
+        return configLevelControl.updateConfiguration(configuration);
     }
 
     @Override

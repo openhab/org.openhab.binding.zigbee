@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) 2014-2018 by the respective copyright holders.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
 package org.openhab.binding.zigbee.internal.converter.config;
 
 import java.math.BigDecimal;
@@ -57,9 +64,9 @@ public class ZclLevelControlConfig implements ZclClusterConfigHandler {
         List<ConfigDescriptionParameter> parameters = new ArrayList<ConfigDescriptionParameter>();
 
         List<ParameterOption> options = new ArrayList<ParameterOption>();
-        parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_ONOFFTRANSITIONTIME, Type.INTEGER)
-                .withLabel("On/Off Transition Time")
-                .withDescription("Time in 10ms intervals to transition between ON and OFF").withDefault("0")
+        parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_DEFAULTTRANSITIONTIME, Type.INTEGER)
+                .withLabel("Default Transition Time")
+                .withDescription("Default time in 10ms intervals to transition between ON and OFF").withDefault("0")
                 .withMinimum(new BigDecimal(0)).withMaximum(new BigDecimal(60000)).withOptions(options)
                 .withLimitToOptions(false).build());
 
@@ -73,7 +80,7 @@ public class ZclLevelControlConfig implements ZclClusterConfigHandler {
         }
         if (cluster.isAttributeSupported(ZclLevelControlCluster.ATTR_ONTRANSITIONTIME)) {
             options = new ArrayList<ParameterOption>();
-            options.add(new ParameterOption("65535", "Use On/Off transition time"));
+            options.add(new ParameterOption("65535", "On transition time"));
             parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_ONTRANSITIONTIME, Type.INTEGER)
                     .withLabel("On Transition Time")
                     .withDescription("Time in 10ms intervals to transition from OFF to ON").withDefault("65535")
@@ -82,7 +89,7 @@ public class ZclLevelControlConfig implements ZclClusterConfigHandler {
         }
         if (cluster.isAttributeSupported(ZclLevelControlCluster.ATTR_OFFTRANSITIONTIME)) {
             options = new ArrayList<ParameterOption>();
-            options.add(new ParameterOption("65535", "Use On/Off transition time"));
+            options.add(new ParameterOption("65535", "Off transition time"));
             parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_OFFTRANSITIONTIME, Type.INTEGER)
                     .withLabel("Off Transition Time")
                     .withDescription("Time in 10ms intervals to transition from ON to OFF").withDefault("65535")
@@ -92,10 +99,9 @@ public class ZclLevelControlConfig implements ZclClusterConfigHandler {
         if (cluster.isAttributeSupported(ZclLevelControlCluster.ATTR_ONLEVEL)) {
             options = new ArrayList<ParameterOption>();
             options.add(new ParameterOption("255", "Not Set"));
-            parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_ONLEVEL, Type.INTEGER)
-                    .withLabel("Off Transition Time").withDescription("Default On level").withDefault("255")
-                    .withMinimum(new BigDecimal(0)).withMaximum(new BigDecimal(60000)).withOptions(options)
-                    .withLimitToOptions(false).build());
+            parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_ONLEVEL, Type.INTEGER).withLabel("On Level")
+                    .withDescription("Default On level").withDefault("255").withMinimum(new BigDecimal(0))
+                    .withMaximum(new BigDecimal(60000)).withOptions(options).withLimitToOptions(false).build());
         }
         if (cluster.isAttributeSupported(ZclLevelControlCluster.ATTR_DEFAULTMOVERATE)) {
             options = new ArrayList<ParameterOption>();
@@ -110,18 +116,39 @@ public class ZclLevelControlConfig implements ZclClusterConfigHandler {
     }
 
     @Override
-    public void updateConfiguration(@NonNull Configuration configuration, @NonNull Configuration updatedConfiguration) {
+    public Configuration updateConfiguration(@NonNull Configuration configuration) {
+        Configuration updatedConfiguration = new Configuration();
+
         for (String property : configuration.getProperties().keySet()) {
-            logger.debug("{}: Update configuration property {}->{} ({})", cluster.getZigBeeAddress(), property,
-                    configuration.get(property), configuration.get(property).getClass().getSimpleName());
+            logger.debug("{}: Update LevelControl configuration property {}->{} ({})", cluster.getZigBeeAddress(),
+                    property, configuration.get(property), configuration.get(property).getClass().getSimpleName());
+            Integer response = null;
+            BigDecimal valueDecimal;
             switch (property) {
                 case CONFIG_ONOFFTRANSITIONTIME:
-                    BigDecimal value = (BigDecimal) configuration.get(property);
-                    cluster.setOnOffTransitionTime(value.intValue());
-                    Integer response = cluster.getOnOffTransitionTime(0);
-                    if (response != null) {
-                        updatedConfiguration.put(property, BigInteger.valueOf(response));
-                    }
+                    valueDecimal = (BigDecimal) configuration.get(property);
+                    cluster.setOnOffTransitionTime(valueDecimal.intValue());
+                    response = cluster.getOnOffTransitionTime(0);
+                    break;
+                case CONFIG_ONTRANSITIONTIME:
+                    valueDecimal = (BigDecimal) configuration.get(property);
+                    cluster.setOnTransitionTime(valueDecimal.intValue());
+                    response = cluster.getOnTransitionTime(0);
+                    break;
+                case CONFIG_OFFTRANSITIONTIME:
+                    valueDecimal = (BigDecimal) configuration.get(property);
+                    cluster.setOffTransitionTime(valueDecimal.intValue());
+                    response = cluster.getOffTransitionTime(0);
+                    break;
+                case CONFIG_ONLEVEL:
+                    valueDecimal = (BigDecimal) configuration.get(property);
+                    cluster.setOnLevel(valueDecimal.intValue());
+                    response = cluster.getOnLevel(0);
+                    break;
+                case CONFIG_DEFAULTMOVERATE:
+                    valueDecimal = (BigDecimal) configuration.get(property);
+                    cluster.setDefaultMoveRate(valueDecimal.intValue());
+                    response = cluster.getDefaultMoveRate(0);
                     break;
                 case CONFIG_DEFAULTTRANSITIONTIME:
                     defaultTransitionTime = ((BigDecimal) configuration.get(property)).intValue();
@@ -130,7 +157,13 @@ public class ZclLevelControlConfig implements ZclClusterConfigHandler {
                     logger.warn("{}: Unhandled configuration property {}", cluster.getZigBeeAddress(), property);
                     break;
             }
+
+            if (response != null) {
+                updatedConfiguration.put(property, BigInteger.valueOf(response));
+            }
         }
+
+        return updatedConfiguration;
     }
 
     /**

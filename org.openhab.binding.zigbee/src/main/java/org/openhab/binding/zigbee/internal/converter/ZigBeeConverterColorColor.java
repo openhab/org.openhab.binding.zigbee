@@ -424,10 +424,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
     @Override
     public Configuration updateConfiguration(@NonNull Configuration configuration) {
-        Configuration updatedConfiguration = new Configuration();
-        configLevelControl.updateConfiguration(configuration, updatedConfiguration);
-
-        return updatedConfiguration;
+        return configLevelControl.updateConfiguration(configuration);
     }
 
     @Override

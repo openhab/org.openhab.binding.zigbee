@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) 2014-2018 by the respective copyright holders.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
 package org.openhab.binding.zigbee.internal.converter.config;
 
 import java.util.List;
@@ -33,7 +40,7 @@ public interface ZclClusterConfigHandler {
      * set a local variable for local parameters, and update the remote device for remote parameters.
      *
      * @param configuration the {@link Configuration} to be processed
-     * @param updatedConfiguration the {@link Configuration} to be persisted within the thing
+     * @return the {@link Configuration} to be persisted within the thing
      */
-    public void updateConfiguration(@NonNull Configuration configuration, @NonNull Configuration updatedConfiguration);
+    public Configuration updateConfiguration(@NonNull Configuration configuration);
 }
