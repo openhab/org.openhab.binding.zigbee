@@ -19,6 +19,7 @@ import org.eclipse.smarthome.core.thing.binding.firmware.Firmware;
 import org.eclipse.smarthome.core.thing.binding.firmware.FirmwareUpdateHandler;
 import org.eclipse.smarthome.core.thing.binding.firmware.ProgressCallback;
 import org.eclipse.smarthome.core.thing.binding.firmware.ProgressStep;
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.ember.internal.EmberConfiguration;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeSerialPort;
@@ -60,18 +61,14 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
         EmberConfiguration config = getConfigAs(EmberConfiguration.class);
 
         FlowControl flowControl;
-        switch (config.zigbee_flowcontrol) {
-            case 1: // Hardware
-                flowControl = FlowControl.FLOWCONTROL_OUT_RTSCTS;
-                break;
-            case 2: // Software
-                flowControl = FlowControl.FLOWCONTROL_OUT_XONOFF;
-                break;
-            default:
-                flowControl = FlowControl.FLOWCONTROL_OUT_NONE;
-                break;
+        if (ZigBeeBindingConstants.FLOWCONTROL_CONFIG_HARDWARE_CTSRTS.equals(config.zigbee_flowcontrol)) {
+        	flowControl = FlowControl.FLOWCONTROL_OUT_RTSCTS;
+        } else if (ZigBeeBindingConstants.FLOWCONTROL_CONFIG_SOFTWARE_XONXOFF.equals(config.zigbee_flowcontrol)) {
+        	flowControl = FlowControl.FLOWCONTROL_OUT_XONOFF;
+        } else {
+        	flowControl = FlowControl.FLOWCONTROL_OUT_NONE;
         }
-
+        
         ZigBeePort serialPort = new ZigBeeSerialPort(config.zigbee_port, config.zigbee_baud, flowControl);
         final ZigBeeTransportTransmit dongle = new ZigBeeDongleEzsp(serialPort);
 
