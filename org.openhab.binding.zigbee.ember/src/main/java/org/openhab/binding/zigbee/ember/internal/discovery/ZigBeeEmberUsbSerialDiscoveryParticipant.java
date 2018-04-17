@@ -7,11 +7,11 @@
  */
 package org.openhab.binding.zigbee.ember.internal.discovery;
 
-import static java.lang.Integer.valueOf;
 import static java.util.Arrays.asList;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CONFIGURATION_BAUD;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CONFIGURATION_FLOWCONTROL;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CONFIGURATION_PORT;
+import static org.openhab.binding.zigbee.ZigBeeBindingConstants.FLOWCONTROL_CONFIG_SOFTWARE_XONXOFF;
 import static org.openhab.binding.zigbee.ember.EmberBindingConstants.THING_TYPE_EMBER;
 
 import java.util.HashSet;
@@ -24,8 +24,6 @@ import org.eclipse.smarthome.config.discovery.usbserial.UsbSerialDeviceInformati
 import org.eclipse.smarthome.config.discovery.usbserial.UsbSerialDiscoveryParticipant;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.ember.EmberBindingConstants;
 import org.osgi.service.component.annotations.Component;
 
 /**
@@ -59,7 +57,7 @@ public class ZigBeeEmberUsbSerialDiscoveryParticipant implements UsbSerialDiscov
                     .withRepresentationProperty(CONFIGURATION_PORT)
                     .withProperty(CONFIGURATION_PORT, deviceInformation.getSerialPort())
                     .withProperty(CONFIGURATION_BAUD, BITRON_VIDEO_2010_10_BAUD_RATE)
-                    .withProperty(CONFIGURATION_FLOWCONTROL, valueOf(2)) // set flow control to XONOFF
+                    .withProperty(CONFIGURATION_FLOWCONTROL, FLOWCONTROL_CONFIG_SOFTWARE_XONXOFF)
                     .build();
         } else {
             return null;
