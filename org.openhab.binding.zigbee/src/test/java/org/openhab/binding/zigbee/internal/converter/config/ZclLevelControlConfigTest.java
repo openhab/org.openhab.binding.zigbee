@@ -36,8 +36,8 @@ public class ZclLevelControlConfigTest {
     @Test
     public void getConfiguration() {
         ZclLevelControlCluster cluster = Mockito.mock(ZclLevelControlCluster.class);
-        Mockito.when(cluster.discoverAttributes(Mockito.anyBoolean())).thenReturn(new MockedBooleanFuture());
-        Mockito.when(cluster.isAttributeSupported(Mockito.anyInt())).thenReturn(true);
+        Mockito.when(cluster.discoverAttributes(ArgumentMatchers.anyBoolean())).thenReturn(new MockedBooleanFuture());
+        Mockito.when(cluster.isAttributeSupported(ArgumentMatchers.anyInt())).thenReturn(true);
 
         ZclLevelControlConfig config = new ZclLevelControlConfig(cluster);
         List<ConfigDescriptionParameter> configuration = config.getConfiguration();
