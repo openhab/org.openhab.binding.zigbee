@@ -431,6 +431,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         TransportConfig transportConfig = new TransportConfig();
 
+        boolean reinitialise = false;
         Configuration configuration = editConfiguration();
         for (Entry<String, Object> configurationParameter : configurationParameters.entrySet()) {
             switch (configurationParameter.getKey()) {
@@ -444,6 +445,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     TrustCentreJoinMode linkMode = TrustCentreJoinMode
                             .valueOf((String) configurationParameter.getValue());
                     transportConfig.addOption(TransportConfigOption.TRUST_CENTRE_JOIN_MODE, linkMode);
+                    break;
+
+                case ZigBeeBindingConstants.CONFIGURATION_BAUD:
+                case ZigBeeBindingConstants.CONFIGURATION_FLOWCONTROL:
+                case ZigBeeBindingConstants.CONFIGURATION_PORT:
+                    reinitialise = true;
                     break;
 
                 default:
@@ -462,6 +469,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         // If we added any transport layer configuration, pass it down
         if (transportConfig.getOptions().size() != 0) {
             zigbeeTransport.updateTransportConfig(transportConfig);
+        }
+
+        // If we need to reinitialise the bridge to change driver parameters, do so
+        if (reinitialise == true) {
+            dispose();
+            initialize();
         }
     }
 
