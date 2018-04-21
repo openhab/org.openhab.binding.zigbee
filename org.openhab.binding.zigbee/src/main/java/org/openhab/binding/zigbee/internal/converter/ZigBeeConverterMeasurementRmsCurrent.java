@@ -1,6 +1,5 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
- *
+ * Copyright (c) 2014-2017 by the respective copyright holders.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -27,12 +26,13 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
+ * ZigBee channel converter for RMS current measurement
  *
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
-    private Logger logger = LoggerFactory.getLogger(ZigBeeConverterMeasurementPower.class);
+public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
+    private Logger logger = LoggerFactory.getLogger(ZigBeeConverterMeasurementRmsCurrent.class);
 
     private ZclElectricalMeasurementCluster clusterMeasurement;
 
@@ -54,7 +54,7 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
             CommandResult bindResponse = clusterMeasurement.bind().get();
             if (bindResponse.isSuccess()) {
                 ZclAttribute attribute = clusterMeasurement
-                        .getAttribute(ZclElectricalMeasurementCluster.ATTR_ACTIVEPOWER);
+                        .getAttribute(ZclElectricalMeasurementCluster.ATTR_RMSCURRENT);
                 // Configure reporting - no faster than once per second - no slower than 10 minutes.
                 CommandResult reportingResponse = clusterMeasurement
                         .setReporting(attribute, 3, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
@@ -68,14 +68,14 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
         }
 
-        divisor = clusterMeasurement.getAcPowerDivisor(Long.MAX_VALUE);
-        multiplier = clusterMeasurement.getAcPowerMultiplier(Long.MAX_VALUE);
+        divisor = clusterMeasurement.getAcCurrentDivisor(Long.MAX_VALUE);
+        multiplier = clusterMeasurement.getAcCurrentMultiplier(Long.MAX_VALUE);
         if (divisor == null || multiplier == null) {
             divisor = 1;
             multiplier = 1;
         }
 
-        // Add a listener, then request the status
+        // Add a listener
         clusterMeasurement.addAttributeListener(this);
 
         return true;
@@ -90,7 +90,7 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
 
     @Override
     public void handleRefresh() {
-        clusterMeasurement.getTotalActivePower(0);
+        clusterMeasurement.getRmsVoltage(0);
     }
 
     @Override
@@ -106,9 +106,11 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
         }
 
         try {
-            if (!cluster.discoverAttributes(false).get()) {
-                logger.warn("{}: Failed discovering attributes in electrical measurement cluster",
-                        endpoint.getIeeeAddress());
+            if (!cluster.discoverAttributes(false).get()
+                    && !cluster.isAttributeSupported(ZclElectricalMeasurementCluster.ATTR_RMSCURRENT)) {
+
+                return null;
+            } else if (cluster.getRmsVoltage(0) == null) {
                 return null;
             }
         } catch (InterruptedException | ExecutionException e) {
@@ -117,16 +119,11 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
             return null;
         }
 
-        if (!cluster.isAttributeSupported(ZclElectricalMeasurementCluster.ATTR_ACTIVEPOWER)) {
-            return null;
-        }
-
         return ChannelBuilder
-                .create(createChannelUID(thingUID, endpoint,
-                        ZigBeeBindingConstants.CHANNEL_NAME_ELECTRICAL_ACTIVEPOWER),
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_ELECTRICAL_RMSCURRENT),
                         ZigBeeBindingConstants.ITEM_TYPE_NUMBER)
-                .withType(ZigBeeBindingConstants.CHANNEL_ELECTRICAL_ACTIVEPOWER)
-                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_ELECTRICAL_ACTIVEPOWER)
+                .withType(ZigBeeBindingConstants.CHANNEL_ELECTRICAL_RMSCURRENT)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_ELECTRICAL_RMSCURRENT)
                 .withProperties(createProperties(endpoint)).build();
     }
 
@@ -134,7 +131,7 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
     public void attributeUpdated(ZclAttribute attribute) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.ELECTRICAL_MEASUREMENT
-                && attribute.getId() == ZclElectricalMeasurementCluster.ATTR_ACTIVEPOWER) {
+                && attribute.getId() == ZclElectricalMeasurementCluster.ATTR_RMSCURRENT) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {
                 updateChannelState(new DecimalType(value * multiplier / divisor));

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="zigbee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
+    xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
+
+    <thing-type id="smartthings_motionv4">
+        <label>SmartThings Motion Sensor</label>
+        <description>SmartThings Motion Illuminance and Temperature Sensor</description>
+
+        <channels>
+            <channel id="illuminance" typeId="measurement_illuminance">
+                <properties>
+                    <property name="zigbee_endpoint">2</property>
+                </properties>
+            </channel>
+
+            <channel id="temperature" typeId="measurement_temperature">
+                <properties>
+                    <property name="zigbee_endpoint">2</property>
+                </properties>
+            </channel>
+
+            <channel id="motion" typeId="ias_motionpresence">
+                <properties>
+                    <property name="zigbee_endpoint">2</property>
+                </properties>
+            </channel>
+        </channels>
+
+        <properties>
+            <property name="typeMatcher:vendor">SmartThings</property>
+            <property name="typeMatcher:modelId">motionv4</property>
+        </properties>
+
+        <config-description>
+            <parameter name="zigbee_macaddress" type="text" readOnly="true" required="true">
+                <label>MAC Address</label>
+            </parameter>
+
+            <parameter name="attribute_02_0000_0033_18" type="integer">
+                <label>LED Indication</label>
+                <options>
+                    <option value="0">Disabled</option>
+                    <option value="1">Enabled</option>
+                </options>
+            </parameter>
+
+            <parameter name="attribute_02_0406_0030_18" type="integer">
+                <label>Sensitivity</label>
+                <options>
+                    <option value="0">Low</option>
+                    <option value="1">High</option>
+                </options>
+            </parameter>
+        </config-description>
+
+    </thing-type>
+</thing:thing-descriptions>

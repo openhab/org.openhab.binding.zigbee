@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,8 +69,13 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
         if (endpoint.getInputCluster(ZclRelativeHumidityMeasurementCluster.CLUSTER_ID) == null) {
             return null;
         }
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_HUMIDITY_VALUE,
-                ZigBeeBindingConstants.ITEM_TYPE_NUMBER, "Relative Humidity");
+
+        return ChannelBuilder
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_HUMIDITY_VALUE),
+                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER)
+                .withType(ZigBeeBindingConstants.CHANNEL_HUMIDITY_VALUE)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_HUMIDITY_VALUE)
+                .withProperties(createProperties(endpoint)).build();
     }
 
     @Override

@@ -10,6 +10,7 @@ package org.openhab.binding.zigbee.internal.converter;
 
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
@@ -35,7 +36,11 @@ public class ZigBeeConverterIasMotionIntrusion extends ZigBeeConverterIas implem
             return null;
         }
 
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_IAS_MOTION_INTRUSION,
-                ZigBeeBindingConstants.ITEM_TYPE_SWITCH, "Motion Intrusion");
+        return ChannelBuilder
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_IAS_MOTIONINTRUSION),
+                        ZigBeeBindingConstants.ITEM_TYPE_SWITCH)
+                .withType(ZigBeeBindingConstants.CHANNEL_IAS_MOTIONINTRUSION)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_IAS_MOTIONINTRUSION)
+                .withProperties(createProperties(endpoint)).build();
     }
 }

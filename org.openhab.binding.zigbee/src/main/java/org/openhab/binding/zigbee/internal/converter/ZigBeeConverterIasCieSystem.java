@@ -10,6 +10,7 @@ package org.openhab.binding.zigbee.internal.converter;
 
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
@@ -35,7 +36,11 @@ public class ZigBeeConverterIasCieSystem extends ZigBeeConverterIas implements Z
             return null;
         }
 
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_IAS_STANDARDCIE_SYSTEM,
-                ZigBeeBindingConstants.ITEM_TYPE_SWITCH, "CIE Standard System Alarm");
+        return ChannelBuilder
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_IAS_STANDARDCIESYSTEM),
+                        ZigBeeBindingConstants.ITEM_TYPE_SWITCH)
+                .withType(ZigBeeBindingConstants.CHANNEL_IAS_STANDARDCIESYSTEM)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_IAS_STANDARDCIESYSTEM)
+                .withProperties(createProperties(endpoint)).build();
     }
 }

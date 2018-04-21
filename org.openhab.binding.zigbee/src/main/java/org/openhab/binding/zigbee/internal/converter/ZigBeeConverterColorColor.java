@@ -22,6 +22,7 @@ import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.internal.converter.config.ZclLevelControlConfig;
@@ -375,8 +376,12 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             logger.warn("{}: Exception discovering attributes in color control cluster", endpoint.getIeeeAddress(), e);
         }
 
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_COLOR_COLOR,
-                ZigBeeBindingConstants.ITEM_TYPE_COLOR, "Color");
+        return ChannelBuilder
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_COLOR_COLOR),
+                        ZigBeeBindingConstants.ITEM_TYPE_COLOR)
+                .withType(ZigBeeBindingConstants.CHANNEL_COLOR_COLOR)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_COLOR_COLOR).withProperties(createProperties(endpoint))
+                .build();
     }
 
     private void updateOnOff(OnOffType onoff) {
