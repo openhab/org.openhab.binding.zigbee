@@ -20,17 +20,6 @@
             It is also possible to dim values and switch the light on and off.
         </description>
         <category>ColorLight</category>
-        <config-description>
-            <parameter name="zigbee_levelcontrol_transitiontimedefault" type="integer" min="0" max="255">
-                <label>Default transition time</label>
-                <description>Default time in 10ms intervals to transition between settings</description>
-                <default>65535</default>
-                <options>
-                    <option value="65535">No Default</option>
-                </options>
-                <limitToOptions>false</limitToOptions>
-            </parameter>
-        </config-description>
     </channel-type>
 
     <!-- Color Temperature Channel -->
@@ -154,17 +143,6 @@
 		<label>Dimmer</label>
 		<description>Sets the level of the light</description>
 		<category>Light</category>
-        <config-description>
-            <parameter name="zigbee_levelcontrol_transitiontimedefault" type="integer" min="0" max="255">
-                <label>Default transition time</label>
-                <description>Default time in 10ms intervals to transition between settings</description>
-                <default>65535</default>
-                <options>
-                    <option value="65535">No Default</option>
-                </options>
-                <limitToOptions>false</limitToOptions>
-            </parameter>
-        </config-description>
 	</channel-type>
 
 </thing:thing-descriptions>
