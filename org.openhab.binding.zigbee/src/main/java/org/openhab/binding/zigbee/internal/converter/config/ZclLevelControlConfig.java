@@ -65,9 +65,10 @@ public class ZclLevelControlConfig implements ZclClusterConfigHandler {
         List<ConfigDescriptionParameter> parameters = new ArrayList<ConfigDescriptionParameter>();
 
         List<ParameterOption> options = new ArrayList<ParameterOption>();
+        options.add(new ParameterOption("65535", "Use On/Off times"));
         parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_DEFAULTTRANSITIONTIME, Type.INTEGER)
                 .withLabel("Default Transition Time")
-                .withDescription("Default time in 10ms intervals to transition between ON and OFF").withDefault("0")
+                .withDescription("Default time in 100ms intervals to transition between ON and OFF").withDefault("0")
                 .withMinimum(new BigDecimal(0)).withMaximum(new BigDecimal(60000)).withOptions(options)
                 .withLimitToOptions(false).build());
 
@@ -75,25 +76,25 @@ public class ZclLevelControlConfig implements ZclClusterConfigHandler {
             options = new ArrayList<ParameterOption>();
             parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_ONOFFTRANSITIONTIME, Type.INTEGER)
                     .withLabel("On/Off Transition Time")
-                    .withDescription("Time in 10ms intervals to transition between ON and OFF").withDefault("0")
+                    .withDescription("Time in 100ms intervals to transition between ON and OFF").withDefault("0")
                     .withMinimum(new BigDecimal(0)).withMaximum(new BigDecimal(60000)).withOptions(options)
                     .withLimitToOptions(false).build());
         }
         if (cluster.isAttributeSupported(ZclLevelControlCluster.ATTR_ONTRANSITIONTIME)) {
             options = new ArrayList<ParameterOption>();
-            options.add(new ParameterOption("65535", "On transition time"));
+            options.add(new ParameterOption("65535", "Use On/Off transition time"));
             parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_ONTRANSITIONTIME, Type.INTEGER)
                     .withLabel("On Transition Time")
-                    .withDescription("Time in 10ms intervals to transition from OFF to ON").withDefault("65535")
+                    .withDescription("Time in 100ms intervals to transition from OFF to ON").withDefault("65535")
                     .withMinimum(new BigDecimal(0)).withMaximum(new BigDecimal(60000)).withOptions(options)
                     .withLimitToOptions(false).build());
         }
         if (cluster.isAttributeSupported(ZclLevelControlCluster.ATTR_OFFTRANSITIONTIME)) {
             options = new ArrayList<ParameterOption>();
-            options.add(new ParameterOption("65535", "Off transition time"));
+            options.add(new ParameterOption("65535", "Use On/Off transition time"));
             parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_OFFTRANSITIONTIME, Type.INTEGER)
                     .withLabel("Off Transition Time")
-                    .withDescription("Time in 10ms intervals to transition from ON to OFF").withDefault("65535")
+                    .withDescription("Time in 100ms intervals to transition from ON to OFF").withDefault("65535")
                     .withMinimum(new BigDecimal(0)).withMaximum(new BigDecimal(60000)).withOptions(options)
                     .withLimitToOptions(false).build());
         }
