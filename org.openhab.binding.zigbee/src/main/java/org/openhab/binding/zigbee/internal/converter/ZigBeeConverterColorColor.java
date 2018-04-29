@@ -38,6 +38,8 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorCapabilitiesEnum;
 
 /**
+ * Converter for color control. Uses the {@link ZclColorControlCluster}, and may also use the
+ * {@link ZclLevelControlCluster} and {@link ZclOnOffCluster} if available.
  *
  * @author Chris Jackson - Initial Contribution. Improvements in detection of device functionality.
  * @author Pedro Garcia - Added CIE XY color support
@@ -186,6 +188,13 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
     @Override
     public void disposeConverter() {
+        // Stop the timer and shutdown the scheduler
+        if (colorUpdateTimer != null) {
+            colorUpdateTimer.cancel(true);
+            colorUpdateTimer = null;
+        }
+        colorUpdateScheduler.shutdownNow();
+
         clusterColorControl.removeAttributeListener(this);
 
         if (clusterLevelControl != null) {
