@@ -58,13 +58,13 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
 
         FlowControl flowControl;
         if (ZigBeeBindingConstants.FLOWCONTROL_CONFIG_HARDWARE_CTSRTS.equals(config.zigbee_flowcontrol)) {
-        	flowControl = FlowControl.FLOWCONTROL_OUT_RTSCTS;
+            flowControl = FlowControl.FLOWCONTROL_OUT_RTSCTS;
         } else if (ZigBeeBindingConstants.FLOWCONTROL_CONFIG_SOFTWARE_XONXOFF.equals(config.zigbee_flowcontrol)) {
-        	flowControl = FlowControl.FLOWCONTROL_OUT_XONOFF;
+            flowControl = FlowControl.FLOWCONTROL_OUT_XONOFF;
         } else {
-        	flowControl = FlowControl.FLOWCONTROL_OUT_NONE;
+            flowControl = FlowControl.FLOWCONTROL_OUT_NONE;
         }
-        
+
         ZigBeePort serialPort = new ZigBeeSerialPort(config.zigbee_port, config.zigbee_baud, flowControl);
         final ZigBeeTransportTransmit dongle = new ZigBeeDongleEzsp(serialPort);
 

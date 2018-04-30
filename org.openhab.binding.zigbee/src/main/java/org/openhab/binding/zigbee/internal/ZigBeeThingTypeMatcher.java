@@ -13,11 +13,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.config.core.ConfigDescriptionRegistry;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.type.ThingType;
@@ -63,17 +67,13 @@ public class ZigBeeThingTypeMatcher {
      * @return the {@link ThingTypeUID} of the matched thing type, or null if no single thing type matched the filter
      *         properties
      */
-    public ThingTypeUID matchThingType(Map<String, String> properties) {
+    public ThingTypeUID matchThingType(Map<String, Object> properties) {
         // Only create the index once
-        synchronized (discoveryProperties) {
-            if (discoveryProperties.isEmpty()) {
-                try {
-                    readDiscoveryProperties();
-                } catch (IOException exception) {
-                    logger.debug("IOException reading ZigBee discovery properties", exception);
-                    return null;
-                }
-            }
+        try {
+            readDiscoveryProperties();
+        } catch (IOException exception) {
+            logger.debug("IOException reading ZigBee discovery properties", exception);
+            return null;
         }
 
         String matchedThingType = null;
@@ -98,8 +98,12 @@ public class ZigBeeThingTypeMatcher {
         return new ThingTypeUID(ZigBeeBindingConstants.BINDING_ID, matchedThingType);
     }
 
-    private void readDiscoveryProperties() throws IOException {
-        InputStream input = ZigBeeThingTypeMatcher.class.getResourceAsStream(DISCOVERY_PROPERTIES_FILE);
+    private synchronized void readDiscoveryProperties() throws IOException {
+        if (!discoveryProperties.isEmpty()) {
+            return;
+        }
+
+        InputStream input = getClass().getResourceAsStream(DISCOVERY_PROPERTIES_FILE);
         if (input == null) {
             return;
         }
@@ -133,6 +137,27 @@ public class ZigBeeThingTypeMatcher {
         reader.close();
 
         return;
+    }
+
+    /**
+     * Gets a list of thing types supported by this binding
+     *
+     * @return {@link Set} of supported {@link ThingTypeUID}.
+     */
+    public @NonNull Set<@NonNull ThingTypeUID> getSupportedThingTypeUIDs() {
+        try {
+            readDiscoveryProperties();
+        } catch (IOException exception) {
+            logger.debug("IOException reading ZigBee discovery properties", exception);
+            return Collections.emptySet();
+        }
+
+        Set<@NonNull ThingTypeUID> thingTypes = new HashSet<>();
+        for (Entry<String, List<RequiredProperty>> thingProperties : discoveryProperties.entrySet()) {
+            thingTypes.add(new ThingTypeUID(ZigBeeBindingConstants.BINDING_ID, thingProperties.getKey()));
+        }
+
+        return thingTypes;
     }
 
     private class RequiredProperty {

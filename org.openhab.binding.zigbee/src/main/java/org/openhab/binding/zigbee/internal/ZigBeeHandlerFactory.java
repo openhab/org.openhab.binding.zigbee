@@ -32,17 +32,23 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
-        return ZigBeeBindingConstants.SUPPORTED_THING_TYPES.contains(thingTypeUID);
+        // The core binding provides dynamic device creation
+        if (thingTypeUID.equals(ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE)) {
+            return true;
+        }
+
+        ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
+        return matcher.getSupportedThingTypeUIDs().contains(thingTypeUID);
     }
 
     @Override
     protected ThingHandler createHandler(Thing thing) {
-        if (!ZigBeeBindingConstants.SUPPORTED_THING_TYPES.contains(thing.getThingTypeUID())) {
+        ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
+        if (!matcher.getSupportedThingTypeUIDs().contains(thing.getThingTypeUID())) {
             return null;
         }
 
         ZigBeeThingHandler handler = new ZigBeeThingHandler(thing);
-
         bundleContext.registerService(ConfigDescriptionProvider.class.getName(), handler,
                 new Hashtable<String, Object>());
 

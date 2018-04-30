@@ -34,7 +34,6 @@ import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.ThingStatusInfo;
-import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.thing.binding.builder.ThingBuilder;
 import org.eclipse.smarthome.core.thing.binding.firmware.Firmware;
@@ -47,7 +46,6 @@ import org.eclipse.smarthome.core.types.State;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
 import org.openhab.binding.zigbee.internal.ZigBeeDeviceConfigHandler;
-import org.openhab.binding.zigbee.internal.ZigBeeThingTypeMatcher;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeChannelConverterFactory;
 import org.slf4j.Logger;
@@ -184,17 +182,14 @@ public class ZigBeeThingHandler extends BaseThingHandler
         // This is required here to allow us to check for a static thing type before we check the dynamic configuration
         ZigBeeNodePropertyDiscoverer propertyDiscoverer = new ZigBeeNodePropertyDiscoverer();
         propertyDiscoverer.setProperties(getThing().getProperties());
-        Map<String, String> newProperties = propertyDiscoverer.getProperties(coordinatorHandler, node);
+        Map<String, String> newProperties = propertyDiscoverer.getProperties(node);
         updateProperties(newProperties);
 
         // Create the channel factory
         ZigBeeChannelConverterFactory factory = new ZigBeeChannelConverterFactory();
         List<Channel> nodeChannels;
 
-        // Check the discovery data to see if we match this thing with a static definition
-        ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
-        ThingTypeUID thingTypeUid = matcher.matchThingType(newProperties);
-        if (thingTypeUid == null) {
+        if (getThing().getThingTypeUID().equals(ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE)) {
             // Dynamically create the channels from the device
             // Process all the endpoints for this device and add all channels as derived from the supported clusters
             nodeChannels = new ArrayList<>();
@@ -203,18 +198,10 @@ public class ZigBeeThingHandler extends BaseThingHandler
                 nodeChannels.addAll(factory.getChannels(getThing().getUID(), endpoint));
             }
             logger.debug("{}: Dynamically created {} channels", nodeIeeeAddress, nodeChannels.size());
-        } else if (getThing().getThingTypeUID().equals(thingTypeUid)) {
+        } else {
             // We already have the correct thing type so just use the channels
             nodeChannels = getThing().getChannels();
             logger.debug("{}: Using static definition with existing {} channels", nodeIeeeAddress, nodeChannels.size());
-        } else {
-            // The current thing type is not what the matcher provided - change it
-            changeThingType(thingTypeUid, getConfig());
-            logger.debug("{}: Thing type changing from {} to {}", nodeIeeeAddress, getThing().getThingTypeUID(),
-                    thingTypeUid);
-
-            // The handler will be disposed so return
-            return;
         }
 
         try {

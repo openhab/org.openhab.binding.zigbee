@@ -152,7 +152,7 @@ public class ZigBeeChannelConverterFactory {
                         channel.getUID().getId());
                 return null;
             }
-            constructor = channelMap.get(channel.getChannelTypeUID().toString()).getConstructor();
+            constructor = channelMap.get(channel.getChannelTypeUID()).getConstructor();
             ZigBeeBaseChannelConverter instance = constructor.newInstance();
 
             instance.initialize(thingHandler, channel, coordinatorHandler, ieeeAddress, endpointId);

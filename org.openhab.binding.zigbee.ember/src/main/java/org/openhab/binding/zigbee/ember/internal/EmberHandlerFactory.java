@@ -16,7 +16,6 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.smarthome.config.discovery.DiscoveryService;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
@@ -24,7 +23,6 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
-import org.openhab.binding.zigbee.discovery.ZigBeeDiscoveryService;
 import org.openhab.binding.zigbee.ember.EmberBindingConstants;
 import org.openhab.binding.zigbee.ember.handler.EmberHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
@@ -54,19 +52,16 @@ public class EmberHandlerFactory extends BaseThingHandlerFactory {
     protected @Nullable ThingHandler createHandler(Thing thing) {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
-        ZigBeeCoordinatorHandler coordinator = null;
+        ZigBeeCoordinatorHandler emberHandler = null;
         if (thingTypeUID.equals(EmberBindingConstants.THING_TYPE_EMBER)) {
-            coordinator = new EmberHandler((Bridge) thing);
+            emberHandler = new EmberHandler((Bridge) thing);
         }
 
-        if (coordinator != null) {
-            ZigBeeDiscoveryService discoveryService = new ZigBeeDiscoveryService(coordinator);
-            discoveryService.activate();
+        if (emberHandler != null) {
+            discoveryServiceRegs.put(emberHandler.getThing().getUID(), bundleContext.registerService(
+                    ZigBeeCoordinatorHandler.class.getName(), emberHandler, new Hashtable<String, Object>()));
 
-            discoveryServiceRegs.put(coordinator.getThing().getUID(), bundleContext.registerService(
-                    DiscoveryService.class.getName(), discoveryService, new Hashtable<String, Object>()));
-
-            return coordinator;
+            return emberHandler;
         }
 
         return null;
@@ -75,14 +70,8 @@ public class EmberHandlerFactory extends BaseThingHandlerFactory {
     @Override
     protected synchronized void removeHandler(ThingHandler thingHandler) {
         if (thingHandler instanceof EmberHandler) {
-            ServiceRegistration serviceReg = this.discoveryServiceRegs.get(thingHandler.getThing().getUID());
+            ServiceRegistration serviceReg = discoveryServiceRegs.get(thingHandler.getThing().getUID());
             if (serviceReg != null) {
-                // remove discovery service, if bridge handler is removed
-                ZigBeeDiscoveryService service = (ZigBeeDiscoveryService) bundleContext
-                        .getService(serviceReg.getReference());
-                if (service != null) {
-                    service.deactivate();
-                }
                 serviceReg.unregister();
                 discoveryServiceRegs.remove(thingHandler.getThing().getUID());
             }

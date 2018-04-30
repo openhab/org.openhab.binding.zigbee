@@ -10,16 +10,12 @@ package org.openhab.binding.zigbee;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
-import java.util.Set;
 import java.util.TimeZone;
 
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
-
-import com.google.common.collect.Sets;
 
 /**
  * The {@link ZigBeeBindingConstants} class defines common constants, which are
@@ -34,12 +30,9 @@ public class ZigBeeBindingConstants {
 
     // List of Thing Type UIDs
     public final static ThingTypeUID THING_TYPE_GENERIC_DEVICE = new ThingTypeUID(BINDING_ID, "device");
-    public final static ThingTypeUID THING_TYPE_PHILIPS_SML001 = new ThingTypeUID(BINDING_ID, "philips_sml001");
-    public final static ThingTypeUID THING_TYPE_SMARTTHINGS_MOTIONV4 = new ThingTypeUID(BINDING_ID,
-            "smartthings_motionv4");
 
-    public final static Set<ThingTypeUID> SUPPORTED_THING_TYPES = Collections.unmodifiableSet(
-            Sets.newHashSet(THING_TYPE_GENERIC_DEVICE, THING_TYPE_PHILIPS_SML001, THING_TYPE_SMARTTHINGS_MOTIONV4));
+    // public final static Set<ThingTypeUID> SUPPORTED_THING_TYPES = Collections.unmodifiableSet(
+    // Sets.newHashSet(THING_TYPE_GENERIC_DEVICE, THING_TYPE_PHILIPS_SML001, THING_TYPE_SMARTTHINGS_MOTIONV4));
 
     // List of Channel UIDs
     public static final String CHANNEL_NAME_SWITCH_ONOFF = "switch";

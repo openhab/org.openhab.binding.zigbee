@@ -4,25 +4,19 @@
     xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
 
     <thing-type id="smartthings_motionv4">
-        <label>SmartThings Motion Sensor</label>
-        <description>SmartThings Motion Illuminance and Temperature Sensor</description>
+        <label>SmartThings Motion Sensor V4</label>
+        <description>SmartThings Motion and Temperature Sensor</description>
 
         <channels>
             <channel id="illuminance" typeId="measurement_illuminance">
                 <properties>
-                    <property name="zigbee_endpoint">2</property>
+                    <property name="zigbee_endpoint">1</property>
                 </properties>
             </channel>
 
-            <channel id="temperature" typeId="measurement_temperature">
+            <channel id="motion" typeId="ias_motionintrusion">
                 <properties>
-                    <property name="zigbee_endpoint">2</property>
-                </properties>
-            </channel>
-
-            <channel id="motion" typeId="ias_motionpresence">
-                <properties>
-                    <property name="zigbee_endpoint">2</property>
+                    <property name="zigbee_endpoint">1</property>
                 </properties>
             </channel>
         </channels>
