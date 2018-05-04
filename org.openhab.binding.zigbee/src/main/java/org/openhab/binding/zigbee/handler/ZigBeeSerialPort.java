@@ -7,13 +7,6 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.openhab.binding.zigbee.handler;
-/**
- * Copyright (c) 2016-2017 by the respective copyright holders.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- */
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -186,10 +179,12 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
         try {
             if (serialPort != null) {
                 synchronized (this) {
+                    serialPort.removeEventListener();
                     serialPort.enableReceiveTimeout(1);
 
-                    inputStream.close();
                     outputStream.flush();
+
+                    inputStream.close();
                     outputStream.close();
 
                     serialPort.close();
