@@ -9,14 +9,17 @@
 package org.openhab.binding.zigbee.internal.converter;
 
 import java.math.BigDecimal;
+import java.util.concurrent.ExecutionException;
 
-import org.eclipse.smarthome.core.library.types.DecimalType;
+import org.eclipse.smarthome.core.library.types.QuantityType;
+import org.eclipse.smarthome.core.library.unit.SIUnits;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
@@ -43,7 +46,15 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
             return false;
         }
 
-        cluster.bind();
+        CommandResult bindResponse;
+        try {
+            bindResponse = cluster.bind().get();
+            if (!bindResponse.isSuccess()) {
+                logger.warn("{}: Failed to bind temperature measurement cluster");
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+        }
 
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
@@ -69,7 +80,7 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
             return null;
         }
         return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE,
-                ZigBeeBindingConstants.ITEM_TYPE_NUMBER, "Temperature");
+                ZigBeeBindingConstants.ITEM_TYPE_NUMBER_TEMPERATURE, "Temperature");
     }
 
     @Override
@@ -79,7 +90,7 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
                 && attribute.getId() == ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {
-                updateChannelState(new DecimalType(BigDecimal.valueOf(value, 2)));
+                updateChannelState(new QuantityType<>(BigDecimal.valueOf(value, 2), SIUnits.CELSIUS));
             }
         }
     }
