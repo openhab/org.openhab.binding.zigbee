@@ -56,6 +56,7 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_IAS_MOTION_INTRUSION = "zigbee:ias_motionintrusion";
     public static final String CHANNEL_IAS_MOTION_PRESENCE = "zigbee:ias_motionpresence";
     public static final String CHANNEL_IAS_STANDARDCIE_SYSTEM = "zigbee:ias_standard_system";
+    public static final String CHANNEL_IAS_CO_DETECTOR = "zigbee:ias_codetector";
 
     public static final String CHANNEL_ELECTRICAL_ACTIVEPOWER = "zigbee:electrical_activepower";
 
