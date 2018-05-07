@@ -68,6 +68,8 @@ public class ZigBeeBindingConstants {
     public static final String ITEM_TYPE_CONTACT = "Contact";
     public static final String ITEM_TYPE_DIMMER = "Dimmer";
     public static final String ITEM_TYPE_NUMBER = "Number";
+    public static final String ITEM_TYPE_NUMBER_PRESSURE = "Number:Pressure";
+    public static final String ITEM_TYPE_NUMBER_TEMPERATURE = "Number:Temperature";
     public static final String ITEM_TYPE_SWITCH = "Switch";
 
     public static final String THING_PROPERTY_STKVERSION = "zigbee_stkversion";
@@ -106,7 +108,7 @@ public class ZigBeeBindingConstants {
     public final static String OFFLINE_NO_ADDRESS = "@text/zigbee.status.offline_noaddress";
     public final static String OFFLINE_NODE_NOT_FOUND = "@text/zigbee.status.offline_nodenotfound";
     public final static String OFFLINE_DISCOVERY_INCOMPLETE = "@text/zigbee.status.offline_discoveryincomplete";
-    
+
     // List of configuration values for flow control
     public final static Integer FLOWCONTROL_CONFIG_NONE = Integer.valueOf(0);
     public final static Integer FLOWCONTROL_CONFIG_HARDWARE_CTSRTS = Integer.valueOf(1);

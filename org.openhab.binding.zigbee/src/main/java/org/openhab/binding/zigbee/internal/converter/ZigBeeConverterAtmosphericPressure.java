@@ -8,9 +8,14 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import static org.eclipse.smarthome.core.library.unit.MetricPrefix.HECTO;
+
 import java.math.BigDecimal;
 
-import org.eclipse.smarthome.core.library.types.DecimalType;
+import javax.measure.quantity.Pressure;
+
+import org.eclipse.smarthome.core.library.types.QuantityType;
+import org.eclipse.smarthome.core.library.unit.SIUnits;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
@@ -92,7 +97,7 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
             return null;
         }
         return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_PRESSURE_VALUE,
-                ZigBeeBindingConstants.ITEM_TYPE_NUMBER, "Atmospheric Pressure");
+                ZigBeeBindingConstants.ITEM_TYPE_NUMBER_PRESSURE, "Atmospheric Pressure");
     }
 
     @Override
@@ -111,7 +116,8 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
             if (attribute.getId() == ZclPressureMeasurementCluster.ATTR_SCALEDVALUE && enhancedScale != null) {
                 Integer value = (Integer) attribute.getLastValue();
                 if (value != null) {
-                    updateChannelState(new DecimalType(BigDecimal.valueOf(value, enhancedScale)));
+                    updateChannelState(new QuantityType<Pressure>(BigDecimal.valueOf(value, enhancedScale),
+                            HECTO(SIUnits.PASCAL)));
                 }
                 return;
             }
@@ -119,7 +125,7 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
             if (attribute.getId() == ZclPressureMeasurementCluster.ATTR_MEASUREDVALUE && enhancedScale == null) {
                 Integer value = (Integer) attribute.getLastValue();
                 if (value != null) {
-                    updateChannelState(new DecimalType(BigDecimal.valueOf(value, 0)));
+                    updateChannelState(new QuantityType<Pressure>(BigDecimal.valueOf(value, 0), HECTO(SIUnits.PASCAL)));
                 }
                 return;
             }
