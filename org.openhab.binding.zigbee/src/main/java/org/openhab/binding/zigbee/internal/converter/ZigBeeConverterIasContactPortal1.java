@@ -13,7 +13,6 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
-import com.zsmartsystems.zigbee.zcl.ZclCommandListener;
 import com.zsmartsystems.zigbee.zcl.clusters.iaszone.ZoneTypeEnum;
 
 /**
@@ -22,7 +21,7 @@ import com.zsmartsystems.zigbee.zcl.clusters.iaszone.ZoneTypeEnum;
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeConverterIasContactPortal1 extends ZigBeeConverterIas implements ZclCommandListener {
+public class ZigBeeConverterIasContactPortal1 extends ZigBeeConverterIas {
     @Override
     public boolean initializeConverter() {
         bitTest = CIE_ALARM1;

@@ -85,6 +85,15 @@
         <state readOnly="true" />
     </channel-type>
 
+    <!-- IAS Fire Channel -->
+    <channel-type id="ias_fire">
+        <item-type>Switch</item-type>
+        <label>Fire Detector</label>
+        <description>Fire Indication Alarm</description>
+        <category>SmokeDetector</category>
+        <state readOnly="true" />
+    </channel-type>
+
     <!-- IAS Motion Presence Channel -->
     <channel-type id="ias_motionpresence">
         <item-type>Switch</item-type>

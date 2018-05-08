@@ -16,12 +16,12 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.clusters.iaszone.ZoneTypeEnum;
 
 /**
- * Converter for the IAS Standard CIE System sensor.
+ * Converter for the IAS fire indicator.
  *
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeConverterIasCieSystem extends ZigBeeConverterIas {
+public class ZigBeeConverterIasFireIndicator extends ZigBeeConverterIas {
     @Override
     public boolean initializeConverter() {
         bitTest = CIE_ALARM1;
@@ -30,11 +30,11 @@ public class ZigBeeConverterIasCieSystem extends ZigBeeConverterIas {
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
-        if (!supportsIasChannel(endpoint, ZoneTypeEnum.STANDARD_CIE)) {
+        if (!supportsIasChannel(endpoint, ZoneTypeEnum.FIRE_SENSOR)) {
             return null;
         }
 
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_IAS_STANDARDCIE_SYSTEM,
-                ZigBeeBindingConstants.ITEM_TYPE_SWITCH, "CIE Standard System Alarm");
+        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_IAS_FIRE_INDICATION,
+                ZigBeeBindingConstants.ITEM_TYPE_SWITCH, "Fire Detector");
     }
 }
