@@ -60,6 +60,16 @@
         </state>
     </channel-type>
 
+    <!-- IAS CO Detector Channel -->
+    <channel-type id="ias_codetector">
+        <item-type>Switch</item-type>
+        <label>Carbon Monoxide Detector</label>
+        <description>Carbon Monoxide Alarm</description>
+        <category>Sensor</category>
+        <state readOnly="true">
+        </state>
+    </channel-type>
+
     <!-- IAS Motion Presence Channel -->
     <channel-type id="ias_motionpresence">
         <item-type>Switch</item-type>

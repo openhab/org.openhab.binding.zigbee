@@ -60,6 +60,7 @@ public class ZigBeeChannelConverterFactory {
         channelMap.put(ZigBeeBindingConstants.CHANNEL_ELECTRICAL_ACTIVEPOWER, ZigBeeConverterMeasurementPower.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_HUMIDITY_VALUE, ZigBeeConverterRelativeHumidity.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_CONTACT_PORTAL1, ZigBeeConverterIasContactPortal1.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_CO_DETECTOR, ZigBeeConverterIasCoDetector.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_MOTION_INTRUSION, ZigBeeConverterIasMotionIntrusion.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_MOTION_PRESENCE, ZigBeeConverterIasMotionPresence.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_STANDARDCIE_SYSTEM, ZigBeeConverterIasCieSystem.class);
