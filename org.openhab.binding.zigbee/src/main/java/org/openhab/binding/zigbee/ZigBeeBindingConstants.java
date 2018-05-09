@@ -18,8 +18,6 @@ import java.util.TimeZone;
 
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 
-import com.google.common.collect.Sets;
-
 /**
  * The {@link ZigBeeBinding} class defines common constants, which are
  * used across the whole binding.
@@ -34,8 +32,7 @@ public class ZigBeeBindingConstants {
     // List of Thing Type UIDs
     public final static ThingTypeUID THING_TYPE_GENERIC_DEVICE = new ThingTypeUID(BINDING_ID, "device");
 
-    public final static Set<ThingTypeUID> SUPPORTED_THING_TYPES = Collections
-            .unmodifiableSet(Sets.newHashSet(THING_TYPE_GENERIC_DEVICE));
+    public final static Set<ThingTypeUID> SUPPORTED_THING_TYPES = Collections.singleton(THING_TYPE_GENERIC_DEVICE);
 
     // List of Channel UIDs
     public static final String CHANNEL_SWITCH_ONOFF = "zigbee:switch_onoff";
