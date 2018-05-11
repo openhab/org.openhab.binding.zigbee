@@ -45,7 +45,7 @@ import com.zsmartsystems.zigbee.zcl.ZclCluster;
  * required features are available. If so, it should return the channel. This method allows dynamic channel detection
  * for unknown devices and may not be called if a device is defined through another mechanism.
  * <li>The thing handler will call the
- * {@link #initialize(ZigBeeThingHandler, ChannelUID, ZigBeeCoordinatorHandler, IeeeAddress, int)} to initialise the
+ * {@link ZigBeeBaseChannelConverter#initialize(ZigBeeThingHandler, Channel, ZigBeeCoordinatorHandler, IeeeAddress, int)} to initialise the
  * channel converter. The converter should get any clusters via the
  * {@link ZigBeeCoordinatorHandler#getEndpoint(IeeeAddress, int)} and {@link ZigBeeEndpoint#getInputCluster(int)} or
  * {@link ZigBeeEndpoint#getOutputCluster(int)}. It should configure the binding by calling {@link ZclCluster#bind()}
@@ -54,7 +54,7 @@ import com.zsmartsystems.zigbee.zcl.ZclCluster;
  * {@link #configOptions} with any configuration options that the device supports that may need to be adjusted by the
  * user.
  * <li>If the converter receives information from the ZigBee library that updates the channel state, it should update
- * the state by calling {@link #updateChannelState(State).
+ * the state by calling {@link #updateChannelState(State)}.
  * <li>The thing handler may call {@link #updateConfiguration(Configuration)} with an updated channel configuration from
  * the user. The handler should update the configuration in the device, read back the updated configuration if
  * necessary, and return an updated channel configuration to the thing handler.
@@ -126,8 +126,8 @@ public abstract class ZigBeeBaseChannelConverter {
 
     /**
      * The polling period used for this channel in seconds. Normally this should be left at the default
-     * ({@link POLLING_PERIOD_DEFAULT}), however if the channel does not support reporting, it can be set to a higher
-     * period such as {@link POLLING_PERIOD_HIGH}. Any period may be used, however it is recommended to use these
+     * ({@link ZigBeeBaseChannelConverter#POLLING_PERIOD_DEFAULT}), however if the channel does not support reporting, it can be set to a higher
+     * period such as {@link ZigBeeBaseChannelConverter#POLLING_PERIOD_HIGH}. Any period may be used, however it is recommended to use these
      * standard settings.
      */
     protected int pollingPeriod = POLLING_PERIOD_DEFAULT;
@@ -148,7 +148,6 @@ public abstract class ZigBeeBaseChannelConverter {
      * @param coordinator the {@link ZigBeeCoordinatorHandler} this endpoint is part of
      * @param address the {@link IeeeAddress} of the node
      * @param endpointId the endpoint this channel is linked to
-     * @return true if the handler was created successfully - false otherwise
      */
     public void initialize(ZigBeeThingHandler thing, Channel channel, ZigBeeCoordinatorHandler coordinator,
             IeeeAddress address, int endpointId) {
@@ -190,8 +189,6 @@ public abstract class ZigBeeBaseChannelConverter {
      * <p>
      * This is run in a separate thread by the Thing Handler so the converter doesn't need to worry about returning
      * quickly.
-     *
-     * @param channel the {@link ZigBeeThingChannel}
      */
     public void handleRefresh() {
         // Overridable if a channel can be refreshed
@@ -240,8 +237,8 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * Gets the configuration descriptions required to configure this channel.
      * <p>
-     * Ideally, implementations should use the {@link ZclCluster#discoverAttributes()} method and the
-     * {@link ZclCluster#isAttributeSupported()} method to understand exactly what the device supports and only provide
+     * Ideally, implementations should use the {@link ZclCluster#discoverAttributes(boolean)} method and the
+     * {@link ZclCluster#isAttributeSupported(int)} method to understand exactly what the device supports and only provide
      * configuration as necessary.
      * <p>
      * This method should not be overridden - the {@link #configOptions} list should be populated during converter
@@ -255,8 +252,8 @@ public abstract class ZigBeeBaseChannelConverter {
 
     /**
      * Gets the polling period for this channel in seconds. Normally this should be left at the default
-     * ({@link POLLING_PERIOD_DEFAULT}), however if the channel does not support reporting, it can be set to a higher
-     * period such as {@link POLLING_PERIOD_HIGH} during the converter initialisation. Any period may be used, however
+     * ({@link ZigBeeBaseChannelConverter#POLLING_PERIOD_DEFAULT}), however if the channel does not support reporting, it can be set to a higher
+     * period such as {@link ZigBeeBaseChannelConverter#POLLING_PERIOD_HIGH} during the converter initialisation. Any period may be used, however
      * it is recommended to use these standard settings.
      *
      * @return the polling period for this channel in seconds

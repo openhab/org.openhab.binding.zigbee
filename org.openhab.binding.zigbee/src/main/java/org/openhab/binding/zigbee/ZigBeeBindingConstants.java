@@ -19,7 +19,7 @@ import java.util.TimeZone;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 
 /**
- * The {@link ZigBeeBinding} class defines common constants, which are
+ * The {@link ZigBeeBindingConstants} class defines common constants, which are
  * used across the whole binding.
  *
  * @author Chris Jackson - Initial contribution
@@ -140,10 +140,7 @@ public class ZigBeeBindingConstants {
     }
 
     /**
-     * Convert a map into a json encoded string
-     *
-     * @param object
-     * @return
+     * Convert a map into a json encoded string.
      */
     public static String propertiesToJson(Map<String, Object> object) {
         StringBuilder jsonBuilder = new StringBuilder();

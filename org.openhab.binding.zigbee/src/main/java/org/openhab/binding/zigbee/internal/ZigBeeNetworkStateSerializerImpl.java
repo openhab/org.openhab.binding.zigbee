@@ -104,7 +104,6 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
      * Note that this method needs to be synchronised as serialisation may be called from different threads.
      *
      * @param networkManager the network state
-     * @return the serialized network state as json {@link String}.
      */
     @Override
     public synchronized void serialize(final ZigBeeNetworkManager networkManager) {
@@ -137,7 +136,6 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
      * Deserializes the network state.
      *
      * @param networkState the network state
-     * @param networkStateString the network state as {@link String}
      */
     @Override
     public void deserialize(final ZigBeeNetworkManager networkState) {

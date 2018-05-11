@@ -32,7 +32,7 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Component;
 
 /**
- * The {@link org.openhab.binding.zigbee.emberHandlerFactory} is responsible for creating things and thing
+ * The {@link EmberHandlerFactory} is responsible for creating things and thing
  * handlers.
  *
  * @author Chris Jackson - Initial contribution

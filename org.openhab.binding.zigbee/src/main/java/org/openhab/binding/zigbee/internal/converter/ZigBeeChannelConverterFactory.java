@@ -92,7 +92,6 @@ public class ZigBeeChannelConverterFactory {
      *
      * @param thingUID the {@link ThingUID} of the thing
      * @param endpoint the {@link ZigBeeEndpoint} to generate the channels for
-     * @return
      */
     @SuppressWarnings("unchecked")
     public Collection<Channel> getChannels(ThingUID thingUID, ZigBeeEndpoint endpoint) {
