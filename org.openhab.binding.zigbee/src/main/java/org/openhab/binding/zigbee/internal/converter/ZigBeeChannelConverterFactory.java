@@ -17,7 +17,6 @@ import java.util.Map;
 
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
-import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
@@ -92,7 +91,8 @@ public class ZigBeeChannelConverterFactory {
      *
      * @param thingUID the {@link ThingUID} of the thing
      * @param endpoint the {@link ZigBeeEndpoint} to generate the channels for
-     * @return
+     * 
+     * @return a collection of all channels supported by the {@link ZigBeeEndpoint}
      */
     @SuppressWarnings("unchecked")
     public Collection<Channel> getChannels(ThingUID thingUID, ZigBeeEndpoint endpoint) {
