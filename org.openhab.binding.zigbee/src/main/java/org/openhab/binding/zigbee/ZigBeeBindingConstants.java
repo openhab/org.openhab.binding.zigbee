@@ -141,12 +141,15 @@ public class ZigBeeBindingConstants {
 
     /**
      * Convert a map into a json encoded string.
+     * 
+     * @param properties a map with the to-be-converted properties.
+     * @return a String with a JSON representation of the properties.
      */
-    public static String propertiesToJson(Map<String, Object> object) {
+    public static String propertiesToJson(Map<String, Object> properties) {
         StringBuilder jsonBuilder = new StringBuilder();
         jsonBuilder.append("{");
         boolean first = true;
-        for (Map.Entry<String, Object> entry : object.entrySet()) {
+        for (Map.Entry<String, Object> entry : properties.entrySet()) {
             if (!first) {
                 jsonBuilder.append(",");
             }
