@@ -21,7 +21,6 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclElectricalMeasurementCluster;
-import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
@@ -89,15 +88,11 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
 
     @Override
     public void handleRefresh() {
-        clusterMeasurement.getRmsVoltage(0);
+        clusterMeasurement.getRmsCurrent(0);
     }
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
-        if (endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID) == null) {
-            return null;
-        }
-
         ZclElectricalMeasurementCluster cluster = (ZclElectricalMeasurementCluster) endpoint
                 .getInputCluster(ZclElectricalMeasurementCluster.CLUSTER_ID);
         if (cluster == null) {
@@ -109,7 +104,7 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
                     && !cluster.isAttributeSupported(ZclElectricalMeasurementCluster.ATTR_RMSCURRENT)) {
 
                 return null;
-            } else if (cluster.getRmsVoltage(0) == null) {
+            } else if (cluster.getRmsCurrent(0) == null) {
                 return null;
             }
         } catch (InterruptedException | ExecutionException e) {

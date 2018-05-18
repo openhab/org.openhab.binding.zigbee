@@ -22,7 +22,6 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclElectricalMeasurementCluster;
-import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
@@ -94,10 +93,6 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
-        if (endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID) == null) {
-            return null;
-        }
-
         ZclElectricalMeasurementCluster cluster = (ZclElectricalMeasurementCluster) endpoint
                 .getInputCluster(ZclElectricalMeasurementCluster.CLUSTER_ID);
         if (cluster == null) {
