@@ -60,6 +60,14 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_POWER_BATTERYPERCENT = "system:battery-level";
     public static final String CHANNEL_POWER_BATTERYVOLTAGE = "zigbee:battery_voltage";
 
+    public static final String CHANNEL_NAME_ELECTRICAL_RMSVOLTAGE = "voltage";
+    public static final String CHANNEL_LABEL_ELECTRICAL_RMSVOLTAGE = "Voltage";
+    public static final String CHANNEL_ELECTRICAL_RMSVOLTAGE = "zigbee:electrical_rmsvoltage";
+
+    public static final String CHANNEL_NAME_ELECTRICAL_RMSCURRENT = "current";
+    public static final String CHANNEL_LABEL_ELECTRICAL_RMSCURRENT = "Current";
+    public static final String CHANNEL_ELECTRICAL_RMSCURRENT = "zigbee:electrical_rmscurrent";
+
     public static final String CHANNEL_PROPERTY_ENDPOINT = "zigbee_endpoint";
 
     public static final String ITEM_TYPE_COLOR = "Color";
@@ -141,7 +149,7 @@ public class ZigBeeBindingConstants {
 
     /**
      * Convert a map into a json encoded string.
-     * 
+     *
      * @param properties a map with the to-be-converted properties.
      * @return a String with a JSON representation of the properties.
      */
