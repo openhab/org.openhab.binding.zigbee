@@ -13,16 +13,15 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
-import com.zsmartsystems.zigbee.zcl.ZclCommandListener;
 import com.zsmartsystems.zigbee.zcl.clusters.iaszone.ZoneTypeEnum;
 
 /**
- * Converter for the IAS motion sensor.
+ * Converter for the IAS CO sensor.
  *
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeConverterIasCoDetector extends ZigBeeConverterIas implements ZclCommandListener {
+public class ZigBeeConverterIasCoDetector extends ZigBeeConverterIas {
     @Override
     public boolean initializeConverter() {
         bitTest = CIE_ALARM1;

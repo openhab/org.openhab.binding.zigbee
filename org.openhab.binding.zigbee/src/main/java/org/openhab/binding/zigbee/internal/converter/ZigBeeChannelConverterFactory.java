@@ -17,6 +17,7 @@ import java.util.Map;
 
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
@@ -60,6 +61,7 @@ public class ZigBeeChannelConverterFactory {
         channelMap.put(ZigBeeBindingConstants.CHANNEL_HUMIDITY_VALUE, ZigBeeConverterRelativeHumidity.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_CONTACT_PORTAL1, ZigBeeConverterIasContactPortal1.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_CO_DETECTOR, ZigBeeConverterIasCoDetector.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_FIRE_INDICATION, ZigBeeConverterIasFireIndicator.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_MOTION_INTRUSION, ZigBeeConverterIasMotionIntrusion.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_MOTION_PRESENCE, ZigBeeConverterIasMotionPresence.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_STANDARDCIE_SYSTEM, ZigBeeConverterIasCieSystem.class);
@@ -95,7 +97,7 @@ public class ZigBeeChannelConverterFactory {
      *
      * @param thingUID the {@link ThingUID} of the thing
      * @param endpoint the {@link ZigBeeEndpoint} to generate the channels for
-     * 
+     *
      * @return a collection of all channels supported by the {@link ZigBeeEndpoint}
      */
     @SuppressWarnings("unchecked")
