@@ -654,7 +654,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 updateStatus(ThingStatus.ONLINE);
                 break;
             case OFFLINE:
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE, ZigBeeBindingConstants.OFFLINE_STARTUP_FAIL);
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
                 break;
             default:
                 break;
