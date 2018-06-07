@@ -38,6 +38,14 @@ The Ember EZSP NCP (Network Co-Processor) supports the Silabs EM358 or MightyGec
 
 The thing type is ```coordinator_telegesis```.
 
+#### Examples for coordinators
+
+- [Telegesis ETRX357USB zigbee® USB Stick](https://www.silabs.com/products/wireless/mesh-networking/telegesis-modules-gateways/etrx3-zigbee-usb-sticks)
+- [Texas Instruments CC2531EMK](http://www.ti.com/tool/cc2531emk)
+- A CC2531 Stick from eBay, Aliexpress, etc. like [this](https://de.aliexpress.com/item/Drahtlose-Zigbee-CC2531-Sniffer-software-protokoll-analyse-Bareboard-Paket-Protokoll-Analyzer-Modul-Usb-schnittstelle-Dongle-Erfassen/32852226435.html) and a module to flash the firmware like [this](https://de.aliexpress.com/item/SmartRF04EB-CC1110-CC2530-ZigBee-Module-USB-Downloader-Emulator-MCU-M100/32673666126.html)
+- [QIVICON ZigBee-Funkstick](https://www.qivicon.com/de/produkte/produktinformationen/zigbee-funkstick/) (only working on Linux devices)
+- [Digi XStick](https://www.digi.com/products/xbee-rf-solutions/boxed-rf-modems-adapters/xstick)
+
 ### Devices
 
 The following devices have been tested with the binding
