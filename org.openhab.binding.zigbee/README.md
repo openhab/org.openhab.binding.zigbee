@@ -16,6 +16,7 @@ Coordinators need to be installed manually and the serial port must be set.
 |----------------------------|-------------|-------------------------------|
 |[Texas Instruments CC2531EMK](http://www.ti.com/tool/cc2531emk)|[TI2531](#ti2531-coordinator)|-|
 |A cheap CC2530, CC2531, CC2538 or CC2650 Stick from eBay, Aliexpress, etc. like [this](https://de.aliexpress.com/item/Drahtlose-Zigbee-CC2531-Sniffer-software-protokoll-analyse-Bareboard-Paket-Protokoll-Analyzer-Modul-Usb-schnittstelle-Dongle-Erfassen/32852226435.html) and a module to flash the firmware like [this](https://de.aliexpress.com/item/SmartRF04EB-CC1110-CC2530-ZigBee-Module-USB-Downloader-Emulator-MCU-M100/32673666126.html)|[TI2531](#ti2531-coordinator)|-|
+|[Nortek Security & Control HUSBZB-1](https://nortekcontrol.com/products/2gig/husbzb-1-gocontrol-quickstick-combo/)|[TI2531](#ti2531-coordinator)|Stick contains both Z-Wave and Zigbee|
 |[Bitron Video ZigBee USB Funkstick](http://www.bitronvideo.eu/index.php/produkte/smart-home-produkte/zb-funkstick/)|[Ember](#ember-ezsp-ncp-coordinator)|-|
 |[Cortet EM358 USB Stick](https://www.cortet.com/iot-hardware/cortet-usb-sticks/em358-usb-stick)|[Ember](#ember-ezsp-ncp-coordinator)|-|
 |[Telegesis ETRX357USB zigbee® USB Stick](https://www.silabs.com/products/wireless/mesh-networking/telegesis-modules-gateways/etrx3-zigbee-usb-sticks)|[Telegesis](#telegesis-etrx3)|-|
