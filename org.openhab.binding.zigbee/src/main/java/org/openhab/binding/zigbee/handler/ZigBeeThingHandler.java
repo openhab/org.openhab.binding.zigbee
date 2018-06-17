@@ -54,8 +54,8 @@ import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
+import com.zsmartsystems.zigbee.app.otaserver.ZclOtaUpgradeServer;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaFile;
-import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaServer;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaServerStatus;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaStatusCallback;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOtaUpgradeCluster;
@@ -578,11 +578,11 @@ public class ZigBeeThingHandler extends BaseThingHandler
             return;
         }
 
-        ZigBeeOtaServer otaServer = null;
+        ZclOtaUpgradeServer otaServer = null;
         ZigBeeEndpoint otaEndpoint = null;
         ZclOtaUpgradeCluster otaCluster = null;
         for (ZigBeeEndpoint endpoint : node.getEndpoints()) {
-            otaServer = (ZigBeeOtaServer) endpoint.getApplication(ZclOtaUpgradeCluster.CLUSTER_ID);
+            otaServer = (ZclOtaUpgradeServer) endpoint.getApplication(ZclOtaUpgradeCluster.CLUSTER_ID);
             if (otaServer != null) {
                 break;
             }
@@ -601,7 +601,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
         // Register the OTA server if it's not already registered
         if (otaServer == null && otaEndpoint != null) {
-            otaServer = new ZigBeeOtaServer();
+            otaServer = new ZclOtaUpgradeServer();
             otaEndpoint.addApplication(otaServer);
         } else {
             logger.debug("{}: Can't create OTA server", nodeIeeeAddress);
@@ -621,7 +621,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
         // DOWNLOADING
         progressCallback.next();
 
-        final ZigBeeOtaServer finalOtaServer = otaServer;
+        final ZclOtaUpgradeServer finalOtaServer = otaServer;
         final ZclOtaUpgradeCluster finalOtaCluster = otaCluster;
         otaServer.addListener(new ZigBeeOtaStatusCallback() {
             @Override
