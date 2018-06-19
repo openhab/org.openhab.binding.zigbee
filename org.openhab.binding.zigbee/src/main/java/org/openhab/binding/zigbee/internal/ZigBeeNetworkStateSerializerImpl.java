@@ -180,4 +180,16 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
         logger.debug("Loading ZigBee network state: Done.");
     }
 
+    public synchronized void delete() {
+        final File file = new File(networkStateFilePath + "/" + networkStateFileName + networkId + ".xml");
+        boolean networkStateExists = file.exists();
+        if (networkStateExists) {
+            if (file.delete()) {
+                logger.debug("Deleting ZigBee network state: Done.");
+            } else {
+                logger.error("Error deleting network state file");
+            }
+        }
+    }
+
 }
