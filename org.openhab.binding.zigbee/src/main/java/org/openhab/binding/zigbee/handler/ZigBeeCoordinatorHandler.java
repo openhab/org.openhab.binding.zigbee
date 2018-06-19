@@ -22,7 +22,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
@@ -46,7 +45,6 @@ import com.zsmartsystems.zigbee.ZigBeeNetworkManager.ZigBeeInitializeResponse;
 import com.zsmartsystems.zigbee.ZigBeeNetworkMeshMonitor;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNetworkStateListener;
-import com.zsmartsystems.zigbee.ZigBeeNetworkStateSerializer;
 import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.app.iasclient.ZigBeeIasCieApp;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaServer;
@@ -114,7 +112,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     private ZigBeeNetworkMeshMonitor meshMonitor = null;
 
-    private boolean bridgeRemoved = false;
+    private volatile boolean bridgeRemoved = false;
 
     public ZigBeeCoordinatorHandler(Bridge coordinator) {
         super(coordinator);
@@ -276,7 +274,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             // Shut down the ZigBee library
             networkManager.shutdown();
 
-            // If the bridge has been removed then delete the network state file
             if (bridgeRemoved) {
                 networkStateSerializer.delete();
             }
@@ -436,7 +433,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     @Override
     public void handleRemoval() {
-        // this flag is used in dispose() in order to do some special stuff when the bridge has been removed
+        // this flag is used in dispose() in order delete the network state file when the bridge has been removed
         bridgeRemoved = true;
         super.handleRemoval();
     }
