@@ -273,11 +273,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
             // Shut down the ZigBee library
             networkManager.shutdown();
-
-            if (bridgeRemoved) {
-                networkStateSerializer.delete();
-            }
         }
+
+        if (networkStateSerializer != null && bridgeRemoved) {
+            networkStateSerializer.delete();
+        }
+
         logger.debug("ZigBee network [{}] closed.", thing.getUID());
     }
 
