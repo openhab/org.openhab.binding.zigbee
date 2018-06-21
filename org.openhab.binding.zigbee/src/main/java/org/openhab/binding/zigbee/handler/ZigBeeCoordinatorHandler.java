@@ -45,7 +45,6 @@ import com.zsmartsystems.zigbee.ZigBeeNetworkManager.ZigBeeInitializeResponse;
 import com.zsmartsystems.zigbee.ZigBeeNetworkMeshMonitor;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNetworkStateListener;
-import com.zsmartsystems.zigbee.ZigBeeNetworkStateSerializer;
 import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.app.iasclient.ZigBeeIasCieApp;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaServer;
@@ -92,7 +91,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     private Class<?> serializerClass;
     private Class<?> deserializerClass;
 
-    private ZigBeeNetworkStateSerializer networkStateSerializer;
+    private ZigBeeNetworkStateSerializerImpl networkStateSerializer;
 
     protected ZigBeeKey networkKey;
 
@@ -112,6 +111,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     private ScheduledFuture<?> restartJob = null;
 
     private ZigBeeNetworkMeshMonitor meshMonitor = null;
+
+    private volatile boolean bridgeRemoved = false;
 
     public ZigBeeCoordinatorHandler(Bridge coordinator) {
         super(coordinator);
@@ -273,6 +274,11 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             // Shut down the ZigBee library
             networkManager.shutdown();
         }
+
+        if (networkStateSerializer != null && bridgeRemoved) {
+            networkStateSerializer.delete();
+        }
+
         logger.debug("ZigBee network [{}] closed.", thing.getUID());
     }
 
@@ -281,6 +287,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         super.thingUpdated(thing);
         logger.debug("Updating coordinator [{}]", thing.getUID());
     }
+
 
     /**
      * Common initialisation point for all ZigBee coordinators.
@@ -323,7 +330,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         logger.debug("Initialising ZigBee coordinator");
 
         String networkId = getThing().getUID().toString().replaceAll(":", "_");
-        ZigBeeNetworkStateSerializer networkStateSerializer = new ZigBeeNetworkStateSerializerImpl(networkId);
+        networkStateSerializer = new ZigBeeNetworkStateSerializerImpl(networkId);
 
         // Configure the network manager
         networkManager = new ZigBeeNetworkManager(zigbeeTransport);
@@ -423,6 +430,13 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             restartJob = null;
             initialiseZigBee();
         }, 1, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void handleRemoval() {
+        // this flag is used in dispose() in order delete the network state file when the bridge has been removed
+        bridgeRemoved = true;
+        super.handleRemoval();
     }
 
     @Override
