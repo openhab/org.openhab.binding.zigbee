@@ -13,8 +13,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -118,7 +120,7 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
             destinations.add(nodeDao);
         }
 
-        final File file = new File(networkStateFilePath + "/" + networkStateFileName + networkId + ".xml");
+        final File file = getNetworkStateFile();
 
         try {
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
@@ -141,7 +143,7 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
     public void deserialize(final ZigBeeNetworkManager networkState) {
         logger.debug("Loading ZigBee network state: Start.");
 
-        final File file = new File(networkStateFilePath + "/" + networkStateFileName + networkId + ".xml");
+        final File file = getNetworkStateFile();
         boolean networkStateExists = file.exists();
         if (!networkStateExists) {
             logger.debug("Loading ZigBee network state: File does not exist");
@@ -174,10 +176,27 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
                 }
             }
         } catch (Exception e) {
-            logger.debug("Error loading ZigBee state ", e);
+            logger.error("Error loading ZigBee state ", e);
         }
 
         logger.debug("Loading ZigBee network state: Done.");
+    }
+
+    /**
+     * Deletes the network state file
+     */
+    public synchronized void delete() {
+        try {
+            logger.debug("Deleting ZigBee network state: Start.");
+            Files.deleteIfExists(getNetworkStateFile().toPath());
+            logger.debug("Deleting ZigBee network state: Done.");
+        } catch (IOException e) {
+            logger.error("Error deleting ZigBee state ", e);
+        }
+    }
+
+    private File getNetworkStateFile() {
+        return new File(networkStateFilePath + "/" + networkStateFileName + networkId + ".xml");
     }
 
 }

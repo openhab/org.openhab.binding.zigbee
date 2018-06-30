@@ -108,7 +108,8 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
         if (attribute.getCluster() == ZclClusterType.POWER_CONFIGURATION
                 && attribute.getId() == ZclPowerConfigurationCluster.ATTR_BATTERYVOLTAGE) {
             Integer value = (Integer) attribute.getLastValue();
-            if (value == null) {
+            if (value == null || value == 0xFF) {
+                // The value 0xFF indicates an invalid or unknown reading.
                 return;
             }
             updateChannelState(new DecimalType(BigDecimal.valueOf(value, 1)));
