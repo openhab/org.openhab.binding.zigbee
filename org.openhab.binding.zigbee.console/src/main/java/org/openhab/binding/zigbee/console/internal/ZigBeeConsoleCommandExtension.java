@@ -169,7 +169,7 @@ public class ZigBeeConsoleCommandExtension extends AbstractConsoleCommandExtensi
             List<Thing> bridges = thingRegistry.stream().filter(
                     thing -> BINDING_ID.equals(thing.getThingTypeUID().getBindingId()) && thing instanceof Bridge)
                     .collect(toList());
-            if (bridges.size() == 0) {
+            if (bridges.isEmpty()) {
                 throw new CommandExecutionException("No ZigBee bridge found");
             } else if (bridges.size() > 1) {
                 throw new CommandExecutionException(
