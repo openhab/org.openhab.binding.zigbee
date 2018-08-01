@@ -734,4 +734,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             networkStateSerializer.serialize(networkManager);
         }
     }
+
+    public ZigBeeNetworkManager getNetworkManager() {
+        return this.networkManager;
+    }
 }
