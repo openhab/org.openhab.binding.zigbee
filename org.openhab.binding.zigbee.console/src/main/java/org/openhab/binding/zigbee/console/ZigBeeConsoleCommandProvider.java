@@ -1,0 +1,35 @@
+/**
+ * Copyright (c) 2010-2018 by the respective copyright holders.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
+package org.openhab.binding.zigbee.console;
+
+import java.util.Collection;
+
+import org.eclipse.smarthome.core.thing.ThingTypeUID;
+
+import com.zsmartsystems.zigbee.console.ZigBeeConsoleCommand;
+
+/**
+ * Interface to be implemented by services providing {@link ZigBeeConsoleCommand} instances.
+ *
+ * @author Henning Sudbrock - initial contribution
+ */
+public interface ZigBeeConsoleCommandProvider {
+
+    /**
+     * Returns all provided commands.
+     */
+    Collection<ZigBeeConsoleCommand> getAllCommands();
+
+    /**
+     * Returns a console command for the given name and applicable for the given bridge type, or null if no such command
+     * is provided.
+     */
+    ZigBeeConsoleCommand getCommand(String commandName, ThingTypeUID thingTypeUID);
+
+}
