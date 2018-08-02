@@ -287,7 +287,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         logger.debug("Updating coordinator [{}]", thing.getUID());
     }
 
-
     /**
      * Common initialisation point for all ZigBee coordinators.
      * Called by bridge implementations after they have initialised their interfaces.
@@ -535,7 +534,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     @Override
     public void nodeAdded(ZigBeeNode node) {
-        // Nothing to do here...
+        nodeUpdated(node);
     }
 
     @Override
@@ -643,10 +642,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         return node.getEndpoints();
     }
 
-    public Set<ZigBeeNode> getNodes() {
-        return networkManager.getNodes();
-    }
-
     @Override
     public void networkStateUpdated(final ZigBeeTransportState state) {
         switch (state) {
@@ -670,6 +665,15 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             return null;
         }
         return networkManager.getNode(nodeIeeeAddress);
+    }
+
+    /**
+     * Gets the nodes in this network manager
+     *
+     * @return the set of {@link ZigBeeNode}s
+     */
+    public Set<ZigBeeNode> getNodes() {
+        return networkManager.getNodes();
     }
 
     /**
