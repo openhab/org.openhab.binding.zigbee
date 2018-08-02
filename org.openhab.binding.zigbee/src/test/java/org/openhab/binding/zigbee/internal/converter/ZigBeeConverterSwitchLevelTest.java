@@ -11,8 +11,10 @@ package org.openhab.binding.zigbee.internal.converter;
 import static org.junit.Assert.assertEquals;
 
 import org.eclipse.smarthome.core.library.types.OnOffType;
+import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ChannelUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.types.State;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -28,12 +30,12 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclDataType;
 
 /**
- * Tests for OnOff converter
+ * Tests for Level converter
  *
  * @author Chris Jackson
  *
  */
-public class ZigBeeConverterSwitchOnoffTest {
+public class ZigBeeConverterSwitchLevelTest {
 
     @Test
     public void testAttributeUpdated() {
@@ -42,19 +44,49 @@ public class ZigBeeConverterSwitchOnoffTest {
         Mockito.when(coordinatorHandler.getEndpoint(ArgumentMatchers.any(IeeeAddress.class), ArgumentMatchers.anyInt()))
                 .thenReturn(endpoint);
 
-        ZigBeeConverterSwitchOnoff converter = new ZigBeeConverterSwitchOnoff();
+        ZigBeeConverterSwitchLevel converter = new ZigBeeConverterSwitchLevel();
         ArgumentCaptor<ChannelUID> channelCapture = ArgumentCaptor.forClass(ChannelUID.class);
         ArgumentCaptor<State> stateCapture = ArgumentCaptor.forClass(State.class);
         ZigBeeThingHandler thingHandler = Mockito.mock(ZigBeeThingHandler.class);
-        Channel channel = new Channel(new ChannelUID("a:b:c:d"), "");
+        Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
         converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
-        ZclAttribute attribute = new ZclAttribute(ZclClusterType.ON_OFF, 0, "OnOff", ZclDataType.BOOLEAN, false, false,
-                false, false);
-        converter.attributeUpdated(attribute);
+
+        ZclAttribute onAttribute = new ZclAttribute(ZclClusterType.ON_OFF, 0, "OnOff", ZclDataType.BOOLEAN, false,
+                false, false, false);
+        ZclAttribute levelAttribute = new ZclAttribute(ZclClusterType.LEVEL_CONTROL, 0, "Level", ZclDataType.BOOLEAN,
+                false, false, false, false);
+
+        // The following sequence checks that the level is ignored if the OnOff state is OFF
+        onAttribute.updateValue(new Boolean(true));
+        converter.attributeUpdated(onAttribute);
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
+        assertEquals(new ChannelUID("a:b:c:d"), channelCapture.getValue());
+        assertEquals(OnOffType.ON, stateCapture.getValue());
 
+        onAttribute.updateValue(new Boolean(false));
+        converter.attributeUpdated(onAttribute);
+        Mockito.verify(thingHandler, Mockito.times(2)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
         assertEquals(new ChannelUID("a:b:c:d"), channelCapture.getValue());
         assertEquals(OnOffType.OFF, stateCapture.getValue());
+
+        // No update here...
+        levelAttribute.updateValue(new Integer(50));
+        converter.attributeUpdated(levelAttribute);
+        Mockito.verify(thingHandler, Mockito.times(2)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+
+        onAttribute.updateValue(new Boolean(true));
+        converter.attributeUpdated(onAttribute);
+        Mockito.verify(thingHandler, Mockito.times(3)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+        assertEquals(OnOffType.ON, stateCapture.getValue());
+
+        converter.attributeUpdated(levelAttribute);
+        Mockito.verify(thingHandler, Mockito.times(4)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+        assertEquals(new ChannelUID("a:b:c:d"), channelCapture.getValue());
+        assertEquals(new PercentType(20), stateCapture.getValue());
     }
 }

@@ -74,7 +74,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
                 logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
             }
 
-            // Add a listener, then request the status
+            // Add the listener
             clusterOnOffServer.addAttributeListener(this);
         }
 
