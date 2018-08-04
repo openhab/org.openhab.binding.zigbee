@@ -49,6 +49,8 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
 
     private final AtomicBoolean currentState = new AtomicBoolean(true);
 
+    private PercentType lastLevel = PercentType.HUNDRED;
+
     @Override
     public boolean initializeConverter() {
         clusterLevelControl = (ZclLevelControlCluster) endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
@@ -166,10 +168,10 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.LEVEL_CONTROL
                 && attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
-            Integer level = (Integer) attribute.getLastValue();
-            if (level != null && currentState.get()) {
+            lastLevel = levelToPercent((Integer) attribute.getLastValue());
+            if (currentState.get()) {
                 // Note that state is only updated if the current On/Off state is TRUE (ie ON)
-                updateChannelState(levelToPercent(level));
+                updateChannelState(lastLevel);
             }
             return;
         }
@@ -178,7 +180,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
                 return;
             }
             currentState.set((Boolean) attribute.getLastValue());
-            updateChannelState(currentState.get() ? OnOffType.ON : OnOffType.OFF);
+            updateChannelState(currentState.get() ? lastLevel : OnOffType.OFF);
         }
     }
 }
