@@ -97,7 +97,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
             // really received an OFF report, thus confirming ON_OFF reporting is working
             currentState.set(true);
 
-            // Add a listener, then request the status
+            // Add a listener
             clusterOnOffServer.addAttributeListener(this);
         }
 
