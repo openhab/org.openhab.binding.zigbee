@@ -70,6 +70,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
                 }
             } else {
                 pollingPeriod = POLLING_PERIOD_HIGH;
+                logger.debug("{}: Failed to bind level control cluster", endpoint.getIeeeAddress());
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting level control reporting ", endpoint.getIeeeAddress(), e);
