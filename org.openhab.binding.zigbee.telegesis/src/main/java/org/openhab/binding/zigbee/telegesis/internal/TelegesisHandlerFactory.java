@@ -38,7 +38,7 @@ import org.osgi.service.component.annotations.Component;
 @Component(service = ThingHandlerFactory.class, immediate = true, configurationPid = "org.openhab.binding.zigbee.telegesis")
 @NonNullByDefault
 public class TelegesisHandlerFactory extends BaseThingHandlerFactory {
-    private Map<ThingUID, ServiceRegistration> discoveryServiceRegs = new HashMap<>();
+    private Map<ThingUID, ServiceRegistration> coordinatorHandlerRegs = new HashMap<>();
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections
             .singleton(TelegesisBindingConstants.THING_TYPE_TELEGESIS);
@@ -58,7 +58,7 @@ public class TelegesisHandlerFactory extends BaseThingHandlerFactory {
         }
 
         if (coordinator != null) {
-            discoveryServiceRegs.put(coordinator.getThing().getUID(), bundleContext.registerService(
+            coordinatorHandlerRegs.put(coordinator.getThing().getUID(), bundleContext.registerService(
                     ZigBeeCoordinatorHandler.class.getName(), coordinator, new Hashtable<String, Object>()));
 
             return coordinator;
@@ -70,10 +70,10 @@ public class TelegesisHandlerFactory extends BaseThingHandlerFactory {
     @Override
     protected synchronized void removeHandler(ThingHandler thingHandler) {
         if (thingHandler instanceof TelegesisHandler) {
-            ServiceRegistration serviceReg = discoveryServiceRegs.get(thingHandler.getThing().getUID());
-            if (serviceReg != null) {
-                serviceReg.unregister();
-                discoveryServiceRegs.remove(thingHandler.getThing().getUID());
+            ServiceRegistration coordinatorHandlerReg = coordinatorHandlerRegs.get(thingHandler.getThing().getUID());
+            if (coordinatorHandlerReg != null) {
+                coordinatorHandlerReg.unregister();
+                coordinatorHandlerRegs.remove(thingHandler.getThing().getUID());
             }
         }
     }

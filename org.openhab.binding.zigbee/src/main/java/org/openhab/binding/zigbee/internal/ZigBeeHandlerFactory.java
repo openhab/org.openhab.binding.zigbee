@@ -29,6 +29,7 @@ import org.osgi.service.component.annotations.Component;
  */
 @Component(immediate = true, service = { ThingHandlerFactory.class })
 public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
+    private final ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -37,14 +38,12 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
             return true;
         }
 
-        ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
         return matcher.getSupportedThingTypeUIDs().contains(thingTypeUID);
     }
 
     @Override
     protected ThingHandler createHandler(Thing thing) {
-        ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
-        if (!matcher.getSupportedThingTypeUIDs().contains(thing.getThingTypeUID())) {
+        if (!supportsThingType(thing.getThingTypeUID())) {
             return null;
         }
 

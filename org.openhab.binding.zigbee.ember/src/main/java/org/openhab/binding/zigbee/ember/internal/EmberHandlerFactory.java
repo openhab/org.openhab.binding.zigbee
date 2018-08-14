@@ -38,7 +38,7 @@ import org.osgi.service.component.annotations.Component;
 @Component(service = ThingHandlerFactory.class, immediate = true, configurationPid = "org.openhab.binding.zigbee.ember")
 @NonNullByDefault
 public class EmberHandlerFactory extends BaseThingHandlerFactory {
-    private Map<ThingUID, ServiceRegistration> discoveryServiceRegs = new HashMap<>();
+    private Map<ThingUID, ServiceRegistration> coordinatorHandlerRegs = new HashMap<>();
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections
             .singleton(EmberBindingConstants.THING_TYPE_EMBER);
@@ -58,7 +58,7 @@ public class EmberHandlerFactory extends BaseThingHandlerFactory {
         }
 
         if (emberHandler != null) {
-            discoveryServiceRegs.put(emberHandler.getThing().getUID(), bundleContext.registerService(
+            coordinatorHandlerRegs.put(emberHandler.getThing().getUID(), bundleContext.registerService(
                     ZigBeeCoordinatorHandler.class.getName(), emberHandler, new Hashtable<String, Object>()));
 
             return emberHandler;
@@ -70,10 +70,10 @@ public class EmberHandlerFactory extends BaseThingHandlerFactory {
     @Override
     protected synchronized void removeHandler(ThingHandler thingHandler) {
         if (thingHandler instanceof EmberHandler) {
-            ServiceRegistration serviceReg = discoveryServiceRegs.get(thingHandler.getThing().getUID());
-            if (serviceReg != null) {
-                serviceReg.unregister();
-                discoveryServiceRegs.remove(thingHandler.getThing().getUID());
+            ServiceRegistration coordinatorHandlerReg = coordinatorHandlerRegs.get(thingHandler.getThing().getUID());
+            if (coordinatorHandlerReg != null) {
+                coordinatorHandlerReg.unregister();
+                coordinatorHandlerRegs.remove(thingHandler.getThing().getUID());
             }
         }
     }

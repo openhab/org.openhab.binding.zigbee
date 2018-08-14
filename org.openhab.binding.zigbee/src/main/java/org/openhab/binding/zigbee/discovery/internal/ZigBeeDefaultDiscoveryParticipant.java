@@ -35,18 +35,18 @@ public class ZigBeeDefaultDiscoveryParticipant implements ZigBeeDiscoveryPartici
         ThingUID thingUID = new ThingUID(ZigBeeBindingConstants.BINDING_ID, bridgeUID,
                 node.getIeeeAddress().toString().toLowerCase().replaceAll("[^a-z0-9_/]", ""));
 
-        String label;
-        // If we know the manufacturer and model, then give this device a name and a thing type
-        if ((properties.get(Thing.PROPERTY_VENDOR) != null) && (properties.get(Thing.PROPERTY_MODEL_ID) != null)) {
-            label = properties.get(Thing.PROPERTY_VENDOR) + " " + properties.get(Thing.PROPERTY_MODEL_ID);
-        } else {
-            label = "Unknown ZigBee Device";
-        }
-
         ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
         ThingTypeUID thingTypeUID = matcher.matchThingType(properties);
         if (thingTypeUID == null) {
             return null;
+        }
+
+        String label;
+        // If we know the manufacturer and model, then give this device a name
+        if ((properties.get(Thing.PROPERTY_VENDOR) != null) && (properties.get(Thing.PROPERTY_MODEL_ID) != null)) {
+            label = properties.get(Thing.PROPERTY_VENDOR) + " " + properties.get(Thing.PROPERTY_MODEL_ID);
+        } else {
+            label = "Unknown ZigBee Device";
         }
 
         return DiscoveryResultBuilder.create(thingUID).withThingType(thingTypeUID).withProperties(properties)

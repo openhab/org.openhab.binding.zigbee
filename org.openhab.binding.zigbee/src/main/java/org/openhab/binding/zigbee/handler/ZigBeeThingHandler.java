@@ -179,7 +179,6 @@ public class ZigBeeThingHandler extends BaseThingHandler
         logger.debug("{}: Start initialising ZigBee Thing handler", nodeIeeeAddress);
 
         // Update the general properties
-        // This is required here to allow us to check for a static thing type before we check the dynamic configuration
         ZigBeeNodePropertyDiscoverer propertyDiscoverer = new ZigBeeNodePropertyDiscoverer();
         propertyDiscoverer.setProperties(getThing().getProperties());
         Map<String, String> newProperties = propertyDiscoverer.getProperties(node);

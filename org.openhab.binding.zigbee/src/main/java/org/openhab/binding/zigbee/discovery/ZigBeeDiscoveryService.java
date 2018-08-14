@@ -59,7 +59,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
 
     private DiscoveryServiceCallback discoveryServiceCallback;
 
-    private final Set<ZigBeeCoordinatorHandler> coordinators = new CopyOnWriteArraySet<>();
+    private final Set<ZigBeeCoordinatorHandler> coordinatorHandlers = new CopyOnWriteArraySet<>();
 
     private final Set<ZigBeeDiscoveryParticipant> participants = new CopyOnWriteArraySet<>();
     private final Set<ThingTypeUID> supportedThingTypes = new CopyOnWriteArraySet<>();
@@ -89,12 +89,12 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
     }
 
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
-    protected void addZigBeeCoordinator(ZigBeeCoordinatorHandler coordinator) {
-        coordinators.add(coordinator);
+    protected void addZigBeeCoordinatorHandler(ZigBeeCoordinatorHandler coordinatorHandler) {
+        coordinatorHandlers.add(coordinatorHandler);
         ZigBeeNetworkNodeListener listener = new ZigBeeNetworkNodeListener() {
             @Override
             public void nodeAdded(ZigBeeNode node) {
-                ZigBeeDiscoveryService.this.nodeDiscovered(coordinator, node);
+                ZigBeeDiscoveryService.this.nodeDiscovered(coordinatorHandler, node);
             }
 
             @Override
@@ -108,13 +108,13 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
             }
         };
 
-        coordinator.addNetworkNodeListener(listener);
-        registeredListeners.put(coordinator.getUID(), listener);
+        coordinatorHandler.addNetworkNodeListener(listener);
+        registeredListeners.put(coordinatorHandler.getUID(), listener);
     }
 
-    protected void removeZigBeeCoordinator(ZigBeeCoordinatorHandler coordinator) {
-        coordinators.remove(coordinator);
-        coordinator.removeNetworkNodeListener(registeredListeners.remove(coordinator.getUID()));
+    protected void removeZigBeeCoordinatorHandler(ZigBeeCoordinatorHandler coordinatorHandler) {
+        coordinatorHandlers.remove(coordinatorHandler);
+        coordinatorHandler.removeNetworkNodeListener(registeredListeners.remove(coordinatorHandler.getUID()));
     }
 
     @Override
@@ -129,7 +129,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
 
     @Override
     public void startScan() {
-        for (ZigBeeCoordinatorHandler coordinator : coordinators) {
+        for (ZigBeeCoordinatorHandler coordinator : coordinatorHandlers) {
             if (discoveryServiceCallback != null) {
                 for (ZigBeeNode node : coordinator.getNodes()) {
                     if (node.getNetworkAddress() == 0) {
@@ -141,11 +141,6 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
 
                     String thingId = node.getIeeeAddress().toString().toLowerCase().replaceAll("[^a-z0-9_/]", "");
                     ThingUID thingUID = new ThingUID(thingTypeUID, bridgeUID, thingId);
-
-                    if (discoveryServiceCallback.getExistingThing(thingUID) != null
-                            || discoveryServiceCallback.getExistingDiscoveryResult(thingUID) != null) {
-                        continue;
-                    }
 
                     logger.debug("{}: Discovery: Starting discovery for existing device {}", node.getIeeeAddress(),
                             thingUID);
@@ -222,11 +217,6 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
                 ZigBeeNodePropertyDiscoverer propertyDiscoverer = new ZigBeeNodePropertyDiscoverer();
                 Map<String, String> properties = propertyDiscoverer.getProperties(node);
 
-                // If we know the manufacturer and model, then give this device a name and a thing type
-                if ((properties.get(Thing.PROPERTY_VENDOR) != null)
-                        && (properties.get(Thing.PROPERTY_MODEL_ID) != null)) {
-                    label = properties.get(Thing.PROPERTY_VENDOR) + " " + properties.get(Thing.PROPERTY_MODEL_ID);
-                }
                 Map<String, Object> objProperties = new HashMap<String, Object>(properties);
                 objProperties.put(ZigBeeBindingConstants.CONFIGURATION_MACADDRESS, node.getIeeeAddress().toString());
 
@@ -246,6 +236,12 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
                 if (discoveryAdded) {
                     thingRemoved(defaultThingUID);
                 } else {
+                    // If we know the manufacturer and model, then give this device a name and a thing type
+                    if ((properties.get(Thing.PROPERTY_VENDOR) != null)
+                            && (properties.get(Thing.PROPERTY_MODEL_ID) != null)) {
+                        label = properties.get(Thing.PROPERTY_VENDOR) + " " + properties.get(Thing.PROPERTY_MODEL_ID);
+                    }
+
                     logger.debug("{}: Update ZigBee device {} with bridge {}, label '{}'", node.getIeeeAddress(),
                             defaultThingTypeUID, bridgeUID, label);
 
