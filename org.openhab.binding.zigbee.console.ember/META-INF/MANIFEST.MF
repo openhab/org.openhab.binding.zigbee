@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: ZigBee Binding Console Extension Ember
 Bundle-SymbolicName: org.openhab.binding.zigbee.console.ember;singleton:=true
 Bundle-Vendor: openHAB
-Bundle-Version: 2.4.0.qualifier
+Bundle-Version: 2.4.0.M1
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: com.zsmartsystems.zigbee.console,
  com.zsmartsystems.zigbee.console.ember,
