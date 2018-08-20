@@ -100,6 +100,10 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_LABEL_IAS_FIREINDICATION = "Fire Alarm";
     public static final ChannelTypeUID CHANNEL_IAS_FIREINDICATION = new ChannelTypeUID("zigbee:ias_fire");
 
+    public static final String CHANNEL_NAME_IAS_WATERSENSOR = "water";
+    public static final String CHANNEL_LABEL_IAS_WATERSENSOR = "Water Alarm";
+    public static final ChannelTypeUID CHANNEL_IAS_WATERSENSOR = new ChannelTypeUID("zigbee:ias_water");
+
     public static final String CHANNEL_NAME_ELECTRICAL_ACTIVEPOWER = "activepower";
     public static final String CHANNEL_LABEL_ELECTRICAL_ACTIVEPOWER = "Total Active Power";
     public static final ChannelTypeUID CHANNEL_ELECTRICAL_ACTIVEPOWER = new ChannelTypeUID(
