@@ -136,14 +136,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
                         continue;
                     }
 
-                    ThingTypeUID thingTypeUID = ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE;
-                    ThingUID bridgeUID = coordinator.getThing().getUID();
-
-                    String thingId = node.getIeeeAddress().toString().toLowerCase().replaceAll("[^a-z0-9_/]", "");
-                    ThingUID thingUID = new ThingUID(thingTypeUID, bridgeUID, thingId);
-
-                    logger.debug("{}: Discovery: Starting discovery for existing device {}", node.getIeeeAddress(),
-                            thingUID);
+                    logger.debug("{}: Discovery: Starting discovery for existing device", node.getIeeeAddress());
                     nodeDiscovered(coordinator, node);
                 }
             }
