@@ -167,6 +167,8 @@ public class ZigBeeBindingConstants {
     public final static String CONFIGURATION_JOINENABLE = "zigbee_joinenable";
     public final static String CONFIGURATION_LEAVE = "zigbee_leave";
 
+    public static final String OFFLINE_COMMS_FAIL = "@text/zigbee.status.offline_commserror";
+    public static final String OFFLINE_BAD_RESPONSE = "@text/zigbee.status.offline_badresponse";
     public final static String OFFLINE_NOT_INITIALIZED = "@text/zigbee.status.offline_notinitialized";
     public final static String OFFLINE_INITIALIZE_FAIL = "@text/zigbee.status.offline_initializefail";
     public final static String OFFLINE_STARTUP_FAIL = "@text/zigbee.status.offline_startupfail";
