@@ -16,7 +16,6 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,16 +74,15 @@ public class ZigBeeNodePropertyDiscoverer {
     /**
      * Gets the properties from the device
      *
-     * @param coordinatorHandler
-     * @param node
+     * @param node the {@link ZigBeeNode}
      * @return a {@link Map} of properties or an empty map if there was an error
      */
-    public Map<String, String> getProperties(final ZigBeeCoordinatorHandler coordinatorHandler, final ZigBeeNode node) {
+    public Map<String, String> getProperties(final ZigBeeNode node) {
 
         logger.debug("{}: ZigBee node property discovery start", node.getIeeeAddress());
 
         // Create a list of endpoints for the discovery service to work with
-        Collection<ZigBeeEndpoint> endpoints = coordinatorHandler.getNodeEndpoints(node.getIeeeAddress());
+        Collection<ZigBeeEndpoint> endpoints = node.getEndpoints();
 
         // Make sure the device has some endpoints!
         if (endpoints.size() == 0) {

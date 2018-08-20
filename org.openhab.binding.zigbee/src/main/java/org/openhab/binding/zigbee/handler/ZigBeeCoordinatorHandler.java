@@ -23,11 +23,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.config.core.Configuration;
+import org.eclipse.smarthome.core.common.registry.Identifiable;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.ThingStatusDetail;
+import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BaseBridgeHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
@@ -75,7 +77,7 @@ import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
  * @author Chris Jackson - Initial contribution
  */
 public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
-        implements ZigBeeNetworkStateListener, ZigBeeNetworkNodeListener {
+        implements Identifiable<ThingUID>, ZigBeeNetworkStateListener, ZigBeeNetworkNodeListener {
     private final Logger logger = LoggerFactory.getLogger(ZigBeeCoordinatorHandler.class);
 
     protected int panId;
@@ -357,14 +359,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             return;
         }
 
-        logger.debug("initResponse is {}", initResponse);
-
         // If we're not joined, then join
         if (initResponse == ZigBeeInitializeResponse.NOT_JOINED) {
             initializeNetwork = true;
         }
 
-        logger.debug("initializeNetwork is {}", initializeNetwork);
+        logger.debug("ZigBee initialize. initResponse={}, initializeNetwork={}", initResponse, initializeNetwork);
 
         // Get the initial network configuration
         int currentChannel = networkManager.getZigBeeChannel();
@@ -396,7 +396,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         currentChannel = networkManager.getZigBeeChannel();
         currentPanId = networkManager.getZigBeePanId();
         currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
-        logger.debug("Initialise done....... {}  {}  {}", currentChannel, currentPanId, currentExtendedPanId);
+        logger.debug("ZigBee Initialise done. channel={}, PanId={}  EPanId={}", currentChannel, currentPanId,
+                currentExtendedPanId);
 
         try {
             // Persist the network configuration
@@ -492,11 +493,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             dispose();
             initialize();
         }
-    }
-
-    public void startDeviceDiscovery() {
-        // Allow devices to join for 60 seconds
-        networkManager.permitJoin(60);
     }
 
     /**
@@ -660,6 +656,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         }
     }
 
+    /**
+     * Gets a node given the long address
+     *
+     * @param nodeIeeeAddress the {@link IeeeAddress} of the device
+     * @return the {@link ZigBeeNode} or null if the node is not found
+     */
     public ZigBeeNode getNode(IeeeAddress nodeIeeeAddress) {
         if (networkManager == null) {
             return null;
@@ -733,6 +735,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         networkManager.rediscoverNode(nodeIeeeAddress);
     }
 
+    /**
+     * Serialize the network state
+     */
     public void serializeNetwork() {
         if (networkStateSerializer != null) {
             networkStateSerializer.serialize(networkManager);
@@ -741,5 +746,29 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     public ZigBeeNetworkManager getNetworkManager() {
         return this.networkManager;
+    }
+
+    /**
+     * Starts an active scan on the ZigBee coordinator.
+     */
+    public void scanStart() {
+        if (getThing().getStatus() != ThingStatus.ONLINE) {
+            logger.debug("ZigBee coordinator is offline - aborted scan for {}", getThing().getUID());
+            return;
+        }
+
+        networkManager.permitJoin(60);
+    }
+
+    /**
+     * Stops an active scan on the ZigBee coordinator
+     */
+    public void scanStop() {
+        networkManager.permitJoin(0);
+    }
+
+    @Override
+    public @NonNull ThingUID getUID() {
+        return getThing().getUID();
     }
 }

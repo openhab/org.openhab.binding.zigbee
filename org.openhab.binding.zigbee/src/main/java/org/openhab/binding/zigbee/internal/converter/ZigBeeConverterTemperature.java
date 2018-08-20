@@ -15,6 +15,7 @@ import org.eclipse.smarthome.core.library.types.QuantityType;
 import org.eclipse.smarthome.core.library.unit.SIUnits;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,8 +81,13 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
         if (endpoint.getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID) == null) {
             return null;
         }
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE,
-                ZigBeeBindingConstants.ITEM_TYPE_NUMBER_TEMPERATURE, "Temperature");
+
+        return ChannelBuilder
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_TEMPERATURE_VALUE),
+                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER_TEMPERATURE)
+                .withType(ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_TEMPERATURE_VALUE)
+                .withProperties(createProperties(endpoint)).build();
     }
 
     @Override

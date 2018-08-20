@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,15 +114,12 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
             return null;
         }
 
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_ELECTRICAL_RMSCURRENT,
-                ZigBeeBindingConstants.ITEM_TYPE_NUMBER, ZigBeeBindingConstants.CHANNEL_LABEL_ELECTRICAL_RMSCURRENT);
-
-        // return ChannelBuilder
-        // .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_ELECTRICAL_RMSCURRENT),
-        // ZigBeeBindingConstants.ITEM_TYPE_NUMBER)
-        // .withType(ZigBeeBindingConstants.CHANNEL_ELECTRICAL_RMSCURRENT)
-        // .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_ELECTRICAL_RMSCURRENT)
-        // .withProperties(createProperties(endpoint)).build();
+        return ChannelBuilder
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_ELECTRICAL_RMSCURRENT),
+                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER)
+                .withType(ZigBeeBindingConstants.CHANNEL_ELECTRICAL_RMSCURRENT)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_ELECTRICAL_RMSCURRENT)
+                .withProperties(createProperties(endpoint)).build();
     }
 
     @Override

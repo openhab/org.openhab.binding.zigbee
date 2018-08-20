@@ -16,7 +16,6 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.smarthome.config.discovery.DiscoveryService;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
@@ -24,7 +23,6 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
-import org.openhab.binding.zigbee.discovery.ZigBeeDiscoveryService;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.xbee.XBeeBindingConstants;
 import org.openhab.binding.zigbee.xbee.handler.XBeeHandler;
@@ -40,7 +38,7 @@ import org.osgi.service.component.annotations.Component;
 @Component(service = ThingHandlerFactory.class, immediate = true, configurationPid = "org.openhab.binding.zigbee.xbee")
 @NonNullByDefault
 public class XBeeHandlerFactory extends BaseThingHandlerFactory {
-    private Map<ThingUID, ServiceRegistration> discoveryServiceRegs = new HashMap<>();
+    private Map<ThingUID, ServiceRegistration> coordinatorHandlerRegs = new HashMap<>();
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections
             .singleton(XBeeBindingConstants.THING_TYPE_XBEE);
@@ -60,11 +58,8 @@ public class XBeeHandlerFactory extends BaseThingHandlerFactory {
         }
 
         if (coordinator != null) {
-            ZigBeeDiscoveryService discoveryService = new ZigBeeDiscoveryService(coordinator);
-            discoveryService.activate();
-
-            discoveryServiceRegs.put(coordinator.getThing().getUID(), bundleContext.registerService(
-                    DiscoveryService.class.getName(), discoveryService, new Hashtable<String, Object>()));
+            coordinatorHandlerRegs.put(coordinator.getThing().getUID(), bundleContext.registerService(
+                    ZigBeeCoordinatorHandler.class.getName(), coordinator, new Hashtable<String, Object>()));
 
             return coordinator;
         }
@@ -75,16 +70,10 @@ public class XBeeHandlerFactory extends BaseThingHandlerFactory {
     @Override
     protected synchronized void removeHandler(ThingHandler thingHandler) {
         if (thingHandler instanceof XBeeHandler) {
-            ServiceRegistration serviceReg = this.discoveryServiceRegs.get(thingHandler.getThing().getUID());
-            if (serviceReg != null) {
-                // remove discovery service, if bridge handler is removed
-                ZigBeeDiscoveryService service = (ZigBeeDiscoveryService) bundleContext
-                        .getService(serviceReg.getReference());
-                if (service != null) {
-                    service.deactivate();
-                }
-                serviceReg.unregister();
-                discoveryServiceRegs.remove(thingHandler.getThing().getUID());
+            ServiceRegistration coordinatorHandlerReg = coordinatorHandlerRegs.get(thingHandler.getThing().getUID());
+            if (coordinatorHandlerReg != null) {
+                coordinatorHandlerReg.unregister();
+                coordinatorHandlerRegs.remove(thingHandler.getThing().getUID());
             }
         }
     }
