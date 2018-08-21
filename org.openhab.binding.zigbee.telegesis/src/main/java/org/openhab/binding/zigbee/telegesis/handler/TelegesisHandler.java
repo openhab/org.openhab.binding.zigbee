@@ -19,6 +19,7 @@ import org.eclipse.smarthome.core.thing.binding.firmware.Firmware;
 import org.eclipse.smarthome.core.thing.binding.firmware.FirmwareUpdateHandler;
 import org.eclipse.smarthome.core.thing.binding.firmware.ProgressCallback;
 import org.eclipse.smarthome.core.thing.binding.firmware.ProgressStep;
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeSerialPort;
 import org.openhab.binding.zigbee.telegesis.internal.TelegesisConfiguration;
@@ -125,7 +126,7 @@ public class TelegesisHandler extends ZigBeeCoordinatorHandler implements Firmwa
                         progressCallback.canceled();
                         break;
                     case FIRMWARE_UPDATE_FAILED:
-                        progressCallback.failed("zigbee.firmware.failed");
+                        progressCallback.failed(ZigBeeBindingConstants.FIRMWARE_FAILED);
                         break;
                     default:
                         break;
