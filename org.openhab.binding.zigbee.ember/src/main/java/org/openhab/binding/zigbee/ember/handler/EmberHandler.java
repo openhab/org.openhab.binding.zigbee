@@ -116,7 +116,7 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
                         progressCallback.canceled();
                         break;
                     case FIRMWARE_UPDATE_FAILED:
-                        progressCallback.failed("zigbee.firmware.failed");
+                        progressCallback.failed(ZigBeeBindingConstants.FIRMWARE_FAILED);
                         break;
                     default:
                         break;

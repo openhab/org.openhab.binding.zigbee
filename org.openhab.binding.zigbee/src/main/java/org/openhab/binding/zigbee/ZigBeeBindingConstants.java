@@ -174,6 +174,8 @@ public class ZigBeeBindingConstants {
     public final static String OFFLINE_NODE_NOT_FOUND = "@text/zigbee.status.offline_nodenotfound";
     public final static String OFFLINE_DISCOVERY_INCOMPLETE = "@text/zigbee.status.offline_discoveryincomplete";
 
+    public final static String FIRMWARE_FAILED = "@text/zigbee.firmware.failed";
+
     // List of configuration values for flow control
     public final static Integer FLOWCONTROL_CONFIG_NONE = Integer.valueOf(0);
     public final static Integer FLOWCONTROL_CONFIG_HARDWARE_CTSRTS = Integer.valueOf(1);
