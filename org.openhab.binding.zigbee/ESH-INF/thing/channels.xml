@@ -30,6 +30,14 @@
             temperature of a light from 0 (cold) to 100 (warm).</description>
         <category>ColorLight</category>
     </channel-type>
+
+    <!-- Door Lock Channel -->
+    <channel-type id="door_lock">
+        <item-type>Switch</item-type>
+        <label>Door Lock State</label>
+        <description>Locks and unlocks the door and maintains the lock state</description>
+        <category>Door</category>
+    </channel-type>
     
     <!-- Electrical Measurement Active Power -->
     <channel-type id="electrical_activepower">
