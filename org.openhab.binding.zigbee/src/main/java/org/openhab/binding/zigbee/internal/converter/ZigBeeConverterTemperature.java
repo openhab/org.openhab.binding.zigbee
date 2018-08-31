@@ -15,6 +15,7 @@ import org.eclipse.smarthome.core.library.types.QuantityType;
 import org.eclipse.smarthome.core.library.unit.SIUnits;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +51,10 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
         try {
             bindResponse = cluster.bind().get();
             if (!bindResponse.isSuccess()) {
-                logger.warn("{}: Failed to bind temperature measurement cluster");
+                logger.debug("{}: Failed to bind temperature measurement cluster", endpoint.getIeeeAddress());
+            } else {
+                // Configure reporting
+                cluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1);
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
@@ -59,8 +63,6 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
 
-        // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        cluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1);
         return true;
     }
 
@@ -79,8 +81,13 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
         if (endpoint.getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID) == null) {
             return null;
         }
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE,
-                ZigBeeBindingConstants.ITEM_TYPE_NUMBER_TEMPERATURE, "Temperature");
+
+        return ChannelBuilder
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_TEMPERATURE_VALUE),
+                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER_TEMPERATURE)
+                .withType(ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_TEMPERATURE_VALUE)
+                .withProperties(createProperties(endpoint)).build();
     }
 
     @Override

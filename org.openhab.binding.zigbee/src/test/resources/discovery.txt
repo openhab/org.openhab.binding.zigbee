@@ -1,0 +1,5 @@
+type0,
+type1,vendor=Vendor1,modelId=Model1
+type2,vendor=Vendor2,modelId=Model2
+type3,vendor=Vendor1,modelId=Model2
+type4,vendor=Vendor1,modelId=Model2,firmwareVersion=Version4

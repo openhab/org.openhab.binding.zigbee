@@ -8,9 +8,7 @@
  */
 package org.openhab.binding.zigbee.internal;
 
-import java.util.Collections;
 import java.util.Hashtable;
-import java.util.Set;
 
 import org.eclipse.smarthome.config.core.ConfigDescriptionProvider;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -31,24 +29,25 @@ import org.osgi.service.component.annotations.Component;
  */
 @Component(immediate = true, service = { ThingHandlerFactory.class })
 public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
-    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections
-            .singleton(ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE);
+    private final ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
-        return SUPPORTED_THING_TYPES_UIDS.contains(thingTypeUID);
+        // The core binding provides dynamic device creation
+        if (thingTypeUID.equals(ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE)) {
+            return true;
+        }
+
+        return matcher.getSupportedThingTypeUIDs().contains(thingTypeUID);
     }
 
     @Override
     protected ThingHandler createHandler(Thing thing) {
-        ThingTypeUID thingTypeUID = thing.getThingTypeUID();
-
-        if (!thingTypeUID.equals(ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE)) {
+        if (!supportsThingType(thing.getThingTypeUID())) {
             return null;
         }
 
         ZigBeeThingHandler handler = new ZigBeeThingHandler(thing);
-
         bundleContext.registerService(ConfigDescriptionProvider.class.getName(), handler,
                 new Hashtable<String, Object>());
 

@@ -10,6 +10,7 @@ package org.openhab.binding.zigbee.internal.converter;
 
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
@@ -34,7 +35,11 @@ public class ZigBeeConverterIasContactPortal1 extends ZigBeeConverterIas {
             return null;
         }
 
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_IAS_CONTACT_PORTAL1,
-                ZigBeeBindingConstants.ITEM_TYPE_CONTACT, "Contact Portal 1");
+        return ChannelBuilder
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_IAS_CONTACTPORTAL1),
+                        ZigBeeBindingConstants.ITEM_TYPE_CONTACT)
+                .withType(ZigBeeBindingConstants.CHANNEL_IAS_CONTACTPORTAL1)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_IAS_CONTACTPORTAL1)
+                .withProperties(createProperties(endpoint)).build();
     }
 }

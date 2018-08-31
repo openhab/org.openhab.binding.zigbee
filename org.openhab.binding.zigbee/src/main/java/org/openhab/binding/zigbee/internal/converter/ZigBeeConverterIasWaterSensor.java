@@ -17,12 +17,12 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.clusters.iaszone.ZoneTypeEnum;
 
 /**
- * Converter for the IAS CO sensor.
+ * Converter for the IAS water sensor.
  *
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeConverterIasCoDetector extends ZigBeeConverterIas {
+public class ZigBeeConverterIasWaterSensor extends ZigBeeConverterIas {
     @Override
     public boolean initializeConverter() {
         bitTest = CIE_ALARM1;
@@ -31,15 +31,15 @@ public class ZigBeeConverterIasCoDetector extends ZigBeeConverterIas {
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
-        if (!supportsIasChannel(endpoint, ZoneTypeEnum.CO_SENSOR)) {
+        if (!supportsIasChannel(endpoint, ZoneTypeEnum.WATER_SENSOR)) {
             return null;
         }
 
         return ChannelBuilder
-                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_IAS_CODETECTOR),
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_IAS_WATERSENSOR),
                         ZigBeeBindingConstants.ITEM_TYPE_SWITCH)
-                .withType(ZigBeeBindingConstants.CHANNEL_IAS_CODETECTOR)
-                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_IAS_CODETECTOR)
+                .withType(ZigBeeBindingConstants.CHANNEL_IAS_WATERSENSOR)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_IAS_WATERSENSOR)
                 .withProperties(createProperties(endpoint)).build();
     }
 }

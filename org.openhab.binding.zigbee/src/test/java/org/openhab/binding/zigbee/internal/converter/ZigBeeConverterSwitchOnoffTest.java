@@ -10,6 +10,7 @@ package org.openhab.binding.zigbee.internal.converter;
 
 import static org.junit.Assert.assertEquals;
 
+import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.types.State;
@@ -54,5 +55,6 @@ public class ZigBeeConverterSwitchOnoffTest {
                 stateCapture.capture());
 
         assertEquals(new ChannelUID("a:b:c:d"), channelCapture.getValue());
+        assertEquals(OnOffType.OFF, stateCapture.getValue());
     }
 }

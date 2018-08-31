@@ -9,6 +9,7 @@
 package org.openhab.binding.zigbee.internal.converter;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.config.core.Configuration;
@@ -16,6 +17,7 @@ import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.internal.converter.config.ZclLevelControlConfig;
@@ -27,9 +29,14 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclLevelControlCluster;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
+ * Level control converter uses both the {@link ZclLevelControlCluster} and the {@link ZclOnOffCluster}. If the
+ * {@link ZclOnOffCluster} has reported the device is OFF, then reports from {@link ZclLevelControlCluster} are ignored.
+ * This is required as devices can report via the {@link ZclLevelControlCluster} that they have a specified level, but
+ * still be OFF.
  *
  * @author Chris Jackson - Initial Contribution
  *
@@ -37,8 +44,13 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterSwitchLevel.class);
 
+    private ZclOnOffCluster clusterOnOffServer;
     private ZclLevelControlCluster clusterLevelControl;
     private ZclLevelControlConfig configLevelControl;
+
+    private final AtomicBoolean currentState = new AtomicBoolean(true);
+
+    private PercentType lastLevel = PercentType.HUNDRED;
 
     @Override
     public boolean initializeConverter() {
@@ -51,7 +63,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         try {
             CommandResult bindResponse = clusterLevelControl.bind().get();
             if (bindResponse.isSuccess()) {
-                // Configure reporting - no faster than once per second - no slower than 10 minutes.
+                // Configure reporting
                 CommandResult reportingResponse = clusterLevelControl
                         .setCurrentLevelReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
                 if (reportingResponse.isError()) {
@@ -59,12 +71,39 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
                 }
             } else {
                 pollingPeriod = POLLING_PERIOD_HIGH;
+                logger.debug("{}: Failed to bind level control cluster", endpoint.getIeeeAddress());
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            logger.error("{}: Exception setting level control reporting ", endpoint.getIeeeAddress(), e);
         }
 
-        // Add a listener, then request the status
+        clusterOnOffServer = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
+        if (clusterOnOffServer != null) {
+            try {
+                CommandResult bindResponse = clusterOnOffServer.bind().get();
+                if (bindResponse.isSuccess()) {
+                    // Configure reporting
+                    CommandResult reportingResponse = clusterOnOffServer
+                            .setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX).get();
+                    if (reportingResponse.isError()) {
+                        pollingPeriod = POLLING_PERIOD_HIGH;
+                    }
+                } else {
+                    pollingPeriod = POLLING_PERIOD_HIGH;
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                logger.error("{}: Exception setting on off reporting ", endpoint.getIeeeAddress(), e);
+            }
+
+            // Set the currentState to ON. This will ensure that we only ignore levelControl reports AFTER we have
+            // really received an OFF report, thus confirming ON_OFF reporting is working
+            currentState.set(true);
+
+            // Add a listener
+            clusterOnOffServer.addAttributeListener(this);
+        }
+
+        // Add a listener
         clusterLevelControl.addAttributeListener(this);
 
         // Create a configuration handler and get the available options
@@ -77,10 +116,16 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
     @Override
     public void disposeConverter() {
         clusterLevelControl.removeAttributeListener(this);
+        if (clusterOnOffServer != null) {
+            clusterOnOffServer.removeAttributeListener(this);
+        }
     }
 
     @Override
     public void handleRefresh() {
+        if (clusterOnOffServer != null) {
+            clusterOnOffServer.getOnOff(0);
+        }
         clusterLevelControl.getCurrentLevel(0);
     }
 
@@ -111,8 +156,13 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         if (endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID) == null) {
             return null;
         }
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL,
-                ZigBeeBindingConstants.ITEM_TYPE_DIMMER, "Dimmer");
+
+        return ChannelBuilder
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_SWITCH_LEVEL),
+                        ZigBeeBindingConstants.ITEM_TYPE_DIMMER)
+                .withType(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_SWITCH_LEVEL).withProperties(createProperties(endpoint))
+                .build();
     }
 
     @Override
@@ -125,11 +175,19 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.LEVEL_CONTROL
                 && attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
-            Integer level = (Integer) attribute.getLastValue();
-            if (level != null) {
-                updateChannelState(levelToPercent(level));
+            lastLevel = levelToPercent((Integer) attribute.getLastValue());
+            if (currentState.get()) {
+                // Note that state is only updated if the current On/Off state is TRUE (ie ON)
+                updateChannelState(lastLevel);
             }
             return;
+        }
+        if (attribute.getCluster() == ZclClusterType.ON_OFF && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
+            if (attribute.getLastValue() == null) {
+                return;
+            }
+            currentState.set((Boolean) attribute.getLastValue());
+            updateChannelState(currentState.get() ? lastLevel : OnOffType.OFF);
         }
     }
 }

@@ -14,6 +14,7 @@ import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
@@ -74,7 +75,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
                 logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
             }
 
-            // Add a listener, then request the status
+            // Add the listener
             clusterOnOffServer.addAttributeListener(this);
         }
 
@@ -150,8 +151,13 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
                 && endpoint.getOutputCluster(ZclOnOffCluster.CLUSTER_ID) == null) {
             return null;
         }
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF,
-                ZigBeeBindingConstants.ITEM_TYPE_SWITCH, "Switch");
+
+        return ChannelBuilder
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_SWITCH_ONOFF),
+                        ZigBeeBindingConstants.ITEM_TYPE_SWITCH)
+                .withType(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_SWITCH_ONOFF).withProperties(createProperties(endpoint))
+                .build();
     }
 
     @Override

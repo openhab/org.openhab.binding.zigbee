@@ -20,8 +20,6 @@ import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
-import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
-import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.State;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
@@ -263,28 +261,29 @@ public abstract class ZigBeeBaseChannelConverter {
     }
 
     /**
-     * Creates a channel. This is called from extended converters to create a channel they support
-     *
+     * Creates a standard channel UID given the {@link ZigBeeEndpoint}
+     * 
      * @param thingUID the {@link ThingUID}
-     * @param endpoint
-     * @param channelType the channel uid as a string
-     * @param itemType the item type for the channel
-     * @param label the label for the channel
-     * @return the newly created {@link Channel}
+     * @param endpoint the {@link ZigBeeEndpoint}
+     * @param channelName the name of the channel
+     * @return
      */
-    protected Channel createChannel(ThingUID thingUID, ZigBeeEndpoint endpoint, String channelType, String itemType,
-            String label) {
+    protected ChannelUID createChannelUID(ThingUID thingUID, ZigBeeEndpoint endpoint, String channelName) {
+        return new ChannelUID(thingUID, endpoint.getIeeeAddress() + "_" + endpoint.getEndpointId() + "_" + channelName);
+    }
+
+    /**
+     * Creates a set of properties, adding the standard properties required by the system.
+     * Channel converters may add additional properties prior to creating the channel.
+     * 
+     * @param endpoint the {@link ZigBeeEndpoint}
+     * @return an initial properties map
+     */
+    protected Map<String, String> createProperties(ZigBeeEndpoint endpoint) {
         Map<String, String> properties = new HashMap<String, String>();
         properties.put(ZigBeeBindingConstants.CHANNEL_PROPERTY_ENDPOINT, Integer.toString(endpoint.getEndpointId()));
-        ChannelTypeUID channelTypeUID;
-        channelTypeUID = new ChannelTypeUID(channelType);
-        String[] channelTypeSplit = channelType.split(":");
-        String channelName = channelTypeSplit[1].replace("-", "_");
 
-        return ChannelBuilder
-                .create(new ChannelUID(thingUID,
-                        endpoint.getIeeeAddress() + "_" + endpoint.getEndpointId() + "_" + channelName), itemType)
-                .withType(channelTypeUID).withLabel(label).withProperties(properties).build();
+        return properties;
     }
 
     /**

@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutionException;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,8 +116,13 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
             return null;
         }
 
-        return createChannel(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_ELECTRICAL_ACTIVEPOWER,
-                ZigBeeBindingConstants.ITEM_TYPE_NUMBER, "Total Active Power");
+        return ChannelBuilder
+                .create(createChannelUID(thingUID, endpoint,
+                        ZigBeeBindingConstants.CHANNEL_NAME_ELECTRICAL_ACTIVEPOWER),
+                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER)
+                .withType(ZigBeeBindingConstants.CHANNEL_ELECTRICAL_ACTIVEPOWER)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_ELECTRICAL_ACTIVEPOWER)
+                .withProperties(createProperties(endpoint)).build();
     }
 
     @Override
