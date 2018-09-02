@@ -147,8 +147,17 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
             return;
         }
 
-        clusterLevelControl.moveToLevelWithOnOffCommand(percentToLevel(percent),
-                configLevelControl.getDefaultTransitionTime());
+        if (clusterOnOffServer != null) {
+            if(percent.equals(PercentType.ZERO)) {
+                clusterOnOffServer.offCommand();
+            } else {
+                clusterLevelControl.moveToLevelWithOnOffCommand(percentToLevel(percent),
+                    configLevelControl.getDefaultTransitionTime());
+            }
+        } else {
+            clusterLevelControl.moveToLevelCommand(percentToLevel(percent),
+                    configLevelControl.getDefaultTransitionTime());
+        }
     }
 
     @Override
