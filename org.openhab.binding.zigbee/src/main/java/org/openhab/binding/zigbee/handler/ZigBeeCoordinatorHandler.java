@@ -39,17 +39,18 @@ import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.ExtendedPanId;
 import com.zsmartsystems.zigbee.IeeeAddress;
+import com.zsmartsystems.zigbee.ZigBeeChannel;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeEndpointAddress;
-import com.zsmartsystems.zigbee.ZigBeeKey;
 import com.zsmartsystems.zigbee.ZigBeeNetworkManager;
-import com.zsmartsystems.zigbee.ZigBeeNetworkManager.ZigBeeInitializeResponse;
 import com.zsmartsystems.zigbee.ZigBeeNetworkMeshMonitor;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNetworkStateListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
+import com.zsmartsystems.zigbee.ZigBeeStatus;
 import com.zsmartsystems.zigbee.app.iasclient.ZigBeeIasCieExtension;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaUpgradeExtension;
+import com.zsmartsystems.zigbee.security.ZigBeeKey;
 import com.zsmartsystems.zigbee.serialization.DefaultDeserializer;
 import com.zsmartsystems.zigbee.serialization.DefaultSerializer;
 import com.zsmartsystems.zigbee.serialization.ZigBeeDeserializer;
@@ -353,27 +354,29 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         }
 
         // Initialise the network
-        ZigBeeInitializeResponse initResponse = networkManager.initialize();
-        if (initResponse == ZigBeeInitializeResponse.FAILED) {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE, ZigBeeBindingConstants.OFFLINE_INITIALIZE_FAIL);
-            return;
+        switch (networkManager.initialize()) {
+            case SUCCESS:
+                break;
+            case BAD_RESPONSE:
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE, ZigBeeBindingConstants.OFFLINE_BAD_RESPONSE);
+                return;
+            case COMMUNICATION_ERROR:
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE, ZigBeeBindingConstants.OFFLINE_COMMS_FAIL);
+                return;
+            default:
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE,
+                        ZigBeeBindingConstants.OFFLINE_INITIALIZE_FAIL);
+                return;
         }
-
-        // If we're not joined, then join
-        if (initResponse == ZigBeeInitializeResponse.NOT_JOINED) {
-            initializeNetwork = true;
-        }
-
-        logger.debug("ZigBee initialize. initResponse={}, initializeNetwork={}", initResponse, initializeNetwork);
 
         // Get the initial network configuration
-        int currentChannel = networkManager.getZigBeeChannel();
+        ZigBeeChannel currentChannel = networkManager.getZigBeeChannel();
         int currentPanId = networkManager.getZigBeePanId();
         ExtendedPanId currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
 
         if (initializeNetwork) {
             networkManager.setZigBeeNetworkKey(networkKey);
-            networkManager.setZigBeeChannel(channelId);
+            networkManager.setZigBeeChannel(ZigBeeChannel.create(channelId));
             networkManager.setZigBeePanId(panId);
             networkManager.setZigBeeExtendedPanId(extendedPanId);
         }
@@ -387,7 +390,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         zigbeeTransport.updateTransportConfig(transportConfig);
 
         // Call startup. The setting of the bring to ONLINE will be done via the state listener.
-        if (!networkManager.startup(initializeNetwork)) {
+        if (networkManager.startup(initializeNetwork) != ZigBeeStatus.SUCCESS) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE, ZigBeeBindingConstants.OFFLINE_STARTUP_FAIL);
             return;
         }
