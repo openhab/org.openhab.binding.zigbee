@@ -352,6 +352,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         ZclColorControlCluster clusterColorControl = (ZclColorControlCluster) endpoint
                 .getInputCluster(ZclColorControlCluster.CLUSTER_ID);
         if (clusterColorControl == null) {
+            logger.trace("{}: Color control cluster not found", endpoint.getIeeeAddress());
             return null;
         }
 
@@ -361,26 +362,29 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                 Integer capabilities = clusterColorControl.getColorCapabilities(Long.MAX_VALUE);
                 if (capabilities == null && clusterColorControl.getCurrentX(Long.MAX_VALUE) == null
                         && clusterColorControl.getCurrentHue(Long.MAX_VALUE) == null) {
+                    logger.trace("{}: Color control XY and Hue returned null", endpoint.getIeeeAddress());
                     return null;
                 }
                 if (capabilities != null && ((capabilities & (ColorCapabilitiesEnum.HUE_AND_SATURATION.getKey()
                         | ColorCapabilitiesEnum.XY_ATTRIBUTE.getKey())) == 0)) {
                     // No support for hue or XY
+                    logger.trace("{}: Color control XY and Hue capabilities not supported", endpoint.getIeeeAddress());
                     return null;
                 }
-
             } else if (clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_COLORCAPABILITIES)) {
-                // If the device is reporting is capabilities, then use this over attribute detection
+                // If the device is reporting its capabilities, then use this over attribute detection
                 // The color control cluster is required to always support XY attributes, so a non-color bulb is still
                 // detected as a color bulb in this case.
                 Integer capabilities = clusterColorControl.getColorCapabilities(Long.MAX_VALUE);
                 if ((capabilities != null) && (capabilities & (ColorCapabilitiesEnum.HUE_AND_SATURATION.getKey()
                         | ColorCapabilitiesEnum.XY_ATTRIBUTE.getKey())) == 0) {
                     // No support for hue or XY
+                    logger.trace("{}: Color control XY and Hue capabilities not supported", endpoint.getIeeeAddress());
                     return null;
                 }
             } else if (!clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_CURRENTHUE)
                     && !clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_CURRENTX)) {
+                logger.trace("{}: Color control XY and Hue attributes not supported", endpoint.getIeeeAddress());
                 return null;
             }
         } catch (InterruptedException | ExecutionException e) {

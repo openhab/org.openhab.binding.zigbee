@@ -154,6 +154,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
         if (endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID) == null) {
+            logger.trace("{}: Level control cluster not found", endpoint.getIeeeAddress());
             return null;
         }
 
