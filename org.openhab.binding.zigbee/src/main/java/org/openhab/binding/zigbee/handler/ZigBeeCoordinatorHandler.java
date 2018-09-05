@@ -409,7 +409,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             if (currentExtendedPanId != null) {
                 configuration.put(CONFIGURATION_EXTENDEDPANID, currentExtendedPanId.toString());
             }
-            configuration.put(CONFIGURATION_CHANNEL, currentChannel);
+            configuration.put(CONFIGURATION_CHANNEL, currentChannel.getChannel());
 
             // If the thing is defined statically, then this will fail and we will never start!
             updateConfiguration(configuration);
