@@ -276,10 +276,11 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         int level = percentToLevel(brightness);
 
         if (clusterOnOff != null) {
-            if(brightness.equals(PercentType.ZERO)) {
+            if (brightness.equals(PercentType.ZERO)) {
                 clusterOnOff.offCommand();
             } else {
-                clusterLevelControl.moveToLevelWithOnOffCommand(level, configLevelControl.getDefaultTransitionTime()).get();
+                clusterLevelControl.moveToLevelWithOnOffCommand(level, configLevelControl.getDefaultTransitionTime())
+                        .get();
             }
         } else {
             clusterLevelControl.moveToLevelCommand(level, configLevelControl.getDefaultTransitionTime()).get();
