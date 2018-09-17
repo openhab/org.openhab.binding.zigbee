@@ -100,7 +100,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     private TransportConfig transportConfig;
 
-    private final Set<ZigBeeNetworkNodeListener> listeners = new HashSet<ZigBeeNetworkNodeListener>();
+    private final Set<ZigBeeNetworkNodeListener> listeners = new HashSet<>();
 
     private boolean macAddressSet = false;
 
@@ -491,6 +491,11 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     transportConfig.addOption(TransportConfigOption.TRUST_CENTRE_JOIN_MODE, linkMode);
                     break;
 
+                case ZigBeeBindingConstants.CONFIGURATION_TXPOWER:
+                    transportConfig.addOption(TransportConfigOption.RADIO_TX_POWER, configurationParameter.getValue());
+                    break;
+
+                case ZigBeeBindingConstants.CONFIGURATION_POWERMODE:
                 case ZigBeeBindingConstants.CONFIGURATION_BAUD:
                 case ZigBeeBindingConstants.CONFIGURATION_FLOWCONTROL:
                 case ZigBeeBindingConstants.CONFIGURATION_PORT:

@@ -12,6 +12,7 @@ Export-Package:
  org.openhab.binding.zigbee.ember.handler
 Import-Package: com.zsmartsystems.zigbee,
  com.zsmartsystems.zigbee.dongle.ember,
+ com.zsmartsystems.zigbee.dongle.ember.ezsp.structure,
  com.zsmartsystems.zigbee.serialization,
  com.zsmartsystems.zigbee.transport,
  gnu.io,
