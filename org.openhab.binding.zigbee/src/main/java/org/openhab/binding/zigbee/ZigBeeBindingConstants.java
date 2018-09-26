@@ -159,9 +159,12 @@ public class ZigBeeBindingConstants {
     public final static String CONFIGURATION_BAUD = "zigbee_baud";
     public final static String CONFIGURATION_FLOWCONTROL = "zigbee_flowcontrol";
     public static final String CONFIGURATION_NETWORKKEY = "zigbee_networkkey";
+    public static final String CONFIGURATION_LINKKEY = "zigbee_linkkey";
     public static final String CONFIGURATION_PASSWORD = "zigbee_password";
     public static final String CONFIGURATION_INITIALIZE = "zigbee_initialise";
     public static final String CONFIGURATION_TRUSTCENTREMODE = "zigbee_trustcentremode";
+    public static final String CONFIGURATION_POWERMODE = "zigbee_powermode";
+    public static final String CONFIGURATION_TXPOWER = "zigbee_txpower";
 
     public final static String CONFIGURATION_MACADDRESS = "zigbee_macaddress";
     public final static String CONFIGURATION_JOINENABLE = "zigbee_joinenable";
