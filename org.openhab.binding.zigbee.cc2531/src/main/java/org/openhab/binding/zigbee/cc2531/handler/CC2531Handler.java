@@ -8,6 +8,9 @@
  */
 package org.openhab.binding.zigbee.cc2531.handler;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.openhab.binding.zigbee.cc2531.internal.CC2531Configuration;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
@@ -19,9 +22,12 @@ import com.zsmartsystems.zigbee.dongle.cc2531.ZigBeeDongleTiCc2531;
 import com.zsmartsystems.zigbee.serialization.DefaultDeserializer;
 import com.zsmartsystems.zigbee.serialization.DefaultSerializer;
 import com.zsmartsystems.zigbee.transport.TransportConfig;
+import com.zsmartsystems.zigbee.transport.TransportConfigOption;
 import com.zsmartsystems.zigbee.transport.ZigBeePort;
 import com.zsmartsystems.zigbee.transport.ZigBeePort.FlowControl;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclIasZoneCluster;
+
 
 /**
  * The {@link CC2531Handler} is responsible for handling commands, which are
