@@ -55,6 +55,12 @@ public class CC2531Handler extends ZigBeeCoordinatorHandler {
 
         TransportConfig transportConfig = new TransportConfig();
 
+        // The Telegesis dongle doesn't pass the MatchDescriptor commands to the stack, so we can't manage our services
+        // directly. Instead, register any services we want to support so the Telegesis can handle the MatchDescriptor.
+        Set<Integer> clusters = new HashSet<Integer>();
+        clusters.add(ZclIasZoneCluster.CLUSTER_ID);
+        transportConfig.addOption(TransportConfigOption.SUPPORTED_OUTPUT_CLUSTERS, clusters);
+
         startZigBee(dongle, transportConfig, DefaultSerializer.class, DefaultDeserializer.class);
     }
 
