@@ -54,19 +54,85 @@ public class ZigBeeConverterAtmosphericPressureTest {
         Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
         converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
 
-        ZclAttribute attribute = Mockito.mock(ZclAttribute.class);
-        Mockito.when(attribute.getCluster()).thenReturn(ZclClusterType.PRESSURE_MEASUREMENT);
-        Mockito.when(attribute.getId()).thenReturn(ZclPressureMeasurementCluster.ATTR_MEASUREDVALUE);
-        Mockito.when(attribute.getLastValue()).thenReturn(Integer.valueOf(1234));
+        ZclAttribute attributeMeasuredVal = Mockito.mock(ZclAttribute.class);
+        Mockito.when(attributeMeasuredVal.getCluster()).thenReturn(ZclClusterType.PRESSURE_MEASUREMENT);
+        Mockito.when(attributeMeasuredVal.getId()).thenReturn(ZclPressureMeasurementCluster.ATTR_MEASUREDVALUE);
+        Mockito.when(attributeMeasuredVal.getLastValue()).thenReturn(Integer.valueOf(1234));
 
-        converter.attributeUpdated(attribute);
+        ZclAttribute attributeScaledVal = Mockito.mock(ZclAttribute.class);
+        Mockito.when(attributeScaledVal.getCluster()).thenReturn(ZclClusterType.PRESSURE_MEASUREMENT);
+        Mockito.when(attributeScaledVal.getId()).thenReturn(ZclPressureMeasurementCluster.ATTR_SCALEDVALUE);
+        Mockito.when(attributeScaledVal.getLastValue()).thenReturn(Integer.valueOf(12456));
+
+        ZclAttribute attributeScaledVal2 = Mockito.mock(ZclAttribute.class);
+        Mockito.when(attributeScaledVal2.getCluster()).thenReturn(ZclClusterType.PRESSURE_MEASUREMENT);
+        Mockito.when(attributeScaledVal2.getId()).thenReturn(ZclPressureMeasurementCluster.ATTR_SCALEDVALUE);
+        Mockito.when(attributeScaledVal2.getLastValue()).thenReturn(Integer.valueOf(12556));
+
+        ZclAttribute attributeScale = Mockito.mock(ZclAttribute.class);
+        Mockito.when(attributeScale.getCluster()).thenReturn(ZclClusterType.PRESSURE_MEASUREMENT);
+        Mockito.when(attributeScale.getId()).thenReturn(ZclPressureMeasurementCluster.ATTR_SCALE);
+        Mockito.when(attributeScale.getLastValue()).thenReturn(Integer.valueOf(-1));
+
+        // Unscaled value, so it's updated
+        converter.attributeUpdated(attributeMeasuredVal);
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
-
         assertEquals(new ChannelUID("a:b:c:d"), channelCapture.getValue());
         assertTrue(stateCapture.getValue() instanceof QuantityType);
         QuantityType<Pressure> value = (QuantityType<Pressure>) stateCapture.getValue();
         assertEquals(HECTO(SIUnits.PASCAL), value.getUnit());
         assertEquals(1234, value.doubleValue(), 0.01);
+
+        // Scaled value, but no scale yet, so no update
+        converter.attributeUpdated(attributeScaledVal);
+        Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+
+        // Scaled value, with scale, so updated
+        converter.attributeUpdated(attributeScale);
+        converter.attributeUpdated(attributeScaledVal);
+        Mockito.verify(thingHandler, Mockito.times(2)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+        assertEquals(new ChannelUID("a:b:c:d"), channelCapture.getValue());
+        assertTrue(stateCapture.getValue() instanceof QuantityType);
+        value = (QuantityType<Pressure>) stateCapture.getValue();
+        assertEquals(HECTO(SIUnits.PASCAL), value.getUnit());
+        assertEquals(1245.6, value.doubleValue(), 0.01);
+
+        // Measured value, but after we received the scale, so no update
+        converter.attributeUpdated(attributeMeasuredVal);
+        Mockito.verify(thingHandler, Mockito.times(2)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+
+        // Scaled value, with scale, so updated
+        converter.attributeUpdated(attributeScale);
+        converter.attributeUpdated(attributeScaledVal);
+        Mockito.verify(thingHandler, Mockito.times(3)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+        assertEquals(new ChannelUID("a:b:c:d"), channelCapture.getValue());
+        assertTrue(stateCapture.getValue() instanceof QuantityType);
+        value = (QuantityType<Pressure>) stateCapture.getValue();
+        assertEquals(HECTO(SIUnits.PASCAL), value.getUnit());
+        assertEquals(1245.6, value.doubleValue(), 0.01);
+
+        //
+        converter.attributeUpdated(attributeScale);
+        converter.attributeUpdated(attributeMeasuredVal);
+        converter.attributeUpdated(attributeScaledVal2);
+        Mockito.verify(thingHandler, Mockito.times(4)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+        value = (QuantityType<Pressure>) stateCapture.getValue();
+        assertEquals(1255.6, value.doubleValue(), 0.01);
+
+        //
+        converter.attributeUpdated(attributeMeasuredVal);
+        converter.attributeUpdated(attributeScaledVal);
+        converter.attributeUpdated(attributeScale);
+        Mockito.verify(thingHandler, Mockito.times(5)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+        value = (QuantityType<Pressure>) stateCapture.getValue();
+        assertEquals(1245.6, value.doubleValue(), 0.01);
+
     }
 }
