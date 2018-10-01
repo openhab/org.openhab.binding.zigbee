@@ -8,7 +8,6 @@ import org.eclipse.smarthome.config.discovery.DiscoveryResultBuilder;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.discovery.ZigBeeDiscoveryParticipant;
 import org.openhab.binding.zigbee.internal.ZigBeeThingTypeMatcher;
 import org.osgi.service.component.annotations.Component;
@@ -23,23 +22,22 @@ import com.zsmartsystems.zigbee.ZigBeeNode;
  */
 @Component(immediate = true)
 public class ZigBeeDefaultDiscoveryParticipant implements ZigBeeDiscoveryParticipant {
+    private ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
 
     @Override
     public Set<ThingTypeUID> getSupportedThingTypeUIDs() {
-        ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
         return matcher.getSupportedThingTypeUIDs();
     }
 
     @Override
     public DiscoveryResult createResult(ThingUID bridgeUID, ZigBeeNode node, Map<String, Object> properties) {
-        ThingUID thingUID = new ThingUID(ZigBeeBindingConstants.BINDING_ID, bridgeUID,
-                node.getIeeeAddress().toString().toLowerCase().replaceAll("[^a-z0-9_/]", ""));
-
-        ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
         ThingTypeUID thingTypeUID = matcher.matchThingType(properties);
         if (thingTypeUID == null) {
             return null;
         }
+
+        ThingUID thingUID = new ThingUID(thingTypeUID, bridgeUID,
+                node.getIeeeAddress().toString().toLowerCase().replaceAll("[^a-z0-9_/]", ""));
 
         String label;
         // If we know the manufacturer and model, then give this device a name
@@ -52,5 +50,4 @@ public class ZigBeeDefaultDiscoveryParticipant implements ZigBeeDiscoveryPartici
         return DiscoveryResultBuilder.create(thingUID).withThingType(thingTypeUID).withProperties(properties)
                 .withBridge(bridgeUID).withLabel(label).build();
     }
-
 }

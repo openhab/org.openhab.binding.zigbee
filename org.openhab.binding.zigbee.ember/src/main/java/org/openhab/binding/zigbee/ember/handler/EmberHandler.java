@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.dongle.ember.ZigBeeDongleEzsp;
+import com.zsmartsystems.zigbee.dongle.ember.ezsp.structure.EzspConfigId;
 import com.zsmartsystems.zigbee.serialization.DefaultDeserializer;
 import com.zsmartsystems.zigbee.serialization.DefaultSerializer;
 import com.zsmartsystems.zigbee.transport.TransportConfig;
@@ -31,7 +32,6 @@ import com.zsmartsystems.zigbee.transport.ZigBeePort.FlowControl;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareCallback;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareStatus;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareUpdate;
-import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
 
 /**
  * The {@link EmberHandler} is responsible for handling commands, which are
@@ -66,11 +66,12 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
         }
 
         ZigBeePort serialPort = new ZigBeeSerialPort(config.zigbee_port, config.zigbee_baud, flowControl);
-        final ZigBeeTransportTransmit dongle = new ZigBeeDongleEzsp(serialPort);
+        final ZigBeeDongleEzsp dongle = new ZigBeeDongleEzsp(serialPort);
 
         logger.debug("ZigBee Ember Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
                 Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
 
+        dongle.updateDefaultConfiguration(EzspConfigId.EZSP_CONFIG_TX_POWER_MODE, config.zigbee_powermode);
         TransportConfig transportConfig = new TransportConfig();
 
         startZigBee(dongle, transportConfig, DefaultSerializer.class, DefaultDeserializer.class);
