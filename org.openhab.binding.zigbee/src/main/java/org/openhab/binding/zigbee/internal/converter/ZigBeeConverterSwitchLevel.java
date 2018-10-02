@@ -53,7 +53,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
     private PercentType lastLevel = PercentType.HUNDRED;
 
     @Override
-    public boolean initializeConverter() {
+    public synchronized boolean initializeConverter() {
         clusterLevelControl = (ZclLevelControlCluster) endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
         if (clusterLevelControl == null) {
             logger.error("{}: Error opening device level controls", endpoint.getIeeeAddress());
@@ -180,7 +180,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public synchronized void attributeUpdated(ZclAttribute attribute) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.LEVEL_CONTROL
                 && attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
