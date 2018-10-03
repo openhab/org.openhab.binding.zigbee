@@ -707,6 +707,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      * @return the set of {@link ZigBeeNode}s
      */
     public Set<ZigBeeNode> getNodes() {
+        if (networkManager == null) {
+            return Collections.emptySet();
+        }
         return networkManager.getNodes();
     }
 
