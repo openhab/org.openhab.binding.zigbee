@@ -714,6 +714,23 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     }
 
     /**
+     * Removes a node from the network manager. This does not cause the network manager to tell the node to leave the
+     * network, but will only remove the node from the network manager lists. Thus, if the node is still alive, it may
+     * be able to rejoin the network.
+     * <p>
+     * To force the node to leave the network, use the {@link #leave(IeeeAddress)} method
+     *
+     * @param nodeIeeeAddress the {@link IeeeAddress} of the node to remove
+     */
+    public void removeNode(IeeeAddress nodeIeeeAddress) {
+        ZigBeeNode node = networkManager.getNode(nodeIeeeAddress);
+        if (node == null) {
+            return;
+        }
+        networkManager.removeNode(node);
+    }
+
+    /**
      * Permit joining only for the specified node
      *
      * @param address the 16 bit network address of the node to enable joining
