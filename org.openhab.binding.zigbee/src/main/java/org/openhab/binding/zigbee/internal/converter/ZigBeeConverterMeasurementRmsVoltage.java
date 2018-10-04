@@ -97,15 +97,18 @@ public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConve
         ZclElectricalMeasurementCluster cluster = (ZclElectricalMeasurementCluster) endpoint
                 .getInputCluster(ZclElectricalMeasurementCluster.CLUSTER_ID);
         if (cluster == null) {
+            logger.trace("{}: Electrical measurement cluster not found", endpoint.getIeeeAddress());
             return null;
         }
 
         try {
             if (!cluster.discoverAttributes(false).get()
                     && !cluster.isAttributeSupported(ZclElectricalMeasurementCluster.ATTR_RMSVOLTAGE)) {
+                logger.trace("{}: Electrical measurement cluster RMS voltage not supported", endpoint.getIeeeAddress());
 
                 return null;
-            } else if (cluster.getRmsVoltage(0) == null) {
+            } else if (cluster.getRmsVoltage(Long.MAX_VALUE) == null) {
+                logger.trace("{}: Electrical measurement cluster RMS voltage returned null", endpoint.getIeeeAddress());
                 return null;
             }
         } catch (InterruptedException | ExecutionException e) {

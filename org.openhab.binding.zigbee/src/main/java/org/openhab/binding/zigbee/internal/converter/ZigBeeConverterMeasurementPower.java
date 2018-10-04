@@ -97,22 +97,25 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
         ZclElectricalMeasurementCluster cluster = (ZclElectricalMeasurementCluster) endpoint
                 .getInputCluster(ZclElectricalMeasurementCluster.CLUSTER_ID);
         if (cluster == null) {
+            logger.trace("{}: Electrical measurement cluster not found", endpoint.getIeeeAddress());
             return null;
         }
 
         try {
-            if (!cluster.discoverAttributes(false).get()) {
-                logger.warn("{}: Failed discovering attributes in electrical measurement cluster",
+            if (!cluster.discoverAttributes(false).get()
+                    && !cluster.isAttributeSupported(ZclElectricalMeasurementCluster.ATTR_ACTIVEPOWER)) {
+                logger.trace("{}: Electrical measurement cluster active power not supported",
+                        endpoint.getIeeeAddress());
+
+                return null;
+            } else if (cluster.getActivePower(Long.MAX_VALUE) == null) {
+                logger.trace("{}: Electrical measurement cluster active power returned null",
                         endpoint.getIeeeAddress());
                 return null;
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.warn("{}: Exception discovering attributes in electrical measurement cluster",
                     endpoint.getIeeeAddress(), e);
-            return null;
-        }
-
-        if (!cluster.isAttributeSupported(ZclElectricalMeasurementCluster.ATTR_ACTIVEPOWER)) {
             return null;
         }
 

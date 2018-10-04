@@ -123,6 +123,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
         ZclColorControlCluster clusterColorControl = (ZclColorControlCluster) endpoint
                 .getInputCluster(ZclColorControlCluster.CLUSTER_ID);
         if (clusterColorControl == null) {
+            logger.trace("{}: Color control cluster not found", endpoint.getIeeeAddress());
             return null;
         }
 
@@ -131,10 +132,14 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
                 // Device is not supporting attribute reporting - instead, just read the attributes
                 Integer capabilities = clusterColorControl.getColorCapabilities(Long.MAX_VALUE);
                 if (capabilities == null && clusterColorControl.getColorTemperature(Long.MAX_VALUE) == null) {
+                    logger.trace("{}: Color control color temperature attribute returned null",
+                            endpoint.getIeeeAddress());
                     return null;
                 }
                 if (capabilities != null && (capabilities & ColorCapabilitiesEnum.COLOR_TEMPERATURE.getKey()) == 0) {
                     // No support for color temperature
+                    logger.trace("{}: Color control color temperature capability not supported",
+                            endpoint.getIeeeAddress());
                     return null;
                 }
             } else if (clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_COLORCAPABILITIES)) {
@@ -142,9 +147,12 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
                 Integer capabilities = clusterColorControl.getColorCapabilities(Long.MAX_VALUE);
                 if (capabilities != null && (capabilities & ColorCapabilitiesEnum.COLOR_TEMPERATURE.getKey()) == 0) {
                     // No support for color temperature
+                    logger.trace("{}: Color control color temperature capability not supported",
+                            endpoint.getIeeeAddress());
                     return null;
                 }
             } else if (!clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_COLORTEMPERATURE)) {
+                logger.trace("{}: Color control color temperature attribute not supported", endpoint.getIeeeAddress());
                 return null;
             }
         } catch (InterruptedException | ExecutionException e) {

@@ -67,6 +67,7 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
         if (endpoint.getInputCluster(ZclRelativeHumidityMeasurementCluster.CLUSTER_ID) == null) {
+            logger.trace("{}: Relative humidity cluster not found", endpoint.getIeeeAddress());
             return null;
         }
 

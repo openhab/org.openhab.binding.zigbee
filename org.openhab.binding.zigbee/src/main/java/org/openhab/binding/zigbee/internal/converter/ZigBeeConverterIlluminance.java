@@ -67,6 +67,7 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
         if (endpoint.getInputCluster(ZclIlluminanceMeasurementCluster.CLUSTER_ID) == null) {
+            logger.trace("{}: Illuminance measurement cluster not found", endpoint.getIeeeAddress());
             return null;
         }
         return ChannelBuilder

@@ -68,6 +68,7 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
         if (endpoint.getInputCluster(ZclOccupancySensingCluster.CLUSTER_ID) == null) {
+            logger.trace("{}: Occupancy sensing cluster not found", endpoint.getIeeeAddress());
             return null;
         }
 
