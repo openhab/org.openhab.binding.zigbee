@@ -146,6 +146,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
         if (endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID) == null
                 && endpoint.getOutputCluster(ZclOnOffCluster.CLUSTER_ID) == null) {
+            logger.trace("{}: OnOff cluster not found", endpoint.getIeeeAddress());
             return null;
         }
 

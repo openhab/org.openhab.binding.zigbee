@@ -79,23 +79,26 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
         ZclPowerConfigurationCluster powerCluster = (ZclPowerConfigurationCluster) endpoint
                 .getInputCluster(ZclPowerConfigurationCluster.CLUSTER_ID);
         if (powerCluster == null) {
+            logger.trace("{}: Power configuration cluster not found", endpoint.getIeeeAddress());
             return null;
         }
 
         try {
-            if (!powerCluster.discoverAttributes(false).get()) {
-                logger.debug("{}: Failed discovering attributes in power configuration cluster",
-                        endpoint.getIeeeAddress());
-                if (powerCluster.getBatteryPercentageRemaining(Long.MAX_VALUE) == null) {
-                    return null;
-                }
-            } else if (!powerCluster
+            if (!powerCluster.discoverAttributes(false).get() && !powerCluster
                     .isAttributeSupported(ZclPowerConfigurationCluster.ATTR_BATTERYPERCENTAGEREMAINING)) {
+                logger.trace("{}: Power configuration cluster battery percentage not supported",
+                        endpoint.getIeeeAddress());
+
+                return null;
+            } else if (powerCluster.getBatteryPercentageRemaining(Long.MAX_VALUE) == null) {
+                logger.trace("{}: Power configuration cluster battery percentage returned null",
+                        endpoint.getIeeeAddress());
                 return null;
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.warn("{}: Exception discovering attributes in power configuration cluster",
                     endpoint.getIeeeAddress(), e);
+            return null;
         }
 
         return ChannelBuilder

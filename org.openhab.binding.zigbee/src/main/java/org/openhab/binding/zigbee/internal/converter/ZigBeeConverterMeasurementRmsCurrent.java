@@ -97,15 +97,18 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
         ZclElectricalMeasurementCluster cluster = (ZclElectricalMeasurementCluster) endpoint
                 .getInputCluster(ZclElectricalMeasurementCluster.CLUSTER_ID);
         if (cluster == null) {
+            logger.trace("{}: Electrical measurement cluster not found", endpoint.getIeeeAddress());
             return null;
         }
 
         try {
             if (!cluster.discoverAttributes(false).get()
                     && !cluster.isAttributeSupported(ZclElectricalMeasurementCluster.ATTR_RMSCURRENT)) {
+                logger.trace("{}: Electrical measurement cluster RMS current not supported", endpoint.getIeeeAddress());
 
                 return null;
-            } else if (cluster.getRmsCurrent(0) == null) {
+            } else if (cluster.getRmsCurrent(Long.MAX_VALUE) == null) {
+                logger.trace("{}: Electrical measurement cluster RMS current returned null", endpoint.getIeeeAddress());
                 return null;
             }
         } catch (InterruptedException | ExecutionException e) {
