@@ -49,7 +49,7 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
     private Integer enhancedScale = null;
 
     @Override
-    public boolean initializeConverter() {
+    public synchronized boolean initializeConverter() {
         cluster = (ZclPressureMeasurementCluster) endpoint.getInputCluster(ZclPressureMeasurementCluster.CLUSTER_ID);
         if (cluster == null) {
             logger.error("{}: Error opening device pressure measurement cluster", endpoint.getIeeeAddress());
@@ -108,34 +108,36 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public synchronized void attributeUpdated(ZclAttribute attribute) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.PRESSURE_MEASUREMENT) {
-            // Handle automatic reporting of the enhanced attribute configuration
-            if (attribute.getId() == ZclPressureMeasurementCluster.ATTR_SCALE) {
-                enhancedScale = (Integer) attribute.getLastValue();
-                if (enhancedScale != null) {
-                    enhancedScale *= -1;
-                }
-                return;
-            }
+        if (attribute.getCluster() != ZclClusterType.PRESSURE_MEASUREMENT) {
+            return;
+        }
 
-            if (attribute.getId() == ZclPressureMeasurementCluster.ATTR_SCALEDVALUE && enhancedScale != null) {
-                Integer value = (Integer) attribute.getLastValue();
-                if (value != null) {
-                    updateChannelState(new QuantityType<Pressure>(BigDecimal.valueOf(value, enhancedScale),
-                            HECTO(SIUnits.PASCAL)));
-                }
-                return;
+        // Handle automatic reporting of the enhanced attribute configuration
+        if (attribute.getId() == ZclPressureMeasurementCluster.ATTR_SCALE) {
+            enhancedScale = (Integer) attribute.getLastValue();
+            if (enhancedScale != null) {
+                enhancedScale *= -1;
             }
+            return;
+        }
 
-            if (attribute.getId() == ZclPressureMeasurementCluster.ATTR_MEASUREDVALUE && enhancedScale == null) {
-                Integer value = (Integer) attribute.getLastValue();
-                if (value != null) {
-                    updateChannelState(new QuantityType<Pressure>(BigDecimal.valueOf(value, 0), HECTO(SIUnits.PASCAL)));
-                }
-                return;
+        if (attribute.getId() == ZclPressureMeasurementCluster.ATTR_SCALEDVALUE && enhancedScale != null) {
+            Integer value = (Integer) attribute.getLastValue();
+            if (value != null) {
+                updateChannelState(
+                        new QuantityType<Pressure>(BigDecimal.valueOf(value, enhancedScale), HECTO(SIUnits.PASCAL)));
             }
+            return;
+        }
+
+        if (attribute.getId() == ZclPressureMeasurementCluster.ATTR_MEASUREDVALUE && enhancedScale == null) {
+            Integer value = (Integer) attribute.getLastValue();
+            if (value != null) {
+                updateChannelState(new QuantityType<Pressure>(BigDecimal.valueOf(value, 0), HECTO(SIUnits.PASCAL)));
+            }
+            return;
         }
     }
 }

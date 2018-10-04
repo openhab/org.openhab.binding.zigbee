@@ -43,9 +43,9 @@
             <parameter name="zigbee_channel" type="integer" groupName="network" required="false" min="11" max="25">
                 <label>Channel</label>
                 <description>Channel number</description>
-                <default>-1</default>
+                <default>0</default>
                 <options>
-                    <option value="-1">Auto</option>
+                    <option value="0">Auto</option>
                     <option value="11">Channel 11</option>
                     <option value="12">Channel 12</option>
                     <option value="13">Channel 13</option>
@@ -70,7 +70,7 @@
                 <description>PAN Network ID</description>
                 <default>0</default>
                 <options>
-                    <option value="65535">Auto</option>
+                    <option value="0">Auto</option>
                 </options>
                 <limitToOptions>false</limitToOptions>
                 <advanced>true</advanced>

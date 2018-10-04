@@ -95,11 +95,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     private ZigBeeNetworkStateSerializerImpl networkStateSerializer;
 
+    protected ZigBeeKey linkKey;
     protected ZigBeeKey networkKey;
 
     private TransportConfig transportConfig;
 
-    private final Set<ZigBeeNetworkNodeListener> listeners = new HashSet<ZigBeeNetworkNodeListener>();
+    private final Set<ZigBeeNetworkNodeListener> listeners = new HashSet<>();
 
     private boolean macAddressSet = false;
 
@@ -116,6 +117,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     private volatile boolean bridgeRemoved = false;
 
+    /**
+     * Default ZigBeeAlliance09 link key
+     */
+    private final static ZigBeeKey KEY_ZIGBEE_ALLIANCE_O9 = new ZigBeeKey(new int[] { 0x5A, 0x69, 0x67, 0x42, 0x65,
+            0x65, 0x41, 0x6C, 0x6C, 0x69, 0x61, 0x6E, 0x63, 0x65, 0x30, 0x39 });
+
     public ZigBeeCoordinatorHandler(Bridge coordinator) {
         super(coordinator);
     }
@@ -126,6 +133,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         panId = 0xffff;
         channelId = 0;
         initializeNetwork = false;
+        String linkKeyString = "";
         String networkKeyString = "";
 
         try {
@@ -145,11 +153,16 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             }
 
             Object param = getConfig().get(CONFIGURATION_NETWORKKEY);
-            logger.debug("Key {}", getConfig().get(CONFIGURATION_NETWORKKEY));
+            logger.debug("Network Key {}", getConfig().get(CONFIGURATION_NETWORKKEY));
             if (param != null && param instanceof String) {
                 networkKeyString = (String) param;
             }
 
+            param = getConfig().get(CONFIGURATION_LINKKEY);
+            logger.debug("Link Key {}", getConfig().get(CONFIGURATION_LINKKEY));
+            if (param != null && param instanceof String) {
+                linkKeyString = (String) param;
+            }
         } catch (ClassCastException | NumberFormatException e) {
             logger.error("{}: ZigBee initialisation exception ", thing.getUID(), e);
             updateStatus(ThingStatus.OFFLINE);
@@ -225,10 +238,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             }
         }
 
-        logger.debug("Key String {}", networkKeyString);
-
         // Process the network key
         try {
+            logger.debug("Network Key String {}", networkKeyString);
             networkKey = new ZigBeeKey(networkKeyString);
         } catch (IllegalArgumentException e) {
             networkKey = new ZigBeeKey();
@@ -237,10 +249,21 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         // If no key exists, generate a random key and save it back to the configuration
         if (!networkKey.isValid()) {
             networkKey = ZigBeeKey.createRandom();
-            logger.debug("Key initialised {}", networkKey);
+            logger.debug("Network key initialised {}", networkKey);
         }
 
-        logger.debug("Key final array {}", networkKey);
+        logger.debug("Network key final array {}", networkKey);
+
+        // Process the link key
+        try {
+            logger.debug("Link Key String {}", linkKeyString);
+            linkKey = new ZigBeeKey(linkKeyString);
+        } catch (IllegalArgumentException e) {
+            linkKey = KEY_ZIGBEE_ALLIANCE_O9;
+            logger.debug("Link Key String has invalid format. Revert to default key.");
+        }
+
+        logger.debug("Link key final array {}", linkKey);
     }
 
     @Override
@@ -344,8 +367,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         networkManager.addExtension(new ZigBeeIasCieExtension());
         networkManager.addExtension(new ZigBeeOtaUpgradeExtension());
 
-        logger.debug("Key initialise {}", networkKey);
-
         // Add any listeners that were registered before the manager was registered
         synchronized (listeners) {
             for (ZigBeeNetworkNodeListener listener : listeners) {
@@ -375,6 +396,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         ExtendedPanId currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
 
         if (initializeNetwork) {
+            logger.debug("Link key initialise {}", linkKey);
+            logger.debug("Network key initialise {}", networkKey);
+            networkManager.setZigBeeLinkKey(linkKey);
             networkManager.setZigBeeNetworkKey(networkKey);
             networkManager.setZigBeeChannel(ZigBeeChannel.create(channelId));
             networkManager.setZigBeePanId(panId);
@@ -409,7 +433,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             if (currentExtendedPanId != null) {
                 configuration.put(CONFIGURATION_EXTENDEDPANID, currentExtendedPanId.toString());
             }
-            configuration.put(CONFIGURATION_CHANNEL, currentChannel);
+            configuration.put(CONFIGURATION_CHANNEL, currentChannel.getChannel());
 
             // If the thing is defined statically, then this will fail and we will never start!
             updateConfiguration(configuration);
@@ -467,6 +491,11 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     transportConfig.addOption(TransportConfigOption.TRUST_CENTRE_JOIN_MODE, linkMode);
                     break;
 
+                case ZigBeeBindingConstants.CONFIGURATION_TXPOWER:
+                    transportConfig.addOption(TransportConfigOption.RADIO_TX_POWER, configurationParameter.getValue());
+                    break;
+
+                case ZigBeeBindingConstants.CONFIGURATION_POWERMODE:
                 case ZigBeeBindingConstants.CONFIGURATION_BAUD:
                 case ZigBeeBindingConstants.CONFIGURATION_FLOWCONTROL:
                 case ZigBeeBindingConstants.CONFIGURATION_PORT:
@@ -678,7 +707,27 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      * @return the set of {@link ZigBeeNode}s
      */
     public Set<ZigBeeNode> getNodes() {
+        if (networkManager == null) {
+            return Collections.emptySet();
+        }
         return networkManager.getNodes();
+    }
+
+    /**
+     * Removes a node from the network manager. This does not cause the network manager to tell the node to leave the
+     * network, but will only remove the node from the network manager lists. Thus, if the node is still alive, it may
+     * be able to rejoin the network.
+     * <p>
+     * To force the node to leave the network, use the {@link #leave(IeeeAddress)} method
+     *
+     * @param nodeIeeeAddress the {@link IeeeAddress} of the node to remove
+     */
+    public void removeNode(IeeeAddress nodeIeeeAddress) {
+        ZigBeeNode node = networkManager.getNode(nodeIeeeAddress);
+        if (node == null) {
+            return;
+        }
+        networkManager.removeNode(node);
     }
 
     /**
