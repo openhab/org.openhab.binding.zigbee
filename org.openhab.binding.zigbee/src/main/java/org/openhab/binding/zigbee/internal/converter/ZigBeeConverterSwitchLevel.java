@@ -53,7 +53,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
     private PercentType lastLevel = PercentType.HUNDRED;
 
     @Override
-    public boolean initializeConverter() {
+    public synchronized boolean initializeConverter() {
         clusterLevelControl = (ZclLevelControlCluster) endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
         if (clusterLevelControl == null) {
             logger.error("{}: Error opening device level controls", endpoint.getIeeeAddress());
@@ -147,13 +147,23 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
             return;
         }
 
-        clusterLevelControl.moveToLevelWithOnOffCommand(percentToLevel(percent),
-                configLevelControl.getDefaultTransitionTime());
+        if (clusterOnOffServer != null) {
+            if (percent.equals(PercentType.ZERO)) {
+                clusterOnOffServer.offCommand();
+            } else {
+                clusterLevelControl.moveToLevelWithOnOffCommand(percentToLevel(percent),
+                        configLevelControl.getDefaultTransitionTime());
+            }
+        } else {
+            clusterLevelControl.moveToLevelCommand(percentToLevel(percent),
+                    configLevelControl.getDefaultTransitionTime());
+        }
     }
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
         if (endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID) == null) {
+            logger.trace("{}: Level control cluster not found", endpoint.getIeeeAddress());
             return null;
         }
 
@@ -171,7 +181,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public synchronized void attributeUpdated(ZclAttribute attribute) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.LEVEL_CONTROL
                 && attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {

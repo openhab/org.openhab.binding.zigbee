@@ -32,7 +32,7 @@
     </channel-type>
 
     <!-- Door Lock Channel -->
-    <channel-type id="door_lock">
+    <channel-type id="door_state">
         <item-type>Switch</item-type>
         <label>Door Lock State</label>
         <description>Locks and unlocks the door and maintains the lock state</description>

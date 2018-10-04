@@ -48,9 +48,6 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
 
     @Override
     public boolean initializeConverter() {
-        if (endpoint.getParentNode().getNetworkAddress() == 60773) {
-            logger.debug("{}: Initialising device on/off cluster", endpoint.getIeeeAddress());
-        }
         clusterOnOffClient = (ZclOnOffCluster) endpoint.getOutputCluster(ZclOnOffCluster.CLUSTER_ID);
         clusterOnOffServer = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
         if (clusterOnOffClient == null && clusterOnOffServer == null) {
@@ -149,6 +146,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
         if (endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID) == null
                 && endpoint.getOutputCluster(ZclOnOffCluster.CLUSTER_ID) == null) {
+            logger.trace("{}: OnOff cluster not found", endpoint.getIeeeAddress());
             return null;
         }
 

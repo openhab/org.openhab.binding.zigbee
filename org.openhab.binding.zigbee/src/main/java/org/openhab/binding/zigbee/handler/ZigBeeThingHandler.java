@@ -392,6 +392,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
     @Override
     public void handleRemoval() {
         coordinatorHandler.leave(nodeIeeeAddress);
+        coordinatorHandler.removeNode(nodeIeeeAddress);
         updateStatus(ThingStatus.REMOVED);
     }
 

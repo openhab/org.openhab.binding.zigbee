@@ -44,6 +44,26 @@
                 </options>
             </parameter>
 
+            <parameter name="zigbee_powermode" type="integer">
+                <label>Power Mode</label>
+                <description>Sets the Ember power mode. Boost mode will improve receive and transmit performance.</description>
+                <default>1</default>
+                <options>
+                    <option value="0">Normal</option>
+                    <option value="1">Boost</option>
+                </options>
+            </parameter>
+
+            <parameter name="zigbee_txpower" type="integer" min="0" max="8">
+                <label>Power Mode</label>
+                <description>Sets the Ember transmit power.</description>
+                <default>0</default>
+                <options>
+                    <option value="8">High</option>
+                    <option value="0">Normal</option>
+                </options>
+            </parameter>
+
             <parameter name="zigbee_initialise" type="boolean" groupName="network">
                 <label>Reset Controller</label>
                 <description>Resets the Controller and sets the configuration to the configured values.</description>
@@ -54,9 +74,9 @@
             <parameter name="zigbee_channel" type="integer" groupName="network" required="false" min="11" max="25">
                 <label>Channel</label>
                 <description>Channel number</description>
-                <default>-1</default>
+                <default>0</default>
                 <options>
-                    <option value="-1">Auto</option>
+                    <option value="0">Auto</option>
                     <option value="11">Channel 11</option>
                     <option value="12">Channel 12</option>
                     <option value="13">Channel 13</option>
@@ -81,7 +101,7 @@
                 <description>PAN Network ID</description>
                 <default>0</default>
                 <options>
-                    <option value="65535">Auto</option>
+                    <option value="0">Auto</option>
                 </options>
                 <limitToOptions>false</limitToOptions>
                 <advanced>true</advanced>
