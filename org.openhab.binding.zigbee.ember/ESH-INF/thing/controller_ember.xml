@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<thing:thing-descriptions bindingId="zigbee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0" xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 org.eclipse.smarthome.thing-description.xsd">
+<thing:thing-descriptions bindingId="zigbee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 org.eclipse.smarthome.thing-description.xsd">
 
 	<bridge-type id="coordinator_ember">
 		<label>Ember EM35x Coordinator</label>
@@ -42,11 +44,31 @@
 				</options>
 			</parameter>
 
-            <parameter name="zigbee_installcode" type="text">
-                <label>Install Code</label>
-                <description>Add a temporary install key for device</description>
-                <advanced>true</advanced>
-            </parameter>
+			<parameter name="zigbee_installcode" type="text">
+				<label>Install Code</label>
+				<description>Add a temporary install key for device</description>
+				<advanced>true</advanced>
+			</parameter>
+
+			<parameter name="zigbee_powermode" type="integer">
+				<label>Power Mode</label>
+				<description>Sets the Ember power mode. Boost mode will improve receive and transmit performance.</description>
+				<default>1</default>
+				<options>
+					<option value="0">Normal</option>
+					<option value="1">Boost</option>
+				</options>
+			</parameter>
+
+			<parameter name="zigbee_txpower" type="integer" min="0" max="8">
+				<label>Power Mode</label>
+				<description>Sets the Ember transmit power.</description>
+				<default>0</default>
+				<options>
+					<option value="8">High</option>
+					<option value="0">Normal</option>
+				</options>
+			</parameter>
 
 			<parameter name="zigbee_initialise" type="boolean" groupName="network">
 				<label>Reset Controller</label>
@@ -58,9 +80,9 @@
 			<parameter name="zigbee_channel" type="integer" groupName="network" required="false" min="11" max="25">
 				<label>Channel</label>
 				<description>Channel number</description>
-				<default>-1</default>
+				<default>0</default>
 				<options>
-					<option value="-1">Auto</option>
+					<option value="0">Auto</option>
 					<option value="11">Channel 11</option>
 					<option value="12">Channel 12</option>
 					<option value="13">Channel 13</option>
@@ -80,75 +102,12 @@
 				<advanced>true</advanced>
 			</parameter>
 
-			<parameter name="zigbee_powermode" type="integer">
-                <label>Power Mode</label>
-                <description>Sets the Ember power mode. Boost mode will improve receive and transmit performance.</description>
-                <default>1</default>
-                <options>
-                    <option value="0">Normal</option>
-                    <option value="1">Boost</option>
-                </options>
-            </parameter>
-
-            <parameter name="zigbee_txpower" type="integer" min="0" max="8">
-                <label>Power Mode</label>
-                <description>Sets the Ember transmit power.</description>
-                <default>0</default>
-                <options>
-                    <option value="8">High</option>
-                    <option value="0">Normal</option>
-                </options>
-            </parameter>
-
-            <parameter name="zigbee_initialise" type="boolean" groupName="network">
-                <label>Reset Controller</label>
-                <description>Resets the Controller and sets the configuration to the configured values.</description>
-                <default>false</default>
-                <advanced>true</advanced>
-            </parameter>
-
-            <parameter name="zigbee_channel" type="integer" groupName="network" required="false" min="11" max="25">
-                <label>Channel</label>
-                <description>Channel number</description>
-                <default>0</default>
-                <options>
-                    <option value="0">Auto</option>
-                    <option value="11">Channel 11</option>
-                    <option value="12">Channel 12</option>
-                    <option value="13">Channel 13</option>
-                    <option value="14">Channel 14</option>
-                    <option value="15">Channel 15</option>
-                    <option value="16">Channel 16</option>
-                    <option value="17">Channel 17</option>
-                    <option value="18">Channel 18</option>
-                    <option value="19">Channel 19</option>
-                    <option value="20">Channel 20</option>
-                    <option value="21">Channel 21</option>
-                    <option value="22">Channel 22</option>
-                    <option value="23">Channel 23</option>
-                    <option value="24">Channel 24</option>
-                    <option value="25">Channel 25</option>
-                </options>
-                <advanced>true</advanced>
-            </parameter>
-
-            <parameter name="zigbee_panid" type="Integer" groupName="network" required="false">
-                <label>PAN ID</label>
-                <description>PAN Network ID</description>
-                <default>0</default>
-                <options>
-                    <option value="0">Auto</option>
-                </options>
-                <limitToOptions>false</limitToOptions>
-                <advanced>true</advanced>
-            </parameter>
-
 			<parameter name="zigbee_panid" type="Integer" groupName="network" required="false">
 				<label>PAN ID</label>
 				<description>PAN Network ID</description>
 				<default>0</default>
 				<options>
-					<option value="65535">Auto</option>
+					<option value="0">Auto</option>
 				</options>
 				<limitToOptions>false</limitToOptions>
 				<advanced>true</advanced>
