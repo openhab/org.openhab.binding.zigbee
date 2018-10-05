@@ -50,6 +50,7 @@ import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.ZigBeeStatus;
 import com.zsmartsystems.zigbee.app.iasclient.ZigBeeIasCieExtension;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaUpgradeExtension;
+import com.zsmartsystems.zigbee.security.MmoHash;
 import com.zsmartsystems.zigbee.security.ZigBeeKey;
 import com.zsmartsystems.zigbee.serialization.DefaultDeserializer;
 import com.zsmartsystems.zigbee.serialization.DefaultSerializer;
@@ -502,6 +503,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     reinitialise = true;
                     break;
 
+                case ZigBeeBindingConstants.THING_PROPERTY_INSTALLCODE:
+                    addInstallCode((String) configurationParameter.getValue());
+                    // Don't save this - it's a transient key
+                    configurationParameter.setValue("");
+                    break;
+
                 default:
                     configuration.put(configurationParameter.getKey(), configurationParameter.getValue());
                     logger.debug("{}: Unhandled configuration parameter {} >> {}.", nodeIeeeAddress,
@@ -525,6 +532,32 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             dispose();
             initialize();
         }
+    }
+
+    /**
+     * Process the adding of an install code
+     *
+     * @param installCode the string representation of the install code
+     * @param transportConfig the {@link TransportConfig} to populate with the configuration
+     */
+    private void addInstallCode(String installCode) {
+        // Split the install code and the address
+        String[] codeParts = installCode.split(":");
+        if (codeParts.length != 2) {
+            logger.warn("{}: Incorrectly formatted install code configuration {}", nodeIeeeAddress, installCode);
+            return;
+        }
+
+        MmoHash mmoHash = new MmoHash(codeParts[1].replace("-", ""));
+        ZigBeeKey key = new ZigBeeKey(mmoHash.getHash());
+        key.setAddress(new IeeeAddress(codeParts[0]));
+
+        networkManager.setZigBeeInstallKey(key);
+    }
+
+    public void startDeviceDiscovery() {
+        // Allow devices to join for 60 seconds
+        networkManager.permitJoin(60);
     }
 
     /**
