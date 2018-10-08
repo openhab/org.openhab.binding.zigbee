@@ -15,14 +15,26 @@
 				<description></description>
 			</parameter-group>
 
-			<parameter name="zigbee_port" type="text" required="true">
+			<parameter-group name="port">
+				<context></context>
+				<label>Serial Port Configuration</label>
+				<description></description>
+			</parameter-group>
+
+			<parameter-group name="ember">
+				<context></context>
+				<label>Ember NCP Configuration</label>
+				<description></description>
+			</parameter-group>
+
+			<parameter name="zigbee_port" type="text" required="true" groupName="port">
 				<label>Port</label>
 				<context>serial-port</context>
 				<default></default>
 				<description>Serial Port</description>
 			</parameter>
 
-			<parameter name="zigbee_flowcontrol" type="integer" required="true">
+			<parameter name="zigbee_flowcontrol" type="integer" required="true" groupName="port">
 				<label>Flow Control</label>
 				<description>Serial Port Flow Control</description>
 				<default>1</default>
@@ -33,7 +45,7 @@
 				</options>
 			</parameter>
 
-			<parameter name="zigbee_baud" type="integer" required="true">
+			<parameter name="zigbee_baud" type="integer" required="true" groupName="port">
 				<label>Baud Rate</label>
 				<description>Serial Port Baud Rate</description>
 				<default>115200</default>
@@ -44,15 +56,9 @@
 				</options>
 			</parameter>
 
-			<parameter name="zigbee_installcode" type="text">
-				<label>Install Code</label>
-				<description>Add a temporary install key for device</description>
-				<advanced>true</advanced>
-			</parameter>
-
-			<parameter name="zigbee_powermode" type="integer">
+			<parameter name="zigbee_powermode" type="integer" groupName="ember">
 				<label>Power Mode</label>
-				<description>Sets the Ember power mode. Boost mode will improve receive and transmit performance.</description>
+				<description>Sets the Ember power mode. Boost mode will improve receive and transmit performance</description>
 				<default>1</default>
 				<options>
 					<option value="0">Normal</option>
@@ -60,9 +66,9 @@
 				</options>
 			</parameter>
 
-			<parameter name="zigbee_txpower" type="integer" min="0" max="8">
-				<label>Power Mode</label>
-				<description>Sets the Ember transmit power.</description>
+			<parameter name="zigbee_txpower" type="integer" min="0" max="8" groupName="ember">
+				<label>Transmit Power</label>
+				<description>Sets the Ember transmit power</description>
 				<default>0</default>
 				<options>
 					<option value="8">High</option>
@@ -72,8 +78,9 @@
 
 			<parameter name="zigbee_initialise" type="boolean" groupName="network">
 				<label>Reset Controller</label>
-				<description>Resets the Controller and sets the configuration to the configured values.</description>
+				<description>Resets the Controller and sets the configuration to the configured values</description>
 				<default>false</default>
+				<verify>true</verify>
 				<advanced>true</advanced>
 			</parameter>
 
@@ -115,8 +122,12 @@
 
 			<parameter name="zigbee_extendedpanid" type="text" groupName="network" required="false">
 				<label>Extended PAN ID</label>
-				<description>Extended PAN Network ID: 16 byte hexadecimal value</description>
+				<description>Extended PAN Network ID: 8 byte hexadecimal value</description>
 				<default>0000000000000000</default>
+				<options>
+					<option value="0000000000000000">Auto</option>
+				</options>
+				<limitToOptions>false</limitToOptions>
 				<advanced>true</advanced>
 			</parameter>
 
@@ -124,6 +135,27 @@
 				<label>Network Security Key</label>
 				<description>Set the network security key</description>
 				<default>00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00</default>
+				<options>
+					<option value="00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00">Auto</option>
+				</options>
+				<limitToOptions>false</limitToOptions>
+				<advanced>true</advanced>
+			</parameter>
+
+			<parameter name="zigbee_linkkey" type="text" groupName="network">
+				<label>Link Security Key</label>
+				<description>Set the link security key</description>
+				<default>5A 69 67 42 65 65 41 6C 6C 69 61 6E 63 65 30 39</default>
+				<options>
+					<option value="5A 69 67 42 65 65 41 6C 6C 69 61 6E 63 65 30 39">ZigBee Alliance 09</option>
+				</options>
+				<limitToOptions>false</limitToOptions>
+				<advanced>true</advanced>
+			</parameter>
+
+			<parameter name="zigbee_installcode" type="text" groupName="network">
+				<label>Install Code</label>
+				<description>Add a temporary install key for device installation</description>
 				<advanced>true</advanced>
 			</parameter>
 
