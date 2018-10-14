@@ -66,6 +66,8 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
                         pollingPeriod = POLLING_PERIOD_HIGH;
                     }
                 } else {
+                    logger.error("{}: Error 0x{} setting server binding", endpoint.getIeeeAddress(),
+                            Integer.toHexString(bindResponse.getStatusCode()));
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }
             } catch (InterruptedException | ExecutionException e) {
@@ -79,18 +81,12 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
         if (clusterOnOffClient != null) {
             try {
                 CommandResult bindResponse = clusterOnOffClient.bind().get();
-                if (bindResponse.isSuccess()) {
-                    // Configure reporting - no faster than once per second - no slower than 10 minutes.
-                    CommandResult reportingResponse = clusterOnOffClient
-                            .setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX).get();
-                    if (reportingResponse.isError()) {
-                        pollingPeriod = POLLING_PERIOD_HIGH;
-                    }
-                } else {
-                    pollingPeriod = POLLING_PERIOD_HIGH;
+                if (!bindResponse.isSuccess()) {
+                    logger.error("{}: Error 0x{} setting client binding", endpoint.getIeeeAddress(),
+                            Integer.toHexString(bindResponse.getStatusCode()));
                 }
             } catch (InterruptedException | ExecutionException e) {
-                logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+                logger.error("{}: Exception setting binding ", endpoint.getIeeeAddress(), e);
             }
 
             // Add the command listener
@@ -105,7 +101,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
         logger.debug("{}: Closing device on/off cluster", endpoint.getIeeeAddress());
 
         if (clusterOnOffClient != null) {
-            clusterOnOffClient.removeAttributeListener(this);
+            clusterOnOffClient.removeCommandListener(this);
         }
         if (clusterOnOffServer != null) {
             clusterOnOffServer.removeAttributeListener(this);
@@ -114,9 +110,6 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
 
     @Override
     public void handleRefresh() {
-        if (clusterOnOffClient != null) {
-            clusterOnOffClient.getOnOff(0);
-        }
         if (clusterOnOffServer != null) {
             clusterOnOffServer.getOnOff(0);
         }
@@ -146,6 +139,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
         if (endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID) == null
                 && endpoint.getOutputCluster(ZclOnOffCluster.CLUSTER_ID) == null) {
+            logger.trace("{}: OnOff cluster not found", endpoint.getIeeeAddress());
             return null;
         }
 

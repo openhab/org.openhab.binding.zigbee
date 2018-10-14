@@ -83,6 +83,7 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter impl
 
     protected boolean supportsIasChannel(ZigBeeEndpoint endpoint, ZoneTypeEnum requiredZoneType) {
         if (endpoint.getInputCluster(ZclIasZoneCluster.CLUSTER_ID) == null) {
+            logger.trace("{}: IAS zone cluster not found", endpoint.getIeeeAddress());
             return false;
         }
 

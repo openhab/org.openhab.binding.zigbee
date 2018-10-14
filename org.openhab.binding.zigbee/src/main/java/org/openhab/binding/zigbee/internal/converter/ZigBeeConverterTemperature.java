@@ -79,6 +79,7 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
         if (endpoint.getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID) == null) {
+            logger.trace("{}: Temperature measurement cluster not found", endpoint.getIeeeAddress());
             return null;
         }
 

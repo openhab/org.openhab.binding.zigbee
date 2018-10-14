@@ -127,6 +127,10 @@ public class ZigBeeBindingConstants {
     public static final ChannelTypeUID CHANNEL_ELECTRICAL_RMSCURRENT = new ChannelTypeUID(
             "zigbee:electrical_rmscurrent");
 
+    public static final String CHANNEL_NAME_DOORLOCK_STATE = "doorlockstate";
+    public static final String CHANNEL_LABEL_DOORLOCK_STATE = "Door Lock State";
+    public static final ChannelTypeUID CHANNEL_DOORLOCK_STATE = new ChannelTypeUID("zigbee:door_state");
+
     public static final String CHANNEL_PROPERTY_ENDPOINT = "zigbee_endpoint";
 
     public static final String ITEM_TYPE_COLOR = "Color";
@@ -150,6 +154,7 @@ public class ZigBeeBindingConstants {
     public static final String THING_PROPERTY_NEIGHBORS = "zigbee_neighbors";
     public static final String THING_PROPERTY_LASTUPDATE = "zigbee_lastupdate";
     public static final String THING_PROPERTY_ASSOCIATEDDEVICES = "zigbee_devices";
+    public final static String THING_PROPERTY_INSTALLCODE = "zigbee_installcode";
 
     // List of all configuration parameters
     public final static String CONFIGURATION_PANID = "zigbee_panid";
