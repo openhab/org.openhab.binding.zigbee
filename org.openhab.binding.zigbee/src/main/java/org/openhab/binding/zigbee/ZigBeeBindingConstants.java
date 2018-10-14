@@ -154,15 +154,16 @@ public class ZigBeeBindingConstants {
     public static final String THING_PROPERTY_NEIGHBORS = "zigbee_neighbors";
     public static final String THING_PROPERTY_LASTUPDATE = "zigbee_lastupdate";
     public static final String THING_PROPERTY_ASSOCIATEDDEVICES = "zigbee_devices";
-    public final static String THING_PROPERTY_INSTALLCODE = "zigbee_installcode";
+    public static final String THING_PROPERTY_INSTALLCODE = "zigbee_installcode";
+    public static final String THING_PROPERTY_STACKCOMPLIANCE = "zigbee_stkcompliance";
 
     // List of all configuration parameters
-    public final static String CONFIGURATION_PANID = "zigbee_panid";
-    public final static String CONFIGURATION_EXTENDEDPANID = "zigbee_extendedpanid";
-    public final static String CONFIGURATION_CHANNEL = "zigbee_channel";
-    public final static String CONFIGURATION_PORT = "zigbee_port";
-    public final static String CONFIGURATION_BAUD = "zigbee_baud";
-    public final static String CONFIGURATION_FLOWCONTROL = "zigbee_flowcontrol";
+    public static final String CONFIGURATION_PANID = "zigbee_panid";
+    public static final String CONFIGURATION_EXTENDEDPANID = "zigbee_extendedpanid";
+    public static final String CONFIGURATION_CHANNEL = "zigbee_channel";
+    public static final String CONFIGURATION_PORT = "zigbee_port";
+    public static final String CONFIGURATION_BAUD = "zigbee_baud";
+    public static final String CONFIGURATION_FLOWCONTROL = "zigbee_flowcontrol";
     public static final String CONFIGURATION_NETWORKKEY = "zigbee_networkkey";
     public static final String CONFIGURATION_LINKKEY = "zigbee_linkkey";
     public static final String CONFIGURATION_PASSWORD = "zigbee_password";
@@ -171,25 +172,25 @@ public class ZigBeeBindingConstants {
     public static final String CONFIGURATION_POWERMODE = "zigbee_powermode";
     public static final String CONFIGURATION_TXPOWER = "zigbee_txpower";
 
-    public final static String CONFIGURATION_MACADDRESS = "zigbee_macaddress";
-    public final static String CONFIGURATION_JOINENABLE = "zigbee_joinenable";
-    public final static String CONFIGURATION_LEAVE = "zigbee_leave";
+    public static final String CONFIGURATION_MACADDRESS = "zigbee_macaddress";
+    public static final String CONFIGURATION_JOINENABLE = "zigbee_joinenable";
+    public static final String CONFIGURATION_LEAVE = "zigbee_leave";
 
     public static final String OFFLINE_COMMS_FAIL = "@text/zigbee.status.offline_commserror";
     public static final String OFFLINE_BAD_RESPONSE = "@text/zigbee.status.offline_badresponse";
-    public final static String OFFLINE_NOT_INITIALIZED = "@text/zigbee.status.offline_notinitialized";
-    public final static String OFFLINE_INITIALIZE_FAIL = "@text/zigbee.status.offline_initializefail";
-    public final static String OFFLINE_STARTUP_FAIL = "@text/zigbee.status.offline_startupfail";
-    public final static String OFFLINE_NO_ADDRESS = "@text/zigbee.status.offline_noaddress";
-    public final static String OFFLINE_NODE_NOT_FOUND = "@text/zigbee.status.offline_nodenotfound";
-    public final static String OFFLINE_DISCOVERY_INCOMPLETE = "@text/zigbee.status.offline_discoveryincomplete";
+    public static final String OFFLINE_NOT_INITIALIZED = "@text/zigbee.status.offline_notinitialized";
+    public static final String OFFLINE_INITIALIZE_FAIL = "@text/zigbee.status.offline_initializefail";
+    public static final String OFFLINE_STARTUP_FAIL = "@text/zigbee.status.offline_startupfail";
+    public static final String OFFLINE_NO_ADDRESS = "@text/zigbee.status.offline_noaddress";
+    public static final String OFFLINE_NODE_NOT_FOUND = "@text/zigbee.status.offline_nodenotfound";
+    public static final String OFFLINE_DISCOVERY_INCOMPLETE = "@text/zigbee.status.offline_discoveryincomplete";
 
-    public final static String FIRMWARE_FAILED = "@text/zigbee.firmware.failed";
+    public static final String FIRMWARE_FAILED = "@text/zigbee.firmware.failed";
 
     // List of configuration values for flow control
-    public final static Integer FLOWCONTROL_CONFIG_NONE = Integer.valueOf(0);
-    public final static Integer FLOWCONTROL_CONFIG_HARDWARE_CTSRTS = Integer.valueOf(1);
-    public final static Integer FLOWCONTROL_CONFIG_SOFTWARE_XONXOFF = Integer.valueOf(2);
+    public static final Integer FLOWCONTROL_CONFIG_NONE = Integer.valueOf(0);
+    public static final Integer FLOWCONTROL_CONFIG_HARDWARE_CTSRTS = Integer.valueOf(1);
+    public static final Integer FLOWCONTROL_CONFIG_SOFTWARE_XONXOFF = Integer.valueOf(2);
 
     /**
      * Return an ISO 8601 combined date and time string for current date/time

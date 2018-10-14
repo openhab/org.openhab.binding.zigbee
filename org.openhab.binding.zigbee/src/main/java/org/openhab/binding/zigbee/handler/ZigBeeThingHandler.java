@@ -530,6 +530,8 @@ public class ZigBeeThingHandler extends BaseThingHandler
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_LASTUPDATE,
                 ZigBeeBindingConstants.getISO8601StringForDate(node.getLastUpdateTime()));
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_NETWORKADDRESS, node.getNetworkAddress().toString());
+        properties.put(ZigBeeBindingConstants.THING_PROPERTY_STACKCOMPLIANCE,
+                Integer.toString(node.getNodeDescriptor().getStackCompliance()));
 
         updateProperties(properties);
 
