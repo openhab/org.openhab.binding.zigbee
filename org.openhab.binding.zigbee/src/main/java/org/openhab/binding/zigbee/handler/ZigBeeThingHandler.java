@@ -423,7 +423,8 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
     @Override
     public void handleCommand(final ChannelUID channelUID, final Command command) {
-        logger.debug("{}: Command for channel {} --> {}", nodeIeeeAddress, channelUID, command);
+        logger.debug("{}: Command for channel {} --> {} [{}]", nodeIeeeAddress, channelUID, command,
+                command.getClass().getSimpleName());
 
         // Check that we have a coordinator to work through
         if (coordinatorHandler == null) {
