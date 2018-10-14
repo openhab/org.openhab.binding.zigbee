@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -82,8 +83,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         implements Identifiable<ThingUID>, ZigBeeNetworkStateListener, ZigBeeNetworkNodeListener {
     private final Logger logger = LoggerFactory.getLogger(ZigBeeCoordinatorHandler.class);
 
-    protected int panId;
-    protected int channelId;
+    protected Integer panId;
+    protected Integer channelId;
     protected ExtendedPanId extendedPanId;
 
     private IeeeAddress nodeIeeeAddress = null;
@@ -180,6 +181,32 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             initializeNetwork = true;
         }
 
+        // Process the network key
+        try {
+            logger.debug("Network Key String {}", networkKeyString);
+            networkKey = new ZigBeeKey(networkKeyString);
+        } catch (IllegalArgumentException e) {
+            networkKey = new ZigBeeKey();
+            logger.debug("Network Key String has invalid format. Revert to default key.");
+        }
+
+        // If no key exists, generate a random key and save it back to the configuration
+        if (!networkKey.isValid()) {
+            networkKey = ZigBeeKey.createRandom();
+            logger.debug("Network key initialised {}", networkKey);
+        }
+
+        logger.debug("Network key final array {}", networkKey);
+
+        // Process the link key
+        try {
+            logger.debug("Link Key String {}", linkKeyString);
+            linkKey = new ZigBeeKey(linkKeyString);
+        } catch (IllegalArgumentException e) {
+            linkKey = KEY_ZIGBEE_ALLIANCE_O9;
+            logger.debug("Link Key String has invalid format. Revert to default key.");
+        }
+
         if (initializeNetwork) {
             logger.debug("Initialising network");
 
@@ -230,38 +257,15 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             }
 
             try {
-                // Reset the initialization flag
+                // Reset the initialization flag and save the keys
                 Configuration configuration = editConfiguration();
+                configuration.put(CONFIGURATION_LINKKEY, linkKey.toString());
+                configuration.put(CONFIGURATION_NETWORKKEY, networkKey.toString());
                 configuration.put(CONFIGURATION_INITIALIZE, false);
                 updateConfiguration(configuration);
             } catch (IllegalStateException e) {
-                logger.error("Error updating configuration: Unable to reset initialize flag. ", e);
+                logger.error("Error updating configuration: Unable to reset initialize flag and save keys. ", e);
             }
-        }
-
-        // Process the network key
-        try {
-            logger.debug("Network Key String {}", networkKeyString);
-            networkKey = new ZigBeeKey(networkKeyString);
-        } catch (IllegalArgumentException e) {
-            networkKey = new ZigBeeKey();
-        }
-
-        // If no key exists, generate a random key and save it back to the configuration
-        if (!networkKey.isValid()) {
-            networkKey = ZigBeeKey.createRandom();
-            logger.debug("Network key initialised {}", networkKey);
-        }
-
-        logger.debug("Network key final array {}", networkKey);
-
-        // Process the link key
-        try {
-            logger.debug("Link Key String {}", linkKeyString);
-            linkKey = new ZigBeeKey(linkKeyString);
-        } catch (IllegalArgumentException e) {
-            linkKey = KEY_ZIGBEE_ALLIANCE_O9;
-            logger.debug("Link Key String has invalid format. Revert to default key.");
         }
 
         logger.debug("Link key final array {}", linkKey);
@@ -479,6 +483,17 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         boolean reinitialise = false;
         Configuration configuration = editConfiguration();
         for (Entry<String, Object> configurationParameter : configurationParameters.entrySet()) {
+            // Ignore any configuration parameters that have not changed
+            if (Objects.equals(configurationParameter.getValue(), configuration.get(configurationParameter.getKey()))) {
+                logger.debug("{}: Configuration update: Ignored {} as no change", nodeIeeeAddress,
+                        configurationParameter.getKey());
+                continue;
+            }
+
+            logger.debug("{}: Configuration update: Processing {} -> {}", nodeIeeeAddress,
+                    configurationParameter.getKey(), configurationParameter.getValue());
+
+            boolean saveConfig = true;
             switch (configurationParameter.getKey()) {
                 case ZigBeeBindingConstants.CONFIGURATION_JOINENABLE:
                     if ((Boolean) configurationParameter.getValue()) {
@@ -496,17 +511,22 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     transportConfig.addOption(TransportConfigOption.RADIO_TX_POWER, configurationParameter.getValue());
                     break;
 
+                case ZigBeeBindingConstants.CONFIGURATION_LINKKEY:
+                case ZigBeeBindingConstants.CONFIGURATION_NETWORKKEY:
                 case ZigBeeBindingConstants.CONFIGURATION_POWERMODE:
                 case ZigBeeBindingConstants.CONFIGURATION_BAUD:
                 case ZigBeeBindingConstants.CONFIGURATION_FLOWCONTROL:
                 case ZigBeeBindingConstants.CONFIGURATION_PORT:
+                case ZigBeeBindingConstants.CONFIGURATION_CHANNEL:
+                case ZigBeeBindingConstants.CONFIGURATION_EXTENDEDPANID:
+                case ZigBeeBindingConstants.CONFIGURATION_INITIALIZE:
                     reinitialise = true;
                     break;
 
                 case ZigBeeBindingConstants.THING_PROPERTY_INSTALLCODE:
                     addInstallCode((String) configurationParameter.getValue());
                     // Don't save this - it's a transient key
-                    configurationParameter.setValue("");
+                    saveConfig = false;
                     break;
 
                 default:
@@ -516,7 +536,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     continue;
             }
 
-            configuration.put(configurationParameter.getKey(), configurationParameter.getValue());
+            if (saveConfig) {
+                configuration.put(configurationParameter.getKey(), configurationParameter.getValue());
+            }
         }
 
         // Persist changes
@@ -541,6 +563,10 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      * @param transportConfig the {@link TransportConfig} to populate with the configuration
      */
     private void addInstallCode(String installCode) {
+        if (installCode == null || installCode.isEmpty()) {
+            return;
+        }
+
         // Split the install code and the address
         String[] codeParts = installCode.split(":");
         if (codeParts.length != 2) {
