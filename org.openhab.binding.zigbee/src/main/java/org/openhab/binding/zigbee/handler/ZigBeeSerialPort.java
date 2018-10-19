@@ -178,20 +178,21 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
     public void close() {
         try {
             if (serialPort != null) {
+                serialPort.removeEventListener();
+                serialPort.enableReceiveTimeout(1);
+
+                outputStream.flush();
+
+                inputStream.close();
+                outputStream.close();
+
+                serialPort.close();
+
+                serialPort = null;
+                inputStream = null;
+                outputStream = null;
+
                 synchronized (this) {
-                    serialPort.removeEventListener();
-                    serialPort.enableReceiveTimeout(1);
-
-                    outputStream.flush();
-
-                    inputStream.close();
-                    outputStream.close();
-
-                    serialPort.close();
-
-                    serialPort = null;
-                    inputStream = null;
-                    outputStream = null;
                     this.notify();
                 }
 
