@@ -9,6 +9,7 @@
 package org.openhab.binding.zigbee.internal.converter.config;
 
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
@@ -32,16 +33,25 @@ public interface ZclClusterConfigHandler {
      * Creates the list of {@link ConfigDescriptionParameter}. This method shall check the available attributes on the
      * remote device and create configuration parameters for each supported attribute that needs to be configurable.
      *
+     * @param cluster the {@link ZclCluster} to get the configuration
+     * @return true if this cluster has configuration descriptions
+     */
+    boolean initialize(ZclCluster cluster);
+
+    /**
+     * Gets the configuration description that was generated dynamically
+     *
      * @return the list of {@link ConfigDescriptionParameter}
      */
-    public List<ConfigDescriptionParameter> getConfiguration();
+    List<ConfigDescriptionParameter> getConfiguration();
 
     /**
      * Processes the updated configuration. As required, the method shall process each known configuration parameter and
      * set a local variable for local parameters, and update the remote device for remote parameters.
+     * The currentConfiguration shall be updated.
      *
-     * @param configuration the {@link Configuration} to be processed
-     * @return the {@link Configuration} to be persisted within the thing
+     * @param currentConfiguration the current {@link Configuration}
+     * @param updatedParameters a map containing the updated configuration parameters to be set
      */
-    public Configuration updateConfiguration(@NonNull Configuration configuration);
+    void updateConfiguration(@NonNull Configuration currentConfiguration, Map<String, Object> updatedParameters);
 }

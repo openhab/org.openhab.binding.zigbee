@@ -337,15 +337,16 @@ public abstract class ZigBeeBaseChannelConverter {
     }
 
     /**
-     * Update the channel configuration. This is called by the Thing Handler if the user updates the channel
-     * configuration.
+     * Processes the updated configuration. As required, the method shall process each known configuration parameter and
+     * set a local variable for local parameters, and update the remote device for remote parameters.
+     * The currentConfiguration shall be updated.
      *
-     * @param configuration the channel {@link Configuration}
-     * @return the updated {@link Configuration} to persist to handler configuration
+     * @param currentConfiguration the current {@link Configuration}
+     * @param updatedParameters a map containing the updated configuration parameters to be set
      */
-    public Configuration updateConfiguration(@NonNull Configuration configuration) {
-        // Nothing required as default implementation
-        return new Configuration();
+    public void updateConfiguration(@NonNull Configuration currentConfiguration,
+            Map<String, Object> updatedParameters) {
+        // Nothing required in default implementation
     }
 
     /**
