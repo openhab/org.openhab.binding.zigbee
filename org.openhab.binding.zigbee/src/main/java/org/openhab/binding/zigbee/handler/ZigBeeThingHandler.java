@@ -40,12 +40,15 @@ import org.eclipse.smarthome.core.thing.binding.firmware.Firmware;
 import org.eclipse.smarthome.core.thing.binding.firmware.FirmwareUpdateHandler;
 import org.eclipse.smarthome.core.thing.binding.firmware.ProgressCallback;
 import org.eclipse.smarthome.core.thing.binding.firmware.ProgressStep;
+import org.eclipse.smarthome.core.thing.type.DynamicStateDescriptionProvider;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
 import org.eclipse.smarthome.core.types.State;
+import org.eclipse.smarthome.core.types.StateDescription;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
 import org.openhab.binding.zigbee.internal.ZigBeeDeviceConfigHandler;
+import org.openhab.binding.zigbee.internal.ZigBeeDynamicStateDescriptionProvider;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeChannelConverterFactory;
 import org.slf4j.Logger;
@@ -76,9 +79,14 @@ public class ZigBeeThingHandler extends BaseThingHandler
     private final Logger logger = LoggerFactory.getLogger(ZigBeeThingHandler.class);
 
     /**
+     * The bindings {@link DynamicStateDescriptionProvider}
+     */
+    private ZigBeeDynamicStateDescriptionProvider dynamicStateDescriptionProvider;
+
+    /**
      * The map of all the channels defined for this thing
      */
-    private final Map<ChannelUID, ZigBeeBaseChannelConverter> channels = new HashMap<ChannelUID, ZigBeeBaseChannelConverter>();
+    private final Map<ChannelUID, ZigBeeBaseChannelConverter> channels = new HashMap<>();
 
     /**
      * The {@link IeeeAddress} for this device
@@ -104,8 +112,10 @@ public class ZigBeeThingHandler extends BaseThingHandler
      */
     private final Set<ChannelUID> thingChannelsPoll = new HashSet<>();
 
-    public ZigBeeThingHandler(Thing zigbeeDevice) {
+    public ZigBeeThingHandler(Thing zigbeeDevice,
+            ZigBeeDynamicStateDescriptionProvider dynamicStateDescriptionProvider) {
         super(zigbeeDevice);
+        this.dynamicStateDescriptionProvider = dynamicStateDescriptionProvider;
     }
 
     @Override
@@ -259,6 +269,12 @@ public class ZigBeeThingHandler extends BaseThingHandler
                 if (handler.getPollingPeriod() < pollingPeriod) {
                     pollingPeriod = handler.getPollingPeriod();
                 }
+
+                // Provide the state descriptions if the channel provides them
+                StateDescription stateDescription = handler.getStateDescription();
+                if (dynamicStateDescriptionProvider != null && stateDescription != null) {
+                    dynamicStateDescriptionProvider.setDescription(channel.getUID(), stateDescription);
+                }
             }
         } catch (Exception e) {
             logger.error("{}: Exception creating channels ", nodeIeeeAddress, e);
@@ -292,6 +308,8 @@ public class ZigBeeThingHandler extends BaseThingHandler
     @Override
     public void dispose() {
         logger.debug("{}: Handler dispose.", nodeIeeeAddress);
+
+        dynamicStateDescriptionProvider.removeDescriptionsForThing(getThing().getUID());
 
         stopPolling();
 

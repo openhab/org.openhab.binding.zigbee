@@ -22,6 +22,7 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.State;
+import org.eclipse.smarthome.core.types.StateDescription;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
@@ -106,6 +107,11 @@ public abstract class ZigBeeBaseChannelConverter {
      * The {@link ZigBeeCoordinatorHandler} that controls the network
      */
     protected ZigBeeCoordinatorHandler coordinator = null;
+
+    /**
+     * The {@link StateDescription} or null if there are no descriptions for this channel
+     */
+    protected StateDescription stateDescription = null;
 
     /**
      * A List of {@link ConfigDescriptionParameter} supported by this channel. This should be populated during the
@@ -255,6 +261,15 @@ public abstract class ZigBeeBaseChannelConverter {
      */
     public List<ConfigDescriptionParameter> getConfigDescription() {
         return configOptions;
+    }
+
+    /**
+     * Gets the {@link StateDescription} for this channel
+     *
+     * @return the {@link StateDescription} for this channel, or null if no state description is provided
+     */
+    public StateDescription getStateDescription() {
+        return stateDescription;
     }
 
     /**
