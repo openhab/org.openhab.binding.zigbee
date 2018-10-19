@@ -41,7 +41,7 @@ The following coordinators are known to be supported.
 
 #### TI2531 Coordinator
 
-This is the Texas Instruments ZNP stack. The thing type is ```coordinator_ti2351```.
+This is the Texas Instruments ZNP stack. The thing type is ```coordinator_ti2531```.
 
 ##### TI2531 - Firmware
 
