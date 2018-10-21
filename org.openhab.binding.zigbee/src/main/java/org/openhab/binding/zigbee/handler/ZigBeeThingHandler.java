@@ -21,10 +21,12 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.config.core.ConfigDescription;
 import org.eclipse.smarthome.config.core.ConfigDescriptionProvider;
 import org.eclipse.smarthome.config.core.Configuration;
@@ -48,7 +50,6 @@ import org.eclipse.smarthome.core.types.StateDescription;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
 import org.openhab.binding.zigbee.internal.ZigBeeDeviceConfigHandler;
-import org.openhab.binding.zigbee.internal.ZigBeeDynamicStateDescriptionProvider;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeChannelConverterFactory;
 import org.slf4j.Logger;
@@ -71,8 +72,8 @@ import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeThingHandler extends BaseThingHandler
-        implements ZigBeeNetworkNodeListener, FirmwareUpdateHandler, ConfigDescriptionProvider {
+public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetworkNodeListener, FirmwareUpdateHandler,
+        ConfigDescriptionProvider, DynamicStateDescriptionProvider {
     /**
      * Our logger
      */
@@ -81,7 +82,7 @@ public class ZigBeeThingHandler extends BaseThingHandler
     /**
      * The bindings {@link DynamicStateDescriptionProvider}
      */
-    private ZigBeeDynamicStateDescriptionProvider dynamicStateDescriptionProvider;
+    private final Map<ChannelUID, StateDescription> stateDescriptions = new ConcurrentHashMap<>();
 
     /**
      * The map of all the channels defined for this thing
@@ -112,10 +113,8 @@ public class ZigBeeThingHandler extends BaseThingHandler
      */
     private final Set<ChannelUID> thingChannelsPoll = new HashSet<>();
 
-    public ZigBeeThingHandler(Thing zigbeeDevice,
-            ZigBeeDynamicStateDescriptionProvider dynamicStateDescriptionProvider) {
+    public ZigBeeThingHandler(Thing zigbeeDevice) {
         super(zigbeeDevice);
-        this.dynamicStateDescriptionProvider = dynamicStateDescriptionProvider;
     }
 
     @Override
@@ -272,8 +271,8 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
                 // Provide the state descriptions if the channel provides them
                 StateDescription stateDescription = handler.getStateDescription();
-                if (dynamicStateDescriptionProvider != null && stateDescription != null) {
-                    dynamicStateDescriptionProvider.setDescription(channel.getUID(), stateDescription);
+                if (stateDescription != null) {
+                    stateDescriptions.put(channel.getUID(), stateDescription);
                 }
             }
         } catch (Exception e) {
@@ -308,8 +307,6 @@ public class ZigBeeThingHandler extends BaseThingHandler
     @Override
     public void dispose() {
         logger.debug("{}: Handler dispose.", nodeIeeeAddress);
-
-        dynamicStateDescriptionProvider.removeDescriptionsForThing(getThing().getUID());
 
         stopPolling();
 
@@ -473,6 +470,17 @@ public class ZigBeeThingHandler extends BaseThingHandler
             }
         };
         scheduler.schedule(commandHandler, 0, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public @Nullable StateDescription getStateDescription(Channel channel,
+            @Nullable StateDescription originalStateDescription, @Nullable Locale locale) {
+        if (stateDescriptions.containsKey(channel.getUID())) {
+            logger.trace("Returning new stateDescription for {}", channel.getUID());
+            return stateDescriptions.get(channel.getUID());
+        } else {
+            return originalStateDescription;
+        }
     }
 
     /**

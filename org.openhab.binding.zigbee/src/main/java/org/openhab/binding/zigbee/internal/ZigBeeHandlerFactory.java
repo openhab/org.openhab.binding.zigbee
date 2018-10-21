@@ -10,17 +10,16 @@ package org.openhab.binding.zigbee.internal;
 
 import java.util.Hashtable;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.smarthome.config.core.ConfigDescriptionProvider;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
+import org.eclipse.smarthome.core.thing.type.DynamicStateDescriptionProvider;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * The {@link ZigBeeHandlerFactory} is responsible for creating things and thing
@@ -32,9 +31,6 @@ import org.osgi.service.component.annotations.Reference;
 @Component(immediate = true, service = { ThingHandlerFactory.class })
 public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
     private final ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
-
-    @NonNullByDefault({})
-    private ZigBeeDynamicStateDescriptionProvider dynamicStateDescriptionProvider;
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -52,19 +48,12 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
             return null;
         }
 
-        ZigBeeThingHandler handler = new ZigBeeThingHandler(thing, dynamicStateDescriptionProvider);
+        ZigBeeThingHandler handler = new ZigBeeThingHandler(thing);
         bundleContext.registerService(ConfigDescriptionProvider.class.getName(), handler,
+                new Hashtable<String, Object>());
+        bundleContext.registerService(DynamicStateDescriptionProvider.class.getName(), handler,
                 new Hashtable<String, Object>());
 
         return handler;
-    }
-
-    @Reference
-    protected void setDynamicStateDescriptionProvider(ZigBeeDynamicStateDescriptionProvider provider) {
-        dynamicStateDescriptionProvider = provider;
-    }
-
-    protected void unsetDynamicStateDescriptionProvider(ZigBeeDynamicStateDescriptionProvider provider) {
-        dynamicStateDescriptionProvider = null;
     }
 }
