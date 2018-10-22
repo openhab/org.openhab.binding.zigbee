@@ -80,7 +80,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     private final Logger logger = LoggerFactory.getLogger(ZigBeeThingHandler.class);
 
     /**
-     * The bindings {@link DynamicStateDescriptionProvider}
+     * The binding's {@link DynamicStateDescriptionProvider}
      */
     private final Map<ChannelUID, StateDescription> stateDescriptions = new ConcurrentHashMap<>();
 
@@ -479,7 +479,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             logger.trace("Returning new stateDescription for {}", channel.getUID());
             return stateDescriptions.get(channel.getUID());
         } else {
-            return originalStateDescription;
+            return null;
         }
     }
 
