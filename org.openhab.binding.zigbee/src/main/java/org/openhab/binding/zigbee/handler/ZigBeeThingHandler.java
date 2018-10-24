@@ -21,10 +21,12 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.config.core.ConfigDescription;
 import org.eclipse.smarthome.config.core.ConfigDescriptionProvider;
 import org.eclipse.smarthome.config.core.Configuration;
@@ -40,9 +42,11 @@ import org.eclipse.smarthome.core.thing.binding.firmware.Firmware;
 import org.eclipse.smarthome.core.thing.binding.firmware.FirmwareUpdateHandler;
 import org.eclipse.smarthome.core.thing.binding.firmware.ProgressCallback;
 import org.eclipse.smarthome.core.thing.binding.firmware.ProgressStep;
+import org.eclipse.smarthome.core.thing.type.DynamicStateDescriptionProvider;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
 import org.eclipse.smarthome.core.types.State;
+import org.eclipse.smarthome.core.types.StateDescription;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
 import org.openhab.binding.zigbee.internal.ZigBeeDeviceConfigHandler;
@@ -68,17 +72,22 @@ import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZigBeeThingHandler extends BaseThingHandler
-        implements ZigBeeNetworkNodeListener, FirmwareUpdateHandler, ConfigDescriptionProvider {
+public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetworkNodeListener, FirmwareUpdateHandler,
+        ConfigDescriptionProvider, DynamicStateDescriptionProvider {
     /**
      * Our logger
      */
     private final Logger logger = LoggerFactory.getLogger(ZigBeeThingHandler.class);
 
     /**
+     * The binding's {@link DynamicStateDescriptionProvider}
+     */
+    private final Map<ChannelUID, StateDescription> stateDescriptions = new ConcurrentHashMap<>();
+
+    /**
      * The map of all the channels defined for this thing
      */
-    private final Map<ChannelUID, ZigBeeBaseChannelConverter> channels = new HashMap<ChannelUID, ZigBeeBaseChannelConverter>();
+    private final Map<ChannelUID, ZigBeeBaseChannelConverter> channels = new HashMap<>();
 
     /**
      * The {@link IeeeAddress} for this device
@@ -258,6 +267,12 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
                 if (handler.getPollingPeriod() < pollingPeriod) {
                     pollingPeriod = handler.getPollingPeriod();
+                }
+
+                // Provide the state descriptions if the channel provides them
+                StateDescription stateDescription = handler.getStateDescription();
+                if (stateDescription != null) {
+                    stateDescriptions.put(channel.getUID(), stateDescription);
                 }
             }
         } catch (Exception e) {
@@ -455,6 +470,17 @@ public class ZigBeeThingHandler extends BaseThingHandler
             }
         };
         scheduler.schedule(commandHandler, 0, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public @Nullable StateDescription getStateDescription(Channel channel,
+            @Nullable StateDescription originalStateDescription, @Nullable Locale locale) {
+        if (stateDescriptions.containsKey(channel.getUID())) {
+            logger.trace("Returning new stateDescription for {}", channel.getUID());
+            return stateDescriptions.get(channel.getUID());
+        } else {
+            return null;
+        }
     }
 
     /**

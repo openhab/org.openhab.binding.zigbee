@@ -16,6 +16,7 @@ import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
+import org.eclipse.smarthome.core.thing.type.DynamicStateDescriptionProvider;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.osgi.service.component.annotations.Component;
@@ -49,6 +50,8 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
 
         ZigBeeThingHandler handler = new ZigBeeThingHandler(thing);
         bundleContext.registerService(ConfigDescriptionProvider.class.getName(), handler,
+                new Hashtable<String, Object>());
+        bundleContext.registerService(DynamicStateDescriptionProvider.class.getName(), handler,
                 new Hashtable<String, Object>());
 
         return handler;
