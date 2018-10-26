@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.eclipse.smarthome.core.thing.Channel;
+import org.eclipse.smarthome.core.thing.DefaultSystemChannelTypeProvider;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
@@ -81,6 +82,7 @@ public class ZigBeeChannelConverterFactory {
                 ZigBeeConverterMeasurementRmsVoltage.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_ELECTRICAL_RMSCURRENT,
                 ZigBeeConverterMeasurementRmsCurrent.class);
+        channelMap.put(DefaultSystemChannelTypeProvider.SYSTEM_BUTTON.getUID(), ZigBeeConverterGenericButton.class);
 
         // Add the hierarchical list of channels that are to be removed due to inheritance
         // Note that order is important in the event that there are multiple removals...
