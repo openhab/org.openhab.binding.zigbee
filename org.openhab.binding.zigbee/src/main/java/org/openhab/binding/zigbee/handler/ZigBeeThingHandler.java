@@ -431,7 +431,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         ZigBeeDeviceConfigHandler deviceConfigHandler = new ZigBeeDeviceConfigHandler(node);
         Map<String, Object> updatedParameters = deviceConfigHandler.handleConfigurationUpdate(configurationParameters);
 
-        configuration.setProperties(updatedParameters);
+        updatedParameters.forEach((parameterKey, parameterValue) -> configuration.put(parameterKey, parameterValue));
+
         // Persist changes
         updateConfiguration(configuration);
     }
