@@ -22,6 +22,7 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.State;
+import org.eclipse.smarthome.core.types.StateDescription;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
@@ -43,7 +44,8 @@ import com.zsmartsystems.zigbee.zcl.ZclCluster;
  * required features are available. If so, it should return the channel. This method allows dynamic channel detection
  * for unknown devices and may not be called if a device is defined through another mechanism.
  * <li>The thing handler will call the
- * {@link ZigBeeBaseChannelConverter#initialize(ZigBeeThingHandler, Channel, ZigBeeCoordinatorHandler, IeeeAddress, int)} to initialise the
+ * {@link ZigBeeBaseChannelConverter#initialize(ZigBeeThingHandler, Channel, ZigBeeCoordinatorHandler, IeeeAddress, int)}
+ * to initialise the
  * channel converter. The converter should get any clusters via the
  * {@link ZigBeeCoordinatorHandler#getEndpoint(IeeeAddress, int)} and {@link ZigBeeEndpoint#getInputCluster(int)} or
  * {@link ZigBeeEndpoint#getOutputCluster(int)}. It should configure the binding by calling {@link ZclCluster#bind()}
@@ -77,6 +79,11 @@ public abstract class ZigBeeBaseChannelConverter {
     private Logger logger = LoggerFactory.getLogger(ZigBeeBaseChannelConverter.class);
 
     /**
+     * Default minimum reporting period. Should be short to ensure we get dynamic state changes in a reasonable time
+     */
+    protected final int REPORTING_PERIOD_DEFAULT_MIN = 1;
+
+    /**
      * Default maximum reporting period
      */
     protected final int REPORTING_PERIOD_DEFAULT_MAX = 7200;
@@ -102,6 +109,11 @@ public abstract class ZigBeeBaseChannelConverter {
     protected ZigBeeCoordinatorHandler coordinator = null;
 
     /**
+     * The {@link StateDescription} or null if there are no descriptions for this channel
+     */
+    protected StateDescription stateDescription = null;
+
+    /**
      * A List of {@link ConfigDescriptionParameter} supported by this channel. This should be populated during the
      * {@link #initializeConverter()} method if the device has configuration the user needs to be concerned with.
      */
@@ -124,8 +136,10 @@ public abstract class ZigBeeBaseChannelConverter {
 
     /**
      * The polling period used for this channel in seconds. Normally this should be left at the default
-     * ({@link ZigBeeBaseChannelConverter#POLLING_PERIOD_DEFAULT}), however if the channel does not support reporting, it can be set to a higher
-     * period such as {@link ZigBeeBaseChannelConverter#POLLING_PERIOD_HIGH}. Any period may be used, however it is recommended to use these
+     * ({@link ZigBeeBaseChannelConverter#POLLING_PERIOD_DEFAULT}), however if the channel does not support reporting,
+     * it can be set to a higher
+     * period such as {@link ZigBeeBaseChannelConverter#POLLING_PERIOD_HIGH}. Any period may be used, however it is
+     * recommended to use these
      * standard settings.
      */
     protected int pollingPeriod = POLLING_PERIOD_DEFAULT;
@@ -236,7 +250,8 @@ public abstract class ZigBeeBaseChannelConverter {
      * Gets the configuration descriptions required to configure this channel.
      * <p>
      * Ideally, implementations should use the {@link ZclCluster#discoverAttributes(boolean)} method and the
-     * {@link ZclCluster#isAttributeSupported(int)} method to understand exactly what the device supports and only provide
+     * {@link ZclCluster#isAttributeSupported(int)} method to understand exactly what the device supports and only
+     * provide
      * configuration as necessary.
      * <p>
      * This method should not be overridden - the {@link #configOptions} list should be populated during converter
@@ -249,9 +264,20 @@ public abstract class ZigBeeBaseChannelConverter {
     }
 
     /**
+     * Gets the {@link StateDescription} for this channel
+     *
+     * @return the {@link StateDescription} for this channel, or null if no state description is provided
+     */
+    public StateDescription getStateDescription() {
+        return stateDescription;
+    }
+
+    /**
      * Gets the polling period for this channel in seconds. Normally this should be left at the default
-     * ({@link ZigBeeBaseChannelConverter#POLLING_PERIOD_DEFAULT}), however if the channel does not support reporting, it can be set to a higher
-     * period such as {@link ZigBeeBaseChannelConverter#POLLING_PERIOD_HIGH} during the converter initialisation. Any period may be used, however
+     * ({@link ZigBeeBaseChannelConverter#POLLING_PERIOD_DEFAULT}), however if the channel does not support reporting,
+     * it can be set to a higher
+     * period such as {@link ZigBeeBaseChannelConverter#POLLING_PERIOD_HIGH} during the converter initialisation. Any
+     * period may be used, however
      * it is recommended to use these standard settings.
      *
      * @return the polling period for this channel in seconds
@@ -262,7 +288,7 @@ public abstract class ZigBeeBaseChannelConverter {
 
     /**
      * Creates a standard channel UID given the {@link ZigBeeEndpoint}
-     * 
+     *
      * @param thingUID the {@link ThingUID}
      * @param endpoint the {@link ZigBeeEndpoint}
      * @param channelName the name of the channel
@@ -275,7 +301,7 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * Creates a set of properties, adding the standard properties required by the system.
      * Channel converters may add additional properties prior to creating the channel.
-     * 
+     *
      * @param endpoint the {@link ZigBeeEndpoint}
      * @return an initial properties map
      */
