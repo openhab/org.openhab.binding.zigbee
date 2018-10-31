@@ -580,7 +580,9 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_ASSOCIATEDDEVICES, "[]");
         updateProperties(properties);
 
-        updateStatus(ThingStatus.OFFLINE);
+        if (getThing().getStatus() != ThingStatus.REMOVING) {
+            updateStatus(ThingStatus.OFFLINE);
+        }
     }
 
     @Override
