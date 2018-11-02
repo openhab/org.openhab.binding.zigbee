@@ -143,6 +143,12 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         if (bridgeStatusInfo.getStatus() != ThingStatus.ONLINE || getBridge() == null) {
             logger.debug("{}: Coordinator is unknown or not online.", nodeIeeeAddress);
+
+            // The bridge has gone offline. In order to avoid any issues with data that is cached in the converters
+            // we will reinitialise the node, and all converters, when the bridge comes back online.
+            nodeInitialised = false;
+
+            stopPolling();
             return;
         }
 
@@ -192,6 +198,9 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         propertyDiscoverer.setProperties(getThing().getProperties());
         Map<String, String> newProperties = propertyDiscoverer.getProperties(node);
         updateProperties(newProperties);
+
+        // Clear the channels in case we are reinitialising
+        channels.clear();
 
         // Create the channel factory
         ZigBeeChannelConverterFactory factory = new ZigBeeChannelConverterFactory();
