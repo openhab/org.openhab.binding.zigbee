@@ -128,6 +128,10 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_LABEL_POWER_BATTERYVOLTAGE = "Battery Voltage";
     public static final ChannelTypeUID CHANNEL_POWER_BATTERYVOLTAGE = new ChannelTypeUID("zigbee:battery_voltage");
 
+    public static final String CHANNEL_NAME_POWER_BATTERYALARM = "batteryalarm";
+    public static final String CHANNEL_LABEL_POWER_BATTERYALARM = "Battery Alarm";
+    public static final ChannelTypeUID CHANNEL_POWER_BATTERYALARM = new ChannelTypeUID("zigbee:battery_alarm");
+
     public static final String CHANNEL_NAME_ELECTRICAL_RMSCURRENT = "current";
     public static final String CHANNEL_LABEL_ELECTRICAL_RMSCURRENT = "Current";
     public static final ChannelTypeUID CHANNEL_ELECTRICAL_RMSCURRENT = new ChannelTypeUID(
@@ -146,6 +150,7 @@ public class ZigBeeBindingConstants {
     public static final String ITEM_TYPE_NUMBER_PRESSURE = "Number:Pressure";
     public static final String ITEM_TYPE_NUMBER_TEMPERATURE = "Number:Temperature";
     public static final String ITEM_TYPE_SWITCH = "Switch";
+    public static final String ITEM_TYPE_STRING = "String";
 
     public static final String THING_PROPERTY_STKVERSION = "zigbee_stkversion";
     public static final String THING_PROPERTY_ZCLVERSION = "zigbee_zclversion";
@@ -192,6 +197,13 @@ public class ZigBeeBindingConstants {
     public static final String OFFLINE_DISCOVERY_INCOMPLETE = "@text/zigbee.status.offline_discoveryincomplete";
 
     public static final String FIRMWARE_FAILED = "@text/zigbee.firmware.failed";
+
+    // List of channel state constants
+    public static final String STATE_OPTION_BATTERY_MIN_THRESHOLD_REACHED = "minThresholdReached";
+    public static final String STATE_OPTION_BATTERY_THRESHOLD_1_REACHED = "threshold1Reached";
+    public static final String STATE_OPTION_BATTERY_THRESHOLD_2_REACHED = "threshold2Reached";
+    public static final String STATE_OPTION_BATTERY_THRESHOLD_3_REACHED = "threshold3Reached";
+    public static final String STATE_OPTION_BATTERY_NO_THRESHOLD_REACHED = "noThresholdReached";
 
     // List of configuration values for flow control
     public static final Integer FLOWCONTROL_CONFIG_NONE = Integer.valueOf(0);

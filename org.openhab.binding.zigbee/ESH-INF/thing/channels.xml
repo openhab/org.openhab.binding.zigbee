@@ -11,6 +11,23 @@
         <category>Energy</category>
         <state pattern="%.1f" readOnly="true" />
     </channel-type>
+    
+    <!-- Battery Alarm -->
+    <channel-type id="battery_alarm">
+        <item-type>String</item-type>
+        <label>Battery Alarm</label>
+        <description>The battery alarm state</description>
+        <category>Energy</category>
+        <state readOnly="true">
+          <options>
+            <option value="minThresholdReached">Battery level dropped below minimal threshold</option>
+            <option value="threshold1Reached">Battery level dropped below threshold 1</option>
+            <option value="threshold2Reached">Battery level dropped below threshold 2</option>
+            <option value="threshold3Reached">Battery level dropped below threshold 3</option>
+            <option value="noThresholdReached">No battery alarm</option>
+          </options>
+        </state>
+    </channel-type>
 
     <!-- Color Channel -->
     <channel-type id="color_color">
