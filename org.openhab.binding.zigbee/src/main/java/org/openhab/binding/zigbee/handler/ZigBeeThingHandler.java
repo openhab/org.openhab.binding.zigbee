@@ -129,7 +129,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         }
         nodeIeeeAddress = new IeeeAddress(configAddress);
 
-        updateStatus(ThingStatus.OFFLINE);
+        // we do not know the current state of the device until our scheduled job has initialized the device
+        updateStatus(ThingStatus.UNKNOWN);
 
         if (getBridge() != null) {
             bridgeStatusChanged(getBridge().getStatusInfo());
