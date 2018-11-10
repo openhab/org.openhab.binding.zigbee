@@ -8,6 +8,8 @@
  */
 package org.openhab.binding.zigbee;
 
+import static org.eclipse.smarthome.core.thing.DefaultSystemChannelTypeProvider.SYSTEM_CHANNEL_LOW_BATTERY;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -103,6 +105,10 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_NAME_IAS_WATERSENSOR = "water";
     public static final String CHANNEL_LABEL_IAS_WATERSENSOR = "Water Alarm";
     public static final ChannelTypeUID CHANNEL_IAS_WATERSENSOR = new ChannelTypeUID("zigbee:ias_water");
+
+    public static final String CHANNEL_NAME_IAS_LOWBATTERY = "iaslowbattery";
+    public static final String CHANNEL_LABEL_IAS_LOWBATTERY = "Low Battery";
+    public static final ChannelTypeUID CHANNEL_IAS_LOWBATTERY = SYSTEM_CHANNEL_LOW_BATTERY.getUID();
 
     public static final String CHANNEL_NAME_ELECTRICAL_ACTIVEPOWER = "activepower";
     public static final String CHANNEL_LABEL_ELECTRICAL_ACTIVEPOWER = "Total Active Power";
@@ -205,8 +211,7 @@ public class ZigBeeBindingConstants {
     /**
      * Return an ISO 8601 combined date and time string for specified date/time
      *
-     * @param date
-     *            Date
+     * @param date Date
      * @return String with format "yyyy-MM-dd'T'HH:mm:ss'Z'"
      */
     public static String getISO8601StringForDate(Date date) {
