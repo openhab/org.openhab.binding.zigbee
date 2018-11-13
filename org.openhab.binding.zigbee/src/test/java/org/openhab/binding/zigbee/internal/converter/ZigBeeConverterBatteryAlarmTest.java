@@ -55,7 +55,7 @@ public class ZigBeeConverterBatteryAlarmTest {
         // Bit 0 indicates BatteryMinThreshold
         converter.attributeUpdated(makeAlarmState(0b0001));
         verify(thingHandler).setChannelState(channel.getUID(),
-                new StringType(STATE_OPTION_BATTERY_MIN_THRESHOLD_REACHED));
+                new StringType(STATE_OPTION_BATTERY_MIN_THRESHOLD));
     }
 
     @Test
@@ -63,7 +63,7 @@ public class ZigBeeConverterBatteryAlarmTest {
         // Bit 1 indicates threshold 1
         converter.attributeUpdated(makeAlarmState(0b0010));
         verify(thingHandler).setChannelState(channel.getUID(),
-                new StringType(STATE_OPTION_BATTERY_THRESHOLD_1_REACHED));
+                new StringType(STATE_OPTION_BATTERY_THRESHOLD_1));
     }
 
     @Test
@@ -71,7 +71,7 @@ public class ZigBeeConverterBatteryAlarmTest {
         // Bit 2 indicates threshold 2
         converter.attributeUpdated(makeAlarmState(0b0100));
         verify(thingHandler).setChannelState(channel.getUID(),
-                new StringType(STATE_OPTION_BATTERY_THRESHOLD_2_REACHED));
+                new StringType(STATE_OPTION_BATTERY_THRESHOLD_2));
     }
 
     @Test
@@ -79,21 +79,21 @@ public class ZigBeeConverterBatteryAlarmTest {
         // Bit 3 indicates threshold 3
         converter.attributeUpdated(makeAlarmState(0b1000));
         verify(thingHandler).setChannelState(channel.getUID(),
-                new StringType(STATE_OPTION_BATTERY_THRESHOLD_3_REACHED));
+                new StringType(STATE_OPTION_BATTERY_THRESHOLD_3));
     }
 
     @Test
     public void testAttributeUpdateForNoThreshold() {
         converter.attributeUpdated(makeAlarmState(0b0000));
         verify(thingHandler).setChannelState(channel.getUID(),
-                new StringType(STATE_OPTION_BATTERY_NO_THRESHOLD_REACHED));
+                new StringType(STATE_OPTION_BATTERY_NO_THRESHOLD));
     }
 
     @Test
     public void testAttributeUpdateMultipleThresholds() {
         converter.attributeUpdated(makeAlarmState(0b1110));
         verify(thingHandler).setChannelState(channel.getUID(),
-                new StringType(STATE_OPTION_BATTERY_THRESHOLD_1_REACHED));
+                new StringType(STATE_OPTION_BATTERY_THRESHOLD_1));
     }
 
     @Test

@@ -154,15 +154,15 @@ public class ZigBeeConverterBatteryAlarm extends ZigBeeBaseChannelConverter impl
             }
 
             if ((value & MIN_THRESHOLD_BITMASK) != 0) {
-                updateChannelState(new StringType(STATE_OPTION_BATTERY_MIN_THRESHOLD_REACHED));
+                updateChannelState(new StringType(STATE_OPTION_BATTERY_MIN_THRESHOLD));
             } else if ((value & THRESHOLD_1_BITMASK) != 0) {
-                updateChannelState(new StringType(STATE_OPTION_BATTERY_THRESHOLD_1_REACHED));
+                updateChannelState(new StringType(STATE_OPTION_BATTERY_THRESHOLD_1));
             } else if ((value & THRESHOLD_2_BITMASK) != 0) {
-                updateChannelState(new StringType(STATE_OPTION_BATTERY_THRESHOLD_2_REACHED));
+                updateChannelState(new StringType(STATE_OPTION_BATTERY_THRESHOLD_2));
             } else if ((value & THRESHOLD_3_BITMASK) != 0) {
-                updateChannelState(new StringType(STATE_OPTION_BATTERY_THRESHOLD_3_REACHED));
+                updateChannelState(new StringType(STATE_OPTION_BATTERY_THRESHOLD_3));
             } else {
-                updateChannelState(new StringType(STATE_OPTION_BATTERY_NO_THRESHOLD_REACHED));
+                updateChannelState(new StringType(STATE_OPTION_BATTERY_NO_THRESHOLD));
             }
         }
     }

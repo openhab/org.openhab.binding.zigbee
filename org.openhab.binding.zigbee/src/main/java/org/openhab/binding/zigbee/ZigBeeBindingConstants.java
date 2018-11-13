@@ -199,11 +199,11 @@ public class ZigBeeBindingConstants {
     public static final String FIRMWARE_FAILED = "@text/zigbee.firmware.failed";
 
     // List of channel state constants
-    public static final String STATE_OPTION_BATTERY_MIN_THRESHOLD_REACHED = "minThresholdReached";
-    public static final String STATE_OPTION_BATTERY_THRESHOLD_1_REACHED = "threshold1Reached";
-    public static final String STATE_OPTION_BATTERY_THRESHOLD_2_REACHED = "threshold2Reached";
-    public static final String STATE_OPTION_BATTERY_THRESHOLD_3_REACHED = "threshold3Reached";
-    public static final String STATE_OPTION_BATTERY_NO_THRESHOLD_REACHED = "noThresholdReached";
+    public static final String STATE_OPTION_BATTERY_MIN_THRESHOLD = "minThreshold";
+    public static final String STATE_OPTION_BATTERY_THRESHOLD_1 = "threshold1";
+    public static final String STATE_OPTION_BATTERY_THRESHOLD_2 = "threshold2";
+    public static final String STATE_OPTION_BATTERY_THRESHOLD_3 = "threshold3";
+    public static final String STATE_OPTION_BATTERY_NO_THRESHOLD = "noThreshold";
 
     // List of configuration values for flow control
     public static final Integer FLOWCONTROL_CONFIG_NONE = Integer.valueOf(0);
