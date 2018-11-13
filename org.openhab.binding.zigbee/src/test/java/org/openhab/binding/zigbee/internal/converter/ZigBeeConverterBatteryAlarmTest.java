@@ -8,9 +8,10 @@ import static org.openhab.binding.zigbee.ZigBeeBindingConstants.*;
 
 import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.thing.Channel;
+import org.eclipse.smarthome.core.thing.ChannelUID;
+import org.eclipse.smarthome.core.types.State;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 
@@ -53,7 +54,7 @@ public class ZigBeeConverterBatteryAlarmTest {
     public void testAttributeUpdateForMinThreshold() {
         // Bit 0 indicates BatteryMinThreshold
         converter.attributeUpdated(makeAlarmState(0b0001));
-        Mockito.verify(thingHandler).setChannelState(channel.getUID(),
+        verify(thingHandler).setChannelState(channel.getUID(),
                 new StringType(STATE_OPTION_BATTERY_MIN_THRESHOLD_REACHED));
     }
 
@@ -61,7 +62,7 @@ public class ZigBeeConverterBatteryAlarmTest {
     public void testAttributeUpdateForThreshold1() {
         // Bit 1 indicates threshold 1
         converter.attributeUpdated(makeAlarmState(0b0010));
-        Mockito.verify(thingHandler).setChannelState(channel.getUID(),
+        verify(thingHandler).setChannelState(channel.getUID(),
                 new StringType(STATE_OPTION_BATTERY_THRESHOLD_1_REACHED));
     }
 
@@ -69,7 +70,7 @@ public class ZigBeeConverterBatteryAlarmTest {
     public void testAttributeUpdateForThreshold2() {
         // Bit 2 indicates threshold 2
         converter.attributeUpdated(makeAlarmState(0b0100));
-        Mockito.verify(thingHandler).setChannelState(channel.getUID(),
+        verify(thingHandler).setChannelState(channel.getUID(),
                 new StringType(STATE_OPTION_BATTERY_THRESHOLD_2_REACHED));
     }
 
@@ -77,21 +78,21 @@ public class ZigBeeConverterBatteryAlarmTest {
     public void testAttributeUpdateForThreshold3() {
         // Bit 3 indicates threshold 3
         converter.attributeUpdated(makeAlarmState(0b1000));
-        Mockito.verify(thingHandler).setChannelState(channel.getUID(),
+        verify(thingHandler).setChannelState(channel.getUID(),
                 new StringType(STATE_OPTION_BATTERY_THRESHOLD_3_REACHED));
     }
 
     @Test
     public void testAttributeUpdateForNoThreshold() {
         converter.attributeUpdated(makeAlarmState(0b0000));
-        Mockito.verify(thingHandler).setChannelState(channel.getUID(),
+        verify(thingHandler).setChannelState(channel.getUID(),
                 new StringType(STATE_OPTION_BATTERY_NO_THRESHOLD_REACHED));
     }
 
     @Test
     public void testAttributeUpdateMultipleThresholds() {
         converter.attributeUpdated(makeAlarmState(0b1110));
-        Mockito.verify(thingHandler).setChannelState(channel.getUID(),
+        verify(thingHandler).setChannelState(channel.getUID(),
                 new StringType(STATE_OPTION_BATTERY_THRESHOLD_1_REACHED));
     }
 
@@ -99,14 +100,14 @@ public class ZigBeeConverterBatteryAlarmTest {
     public void testAttributeUpdateUnsuitableAttribute() {
         converter.attributeUpdated(new ZclAttribute(POWER_CONFIGURATION, ATTR_BATTERYALARMMASK, "alarm_mask",
                 ZclDataType.BITMAP_32_BIT, false, true, false, true));
-        Mockito.verify(thingHandler, never()).setChannelState(any(), any());
+        verify(thingHandler, never()).setChannelState(any(ChannelUID.class), any(State.class));
     }
 
     @Test
     public void testAttributeUpdateUnsuitableCluster() {
         converter.attributeUpdated(new ZclAttribute(FAN_CONTROL, ATTR_BATTERYALARMMASK, "bla",
                 ZclDataType.BITMAP_32_BIT, false, true, false, true));
-        Mockito.verify(thingHandler, never()).setChannelState(any(), any());
+        verify(thingHandler, never()).setChannelState(any(ChannelUID.class), any(State.class));
     }
 
     private ZclAttribute makeAlarmState(int bitmask) {
