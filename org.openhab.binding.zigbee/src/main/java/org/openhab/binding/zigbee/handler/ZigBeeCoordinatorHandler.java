@@ -745,10 +745,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             case INITIALISING:
                 break;
             case ONLINE:
-                // make sure to not confuse child things
-                if (getThing().getStatus() != ThingStatus.ONLINE) {
-                    updateStatus(ThingStatus.ONLINE);
-                }
+                updateStatus(ThingStatus.ONLINE);
                 break;
             case OFFLINE:
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
