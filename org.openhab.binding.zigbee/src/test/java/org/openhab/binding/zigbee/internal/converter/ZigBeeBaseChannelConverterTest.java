@@ -12,6 +12,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.junit.Test;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 
 /**
  * Test of the ZigBeeBaseChannelConverter

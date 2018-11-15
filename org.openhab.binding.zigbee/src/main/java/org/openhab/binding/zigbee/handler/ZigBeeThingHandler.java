@@ -50,9 +50,9 @@ import org.eclipse.smarthome.core.types.RefreshType;
 import org.eclipse.smarthome.core.types.State;
 import org.eclipse.smarthome.core.types.StateDescription;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
 import org.openhab.binding.zigbee.internal.ZigBeeDeviceConfigHandler;
-import org.openhab.binding.zigbee.internal.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeChannelConverterFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,9 +71,10 @@ import com.zsmartsystems.zigbee.zdo.field.NeighborTable;
 import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
 
 /**
+ * The standard ZigBee thing handler.
  *
  * @author Chris Jackson - Initial Contribution
- *
+ * @author Thomas Höfer - Injected ZigBeeChannelConverterFactory via constructor
  */
 public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetworkNodeListener, FirmwareUpdateHandler,
         ConfigDescriptionProvider, DynamicStateDescriptionProvider {
@@ -116,8 +117,14 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      */
     private final Set<ChannelUID> thingChannelsPoll = new HashSet<>();
 
-    public ZigBeeThingHandler(Thing zigbeeDevice) {
+    /**
+     * The factory to create the converters for the different channels.
+     */
+    private final ZigBeeChannelConverterFactory factory;
+
+    public ZigBeeThingHandler(Thing zigbeeDevice, ZigBeeChannelConverterFactory factory) {
         super(zigbeeDevice);
+        this.factory = factory;
     }
 
     @Override
@@ -206,8 +213,6 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         // Clear the channels in case we are reinitialising
         channels.clear();
 
-        // Create the channel factory
-        ZigBeeChannelConverterFactory factory = new ZigBeeChannelConverterFactory();
         List<Channel> nodeChannels;
 
         if (getThing().getThingTypeUID().equals(ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE)) {
@@ -366,7 +371,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * Process a static cluster list and add it to the existing list
      *
      * @param initialClusters a collection of existing clusters
-     * @param newClusters a string containing a comma separated list of clusters
+     * @param newClusters     a string containing a comma separated list of clusters
      * @return a list of clusters if the list is updated, or an empty list if it has not changed
      */
     private List<Integer> processClusterList(Collection<Integer> initialClusters, String newClusters) {
@@ -566,7 +571,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * changes.
      *
      * @param channel the {@link ChannelUID} to be updated
-     * @param state the new {link State}
+     * @param state   the new {link State}
      */
     public void setChannelState(ChannelUID channel, State state) {
         if (firmwareUpdateInProgress) {
