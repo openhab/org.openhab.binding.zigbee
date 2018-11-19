@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: ZigBee Binding
 Bundle-SymbolicName: org.openhab.binding.zigbee;singleton:=true
 Bundle-Vendor: openHAB
-Bundle-Version: 2.4.0.qualifier
+Bundle-Version: 2.4.0.M6
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: com.thoughtworks.xstream,
  com.thoughtworks.xstream.converters,

@@ -6,7 +6,7 @@ Bundle-Name: ZigBee Ember Binding
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-SymbolicName: org.openhab.binding.zigbee.ember;singleton:=true
 Bundle-Vendor: openHAB
-Bundle-Version: 2.4.0.qualifier
+Bundle-Version: 2.4.0.M6
 Export-Package: 
  org.openhab.binding.zigbee.ember,
  org.openhab.binding.zigbee.ember.handler
