@@ -319,7 +319,7 @@ public abstract class ZigBeeBaseChannelConverter {
      * @param level an integer between 0 and 254
      * @return the scaled {@link PercentType}
      */
-    public PercentType levelToPercent(int level) {
+    protected PercentType levelToPercent(int level) {
         return new PercentType((int) (level * 100.0 / 254.0 + 0.5));
     }
 
@@ -329,7 +329,7 @@ public abstract class ZigBeeBaseChannelConverter {
      * @param percent the {@link PercentType} to convert
      * @return a scaled value between 0 and 254
      */
-    public int percentToLevel(PercentType percent) {
+    protected int percentToLevel(PercentType percent) {
         return (int) (percent.floatValue() * 254.0f / 100.0f + 0.5f);
     }
 
