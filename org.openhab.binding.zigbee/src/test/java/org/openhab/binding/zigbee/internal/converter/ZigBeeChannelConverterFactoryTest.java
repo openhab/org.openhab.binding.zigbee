@@ -11,11 +11,9 @@ package org.openhab.binding.zigbee.internal.converter;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
-import java.util.AbstractMap;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
@@ -40,22 +38,21 @@ public final class ZigBeeChannelConverterFactoryTest {
 
     private final ThingUID thingUID = new ThingUID("zigbee:generic:thing");
 
-    private final Map<ChannelTypeUID, Class<? extends ZigBeeBaseChannelConverter>> converters = Stream
-            .of(new AbstractMap.SimpleImmutableEntry<>(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF,
-                    ZigBeeConverterSwitchOnoff.class),
-                    new AbstractMap.SimpleImmutableEntry<>(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL,
-                            ZigBeeConverterSwitchLevel.class))
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-    private final ZigBeeChannelConverterProvider provider = new TestZigBeeChannelConverterProvider(converters);
+    private final Map<ChannelTypeUID, Class<? extends ZigBeeBaseChannelConverter>> converters = new HashMap<>();
 
     private final ZigBeeEndpoint endpoint = createEndpoint();
 
     private ZigBeeChannelConverterFactory factory;
+    private ZigBeeChannelConverterProvider provider;
 
     @Before
     public void setup() {
         factory = new ZigBeeChannelConverterFactory();
+
+        converters.put(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF, ZigBeeConverterSwitchOnoff.class);
+        converters.put(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL, ZigBeeConverterSwitchLevel.class);
+
+        provider = new TestZigBeeChannelConverterProvider(converters);
     }
 
     @Test
