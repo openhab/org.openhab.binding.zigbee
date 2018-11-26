@@ -10,6 +10,7 @@ package org.openhab.binding.zigbee.handler;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.config.core.ConfigDescription;
@@ -59,6 +61,7 @@ import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
+import com.zsmartsystems.zigbee.ZigBeeProfileType;
 import com.zsmartsystems.zigbee.app.otaserver.ZclOtaUpgradeServer;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaFile;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaServerStatus;
@@ -222,6 +225,51 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             logger.debug("{}: Using static definition with existing {} channels", nodeIeeeAddress, nodeChannels.size());
         }
 
+        // Add statically defined endpoints and clusters
+        for (Channel channel : nodeChannels) {
+            // Process the channel properties
+            Map<String, String> properties = channel.getProperties();
+            int endpointId = Integer.parseInt(properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_ENDPOINT));
+            ZigBeeEndpoint endpoint = node.getEndpoint(endpointId);
+            if (endpoint == null) {
+                int profileId;
+                if (properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_PROFILEID) == null) {
+                    profileId = ZigBeeProfileType.ZIGBEE_HOME_AUTOMATION.getKey();
+                } else {
+                    profileId = Integer.parseInt(properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_PROFILEID));
+                }
+
+                logger.debug("{}: Creating statically defined device endpoint {} with profile {}", nodeIeeeAddress,
+                        endpointId, ZigBeeProfileType.getByValue(profileId));
+                endpoint = new ZigBeeEndpoint(coordinatorHandler.getNetworkManager(), node, endpointId);
+                endpoint.setProfileId(profileId);
+                node.addEndpoint(endpoint);
+            }
+
+            List<Integer> staticClusters;
+            boolean modified = false;
+            staticClusters = processClusterList(endpoint.getInputClusterIds(),
+                    properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_INPUTCLUSTERS));
+            if (!staticClusters.isEmpty()) {
+                logger.debug("{}: Forcing endpoint {} input clusters {}", nodeIeeeAddress, endpointId, staticClusters);
+                endpoint.setInputClusterIds(staticClusters);
+                modified = true;
+            }
+
+            staticClusters = processClusterList(endpoint.getOutputClusterIds(),
+                    properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_OUTPUTCLUSTERS));
+            if (!staticClusters.isEmpty()) {
+                logger.debug("{}: Forcing endpoint {} output clusters {}", nodeIeeeAddress, endpointId, staticClusters);
+                endpoint.setOutputClusterIds(staticClusters);
+                modified = true;
+            }
+
+            if (modified) {
+                logger.debug("{}: Updating endpoint {}", nodeIeeeAddress, endpointId);
+                node.updateEndpoint(endpoint);
+            }
+        }
+
         try {
             pollingPeriod = POLLING_PERIOD_MAX;
 
@@ -312,6 +360,26 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         // Save the network state
         coordinatorHandler.serializeNetwork();
+    }
+
+    /**
+     * Process a static cluster list and add it to the existing list
+     *
+     * @param initialClusters a collection of existing clusters
+     * @param newClusters a string containing a comma separated list of clusters
+     * @return a list of clusters if the list is updated, or an empty list if it has not changed
+     */
+    private List<Integer> processClusterList(Collection<Integer> initialClusters, String newClusters) {
+        if (newClusters == null || newClusters.length() == 0) {
+            return Collections.emptyList();
+        }
+
+        Set<Integer> clusters = new HashSet<Integer>();
+        clusters.addAll(initialClusters);
+        return clusters.addAll(
+                Arrays.asList(newClusters.split(",")).stream().map(s -> new Integer(s)).collect(Collectors.toSet()))
+                        ? new ArrayList<Integer>(clusters)
+                        : Collections.emptyList();
     }
 
     @Override
