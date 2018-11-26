@@ -132,7 +132,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         }
         nodeIeeeAddress = new IeeeAddress(configAddress);
 
-        updateStatus(ThingStatus.OFFLINE);
+        // we do not know the current state of the device until our scheduled job has initialized the device
+        updateStatus(ThingStatus.UNKNOWN);
 
         if (getBridge() != null) {
             bridgeStatusChanged(getBridge().getStatusInfo());
@@ -568,11 +569,32 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * @param state the new {link State}
      */
     public void setChannelState(ChannelUID channel, State state) {
-        logger.debug("{}: Updating ZigBee channel state {} to {}", nodeIeeeAddress, channel, state);
         if (firmwareUpdateInProgress) {
+            logger.debug("Omitting updating ZigBee channel state {} to {} due to firmware update in progress", channel,
+                    state);
             return;
         }
+        logger.debug("{}: Updating ZigBee channel state {} to {}", nodeIeeeAddress, channel, state);
         updateState(channel, state);
+        updateStatus(ThingStatus.ONLINE);
+    }
+
+    /**
+     * Callback from handlers to trigger a channel. This is called from the channel converter when a trigger is
+     * received.
+     *
+     * @param channel the {@link ChannelUID} to be triggered
+     * @param event   the event to be emitted
+     */
+    @Override
+    public void triggerChannel(ChannelUID channel, String event) {
+        if (firmwareUpdateInProgress) {
+            logger.debug("Omitting triggering ZigBee channel {} with event {} due to firmware update in progress",
+                    channel, event);
+            return;
+        }
+        logger.debug("{}: Triggering ZigBee channel {} with event {}", nodeIeeeAddress, channel, event);
+        super.triggerChannel(channel, event);
         updateStatus(ThingStatus.ONLINE);
     }
 
