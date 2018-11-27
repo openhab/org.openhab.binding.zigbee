@@ -6,7 +6,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.zigbee.internal.converter;
+package org.openhab.binding.zigbee.converter;
 
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +71,7 @@ import com.zsmartsystems.zigbee.zcl.ZclCluster;
  * cluster as related functions may also be utilising the cluster.
  *
  * @author Chris Jackson
+ * @author Thomas Höfer - osgified the mechanism how converters are made available to the binding
  */
 public abstract class ZigBeeBaseChannelConverter {
     /**
@@ -155,11 +156,11 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * Creates the converter handler
      *
-     * @param thing the {@link ZigBeeThingHandler} the channel is part of
-     * @param channel the {@link Channel} for the channel
+     * @param thing       the {@link ZigBeeThingHandler} the channel is part of
+     * @param channel     the {@link Channel} for the channel
      * @param coordinator the {@link ZigBeeCoordinatorHandler} this endpoint is part of
-     * @param address the {@link IeeeAddress} of the node
-     * @param endpointId the endpoint this channel is linked to
+     * @param address     the {@link IeeeAddress} of the node
+     * @param endpointId  the endpoint this channel is linked to
      */
     public void initialize(ZigBeeThingHandler thing, Channel channel, ZigBeeCoordinatorHandler coordinator,
             IeeeAddress address, int endpointId) {
@@ -289,8 +290,8 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * Creates a standard channel UID given the {@link ZigBeeEndpoint}
      *
-     * @param thingUID the {@link ThingUID}
-     * @param endpoint the {@link ZigBeeEndpoint}
+     * @param thingUID    the {@link ThingUID}
+     * @param endpoint    the {@link ZigBeeEndpoint}
      * @param channelName the name of the channel
      * @return
      */
