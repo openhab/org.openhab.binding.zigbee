@@ -110,6 +110,10 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_LABEL_IAS_LOWBATTERY = "Low Battery";
     public static final ChannelTypeUID CHANNEL_IAS_LOWBATTERY = SYSTEM_CHANNEL_LOW_BATTERY.getUID();
 
+    public static final String CHANNEL_NAME_IAS_TAMPER = "tamper";
+    public static final String CHANNEL_LABEL_IAS_TAMPER = "Tamper";
+    public static final ChannelTypeUID CHANNEL_IAS_TAMPER = new ChannelTypeUID("zigbee:ias_tamper");
+
     public static final String CHANNEL_NAME_ELECTRICAL_ACTIVEPOWER = "activepower";
     public static final String CHANNEL_LABEL_ELECTRICAL_ACTIVEPOWER = "Total Active Power";
     public static final ChannelTypeUID CHANNEL_ELECTRICAL_ACTIVEPOWER = new ChannelTypeUID(

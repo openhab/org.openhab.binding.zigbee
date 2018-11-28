@@ -146,6 +146,15 @@
         <state readOnly="true" />
     </channel-type>
 
+    <!-- IAS Tamper Channel -->
+    <channel-type id="ias_tamper">
+        <item-type>Switch</item-type>
+        <label>Tamper</label>
+        <description></description>
+        <category></category>
+        <state readOnly="true" />
+    </channel-type>
+
     <!-- Illuminance Channel -->
     <channel-type id="measurement_illuminance">
         <item-type>Number</item-type>
