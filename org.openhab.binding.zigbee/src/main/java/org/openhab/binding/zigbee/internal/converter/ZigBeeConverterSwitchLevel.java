@@ -137,10 +137,21 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
             percent = (PercentType) command;
         } else if (command instanceof OnOffType) {
             OnOffType cmdOnOff = (OnOffType) command;
-            if (cmdOnOff == OnOffType.ON) {
-                percent = PercentType.HUNDRED;
+            if (clusterOnOffServer != null) {
+                // If we support the OnOff cluster, and this is an OnOffType,
+                // then we should perform the same function as the SwitchOnoffConverter
+                if (cmdOnOff == OnOffType.ON) {
+                    clusterOnOffServer.onCommand();
+                } else {
+                    clusterOnOffServer.offCommand();
+                }
+                return;
             } else {
-                percent = PercentType.ZERO;
+                if (cmdOnOff == OnOffType.ON) {
+                    percent = PercentType.HUNDRED;
+                } else {
+                    percent = PercentType.ZERO;
+                }
             }
         } else {
             logger.warn("{}: Level converter only accepts PercentType and OnOffType - not {}",
