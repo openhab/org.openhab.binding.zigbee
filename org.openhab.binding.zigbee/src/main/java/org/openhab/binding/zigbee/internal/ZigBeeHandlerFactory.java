@@ -20,6 +20,7 @@ import org.eclipse.smarthome.core.thing.type.DynamicStateDescriptionProvider;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeChannelConverterFactory;
+import org.openhab.binding.zigbee.internal.converter.ZigBeeDefaultChannelConverterProvider;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -54,6 +55,10 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
             return null;
         }
 
+        if (zigbeeChannelConverterFactory == null) {
+            setDefaultZigBeeChannelConverterFactory();
+        }
+
         ZigBeeThingHandler handler = new ZigBeeThingHandler(thing, zigbeeChannelConverterFactory);
         bundleContext.registerService(ConfigDescriptionProvider.class.getName(), handler,
                 new Hashtable<String, Object>());
@@ -70,5 +75,12 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
 
     protected void unsetZigBeeChannelConverterFactory(ZigBeeChannelConverterFactory zigbeeChannelConverterFactory) {
         this.zigbeeChannelConverterFactory = null;
+    }
+
+    protected void setDefaultZigBeeChannelConverterFactory() {
+        ZigBeeChannelConverterFactory defaultZigBeeChannelConverterFactory = new ZigBeeChannelConverterFactory();
+        defaultZigBeeChannelConverterFactory
+                .addZigBeeChannelConverterProvider(new ZigBeeDefaultChannelConverterProvider());
+        setZigBeeChannelConverterFactory(defaultZigBeeChannelConverterFactory);
     }
 }
