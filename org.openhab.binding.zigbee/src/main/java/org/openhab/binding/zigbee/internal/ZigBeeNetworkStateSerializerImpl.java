@@ -121,12 +121,16 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
         }
 
         final File file = getNetworkStateFile();
+        final File temp = new File(file.getAbsolutePath() + ".tmp");
 
         try {
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(temp), "UTF-8"));
             stream.marshal(destinations, new PrettyPrintWriter(writer));
             writer.flush();
             writer.close();
+            if (!temp.renameTo(file)) {
+                logger.error("Error renaming network state tmp file");
+            }
         } catch (Exception e) {
             logger.error("Error writing network state ", e);
         }
