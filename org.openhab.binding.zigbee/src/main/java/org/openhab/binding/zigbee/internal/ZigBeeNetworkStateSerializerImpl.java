@@ -129,7 +129,10 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
             writer.flush();
             writer.close();
             if (!temp.renameTo(file)) {
-                logger.error("Error renaming network state tmp file");
+                file.delete();
+                if (!temp.renameTo(file)) {
+                    logger.error("Error renaming network state tmp file");
+                }
             }
         } catch (Exception e) {
             logger.error("Error writing network state ", e);
