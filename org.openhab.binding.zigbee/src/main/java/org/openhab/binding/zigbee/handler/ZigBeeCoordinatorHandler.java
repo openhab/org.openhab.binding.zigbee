@@ -890,4 +890,19 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     public @NonNull ThingUID getUID() {
         return getThing().getUID();
     }
+
+    /**
+     * Pauses serialization so the network state xml file can be backed up and restores safely
+     */
+    public void pauseSerialization() {
+        networkStateSerializer.pauseSerialization();
+    }
+
+    /**
+     * Continues serialization of the network state xml file after it has been paused before
+     */
+    public void continueSerialization() {
+        networkStateSerializer.continueSerialization();
+    }
+
 }

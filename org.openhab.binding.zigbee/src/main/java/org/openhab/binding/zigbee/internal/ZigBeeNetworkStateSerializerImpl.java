@@ -68,6 +68,8 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
      */
     private final String networkStateFilePath;
 
+    private boolean serializationPaused = false;
+
     public ZigBeeNetworkStateSerializerImpl(String networkId) {
         this.networkId = networkId;
         networkStateFilePath = ConfigConstants.getUserDataFolder() + "/" + ZigBeeBindingConstants.BINDING_ID;
@@ -109,6 +111,10 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
      */
     @Override
     public synchronized void serialize(final ZigBeeNetworkManager networkManager) {
+        if (serializationPaused) {
+            return;
+        }
+
         XStream stream = openStream();
 
         logger.debug("Saving ZigBee network state: Start.");
@@ -141,6 +147,9 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
      */
     @Override
     public void deserialize(final ZigBeeNetworkManager networkState) {
+        if (serializationPaused) {
+            return;
+        }
         logger.debug("Loading ZigBee network state: Start.");
 
         final File file = getNetworkStateFile();
@@ -197,6 +206,21 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
 
     private File getNetworkStateFile() {
         return new File(networkStateFilePath + "/" + networkStateFileName + networkId + ".xml");
+    }
+
+    /**
+     * Pauses serialization - temporarily omit writing information into the xml file to avoid race conditions while
+     * doing backup/restore operations
+     */
+    public synchronized void pauseSerialization() {
+        serializationPaused = true;
+    }
+
+    /**
+     * Continues serialization after it was paused
+     */
+    public synchronized void continueSerialization() {
+        serializationPaused = false;
     }
 
 }
