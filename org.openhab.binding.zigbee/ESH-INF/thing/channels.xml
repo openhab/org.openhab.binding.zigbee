@@ -150,8 +150,8 @@
     <channel-type id="ias_tamper">
         <item-type>Switch</item-type>
         <label>Tamper</label>
-        <description></description>
-        <category></category>
+        <description>Indicates if a device is tampered with</description>
+        <category>Alarm</category>
         <state readOnly="true" />
     </channel-type>
 
