@@ -16,15 +16,15 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 
 /**
- * Converter for the IAS low battery indicator.
+ * Converter for the IAS tamper.
  *
- * @author Henning Sudbrock - initial contribution
+ * @author Tommaso Travaglino - initial contribution
  */
-public class ZigBeeConverterIasLowBattery extends ZigBeeConverterIas {
+public class ZigBeeConverterIasTamper extends ZigBeeConverterIas {
 
     @Override
     public boolean initializeConverter() {
-        bitTest = CIE_BATTERY;
+        bitTest = CIE_TAMPER;
         return super.initializeConverter();
     }
 
@@ -32,10 +32,10 @@ public class ZigBeeConverterIasLowBattery extends ZigBeeConverterIas {
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
         if (hasIasZoneInputCluster(endpoint)) {
             return ChannelBuilder
-                    .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_IAS_LOWBATTERY),
+                    .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_IAS_TAMPER),
                             ZigBeeBindingConstants.ITEM_TYPE_SWITCH)
-                    .withType(ZigBeeBindingConstants.CHANNEL_IAS_LOWBATTERY)
-                    .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_IAS_LOWBATTERY)
+                    .withType(ZigBeeBindingConstants.CHANNEL_IAS_TAMPER)
+                    .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_IAS_TAMPER)
                     .withProperties(createProperties(endpoint)).build();
         } else {
             return null;
