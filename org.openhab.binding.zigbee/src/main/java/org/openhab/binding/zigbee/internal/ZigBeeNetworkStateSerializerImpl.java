@@ -69,6 +69,7 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
     private final String networkStateFilePath;
 
     private boolean serializationPaused = false;
+    private ZigBeeNetworkManager serializeWhilePaused;
 
     public ZigBeeNetworkStateSerializerImpl(String networkId) {
         this.networkId = networkId;
@@ -112,6 +113,7 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
     @Override
     public synchronized void serialize(final ZigBeeNetworkManager networkManager) {
         if (serializationPaused) {
+            serializeWhilePaused = networkManager;
             return;
         }
 
@@ -221,6 +223,8 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
      */
     public synchronized void continueSerialization() {
         serializationPaused = false;
+        serialize(serializeWhilePaused);
+        serializeWhilePaused = null;
     }
 
 }
