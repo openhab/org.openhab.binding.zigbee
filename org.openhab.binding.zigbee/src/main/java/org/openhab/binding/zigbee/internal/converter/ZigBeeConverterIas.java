@@ -10,6 +10,7 @@ package org.openhab.binding.zigbee.internal.converter;
 
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.OpenClosedType;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,17 +83,11 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter impl
     }
 
     protected boolean supportsIasChannel(ZigBeeEndpoint endpoint, ZoneTypeEnum requiredZoneType) {
-        if (endpoint.getInputCluster(ZclIasZoneCluster.CLUSTER_ID) == null) {
-            logger.trace("{}: IAS zone cluster not found", endpoint.getIeeeAddress());
+        if (!hasIasZoneInputCluster(endpoint)) {
             return false;
         }
 
         ZclIasZoneCluster cluster = (ZclIasZoneCluster) endpoint.getInputCluster(ZclIasZoneCluster.CLUSTER_ID);
-        if (cluster == null) {
-            logger.error("{}: Error opening IAS zone cluster", endpoint.getIeeeAddress());
-            return false;
-        }
-
         Integer zoneTypeId = null;
         for (int retry = 0; retry < 3; retry++) {
             zoneTypeId = cluster.getZoneType(Long.MAX_VALUE);
@@ -107,6 +102,15 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter impl
         ZoneTypeEnum zoneType = ZoneTypeEnum.getByValue(zoneTypeId);
         logger.debug("{}: IAS zone type {}", endpoint.getIeeeAddress(), zoneType);
         return zoneType == requiredZoneType;
+    }
+
+    protected boolean hasIasZoneInputCluster(ZigBeeEndpoint endpoint) {
+        if (endpoint.getInputCluster(ZclIasZoneCluster.CLUSTER_ID) == null) {
+            logger.trace("{}: IAS zone cluster not found", endpoint.getIeeeAddress());
+            return false;
+        }
+
+        return true;
     }
 
     @Override

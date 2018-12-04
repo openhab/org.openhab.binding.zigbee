@@ -173,12 +173,15 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         if (getConfig().get(CONFIGURATION_INITIALIZE) != null) {
             initializeNetwork = (Boolean) getConfig().get(CONFIGURATION_INITIALIZE);
+            logger.debug("Config: {} found, initializeNetwork={}", CONFIGURATION_INITIALIZE, initializeNetwork);
         } else {
             initializeNetwork = true;
+            logger.debug("Config: {} not found, initializeNetwork={} ", CONFIGURATION_INITIALIZE, initializeNetwork);
         }
 
         if (extendedPanId == null || extendedPanId.equals(new ExtendedPanId()) || panId == 0) {
             initializeNetwork = true;
+            logger.debug("ExtendedPanId or PanId not set: initializeNetwork={}", initializeNetwork);
         }
 
         // Process the network key
@@ -395,10 +398,13 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 return;
         }
 
-        // Get the initial network configuration
+        // Show the initial network configuration for debugging
         ZigBeeChannel currentChannel = networkManager.getZigBeeChannel();
         int currentPanId = networkManager.getZigBeePanId();
         ExtendedPanId currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
+
+        logger.debug("ZigBee Initialise: Previous device configuration was: channel={}, PanID={}, EPanId={}",
+                currentChannel, currentPanId, currentExtendedPanId);
 
         if (initializeNetwork) {
             logger.debug("Link key initialise {}", linkKey);
@@ -412,6 +418,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         if (getConfig().get(CONFIGURATION_TRUSTCENTREMODE) != null) {
             String mode = (String) getConfig().get(CONFIGURATION_TRUSTCENTREMODE);
+            logger.debug("Config: {}={}", CONFIGURATION_TRUSTCENTREMODE, mode);
             TrustCentreJoinMode linkMode = TrustCentreJoinMode.valueOf(mode);
             transportConfig.addOption(TransportConfigOption.TRUST_CENTRE_JOIN_MODE, linkMode);
         }
@@ -731,6 +738,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     @Override
     public void networkStateUpdated(final ZigBeeTransportState state) {
+        logger.debug("{}: networkStateUpdated called with state={}", nodeIeeeAddress, state);
         switch (state) {
             case UNINITIALISED:
                 break;

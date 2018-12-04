@@ -8,6 +8,8 @@
  */
 package org.openhab.binding.zigbee;
 
+import static org.eclipse.smarthome.core.thing.DefaultSystemChannelTypeProvider.SYSTEM_CHANNEL_LOW_BATTERY;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -104,6 +106,14 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_LABEL_IAS_WATERSENSOR = "Water Alarm";
     public static final ChannelTypeUID CHANNEL_IAS_WATERSENSOR = new ChannelTypeUID("zigbee:ias_water");
 
+    public static final String CHANNEL_NAME_IAS_LOWBATTERY = "iaslowbattery";
+    public static final String CHANNEL_LABEL_IAS_LOWBATTERY = "Low Battery";
+    public static final ChannelTypeUID CHANNEL_IAS_LOWBATTERY = SYSTEM_CHANNEL_LOW_BATTERY.getUID();
+
+    public static final String CHANNEL_NAME_IAS_TAMPER = "tamper";
+    public static final String CHANNEL_LABEL_IAS_TAMPER = "Tamper";
+    public static final ChannelTypeUID CHANNEL_IAS_TAMPER = new ChannelTypeUID("zigbee:ias_tamper");
+
     public static final String CHANNEL_NAME_ELECTRICAL_ACTIVEPOWER = "activepower";
     public static final String CHANNEL_LABEL_ELECTRICAL_ACTIVEPOWER = "Total Active Power";
     public static final ChannelTypeUID CHANNEL_ELECTRICAL_ACTIVEPOWER = new ChannelTypeUID(
@@ -122,6 +132,10 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_LABEL_POWER_BATTERYVOLTAGE = "Battery Voltage";
     public static final ChannelTypeUID CHANNEL_POWER_BATTERYVOLTAGE = new ChannelTypeUID("zigbee:battery_voltage");
 
+    public static final String CHANNEL_NAME_POWER_BATTERYALARM = "batteryalarm";
+    public static final String CHANNEL_LABEL_POWER_BATTERYALARM = "Battery Alarm";
+    public static final ChannelTypeUID CHANNEL_POWER_BATTERYALARM = new ChannelTypeUID("zigbee:battery_alarm");
+
     public static final String CHANNEL_NAME_ELECTRICAL_RMSCURRENT = "current";
     public static final String CHANNEL_LABEL_ELECTRICAL_RMSCURRENT = "Current";
     public static final ChannelTypeUID CHANNEL_ELECTRICAL_RMSCURRENT = new ChannelTypeUID(
@@ -132,6 +146,9 @@ public class ZigBeeBindingConstants {
     public static final ChannelTypeUID CHANNEL_DOORLOCK_STATE = new ChannelTypeUID("zigbee:door_state");
 
     public static final String CHANNEL_PROPERTY_ENDPOINT = "zigbee_endpoint";
+    public static final String CHANNEL_PROPERTY_PROFILEID = "zigbee_profileid";
+    public static final String CHANNEL_PROPERTY_INPUTCLUSTERS = "zigbee_inputclusters";
+    public static final String CHANNEL_PROPERTY_OUTPUTCLUSTERS = "zigbee_outputclusters";
 
     public static final String ITEM_TYPE_COLOR = "Color";
     public static final String ITEM_TYPE_CONTACT = "Contact";
@@ -140,6 +157,7 @@ public class ZigBeeBindingConstants {
     public static final String ITEM_TYPE_NUMBER_PRESSURE = "Number:Pressure";
     public static final String ITEM_TYPE_NUMBER_TEMPERATURE = "Number:Temperature";
     public static final String ITEM_TYPE_SWITCH = "Switch";
+    public static final String ITEM_TYPE_STRING = "String";
 
     public static final String THING_PROPERTY_STKVERSION = "zigbee_stkversion";
     public static final String THING_PROPERTY_ZCLVERSION = "zigbee_zclversion";
@@ -187,6 +205,13 @@ public class ZigBeeBindingConstants {
 
     public static final String FIRMWARE_FAILED = "@text/zigbee.firmware.failed";
 
+    // List of channel state constants
+    public static final String STATE_OPTION_BATTERY_MIN_THRESHOLD = "minThreshold";
+    public static final String STATE_OPTION_BATTERY_THRESHOLD_1 = "threshold1";
+    public static final String STATE_OPTION_BATTERY_THRESHOLD_2 = "threshold2";
+    public static final String STATE_OPTION_BATTERY_THRESHOLD_3 = "threshold3";
+    public static final String STATE_OPTION_BATTERY_NO_THRESHOLD = "noThreshold";
+
     // List of configuration values for flow control
     public static final Integer FLOWCONTROL_CONFIG_NONE = Integer.valueOf(0);
     public static final Integer FLOWCONTROL_CONFIG_HARDWARE_CTSRTS = Integer.valueOf(1);
@@ -205,8 +230,7 @@ public class ZigBeeBindingConstants {
     /**
      * Return an ISO 8601 combined date and time string for specified date/time
      *
-     * @param date
-     *            Date
+     * @param date Date
      * @return String with format "yyyy-MM-dd'T'HH:mm:ss'Z'"
      */
     public static String getISO8601StringForDate(Date date) {

@@ -1,2 +1,6 @@
 philips_sml001,vendor=Philips,modelId=SML001
 smartthings_motionv4,vendor=SmartThings,modelId=motionv4
+bitron-video-902010-23,vendor=Bitron Home,modelId=902010/23
+bitron-video-av2010-34,vendor=Bitron Video,modelId=AV2010/34
+xiaomi_lumisensorht,modelId=lumi.sensor_ht
+innr-rc-110,vendor=innr,modelId=RC 110

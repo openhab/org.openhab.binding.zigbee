@@ -16,8 +16,8 @@ import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.types.Command;
-import org.eclipse.smarthome.core.types.State;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,8 +43,8 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
     private double kelvinRange;
 
     // Default range of 2000K to 6500K
-    private final Integer CT_DEFAULT_MIN = 2000;
-    private final Integer CT_DEFAULT_MAX = 6500;
+    private final Integer DEFAULT_MIN_TEMPERATURE_IN_KELVIN = 2000;
+    private final Integer DEFAULT_MAX_TEMPERATURE_IN_KELVIN = 6500;
 
     @Override
     public boolean initializeConverter() {
@@ -54,18 +54,21 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             return false;
         }
 
-        Integer kMin = clusterColorControl.getColorTemperatureMin(Long.MAX_VALUE);
-        Integer kMax = clusterColorControl.getColorTemperatureMax(Long.MAX_VALUE);
+        Integer minTemperatureInMired = clusterColorControl.getColorTemperatureMin(Long.MAX_VALUE);
+        Integer maxTemperatureInMired = clusterColorControl.getColorTemperatureMax(Long.MAX_VALUE);
 
-        if (kMin == null) {
-            kelvinMin = CT_DEFAULT_MIN;
+        // High Mired values correspond to low Kelvin values, hence the max Mired value yields the min Kelvin value
+        if (maxTemperatureInMired == null) {
+            kelvinMin = DEFAULT_MIN_TEMPERATURE_IN_KELVIN;
         } else {
-            kelvinMin = (int) (1e6 / kMin);
+            kelvinMin = miredToKelvin(maxTemperatureInMired);
         }
-        if (kMax == null) {
-            kelvinMax = CT_DEFAULT_MAX;
+
+        // Low Mired values correspond to high Kelvin values, hence the min Mired value yields the max Kelvin value
+        if (minTemperatureInMired == null) {
+            kelvinMax = DEFAULT_MAX_TEMPERATURE_IN_KELVIN;
         } else {
-            kelvinMax = (int) (1e6 / kMax);
+            kelvinMax = miredToKelvin(minTemperatureInMired);
         }
         kelvinRange = kelvinMax - kelvinMin;
 
@@ -89,22 +92,6 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
         clusterColorControl.getColorTemperature(0);
     }
 
-    private int convertPercentToKelvin(PercentType colorTemp) {
-        return (int) (1e6 / ((colorTemp.doubleValue() * kelvinRange / 100.0) + kelvinMin) + 0.5);
-    }
-
-    private PercentType convertKelvinToPercent(Integer kelvin) {
-        if (kelvin == null) {
-            return null;
-        }
-        if (kelvin == 0x0000 || kelvin == 0xffff) {
-            // 0x0000 indicates undefined value.
-            // 0xffff indicates invalid value (possible due to color mode not being CT).
-            return null;
-        }
-        return new PercentType((int) (((1e6 / kelvin) - kelvinMin) * 100.0 / kelvinRange + 0.5));
-    }
-
     @Override
     public void handleCommand(final Command command) {
         PercentType colorTemp = PercentType.ZERO;
@@ -115,7 +102,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             return;
         }
 
-        clusterColorControl.moveToColorTemperatureCommand(convertPercentToKelvin(colorTemp), 10);
+        clusterColorControl.moveToColorTemperatureCommand(percentToMired(colorTemp), 10);
     }
 
     @Override
@@ -172,12 +159,63 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.COLOR_CONTROL
                 && attribute.getId() == ZclColorControlCluster.ATTR_COLORTEMPERATURE) {
-            Integer value = (Integer) attribute.getLastValue();
-            State state = convertKelvinToPercent(value);
-            if (state != null) {
-                updateChannelState(state);
+            Integer temperatureInMired = (Integer) attribute.getLastValue();
+
+            PercentType percent = miredToPercent(temperatureInMired);
+            if (percent != null) {
+                updateChannelState(percent);
             }
         }
+    }
+
+    /**
+     * Convert color temperature in Mired to Kelvin.
+     */
+    private int miredToKelvin(int temperatureInMired) {
+        return (int) (1e6 / temperatureInMired);
+    }
+
+    /**
+     * Convert color temperature in Kelvin to Mired.
+     */
+    private int kelvinToMired(int temperatureInKelvin) {
+        return (int) (1e6 / temperatureInKelvin);
+    }
+
+    /**
+     * Convert color temperature given as percentage to Kelvin.
+     */
+    private int percentToKelvin(PercentType temperatureInPercent) {
+        return (int) (((temperatureInPercent.doubleValue() * kelvinRange / 100.0) + kelvinMin) + 0.5);
+    }
+
+    /**
+     * Convert color temperature given as percentage to Mired.
+     */
+    private int percentToMired(PercentType temperatureInPercent) {
+        return kelvinToMired(percentToKelvin(temperatureInPercent));
+    }
+
+    /**
+     * Convert color temperature given in Kelvin to percentage.
+     */
+    private PercentType kelvinToPercent(int temperatureInKelvin) {
+        return new PercentType((int) ((temperatureInKelvin - kelvinMin) * 100.0 / kelvinRange + 0.5));
+    }
+
+    /**
+     * Convert color temperature given in Mired to percentage.
+     */
+    private PercentType miredToPercent(Integer temperatureInMired) {
+        if (temperatureInMired == null) {
+            return null;
+        }
+        if (temperatureInMired == 0x0000 || temperatureInMired == 0xffff) {
+            // 0x0000 indicates undefined value.
+            // 0xffff indicates invalid value (possible due to color mode not being CT).
+            return null;
+        }
+        return kelvinToPercent(miredToKelvin(temperatureInMired));
     }
 
 }

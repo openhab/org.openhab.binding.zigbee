@@ -52,9 +52,9 @@ public class ZigBeeConverterColorTemperatureTest {
         return converter;
     }
 
-    private int convertPercentToKelvin(ZigBeeConverterColorTemperature converter, PercentType colorTemp) {
+    private int convertPercentToMired(ZigBeeConverterColorTemperature converter, PercentType colorTemp) {
         try {
-            Method method = ZigBeeConverterColorTemperature.class.getDeclaredMethod("convertPercentToKelvin",
+            Method method = ZigBeeConverterColorTemperature.class.getDeclaredMethod("percentToMired",
                     PercentType.class);
             method.setAccessible(true);
 
@@ -67,13 +67,12 @@ public class ZigBeeConverterColorTemperatureTest {
         }
     }
 
-    private PercentType convertKelvinToPercent(ZigBeeConverterColorTemperature converter, Integer kelvin) {
+    private PercentType convertMiredToPercent(ZigBeeConverterColorTemperature converter, Integer mired) {
         try {
-            Method method = ZigBeeConverterColorTemperature.class.getDeclaredMethod("convertKelvinToPercent",
-                    Integer.class);
+            Method method = ZigBeeConverterColorTemperature.class.getDeclaredMethod("miredToPercent", Integer.class);
             method.setAccessible(true);
 
-            return (PercentType) method.invoke(converter, kelvin);
+            return (PercentType) method.invoke(converter, mired);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
                 | SecurityException e) {
             // TODO Auto-generated catch block
@@ -83,21 +82,21 @@ public class ZigBeeConverterColorTemperatureTest {
     }
 
     @Test
-    public void testConvertPercentToKelvin() {
+    public void testConvertPercentToMired() {
         ZigBeeConverterColorTemperature converter = getConverter();
 
-        assertEquals(500, convertPercentToKelvin(converter, PercentType.ZERO));
-        assertEquals(154, convertPercentToKelvin(converter, PercentType.HUNDRED));
+        assertEquals(500, convertPercentToMired(converter, PercentType.ZERO));
+        assertEquals(153, convertPercentToMired(converter, PercentType.HUNDRED));
     }
 
     @Test
-    public void testConvertKelvinToPercent() {
+    public void testConvertMiredToPercent() {
         ZigBeeConverterColorTemperature converter = getConverter();
 
-        assertEquals(null, convertKelvinToPercent(converter, null));
-        assertEquals(null, convertKelvinToPercent(converter, 0x0000));
-        assertEquals(null, convertKelvinToPercent(converter, 0xffff));
-        assertEquals(PercentType.ZERO, convertKelvinToPercent(converter, 500));
-        assertEquals(PercentType.HUNDRED, convertKelvinToPercent(converter, 154));
+        assertEquals(null, convertMiredToPercent(converter, null));
+        assertEquals(null, convertMiredToPercent(converter, 0x0000));
+        assertEquals(null, convertMiredToPercent(converter, 0xffff));
+        assertEquals(PercentType.ZERO, convertMiredToPercent(converter, 500));
+        assertEquals(PercentType.HUNDRED, convertMiredToPercent(converter, 154));
     }
 }

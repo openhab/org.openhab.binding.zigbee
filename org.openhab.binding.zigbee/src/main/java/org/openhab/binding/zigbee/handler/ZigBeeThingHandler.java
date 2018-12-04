@@ -10,6 +10,7 @@ package org.openhab.binding.zigbee.handler;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,10 +22,13 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.config.core.ConfigDescription;
 import org.eclipse.smarthome.config.core.ConfigDescriptionProvider;
 import org.eclipse.smarthome.config.core.Configuration;
@@ -40,13 +44,15 @@ import org.eclipse.smarthome.core.thing.binding.firmware.Firmware;
 import org.eclipse.smarthome.core.thing.binding.firmware.FirmwareUpdateHandler;
 import org.eclipse.smarthome.core.thing.binding.firmware.ProgressCallback;
 import org.eclipse.smarthome.core.thing.binding.firmware.ProgressStep;
+import org.eclipse.smarthome.core.thing.type.DynamicStateDescriptionProvider;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
 import org.eclipse.smarthome.core.types.State;
+import org.eclipse.smarthome.core.types.StateDescription;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
 import org.openhab.binding.zigbee.internal.ZigBeeDeviceConfigHandler;
-import org.openhab.binding.zigbee.internal.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeChannelConverterFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +61,7 @@ import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
+import com.zsmartsystems.zigbee.ZigBeeProfileType;
 import com.zsmartsystems.zigbee.app.otaserver.ZclOtaUpgradeServer;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaFile;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaServerStatus;
@@ -64,21 +71,27 @@ import com.zsmartsystems.zigbee.zdo.field.NeighborTable;
 import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
 
 /**
+ * The standard ZigBee thing handler.
  *
  * @author Chris Jackson - Initial Contribution
- *
+ * @author Thomas Höfer - Injected ZigBeeChannelConverterFactory via constructor
  */
-public class ZigBeeThingHandler extends BaseThingHandler
-        implements ZigBeeNetworkNodeListener, FirmwareUpdateHandler, ConfigDescriptionProvider {
+public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetworkNodeListener, FirmwareUpdateHandler,
+        ConfigDescriptionProvider, DynamicStateDescriptionProvider {
     /**
      * Our logger
      */
     private final Logger logger = LoggerFactory.getLogger(ZigBeeThingHandler.class);
 
     /**
+     * The binding's {@link DynamicStateDescriptionProvider}
+     */
+    private final Map<ChannelUID, StateDescription> stateDescriptions = new ConcurrentHashMap<>();
+
+    /**
      * The map of all the channels defined for this thing
      */
-    private final Map<ChannelUID, ZigBeeBaseChannelConverter> channels = new HashMap<ChannelUID, ZigBeeBaseChannelConverter>();
+    private final Map<ChannelUID, ZigBeeBaseChannelConverter> channels = new HashMap<>();
 
     /**
      * The {@link IeeeAddress} for this device
@@ -104,8 +117,14 @@ public class ZigBeeThingHandler extends BaseThingHandler
      */
     private final Set<ChannelUID> thingChannelsPoll = new HashSet<>();
 
-    public ZigBeeThingHandler(Thing zigbeeDevice) {
+    /**
+     * The factory to create the converters for the different channels.
+     */
+    private final ZigBeeChannelConverterFactory factory;
+
+    public ZigBeeThingHandler(Thing zigbeeDevice, ZigBeeChannelConverterFactory factory) {
         super(zigbeeDevice);
+        this.factory = factory;
     }
 
     @Override
@@ -120,7 +139,8 @@ public class ZigBeeThingHandler extends BaseThingHandler
         }
         nodeIeeeAddress = new IeeeAddress(configAddress);
 
-        updateStatus(ThingStatus.OFFLINE);
+        // we do not know the current state of the device until our scheduled job has initialized the device
+        updateStatus(ThingStatus.UNKNOWN);
 
         if (getBridge() != null) {
             bridgeStatusChanged(getBridge().getStatusInfo());
@@ -134,6 +154,12 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
         if (bridgeStatusInfo.getStatus() != ThingStatus.ONLINE || getBridge() == null) {
             logger.debug("{}: Coordinator is unknown or not online.", nodeIeeeAddress);
+
+            // The bridge has gone offline. In order to avoid any issues with data that is cached in the converters
+            // we will reinitialise the node, and all converters, when the bridge comes back online.
+            nodeInitialised = false;
+
+            stopPolling();
             return;
         }
 
@@ -184,8 +210,9 @@ public class ZigBeeThingHandler extends BaseThingHandler
         Map<String, String> newProperties = propertyDiscoverer.getProperties(node);
         updateProperties(newProperties);
 
-        // Create the channel factory
-        ZigBeeChannelConverterFactory factory = new ZigBeeChannelConverterFactory();
+        // Clear the channels in case we are reinitialising
+        channels.clear();
+
         List<Channel> nodeChannels;
 
         if (getThing().getThingTypeUID().equals(ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE)) {
@@ -201,6 +228,51 @@ public class ZigBeeThingHandler extends BaseThingHandler
             // We already have the correct thing type so just use the channels
             nodeChannels = getThing().getChannels();
             logger.debug("{}: Using static definition with existing {} channels", nodeIeeeAddress, nodeChannels.size());
+        }
+
+        // Add statically defined endpoints and clusters
+        for (Channel channel : nodeChannels) {
+            // Process the channel properties
+            Map<String, String> properties = channel.getProperties();
+            int endpointId = Integer.parseInt(properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_ENDPOINT));
+            ZigBeeEndpoint endpoint = node.getEndpoint(endpointId);
+            if (endpoint == null) {
+                int profileId;
+                if (properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_PROFILEID) == null) {
+                    profileId = ZigBeeProfileType.ZIGBEE_HOME_AUTOMATION.getKey();
+                } else {
+                    profileId = Integer.parseInt(properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_PROFILEID));
+                }
+
+                logger.debug("{}: Creating statically defined device endpoint {} with profile {}", nodeIeeeAddress,
+                        endpointId, ZigBeeProfileType.getByValue(profileId));
+                endpoint = new ZigBeeEndpoint(coordinatorHandler.getNetworkManager(), node, endpointId);
+                endpoint.setProfileId(profileId);
+                node.addEndpoint(endpoint);
+            }
+
+            List<Integer> staticClusters;
+            boolean modified = false;
+            staticClusters = processClusterList(endpoint.getInputClusterIds(),
+                    properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_INPUTCLUSTERS));
+            if (!staticClusters.isEmpty()) {
+                logger.debug("{}: Forcing endpoint {} input clusters {}", nodeIeeeAddress, endpointId, staticClusters);
+                endpoint.setInputClusterIds(staticClusters);
+                modified = true;
+            }
+
+            staticClusters = processClusterList(endpoint.getOutputClusterIds(),
+                    properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_OUTPUTCLUSTERS));
+            if (!staticClusters.isEmpty()) {
+                logger.debug("{}: Forcing endpoint {} output clusters {}", nodeIeeeAddress, endpointId, staticClusters);
+                endpoint.setOutputClusterIds(staticClusters);
+                modified = true;
+            }
+
+            if (modified) {
+                logger.debug("{}: Updating endpoint {}", nodeIeeeAddress, endpointId);
+                node.updateEndpoint(endpoint);
+            }
         }
 
         try {
@@ -259,6 +331,12 @@ public class ZigBeeThingHandler extends BaseThingHandler
                 if (handler.getPollingPeriod() < pollingPeriod) {
                     pollingPeriod = handler.getPollingPeriod();
                 }
+
+                // Provide the state descriptions if the channel provides them
+                StateDescription stateDescription = handler.getStateDescription();
+                if (stateDescription != null) {
+                    stateDescriptions.put(channel.getUID(), stateDescription);
+                }
             }
         } catch (Exception e) {
             logger.error("{}: Exception creating channels ", nodeIeeeAddress, e);
@@ -287,6 +365,26 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
         // Save the network state
         coordinatorHandler.serializeNetwork();
+    }
+
+    /**
+     * Process a static cluster list and add it to the existing list
+     *
+     * @param initialClusters a collection of existing clusters
+     * @param newClusters     a string containing a comma separated list of clusters
+     * @return a list of clusters if the list is updated, or an empty list if it has not changed
+     */
+    private List<Integer> processClusterList(Collection<Integer> initialClusters, String newClusters) {
+        if (newClusters == null || newClusters.length() == 0) {
+            return Collections.emptyList();
+        }
+
+        Set<Integer> clusters = new HashSet<Integer>();
+        clusters.addAll(initialClusters);
+        return clusters.addAll(
+                Arrays.asList(newClusters.split(",")).stream().map(s -> new Integer(s)).collect(Collectors.toSet()))
+                        ? new ArrayList<Integer>(clusters)
+                        : Collections.emptyList();
     }
 
     @Override
@@ -423,7 +521,8 @@ public class ZigBeeThingHandler extends BaseThingHandler
 
     @Override
     public void handleCommand(final ChannelUID channelUID, final Command command) {
-        logger.debug("{}: Command for channel {} --> {}", nodeIeeeAddress, channelUID, command);
+        logger.debug("{}: Command for channel {} --> {} [{}]", nodeIeeeAddress, channelUID, command,
+                command.getClass().getSimpleName());
 
         // Check that we have a coordinator to work through
         if (coordinatorHandler == null) {
@@ -456,19 +555,51 @@ public class ZigBeeThingHandler extends BaseThingHandler
         scheduler.schedule(commandHandler, 0, TimeUnit.MILLISECONDS);
     }
 
+    @Override
+    public @Nullable StateDescription getStateDescription(Channel channel,
+            @Nullable StateDescription originalStateDescription, @Nullable Locale locale) {
+        if (stateDescriptions.containsKey(channel.getUID())) {
+            logger.trace("Returning new stateDescription for {}", channel.getUID());
+            return stateDescriptions.get(channel.getUID());
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Callback from handlers to update a channel state. This is called from the channel converter when the state
      * changes.
      *
      * @param channel the {@link ChannelUID} to be updated
-     * @param state the new {link State}
+     * @param state   the new {link State}
      */
     public void setChannelState(ChannelUID channel, State state) {
-        logger.debug("{}: Updating ZigBee channel state {} to {}", nodeIeeeAddress, channel, state);
         if (firmwareUpdateInProgress) {
+            logger.debug("Omitting updating ZigBee channel state {} to {} due to firmware update in progress", channel,
+                    state);
             return;
         }
+        logger.debug("{}: Updating ZigBee channel state {} to {}", nodeIeeeAddress, channel, state);
         updateState(channel, state);
+        updateStatus(ThingStatus.ONLINE);
+    }
+
+    /**
+     * Callback from handlers to trigger a channel. This is called from the channel converter when a trigger is
+     * received.
+     *
+     * @param channel the {@link ChannelUID} to be triggered
+     * @param event   the event to be emitted
+     */
+    @Override
+    public void triggerChannel(ChannelUID channel, String event) {
+        if (firmwareUpdateInProgress) {
+            logger.debug("Omitting triggering ZigBee channel {} with event {} due to firmware update in progress",
+                    channel, event);
+            return;
+        }
+        logger.debug("{}: Triggering ZigBee channel {} with event {}", nodeIeeeAddress, channel, event);
+        super.triggerChannel(channel, event);
         updateStatus(ThingStatus.ONLINE);
     }
 
@@ -553,7 +684,9 @@ public class ZigBeeThingHandler extends BaseThingHandler
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_ASSOCIATEDDEVICES, "[]");
         updateProperties(properties);
 
-        updateStatus(ThingStatus.OFFLINE);
+        if (getThing().getStatus() != ThingStatus.REMOVING) {
+            updateStatus(ThingStatus.OFFLINE);
+        }
     }
 
     @Override

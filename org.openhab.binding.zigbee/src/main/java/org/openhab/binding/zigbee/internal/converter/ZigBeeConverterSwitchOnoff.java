@@ -17,6 +17,7 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,9 +60,9 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
             try {
                 CommandResult bindResponse = clusterOnOffServer.bind().get();
                 if (bindResponse.isSuccess()) {
-                    // Configure reporting - no faster than once per second - no slower than 10 minutes.
+                    // Configure reporting
                     CommandResult reportingResponse = clusterOnOffServer
-                            .setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX).get();
+                            .setOnOffReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX).get();
                     if (reportingResponse.isError()) {
                         pollingPeriod = POLLING_PERIOD_HIGH;
                     }
@@ -117,6 +118,12 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
 
     @Override
     public void handleCommand(final Command command) {
+        if (clusterOnOffServer == null) {
+            logger.warn("{}: OnOff converter is not linked to a server and cannot accept commands",
+                    endpoint.getIeeeAddress());
+            return;
+        }
+
         OnOffType cmdOnOff = null;
         if (command instanceof PercentType) {
             if (((PercentType) command).intValue() == 0) {
@@ -126,6 +133,10 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
             }
         } else if (command instanceof OnOffType) {
             cmdOnOff = (OnOffType) command;
+        } else {
+            logger.warn("{}: OnOff converter only accepts PercentType and OnOffType - not {}",
+                    endpoint.getIeeeAddress(), command.getClass().getSimpleName());
+            return;
         }
 
         if (cmdOnOff == OnOffType.ON) {

@@ -103,18 +103,20 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
             public void run() {
                 Map<String, Long> counters = dongle.getCounters();
 
-                updateState(new ChannelUID(getThing().getUID(), UID_ASH_RX_DAT),
-                        new DecimalType(counters.get(ASH_RX_DAT)));
-                updateState(new ChannelUID(getThing().getUID(), UID_ASH_TX_DAT),
-                        new DecimalType(counters.get(ASH_TX_DAT)));
-                updateState(new ChannelUID(getThing().getUID(), UID_ASH_RX_ACK),
-                        new DecimalType(counters.get(ASH_RX_ACK)));
-                updateState(new ChannelUID(getThing().getUID(), UID_ASH_TX_ACK),
-                        new DecimalType(counters.get(ASH_TX_ACK)));
-                updateState(new ChannelUID(getThing().getUID(), UID_ASH_RX_NAK),
-                        new DecimalType(counters.get(ASH_RX_NAK)));
-                updateState(new ChannelUID(getThing().getUID(), UID_ASH_TX_NAK),
-                        new DecimalType(counters.get(ASH_TX_NAK)));
+                if (!counters.isEmpty()) {
+                    updateState(new ChannelUID(getThing().getUID(), UID_ASH_RX_DAT),
+                            new DecimalType(counters.get(ASH_RX_DAT)));
+                    updateState(new ChannelUID(getThing().getUID(), UID_ASH_TX_DAT),
+                            new DecimalType(counters.get(ASH_TX_DAT)));
+                    updateState(new ChannelUID(getThing().getUID(), UID_ASH_RX_ACK),
+                            new DecimalType(counters.get(ASH_RX_ACK)));
+                    updateState(new ChannelUID(getThing().getUID(), UID_ASH_TX_ACK),
+                            new DecimalType(counters.get(ASH_TX_ACK)));
+                    updateState(new ChannelUID(getThing().getUID(), UID_ASH_RX_NAK),
+                            new DecimalType(counters.get(ASH_RX_NAK)));
+                    updateState(new ChannelUID(getThing().getUID(), UID_ASH_TX_NAK),
+                            new DecimalType(counters.get(ASH_TX_NAK)));
+                }
             }
         };
 
