@@ -8,7 +8,7 @@
  */
 package org.openhab.binding.zigbee;
 
-import static org.eclipse.smarthome.core.thing.DefaultSystemChannelTypeProvider.SYSTEM_CHANNEL_LOW_BATTERY;
+import static org.eclipse.smarthome.core.thing.DefaultSystemChannelTypeProvider.*;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -51,7 +51,7 @@ public class ZigBeeBindingConstants {
 
     public static final String CHANNEL_NAME_COLOR_TEMPERATURE = "colortemperature";
     public static final String CHANNEL_LABEL_COLOR_TEMPERATURE = "Color Temperature";
-    public static final ChannelTypeUID CHANNEL_COLOR_TEMPERATURE = new ChannelTypeUID("zigbee:color_temperature");
+    public static final ChannelTypeUID CHANNEL_COLOR_TEMPERATURE = SYSTEM_COLOR_TEMPERATURE.getUID();
 
     public static final String CHANNEL_NAME_ILLUMINANCE_VALUE = "illuminance";
     public static final String CHANNEL_LABEL_ILLUMINANCE_VALUE = "Illuminance";
@@ -109,6 +109,10 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_NAME_IAS_LOWBATTERY = "iaslowbattery";
     public static final String CHANNEL_LABEL_IAS_LOWBATTERY = "Low Battery";
     public static final ChannelTypeUID CHANNEL_IAS_LOWBATTERY = SYSTEM_CHANNEL_LOW_BATTERY.getUID();
+
+    public static final String CHANNEL_NAME_IAS_TAMPER = "tamper";
+    public static final String CHANNEL_LABEL_IAS_TAMPER = "Tamper";
+    public static final ChannelTypeUID CHANNEL_IAS_TAMPER = new ChannelTypeUID("zigbee:ias_tamper");
 
     public static final String CHANNEL_NAME_ELECTRICAL_ACTIVEPOWER = "activepower";
     public static final String CHANNEL_LABEL_ELECTRICAL_ACTIVEPOWER = "Total Active Power";

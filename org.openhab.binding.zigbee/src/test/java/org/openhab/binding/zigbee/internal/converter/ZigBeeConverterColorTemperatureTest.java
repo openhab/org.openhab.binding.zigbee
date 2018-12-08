@@ -85,8 +85,8 @@ public class ZigBeeConverterColorTemperatureTest {
     public void testConvertPercentToMired() {
         ZigBeeConverterColorTemperature converter = getConverter();
 
-        assertEquals(500, convertPercentToMired(converter, PercentType.ZERO));
-        assertEquals(153, convertPercentToMired(converter, PercentType.HUNDRED));
+        assertEquals(153, convertPercentToMired(converter, PercentType.ZERO));
+        assertEquals(500, convertPercentToMired(converter, PercentType.HUNDRED));
     }
 
     @Test
@@ -96,7 +96,7 @@ public class ZigBeeConverterColorTemperatureTest {
         assertEquals(null, convertMiredToPercent(converter, null));
         assertEquals(null, convertMiredToPercent(converter, 0x0000));
         assertEquals(null, convertMiredToPercent(converter, 0xffff));
-        assertEquals(PercentType.ZERO, convertMiredToPercent(converter, 500));
-        assertEquals(PercentType.HUNDRED, convertMiredToPercent(converter, 154));
+        assertEquals(PercentType.HUNDRED, convertMiredToPercent(converter, 500));
+        assertEquals(PercentType.ZERO, convertMiredToPercent(converter, 154));
     }
 }

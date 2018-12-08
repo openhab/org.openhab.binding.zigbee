@@ -39,15 +39,6 @@
         <category>ColorLight</category>
     </channel-type>
 
-    <!-- Color Temperature Channel -->
-    <channel-type id="color_temperature">
-        <item-type>Dimmer</item-type>
-        <label>Color Temperature</label>
-        <description>The color temperature channel allows to set the color
-            temperature of a light from 0 (cold) to 100 (warm).</description>
-        <category>ColorLight</category>
-    </channel-type>
-
     <!-- Door Lock Channel -->
     <channel-type id="door_state">
         <item-type>Switch</item-type>
@@ -143,6 +134,15 @@
         <label>Water Sensor</label>
         <description>Water Sensor Alarm</description>
         <category>Sensor</category>
+        <state readOnly="true" />
+    </channel-type>
+
+    <!-- IAS Tamper Channel -->
+    <channel-type id="ias_tamper">
+        <item-type>Switch</item-type>
+        <label>Tamper</label>
+        <description>Indicates if a device is tampered with</description>
+        <category>Alarm</category>
         <state readOnly="true" />
     </channel-type>
 
