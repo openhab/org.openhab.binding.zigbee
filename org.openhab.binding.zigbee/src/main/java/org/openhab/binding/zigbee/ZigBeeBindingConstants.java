@@ -8,7 +8,7 @@
  */
 package org.openhab.binding.zigbee;
 
-import static org.eclipse.smarthome.core.thing.DefaultSystemChannelTypeProvider.SYSTEM_CHANNEL_LOW_BATTERY;
+import static org.eclipse.smarthome.core.thing.DefaultSystemChannelTypeProvider.*;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -51,7 +51,7 @@ public class ZigBeeBindingConstants {
 
     public static final String CHANNEL_NAME_COLOR_TEMPERATURE = "colortemperature";
     public static final String CHANNEL_LABEL_COLOR_TEMPERATURE = "Color Temperature";
-    public static final ChannelTypeUID CHANNEL_COLOR_TEMPERATURE = new ChannelTypeUID("zigbee:color_temperature");
+    public static final ChannelTypeUID CHANNEL_COLOR_TEMPERATURE = SYSTEM_COLOR_TEMPERATURE.getUID();
 
     public static final String CHANNEL_NAME_ILLUMINANCE_VALUE = "illuminance";
     public static final String CHANNEL_LABEL_ILLUMINANCE_VALUE = "Illuminance";
