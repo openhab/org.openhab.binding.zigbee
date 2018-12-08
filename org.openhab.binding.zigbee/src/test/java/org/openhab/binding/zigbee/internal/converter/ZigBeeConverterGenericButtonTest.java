@@ -12,6 +12,7 @@ import org.eclipse.smarthome.core.thing.CommonTriggerEvents;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 
@@ -252,7 +253,8 @@ public class ZigBeeConverterGenericButtonTest {
     private ZclCluster mockCluster(int clusterId) {
         ZclCluster cluster = mock(ZclCluster.class);
         when(cluster.getClusterId()).thenReturn(clusterId);
-        when(cluster.bind()).thenReturn(CompletableFuture.completedFuture(new CommandResult(new ZigBeeCommand())));
+        when(cluster.bind(ArgumentMatchers.any(IeeeAddress.class), ArgumentMatchers.anyInt()))
+                .thenReturn(CompletableFuture.completedFuture(new CommandResult(new ZigBeeCommand())));
         when(endpoint.getOutputCluster(clusterId)).thenReturn(cluster);
         return cluster;
     }

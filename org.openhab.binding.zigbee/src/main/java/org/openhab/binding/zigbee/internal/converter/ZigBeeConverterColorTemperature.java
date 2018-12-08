@@ -75,7 +75,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
 
         kelvinRange = kelvinMax - kelvinMin;
 
-        clusterColorControl.bind();
+        bind(clusterColorControl);
 
         clusterColorControl.addAttributeListener(this);
 

@@ -246,7 +246,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
                 logger.debug("{}: Creating statically defined device endpoint {} with profile {}", nodeIeeeAddress,
                         endpointId, ZigBeeProfileType.getByValue(profileId));
-                endpoint = new ZigBeeEndpoint(coordinatorHandler.getNetworkManager(), node, endpointId);
+                endpoint = new ZigBeeEndpoint(node, endpointId);
                 endpoint.setProfileId(profileId);
                 node.addEndpoint(endpoint);
             }
@@ -371,7 +371,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * Process a static cluster list and add it to the existing list
      *
      * @param initialClusters a collection of existing clusters
-     * @param newClusters     a string containing a comma separated list of clusters
+     * @param newClusters a string containing a comma separated list of clusters
      * @return a list of clusters if the list is updated, or an empty list if it has not changed
      */
     private List<Integer> processClusterList(Collection<Integer> initialClusters, String newClusters) {
@@ -571,7 +571,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * changes.
      *
      * @param channel the {@link ChannelUID} to be updated
-     * @param state   the new {link State}
+     * @param state the new {link State}
      */
     public void setChannelState(ChannelUID channel, State state) {
         if (firmwareUpdateInProgress) {
@@ -589,7 +589,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * received.
      *
      * @param channel the {@link ChannelUID} to be triggered
-     * @param event   the event to be emitted
+     * @param event the event to be emitted
      */
     @Override
     public void triggerChannel(ChannelUID channel, String event) {
