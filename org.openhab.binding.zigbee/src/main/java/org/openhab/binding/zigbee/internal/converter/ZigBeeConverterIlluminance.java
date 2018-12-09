@@ -45,7 +45,7 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
             return false;
         }
 
-        cluster.bind();
+        bind(cluster);
 
         // Add a listener, then request the status
         cluster.addAttributeListener(this);

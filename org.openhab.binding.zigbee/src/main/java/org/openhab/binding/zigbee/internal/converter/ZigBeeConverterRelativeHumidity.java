@@ -45,7 +45,7 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
             return false;
         }
 
-        cluster.bind();
+        bind(cluster);
 
         // Add a listener, then request the status
         cluster.addAttributeListener(this);

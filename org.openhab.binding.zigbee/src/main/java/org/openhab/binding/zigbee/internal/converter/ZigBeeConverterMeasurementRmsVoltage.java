@@ -52,7 +52,7 @@ public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConve
         }
 
         try {
-            CommandResult bindResponse = clusterMeasurement.bind().get();
+            CommandResult bindResponse = bind(clusterMeasurement).get();
             if (bindResponse.isSuccess()) {
                 ZclAttribute attribute = clusterMeasurement
                         .getAttribute(ZclElectricalMeasurementCluster.ATTR_RMSVOLTAGE);

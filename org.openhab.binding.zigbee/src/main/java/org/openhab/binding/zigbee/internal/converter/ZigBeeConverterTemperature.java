@@ -50,7 +50,7 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
 
         CommandResult bindResponse;
         try {
-            bindResponse = cluster.bind().get();
+            bindResponse = bind(cluster).get();
             if (!bindResponse.isSuccess()) {
                 logger.debug("{}: Failed to bind temperature measurement cluster", endpoint.getIeeeAddress());
             } else {

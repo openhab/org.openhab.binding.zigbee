@@ -246,7 +246,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
                 logger.debug("{}: Creating statically defined device endpoint {} with profile {}", nodeIeeeAddress,
                         endpointId, ZigBeeProfileType.getByValue(profileId));
-                endpoint = new ZigBeeEndpoint(coordinatorHandler.getNetworkManager(), node, endpointId);
+                endpoint = new ZigBeeEndpoint(node, endpointId);
                 endpoint.setProfileId(profileId);
                 node.addEndpoint(endpoint);
             }
