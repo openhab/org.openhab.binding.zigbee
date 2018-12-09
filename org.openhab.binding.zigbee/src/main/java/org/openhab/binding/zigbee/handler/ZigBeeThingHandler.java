@@ -730,32 +730,27 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         ZclOtaUpgradeServer otaServer = null;
         ZigBeeEndpoint otaEndpoint = null;
-        ZclOtaUpgradeCluster otaCluster = null;
         for (ZigBeeEndpoint endpoint : node.getEndpoints()) {
             otaServer = (ZclOtaUpgradeServer) endpoint.getApplication(ZclOtaUpgradeCluster.CLUSTER_ID);
             if (otaServer != null) {
                 break;
             }
 
-            otaCluster = (ZclOtaUpgradeCluster) endpoint.getOutputCluster(ZclOtaUpgradeCluster.CLUSTER_ID);
-            if (otaCluster != null) {
+            if (endpoint.getOutputCluster(ZclOtaUpgradeCluster.CLUSTER_ID) != null) {
                 otaEndpoint = endpoint;
                 break;
             }
         }
 
-        if (otaServer == null && otaCluster == null) {
+        if (otaServer == null && otaEndpoint == null) {
             logger.debug("{}: Can't find OTA cluster", nodeIeeeAddress);
             return;
         }
 
-        // Register the OTA server if it's not already registered
-        if (otaServer == null && otaEndpoint != null) {
+        if (otaServer == null) {
+            // Create the OTA server and register it with the endpoint
             otaServer = new ZclOtaUpgradeServer();
             otaEndpoint.addApplication(otaServer);
-        } else {
-            logger.debug("{}: Can't create OTA server", nodeIeeeAddress);
-            return;
         }
 
         // Set ourselves offline, and prevent going back online
@@ -772,7 +767,6 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         progressCallback.next();
 
         final ZclOtaUpgradeServer finalOtaServer = otaServer;
-        final ZclOtaUpgradeCluster finalOtaCluster = otaCluster;
         otaServer.addListener(new ZigBeeOtaStatusCallback() {
             @Override
             public void otaStatusUpdate(ZigBeeOtaServerStatus status, int percent) {
@@ -808,7 +802,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 finalOtaServer.cancelUpgrade();
 
                 for (int retry = 0; retry < 3; retry++) {
-                    Integer fileVersion = finalOtaCluster.getCurrentFileVersion(Long.MAX_VALUE);
+                    Integer fileVersion = finalOtaServer.getCurrentFileVersion();
                     if (fileVersion != null) {
                         updateProperty(Thing.PROPERTY_FIRMWARE_VERSION, String.format("%08X", fileVersion));
                         break;
