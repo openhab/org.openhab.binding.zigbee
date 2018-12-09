@@ -19,6 +19,8 @@ import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 
 import org.eclipse.smarthome.config.core.ConfigConstants;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
@@ -121,19 +123,30 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
         }
 
         final File file = getNetworkStateFile();
-        final File temp = new File(file.getAbsolutePath() + ".tmp");
+        final File temp = new File(file.getAbsolutePath() + ".new");
+        final File backup = new File(
+                file.getAbsolutePath() + "." + new SimpleDateFormat("yyyyMMdd.HHmmss.SSS").format(new Date()));
 
         try {
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(temp), "UTF-8"));
             stream.marshal(destinations, new PrettyPrintWriter(writer));
             writer.flush();
             writer.close();
-            if (!temp.renameTo(file)) {
-                file.delete();
-                if (!temp.renameTo(file)) {
-                    logger.error("Error renaming network state tmp file");
+
+            if (file.exists() && !file.renameTo(backup)) {
+                logger.error("Error moving out old network state file (new state will not be saved)");
+                temp.delete();
+            } else if (!temp.renameTo(file)) {
+                logger.error("Error renaming new network state file. Recovering backup (new state will not be saved)");
+                if (backup.exists() && !backup.renameTo(file)) {
+                    logger.error("Error recovering backup network state file");
                 }
             }
+
+            if (backup.exists() && !backup.delete()) {
+                logger.warn("Unable to delete old network state file");
+            }
+
         } catch (Exception e) {
             logger.error("Error writing network state ", e);
         }
@@ -152,9 +165,19 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
 
         final File file = getNetworkStateFile();
         boolean networkStateExists = file.exists();
+
         if (!networkStateExists) {
-            logger.debug("Loading ZigBee network state: File does not exist");
-            return;
+            final File temp = new File(file.getAbsolutePath() + ".new");
+            if (!temp.exists()) {
+                logger.debug("Loading ZigBee network state: File does not exist");
+                return;
+            }
+
+            logger.warn("Recovering network state file from temporary copy");
+            if (!temp.renameTo(file)) {
+                logger.error("Error recovering network state file");
+                return;
+            }
         }
 
         try {
