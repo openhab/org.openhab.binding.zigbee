@@ -51,7 +51,7 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
         }
 
         try {
-            CommandResult bindResponse = clusterMeasurement.bind().get();
+            CommandResult bindResponse = bind(clusterMeasurement).get();
             if (bindResponse.isSuccess()) {
                 ZclAttribute attribute = clusterMeasurement
                         .getAttribute(ZclElectricalMeasurementCluster.ATTR_ACTIVEPOWER);

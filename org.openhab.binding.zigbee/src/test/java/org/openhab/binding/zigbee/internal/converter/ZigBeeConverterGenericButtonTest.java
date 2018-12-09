@@ -12,6 +12,7 @@ import org.eclipse.smarthome.core.thing.CommonTriggerEvents;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 
@@ -19,6 +20,7 @@ import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeCommand;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
+import com.zsmartsystems.zigbee.ZigBeeProfileType;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.MoveHueCommand;
 
@@ -52,6 +54,8 @@ public class ZigBeeConverterGenericButtonTest {
 
         coordinatorHandler = mock(ZigBeeCoordinatorHandler.class);
         when(coordinatorHandler.getEndpoint(ieeeAddress, endpointId)).thenReturn(endpoint);
+        when(coordinatorHandler.getLocalIeeeAddress()).thenReturn(ieeeAddress);
+        when(coordinatorHandler.getLocalEndpointId(ArgumentMatchers.any(ZigBeeProfileType.class))).thenReturn(1);
 
         converter = new ZigBeeConverterGenericButton();
         converter.initialize(thingHandler, channel, coordinatorHandler, ieeeAddress, endpointId);
@@ -250,9 +254,13 @@ public class ZigBeeConverterGenericButtonTest {
     }
 
     private ZclCluster mockCluster(int clusterId) {
+        IeeeAddress ieeeAddress = new IeeeAddress();
+
         ZclCluster cluster = mock(ZclCluster.class);
         when(cluster.getClusterId()).thenReturn(clusterId);
-        when(cluster.bind()).thenReturn(CompletableFuture.completedFuture(new CommandResult(new ZigBeeCommand())));
+        // when(cluster.bind(ieeeAddress, ZigBeeProfileType.ZIGBEE_HOME_AUTOMATION.getKey()))
+        when(cluster.bind(ArgumentMatchers.any(IeeeAddress.class), ArgumentMatchers.anyInt()))
+                .thenReturn(CompletableFuture.completedFuture(new CommandResult(new ZigBeeCommand())));
         when(endpoint.getOutputCluster(clusterId)).thenReturn(cluster);
         return cluster;
     }

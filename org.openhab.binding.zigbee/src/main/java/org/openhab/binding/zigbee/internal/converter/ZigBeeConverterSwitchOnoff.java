@@ -58,7 +58,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
 
         if (clusterOnOffServer != null) {
             try {
-                CommandResult bindResponse = clusterOnOffServer.bind().get();
+                CommandResult bindResponse = bind(clusterOnOffServer).get();
                 if (bindResponse.isSuccess()) {
                     // Configure reporting
                     CommandResult reportingResponse = clusterOnOffServer
@@ -81,7 +81,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
 
         if (clusterOnOffClient != null) {
             try {
-                CommandResult bindResponse = clusterOnOffClient.bind().get();
+                CommandResult bindResponse = bind(clusterOnOffClient).get();
                 if (!bindResponse.isSuccess()) {
                     logger.error("{}: Error 0x{} setting client binding", endpoint.getIeeeAddress(),
                             Integer.toHexString(bindResponse.getStatusCode()));

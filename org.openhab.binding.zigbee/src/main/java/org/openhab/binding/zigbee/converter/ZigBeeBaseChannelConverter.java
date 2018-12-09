@@ -11,6 +11,7 @@ package org.openhab.binding.zigbee.converter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
@@ -29,8 +30,10 @@ import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
+import com.zsmartsystems.zigbee.ZigBeeProfileType;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
 
 /**
@@ -156,11 +159,11 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * Creates the converter handler
      *
-     * @param thing       the {@link ZigBeeThingHandler} the channel is part of
-     * @param channel     the {@link Channel} for the channel
+     * @param thing the {@link ZigBeeThingHandler} the channel is part of
+     * @param channel the {@link Channel} for the channel
      * @param coordinator the {@link ZigBeeCoordinatorHandler} this endpoint is part of
-     * @param address     the {@link IeeeAddress} of the node
-     * @param endpointId  the endpoint this channel is linked to
+     * @param address the {@link IeeeAddress} of the node
+     * @param endpointId the endpoint this channel is linked to
      */
     public void initialize(ZigBeeThingHandler thing, Channel channel, ZigBeeCoordinatorHandler coordinator,
             IeeeAddress address, int endpointId) {
@@ -290,8 +293,8 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * Creates a standard channel UID given the {@link ZigBeeEndpoint}
      *
-     * @param thingUID    the {@link ThingUID}
-     * @param endpoint    the {@link ZigBeeEndpoint}
+     * @param thingUID the {@link ThingUID}
+     * @param endpoint the {@link ZigBeeEndpoint}
      * @param channelName the name of the channel
      * @return
      */
@@ -343,5 +346,16 @@ public abstract class ZigBeeBaseChannelConverter {
     public Configuration updateConfiguration(@NonNull Configuration configuration) {
         // Nothing required as default implementation
         return new Configuration();
+    }
+
+    /**
+     * Creates a binding from the remote cluster to the local {@link ZigBeeProfileType#ZIGBEE_HOME_AUTOMATION} endpoint
+     *
+     * @param cluster the remote {@link ZclCluster} to bind to
+     * @return the future {@link CommandResult}
+     */
+    protected Future<CommandResult> bind(ZclCluster cluster) {
+        return cluster.bind(coordinator.getLocalIeeeAddress(),
+                coordinator.getLocalEndpointId(ZigBeeProfileType.ZIGBEE_HOME_AUTOMATION));
     }
 }

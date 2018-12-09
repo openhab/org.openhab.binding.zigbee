@@ -44,11 +44,12 @@ import com.zsmartsystems.zigbee.ZigBeeChannel;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeEndpointAddress;
 import com.zsmartsystems.zigbee.ZigBeeNetworkManager;
-import com.zsmartsystems.zigbee.ZigBeeNetworkMeshMonitor;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNetworkStateListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
+import com.zsmartsystems.zigbee.ZigBeeProfileType;
 import com.zsmartsystems.zigbee.ZigBeeStatus;
+import com.zsmartsystems.zigbee.app.discovery.ZigBeeDiscoveryExtension;
 import com.zsmartsystems.zigbee.app.iasclient.ZigBeeIasCieExtension;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaUpgradeExtension;
 import com.zsmartsystems.zigbee.security.MmoHash;
@@ -114,8 +115,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     private boolean initializeNetwork = false;
 
     private ScheduledFuture<?> restartJob = null;
-
-    private ZigBeeNetworkMeshMonitor meshMonitor = null;
 
     private volatile boolean bridgeRemoved = false;
 
@@ -293,10 +292,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             restartJob.cancel(true);
         }
 
-        if (meshMonitor != null) {
-            meshMonitor.shutdown();
-        }
-
         if (networkManager != null) {
             synchronized (listeners) {
                 for (ZigBeeNetworkNodeListener listener : listeners) {
@@ -372,6 +367,10 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         networkManager.addNetworkNodeListener(this);
 
         // Add the extensions to the network
+        ZigBeeDiscoveryExtension discoveryExtension = new ZigBeeDiscoveryExtension();
+        discoveryExtension.setUpdatePeriod(MESH_UPDATE_TIME);
+        networkManager.addExtension(discoveryExtension);
+
         networkManager.addExtension(new ZigBeeIasCieExtension());
         networkManager.addExtension(new ZigBeeOtaUpgradeExtension());
 
@@ -457,12 +456,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         // Add the IAS Zone cluster to the network manager so we respond to the MatchDescriptor
         networkManager.addSupportedCluster(ZclIasZoneCluster.CLUSTER_ID);
-
-        restartJob = scheduler.schedule(() -> {
-            // Start the mesh monitor
-            meshMonitor = new ZigBeeNetworkMeshMonitor(networkManager);
-            meshMonitor.startup(MESH_UPDATE_TIME);
-        }, MESH_UPDATE_TIME, TimeUnit.SECONDS);
     }
 
     private void startZigBeeNetwork() {
@@ -734,6 +727,20 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         }
 
         return node.getEndpoints();
+    }
+
+    public IeeeAddress getLocalIeeeAddress() {
+        return networkManager.getLocalIeeeAddress();
+    }
+
+    /**
+     * Gets the local endpoint associated with the specified {@link ZigBeeProfileType}
+     *
+     * @param profile the {@link ZigBeeProfileType} of the endpoint
+     * @return the endpoint ID
+     */
+    public int getLocalEndpointId(ZigBeeProfileType profile) {
+        return 1;
     }
 
     @Override
