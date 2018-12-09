@@ -44,7 +44,7 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
             return false;
         }
 
-        clusterOccupancy.bind();
+        bind(clusterOccupancy);
 
         // Add a listener, then request the status
         clusterOccupancy.addAttributeListener(this);

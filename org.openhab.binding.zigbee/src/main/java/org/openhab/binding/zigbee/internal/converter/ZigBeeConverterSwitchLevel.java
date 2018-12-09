@@ -62,7 +62,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         }
 
         try {
-            CommandResult bindResponse = clusterLevelControl.bind().get();
+            CommandResult bindResponse = bind(clusterLevelControl).get();
             if (bindResponse.isSuccess()) {
                 // Configure reporting
                 CommandResult reportingResponse = clusterLevelControl
@@ -81,7 +81,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         clusterOnOffServer = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
         if (clusterOnOffServer != null) {
             try {
-                CommandResult bindResponse = clusterOnOffServer.bind().get();
+                CommandResult bindResponse = bind(clusterOnOffServer).get();
                 if (bindResponse.isSuccess()) {
                     // Configure reporting
                     CommandResult reportingResponse = clusterOnOffServer

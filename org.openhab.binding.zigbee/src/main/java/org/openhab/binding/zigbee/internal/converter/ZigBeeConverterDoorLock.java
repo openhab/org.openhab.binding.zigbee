@@ -48,7 +48,7 @@ public class ZigBeeConverterDoorLock extends ZigBeeBaseChannelConverter implemen
         }
 
         try {
-            CommandResult bindResponse = cluster.bind().get();
+            CommandResult bindResponse = bind(cluster).get();
             if (bindResponse.isSuccess()) {
                 // Configure reporting - no faster than once per second - no slower than 10 minutes.
                 CommandResult reportingResponse = cluster.setDoorStateReporting(1, REPORTING_PERIOD_DEFAULT_MAX).get();

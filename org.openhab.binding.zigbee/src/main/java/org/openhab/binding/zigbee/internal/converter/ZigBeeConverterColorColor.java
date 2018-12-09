@@ -127,7 +127,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         clusterColorControl.addAttributeListener(this);
 
         try {
-            CommandResult bindResponse = clusterColorControl.bind().get();
+            CommandResult bindResponse = bind(clusterColorControl).get();
             if (!bindResponse.isSuccess()) {
                 pollingPeriod = POLLING_PERIOD_HIGH;
             }
@@ -153,7 +153,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         if (clusterLevelControl != null) {
             clusterLevelControl.addAttributeListener(this);
             try {
-                CommandResult bindResponse = clusterLevelControl.bind().get();
+                CommandResult bindResponse = bind(clusterLevelControl).get();
                 if (!bindResponse.isSuccess()) {
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }
@@ -170,7 +170,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         if (clusterOnOff != null) {
             clusterOnOff.addAttributeListener(this);
             try {
-                CommandResult bindResponse = clusterOnOff.bind().get();
+                CommandResult bindResponse = bind(clusterOnOff).get();
                 if (!bindResponse.isSuccess()) {
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }
