@@ -8,9 +8,13 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import java.math.BigDecimal;
 import java.util.concurrent.ExecutionException;
 
-import org.eclipse.smarthome.core.library.types.DecimalType;
+import javax.measure.quantity.Power;
+
+import org.eclipse.smarthome.core.library.types.QuantityType;
+import org.eclipse.smarthome.core.library.unit.SmartHomeUnits;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
@@ -136,7 +140,8 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
                 && attribute.getId() == ZclElectricalMeasurementCluster.ATTR_ACTIVEPOWER) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {
-                updateChannelState(new DecimalType(value * multiplier / divisor));
+                updateChannelState(
+                        new QuantityType<Power>(BigDecimal.valueOf(value * multiplier / divisor), SmartHomeUnits.WATT));
             }
         }
     }

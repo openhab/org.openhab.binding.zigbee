@@ -10,7 +10,10 @@ package org.openhab.binding.zigbee.internal.converter;
 
 import java.math.BigDecimal;
 
-import org.eclipse.smarthome.core.library.types.DecimalType;
+import javax.measure.quantity.Illuminance;
+
+import org.eclipse.smarthome.core.library.types.QuantityType;
+import org.eclipse.smarthome.core.library.unit.SmartHomeUnits;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
@@ -86,7 +89,8 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
                 && attribute.getId() == ZclIlluminanceMeasurementCluster.ATTR_MEASUREDVALUE) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {
-                updateChannelState(new DecimalType(BigDecimal.valueOf(value, 2)));
+                updateChannelState(new QuantityType<Illuminance>(BigDecimal.valueOf(value, 2),
+                        SmartHomeUnits.LUX));
             }
         }
     }
