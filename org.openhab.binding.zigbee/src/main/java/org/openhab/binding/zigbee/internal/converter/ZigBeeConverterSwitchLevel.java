@@ -40,16 +40,15 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
  * still be OFF.
  *
  * @author Chris Jackson - Initial Contribution
- *
  */
 public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterSwitchLevel.class);
 
-    private ZclOnOffCluster clusterOnOffServer;
+    private ZclOnOffCluster clusterOnOff;
     private ZclLevelControlCluster clusterLevelControl;
     private ZclLevelControlConfig configLevelControl;
 
-    private final AtomicBoolean currentState = new AtomicBoolean(true);
+    private final AtomicBoolean currentOnOffState = new AtomicBoolean(true);
 
     private PercentType lastLevel = PercentType.HUNDRED;
 
@@ -62,7 +61,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         }
 
         try {
-            CommandResult bindResponse = clusterLevelControl.bind().get();
+            CommandResult bindResponse = bind(clusterLevelControl).get();
             if (bindResponse.isSuccess()) {
                 // Configure reporting
                 CommandResult reportingResponse = clusterLevelControl
@@ -75,17 +74,17 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
                 logger.debug("{}: Failed to bind level control cluster", endpoint.getIeeeAddress());
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception setting level control reporting ", endpoint.getIeeeAddress(), e);
+            logger.error(String.format("%s: Exception setting level control reporting ", endpoint.getIeeeAddress()), e);
         }
 
-        clusterOnOffServer = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
-        if (clusterOnOffServer != null) {
+        clusterOnOff = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
+        if (clusterOnOff != null) {
             try {
-                CommandResult bindResponse = clusterOnOffServer.bind().get();
+                CommandResult bindResponse = bind(clusterOnOff).get();
                 if (bindResponse.isSuccess()) {
                     // Configure reporting
-                    CommandResult reportingResponse = clusterOnOffServer
-                            .setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX).get();
+                    CommandResult reportingResponse = clusterOnOff.setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX)
+                            .get();
                     if (reportingResponse.isError()) {
                         pollingPeriod = POLLING_PERIOD_HIGH;
                     }
@@ -93,15 +92,15 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }
             } catch (InterruptedException | ExecutionException e) {
-                logger.error("{}: Exception setting on off reporting ", endpoint.getIeeeAddress(), e);
+                logger.error(String.format("%s: Exception setting on off reporting ", endpoint.getIeeeAddress()), e);
             }
 
-            // Set the currentState to ON. This will ensure that we only ignore levelControl reports AFTER we have
+            // Set the currentOnOffState to ON. This will ensure that we only ignore levelControl reports AFTER we have
             // really received an OFF report, thus confirming ON_OFF reporting is working
-            currentState.set(true);
+            currentOnOffState.set(true);
 
             // Add a listener
-            clusterOnOffServer.addAttributeListener(this);
+            clusterOnOff.addAttributeListener(this);
         }
 
         // Add a listener
@@ -117,40 +116,59 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
     @Override
     public void disposeConverter() {
         clusterLevelControl.removeAttributeListener(this);
-        if (clusterOnOffServer != null) {
-            clusterOnOffServer.removeAttributeListener(this);
+        if (clusterOnOff != null) {
+            clusterOnOff.removeAttributeListener(this);
         }
     }
 
     @Override
     public void handleRefresh() {
-        if (clusterOnOffServer != null) {
-            clusterOnOffServer.getOnOff(0);
+        if (clusterOnOff != null) {
+            clusterOnOff.getOnOff(0);
         }
         clusterLevelControl.getCurrentLevel(0);
     }
 
     @Override
     public void handleCommand(final Command command) {
-        PercentType percent;
-        if (command instanceof PercentType) {
-            percent = (PercentType) command;
-        } else if (command instanceof OnOffType) {
-            OnOffType cmdOnOff = (OnOffType) command;
-            if (cmdOnOff == OnOffType.ON) {
-                percent = PercentType.HUNDRED;
-            } else {
-                percent = PercentType.ZERO;
-            }
+        if (command instanceof OnOffType) {
+            handleOnOffCommand((OnOffType) command);
+        } else if (command instanceof PercentType) {
+            handlePercentCommand((PercentType) command);
         } else {
             logger.warn("{}: Level converter only accepts PercentType and OnOffType - not {}",
                     endpoint.getIeeeAddress(), command.getClass().getSimpleName());
-            return;
         }
+    }
 
-        if (clusterOnOffServer != null) {
+    /**
+     * If we support the OnOff cluster then we should perform the same function as the SwitchOnoffConverter. Otherwise,
+     * interpret ON commands as moving to level 100%, and OFF commands as moving to level 0%.
+     */
+    private void handleOnOffCommand(OnOffType cmdOnOff) {
+        if (clusterOnOff != null) {
+            if (cmdOnOff == OnOffType.ON) {
+                clusterOnOff.onCommand();
+            } else {
+                clusterOnOff.offCommand();
+            }
+        } else {
+            if (cmdOnOff == OnOffType.ON) {
+                moveToLevel(PercentType.HUNDRED);
+            } else {
+                moveToLevel(PercentType.ZERO);
+            }
+        }
+    }
+
+    private void handlePercentCommand(PercentType cmdPercent) {
+        moveToLevel(cmdPercent);
+    }
+
+    private void moveToLevel(PercentType percent) {
+        if (clusterOnOff != null) {
             if (percent.equals(PercentType.ZERO)) {
-                clusterOnOffServer.offCommand();
+                clusterOnOff.offCommand();
             } else {
                 clusterLevelControl.moveToLevelWithOnOffCommand(percentToLevel(percent),
                         configLevelControl.getDefaultTransitionTime());
@@ -187,18 +205,15 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         if (attribute.getCluster() == ZclClusterType.LEVEL_CONTROL
                 && attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
             lastLevel = levelToPercent((Integer) attribute.getLastValue());
-            if (currentState.get()) {
+            if (currentOnOffState.get()) {
                 // Note that state is only updated if the current On/Off state is TRUE (ie ON)
                 updateChannelState(lastLevel);
             }
-            return;
-        }
-        if (attribute.getCluster() == ZclClusterType.ON_OFF && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
-            if (attribute.getLastValue() == null) {
-                return;
+        } else if (attribute.getCluster() == ZclClusterType.ON_OFF && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
+            if (attribute.getLastValue() != null) {
+                currentOnOffState.set((Boolean) attribute.getLastValue());
+                updateChannelState(currentOnOffState.get() ? lastLevel : OnOffType.OFF);
             }
-            currentState.set((Boolean) attribute.getLastValue());
-            updateChannelState(currentState.get() ? lastLevel : OnOffType.OFF);
         }
     }
 }

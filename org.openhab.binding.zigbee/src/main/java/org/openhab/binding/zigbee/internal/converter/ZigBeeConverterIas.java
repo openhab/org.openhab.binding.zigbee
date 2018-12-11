@@ -59,7 +59,7 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter impl
             return false;
         }
 
-        clusterIasZone.bind();
+        bind(clusterIasZone);
 
         // Add a listener, then request the status
         clusterIasZone.addCommandListener(this);

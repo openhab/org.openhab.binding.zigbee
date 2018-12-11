@@ -48,7 +48,7 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
         }
 
         try {
-            CommandResult bindResponse = cluster.bind().get();
+            CommandResult bindResponse = bind(cluster).get();
             if (bindResponse.isSuccess()) {
                 // Configure reporting - no faster than once per ten minutes - no slower than every 2 hours.
                 cluster.setBatteryPercentageRemainingReporting(600, 7200, 1).get();
