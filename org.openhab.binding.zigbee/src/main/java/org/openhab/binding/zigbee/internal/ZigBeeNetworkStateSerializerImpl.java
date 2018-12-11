@@ -48,7 +48,23 @@ import com.zsmartsystems.zigbee.zdo.field.PowerDescriptor.PowerSourceType;
  * Serializes and deserializes the ZigBee network state.
  *
  * @author Chris Jackson
+ * @author Pedro Garcia - Atomic (mostly) file operations
+ * 
+ *         Serialization of the network state to a file is done in the most atomic way portability allows for:
+ *         - Serialization is done to a temporary file so that the network state file, if present, is always a complete,
+ *         backupable, working version
+ *         - Only once the temporary file is fully writen, the old file is renamed to a backup copy (instead of deleted,
+ *         to make sure the operation will work even if the file is open)
+ *         - The temporary file is then renamed to the final network state file, and the backup copy is removed
+ *
+ *         Deserialization works as follows:
+ *         - If the network state file is not present, and the temporary one is, the temporary one is renamed to the
+ *         target network state file. We can assume it is a complete version of the file, as the old network state file
+ *         is only moved out once the new temporary one is fully written
+ *         - The network state file is then normally read
+ *
  */
+
 public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSerializer {
     /**
      * The logger.
@@ -134,17 +150,17 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
             writer.close();
 
             if (file.exists() && !file.renameTo(backup)) {
-                logger.error("Error moving out old network state file (new state will not be saved)");
+                logger.warn("Error moving out old network state file (new state will not be saved)");
                 temp.delete();
             } else if (!temp.renameTo(file)) {
-                logger.error("Error renaming new network state file. Recovering backup (new state will not be saved)");
+                logger.warn("Error renaming new network state file. Recovering backup (new state will not be saved)");
                 if (backup.exists() && !backup.renameTo(file)) {
                     logger.error("Error recovering backup network state file");
                 }
             }
 
             if (backup.exists() && !backup.delete()) {
-                logger.warn("Unable to delete old network state file");
+                logger.debug("Unable to delete old network state file");
             }
 
         } catch (Exception e) {
