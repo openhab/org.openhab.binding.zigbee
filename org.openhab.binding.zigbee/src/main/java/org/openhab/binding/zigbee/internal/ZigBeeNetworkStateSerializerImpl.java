@@ -155,7 +155,7 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
             } else if (!temp.renameTo(file)) {
                 logger.warn("Error renaming new network state file. Recovering backup (new state will not be saved)");
                 if (backup.exists() && !backup.renameTo(file)) {
-                    logger.error("Error recovering backup network state file");
+                    logger.warn("Error recovering backup network state file");
                 }
             }
 
@@ -191,7 +191,7 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
 
             logger.warn("Recovering network state file from temporary copy");
             if (!temp.renameTo(file)) {
-                logger.error("Error recovering network state file");
+                logger.warn("Error recovering network state file");
                 return;
             }
         }
