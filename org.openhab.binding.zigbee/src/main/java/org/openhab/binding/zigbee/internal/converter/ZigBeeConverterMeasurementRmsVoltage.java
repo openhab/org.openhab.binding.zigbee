@@ -138,8 +138,8 @@ public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConve
                 && attribute.getId() == ZclElectricalMeasurementCluster.ATTR_RMSVOLTAGE) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {
-                updateChannelState(new QuantityType<ElectricPotential>(BigDecimal.valueOf(value * multiplier / divisor),
-                        SmartHomeUnits.VOLT));
+                BigDecimal valueInVolts = BigDecimal.valueOf(value * multiplier / divisor);
+                updateChannelState(new QuantityType<ElectricPotential>(valueInVolts, SmartHomeUnits.VOLT));
             }
         }
     }
