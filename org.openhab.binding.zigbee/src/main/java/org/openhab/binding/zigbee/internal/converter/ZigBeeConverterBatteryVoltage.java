@@ -125,7 +125,8 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
                 // The value 0xFF indicates an invalid or unknown reading.
                 return;
             }
-            updateChannelState(new QuantityType<ElectricPotential>(BigDecimal.valueOf(value, 1), SmartHomeUnits.VOLT));
+            BigDecimal valueInVolt = BigDecimal.valueOf(value, 1);
+            updateChannelState(new QuantityType<ElectricPotential>(valueInVolt, SmartHomeUnits.VOLT));
         }
     }
 }

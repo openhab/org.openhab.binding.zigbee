@@ -148,11 +148,11 @@
 
     <!-- Illuminance Channel -->
     <channel-type id="measurement_illuminance">
-        <item-type>Number:Illuminance</item-type>
+        <item-type>Number</item-type>
         <label>Illuminance</label>
         <description>Indicates the current illuminance</description>
         <category></category>
-        <state pattern="%.1f %unit%" readOnly="true" />
+        <state pattern="%.1f" readOnly="true" />
     </channel-type>
     
     <!-- Atmospheric Pressure Channel -->
