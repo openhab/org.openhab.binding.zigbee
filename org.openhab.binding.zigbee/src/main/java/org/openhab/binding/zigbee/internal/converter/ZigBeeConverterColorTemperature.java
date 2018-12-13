@@ -16,6 +16,7 @@ import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.types.Command;
+import org.eclipse.smarthome.core.types.UnDefType;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorCapabilitiesEnum;
+import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorModeEnum;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
@@ -81,6 +83,11 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
         clusterColorControl.setColorTemperatureReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1);
+
+        // ColorMode reporting
+        ZclAttribute colorModeAttribute = clusterColorControl
+                .getAttribute(ZclColorControlCluster.ATTR_COLORMODE);
+        clusterColorControl.setReporting(colorModeAttribute, 1, REPORTING_PERIOD_DEFAULT_MAX, 1);
 
         return true;
     }
@@ -171,6 +178,12 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             PercentType percent = miredToPercent(temperatureInMired);
             if (percent != null) {
                 updateChannelState(percent);
+            }
+        } else if (attribute.getCluster() == ZclClusterType.COLOR_CONTROL
+                && attribute.getId() == ZclColorControlCluster.ATTR_COLORMODE) {
+            Integer colorMode = (Integer) attribute.getLastValue();
+            if (ColorModeEnum.COLORTEMPERATURE.getKey() != colorMode) {
+                updateChannelState(UnDefType.UNDEF);
             }
         }
     }
