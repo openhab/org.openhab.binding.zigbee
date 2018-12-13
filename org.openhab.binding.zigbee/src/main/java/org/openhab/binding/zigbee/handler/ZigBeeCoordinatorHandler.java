@@ -122,6 +122,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     private ScheduledFuture<?> reconnectPollingTimer;
     private ScheduledExecutorService reconnectPollingScheduler;
+    private final Object reconnectLock = new Object();
 
     /**
      * Default ZigBeeAlliance09 link key
@@ -301,6 +302,11 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             restartJob.cancel(true);
         }
 
+        // shutdown reconnect task
+        if (reconnectPollingTimer != null) {
+            reconnectPollingTimer.cancel(true);
+        }
+
         if (networkManager != null) {
             synchronized (listeners) {
                 for (ZigBeeNetworkNodeListener listener : listeners) {
@@ -478,7 +484,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         }, 1, TimeUnit.SECONDS);
     }
 
-    private void startReconnectJob() {
+    private void startReconnectJobIfNotRunning() {
         if (reconnectPollingTimer != null) {
             return;
         }
@@ -495,10 +501,19 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 if (restartJob != null) {
                     restartJob.cancel(true);
                 }
+                // especially shutdown the port
                 networkManager.shutdown();
 
                 // Initialize the network again
                 initialiseZigBee();
+
+                synchronized (reconnectLock) {
+                    try {
+                        reconnectLock.wait();
+                    } catch (InterruptedException e) {
+                        // thread may be killed if callback reports that we are connected again
+                    }
+                }
             }
         }, 1, RECONNECT_RATE, TimeUnit.SECONDS);
     }
@@ -796,10 +811,16 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 break;
             case OFFLINE:
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
-                startReconnectJob();
+                startReconnectJobIfNotRunning();
                 break;
             default:
                 break;
+        }
+
+        synchronized (reconnectLock) {
+            if (state != ZigBeeTransportState.INITIALISING) {
+                reconnectLock.notify();
+            }
         }
     }
 
