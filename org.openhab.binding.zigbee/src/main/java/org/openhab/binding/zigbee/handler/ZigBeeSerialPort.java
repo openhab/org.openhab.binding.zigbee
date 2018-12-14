@@ -199,7 +199,7 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
                 logger.debug("Serial port '{}' closed.", portName);
             }
         } catch (Exception e) {
-            logger.error("Error closing serial port: '{}' ", portName, e);
+            logger.error(String.format("Error closing serial port: '%s' ", portName), e);
         }
     }
 

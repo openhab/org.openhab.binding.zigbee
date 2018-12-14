@@ -66,7 +66,7 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
                 pollingPeriod = POLLING_PERIOD_HIGH;
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            logger.error(String.format("%s: Exception setting reporting ", endpoint.getIeeeAddress()), e);
         }
 
         divisor = clusterMeasurement.getAcCurrentDivisor(Long.MAX_VALUE);
@@ -114,8 +114,8 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
                 return null;
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.warn("{}: Exception discovering attributes in electrical measurement cluster",
-                    endpoint.getIeeeAddress(), e);
+            logger.warn(String.format("%s: Exception discovering attributes in electrical measurement cluster",
+                    endpoint.getIeeeAddress()), e);
             return null;
         }
 

@@ -116,9 +116,9 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                 return false;
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.warn(
-                    "{}: Exception checking whether device endpoint supports RGB color. Assuming it supports HUE/SAT",
-                    endpoint.getIeeeAddress(), e);
+            logger.warn(String.format(
+                    "%s: Exception checking whether device endpoint supports RGB color. Assuming it supports HUE/SAT",
+                    endpoint.getIeeeAddress()), e);
             supportsHue = true;
         }
 
@@ -147,7 +147,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                 clusterColorControl.setCurrentYReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
             }
         } catch (ExecutionException | InterruptedException e) {
-            logger.debug("{}: Exception configuring color reporting", endpoint.getIeeeAddress(), e);
+            logger.debug(String.format("%s: Exception configuring color reporting", endpoint.getIeeeAddress()), e);
         }
 
         if (clusterLevelControl != null) {
@@ -163,7 +163,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }
             } catch (ExecutionException | InterruptedException e) {
-                logger.debug("{}: Exception configuring level reporting", endpoint.getIeeeAddress(), e);
+                logger.debug(String.format("%s: Exception configuring level reporting", endpoint.getIeeeAddress()), e);
             }
         }
 
@@ -179,7 +179,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }
             } catch (ExecutionException | InterruptedException e) {
-                logger.debug("{}: Exception configuring on/off reporting", endpoint.getIeeeAddress(), e);
+                logger.debug(String.format("%s: Exception configuring on/off reporting", endpoint.getIeeeAddress()), e);
             }
         }
 
@@ -349,7 +349,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                 changeOnOff((OnOffType) command);
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.warn("{}: Exception processing command", endpoint.getIeeeAddress(), e);
+            logger.warn(String.format("%s: Exception processing command", endpoint.getIeeeAddress()), e);
         }
     }
 
@@ -394,7 +394,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                 return null;
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.warn("{}: Exception discovering attributes in color control cluster", endpoint.getIeeeAddress(), e);
+            logger.warn(String.format("%s: Exception discovering attributes in color control cluster",
+                    endpoint.getIeeeAddress()), e);
         }
 
         return ChannelBuilder
@@ -536,8 +537,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                                             updateColorXY();
                                         }
                                     } catch (Exception e) {
-                                        logger.debug("{}: Exception in deferred attribute update",
-                                                endpoint.getIeeeAddress(), e);
+                                        logger.debug(String.format("%s: Exception in deferred attribute update",
+                                                endpoint.getIeeeAddress()), e);
                                     }
 
                                     colorUpdateTimer = null;
@@ -547,7 +548,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                     }
                 }
             } catch (Exception e) {
-                logger.debug("{}: Exception in attribute update", endpoint.getIeeeAddress(), e);
+                logger.debug(String.format("%s: Exception in attribute update", endpoint.getIeeeAddress()), e);
             }
         }
     }

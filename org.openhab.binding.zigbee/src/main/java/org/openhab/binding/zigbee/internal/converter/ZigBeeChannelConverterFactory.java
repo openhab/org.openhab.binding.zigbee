@@ -97,7 +97,7 @@ public final class ZigBeeChannelConverterFactory {
                 }
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                logger.debug("{}: Exception while getting channels: ", endpoint.getIeeeAddress(), e);
+                logger.debug(String.format("%s: Exception while getting channels: ", endpoint.getIeeeAddress()), e);
             }
         }
 
@@ -139,7 +139,7 @@ public final class ZigBeeChannelConverterFactory {
             instance.initialize(thingHandler, channel, coordinatorHandler, ieeeAddress, endpointId);
             return instance;
         } catch (Exception e) {
-            logger.error("{}: Unable to create channel {}", ieeeAddress, channel.getUID(), e);
+            logger.error(String.format("%s: Unable to create channel {}", ieeeAddress, channel.getUID()), e);
         }
 
         return null;

@@ -91,7 +91,9 @@ public class ZigBeeConverterBatteryAlarm extends ZigBeeBaseChannelConverter impl
                         BATTERY_ALARM_POLLING_PERIOD);
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception setting reporting of battery alarm state ", endpoint.getIeeeAddress(), e);
+            logger.error(
+                    String.format("%s: Exception setting reporting of battery alarm state ", endpoint.getIeeeAddress()),
+                    e);
             return false;
         }
 
@@ -128,8 +130,8 @@ public class ZigBeeConverterBatteryAlarm extends ZigBeeBaseChannelConverter impl
                 return null;
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.warn("{}: Exception discovering attributes in power configuration cluster",
-                    endpoint.getIeeeAddress(), e);
+            logger.warn(String.format("%s: Exception discovering attributes in power configuration cluster",
+                    endpoint.getIeeeAddress()), e);
             return null;
         }
 

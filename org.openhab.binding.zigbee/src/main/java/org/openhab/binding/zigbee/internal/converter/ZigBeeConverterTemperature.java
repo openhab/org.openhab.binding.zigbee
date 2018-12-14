@@ -58,7 +58,7 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
                 cluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1);
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            logger.error(String.format("%s: Exception setting reporting ", endpoint.getIeeeAddress()), e);
         }
 
         // Add a listener, then request the status

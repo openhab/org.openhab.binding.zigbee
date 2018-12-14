@@ -65,7 +65,7 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
                 pollingPeriod = POLLING_PERIOD_HIGH;
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            logger.error(String.format("%s: Exception setting reporting ", endpoint.getIeeeAddress()), e);
         }
 
         divisor = clusterMeasurement.getAcPowerDivisor(Long.MAX_VALUE);
@@ -115,8 +115,8 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
                 return null;
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.warn("{}: Exception discovering attributes in electrical measurement cluster",
-                    endpoint.getIeeeAddress(), e);
+            logger.warn(String.format("%s: Exception discovering attributes in electrical measurement cluster",
+                    endpoint.getIeeeAddress()), e);
             return null;
         }
 

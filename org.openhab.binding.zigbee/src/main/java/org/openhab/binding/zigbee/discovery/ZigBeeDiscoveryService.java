@@ -222,7 +222,9 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
                             thingDiscovered(discoveryResult);
                         }
                     } catch (Exception e) {
-                        logger.error("Participant '{}' threw an exception", participant.getClass().getName(), e);
+                        logger.error(
+                                String.format("Participant '%s' threw an exception", participant.getClass().getName()),
+                                e);
                     }
                 }
 

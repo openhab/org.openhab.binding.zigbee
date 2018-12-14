@@ -57,8 +57,8 @@ public class ZclLevelControlConfig implements ZclClusterConfigHandler {
                         cluster.getClusterName());
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Error getting supported attributes for {}. ", cluster.getZigBeeAddress(),
-                    cluster.getClusterName(), e);
+            logger.error(String.format("%s: Error getting supported attributes for {}. ", cluster.getZigBeeAddress(),
+                    cluster.getClusterName()), e);
         }
 
         // Build a list of configuration supported by this channel based on the attributes the cluster supports

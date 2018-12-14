@@ -165,7 +165,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 linkKeyString = (String) param;
             }
         } catch (ClassCastException | NumberFormatException e) {
-            logger.error("{}: ZigBee initialisation exception ", thing.getUID(), e);
+            logger.error(String.format("%s: ZigBee initialisation exception", thing.getUID()), e);
             updateStatus(ThingStatus.OFFLINE);
             return;
         }

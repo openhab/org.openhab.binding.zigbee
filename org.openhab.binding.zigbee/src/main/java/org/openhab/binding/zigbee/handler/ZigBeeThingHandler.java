@@ -339,7 +339,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 }
             }
         } catch (Exception e) {
-            logger.error("{}: Exception creating channels ", nodeIeeeAddress, e);
+            logger.error(String.format("%s: Exception creating channels ", nodeIeeeAddress), e);
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.HANDLER_INITIALIZING_ERROR);
             return;
         }
@@ -352,7 +352,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 logger.debug("{}: Error getting binding table", nodeIeeeAddress);
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception getting binding table ", nodeIeeeAddress, e);
+            logger.error(String.format("%s: Exception getting binding table", nodeIeeeAddress), e);
         }
 
         updateStatus(ThingStatus.ONLINE);
@@ -444,7 +444,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                         }
                     }
                 } catch (Exception e) {
-                    logger.warn("{}: Polling aborted due to exception ", nodeIeeeAddress, e);
+                    logger.warn(String.format("%s: Polling aborted due to exception", nodeIeeeAddress), e);
                 }
             }
         };
@@ -548,7 +548,9 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                         handler.handleCommand(command);
                     }
                 } catch (Exception e) {
-                    logger.debug("{}: Exception sending command to channel {}", nodeIeeeAddress, channelUID, e);
+                    logger.debug(
+                            String.format("%s: Exception sending command to channel %s", nodeIeeeAddress, channelUID),
+                            e);
                 }
             }
         };

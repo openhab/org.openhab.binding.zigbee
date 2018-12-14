@@ -72,7 +72,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }
             } catch (InterruptedException | ExecutionException e) {
-                logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+                logger.error(String.format("%s: Exception setting reporting ", endpoint.getIeeeAddress()), e);
             }
 
             // Add the listener
@@ -87,7 +87,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
                             Integer.toHexString(bindResponse.getStatusCode()));
                 }
             } catch (InterruptedException | ExecutionException e) {
-                logger.error("{}: Exception setting binding ", endpoint.getIeeeAddress(), e);
+                logger.error(String.format("%s: Exception setting binding ", endpoint.getIeeeAddress()), e);
             }
 
             // Add the command listener
