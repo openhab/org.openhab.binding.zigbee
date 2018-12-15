@@ -135,11 +135,17 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     /**
      * The factory to create the converters for the different channels.
      */
-    private final ZigBeeChannelConverterFactory factory;
+    private final ZigBeeChannelConverterFactory channelFactory;
 
-    public ZigBeeThingHandler(Thing zigbeeDevice, ZigBeeChannelConverterFactory factory) {
+    /**
+     * Creates a ZigBee thing.
+     *
+     * @param zigbeeDevice the {@link Thing}
+     * @param channelFactory the {@link ZigBeeChannelConverterFactory} to be used to create the channels
+     */
+    public ZigBeeThingHandler(Thing zigbeeDevice, ZigBeeChannelConverterFactory channelFactory) {
         super(zigbeeDevice);
-        this.factory = factory;
+        this.channelFactory = channelFactory;
     }
 
     @Override
@@ -235,8 +241,6 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             configHandlers.addAll(handlers);
         }
 
-        // Create the channel factory
-        ZigBeeChannelConverterFactory channelFactory = new ZigBeeChannelConverterFactory();
         List<Channel> nodeChannels;
 
         if (getThing().getThingTypeUID().equals(ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE)) {
@@ -250,7 +254,6 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             logger.debug("{}: Dynamically created {} channels", nodeIeeeAddress, nodeChannels.size());
 
             try {
-                // List<ConfigDescriptionParameterGroup> groups = new ArrayList<ConfigDescriptionParameterGroup>();
                 List<ConfigDescriptionParameter> parameters = new ArrayList<ConfigDescriptionParameter>();
 
                 for (ZclClusterConfigHandler handler : configHandlers) {
