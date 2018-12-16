@@ -246,7 +246,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
                 logger.debug("{}: Creating statically defined device endpoint {} with profile {}", nodeIeeeAddress,
                         endpointId, ZigBeeProfileType.getByValue(profileId));
-                endpoint = new ZigBeeEndpoint(coordinatorHandler.getNetworkManager(), node, endpointId);
+                endpoint = new ZigBeeEndpoint(node, endpointId);
                 endpoint.setProfileId(profileId);
                 node.addEndpoint(endpoint);
             }
@@ -371,7 +371,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * Process a static cluster list and add it to the existing list
      *
      * @param initialClusters a collection of existing clusters
-     * @param newClusters     a string containing a comma separated list of clusters
+     * @param newClusters a string containing a comma separated list of clusters
      * @return a list of clusters if the list is updated, or an empty list if it has not changed
      */
     private List<Integer> processClusterList(Collection<Integer> initialClusters, String newClusters) {
@@ -571,7 +571,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * changes.
      *
      * @param channel the {@link ChannelUID} to be updated
-     * @param state   the new {link State}
+     * @param state the new {link State}
      */
     public void setChannelState(ChannelUID channel, State state) {
         if (firmwareUpdateInProgress) {
@@ -589,7 +589,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * received.
      *
      * @param channel the {@link ChannelUID} to be triggered
-     * @param event   the event to be emitted
+     * @param event the event to be emitted
      */
     @Override
     public void triggerChannel(ChannelUID channel, String event) {
@@ -730,32 +730,27 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         ZclOtaUpgradeServer otaServer = null;
         ZigBeeEndpoint otaEndpoint = null;
-        ZclOtaUpgradeCluster otaCluster = null;
         for (ZigBeeEndpoint endpoint : node.getEndpoints()) {
             otaServer = (ZclOtaUpgradeServer) endpoint.getApplication(ZclOtaUpgradeCluster.CLUSTER_ID);
             if (otaServer != null) {
                 break;
             }
 
-            otaCluster = (ZclOtaUpgradeCluster) endpoint.getOutputCluster(ZclOtaUpgradeCluster.CLUSTER_ID);
-            if (otaCluster != null) {
+            if (endpoint.getOutputCluster(ZclOtaUpgradeCluster.CLUSTER_ID) != null) {
                 otaEndpoint = endpoint;
                 break;
             }
         }
 
-        if (otaServer == null && otaCluster == null) {
+        if (otaServer == null && otaEndpoint == null) {
             logger.debug("{}: Can't find OTA cluster", nodeIeeeAddress);
             return;
         }
 
-        // Register the OTA server if it's not already registered
-        if (otaServer == null && otaEndpoint != null) {
+        if (otaServer == null) {
+            // Create the OTA server and register it with the endpoint
             otaServer = new ZclOtaUpgradeServer();
             otaEndpoint.addApplication(otaServer);
-        } else {
-            logger.debug("{}: Can't create OTA server", nodeIeeeAddress);
-            return;
         }
 
         // Set ourselves offline, and prevent going back online
@@ -772,7 +767,6 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         progressCallback.next();
 
         final ZclOtaUpgradeServer finalOtaServer = otaServer;
-        final ZclOtaUpgradeCluster finalOtaCluster = otaCluster;
         otaServer.addListener(new ZigBeeOtaStatusCallback() {
             @Override
             public void otaStatusUpdate(ZigBeeOtaServerStatus status, int percent) {
@@ -808,7 +802,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 finalOtaServer.cancelUpgrade();
 
                 for (int retry = 0; retry < 3; retry++) {
-                    Integer fileVersion = finalOtaCluster.getCurrentFileVersion(Long.MAX_VALUE);
+                    Integer fileVersion = finalOtaServer.getCurrentFileVersion();
                     if (fileVersion != null) {
                         updateProperty(Thing.PROPERTY_FIRMWARE_VERSION, String.format("%08X", fileVersion));
                         break;

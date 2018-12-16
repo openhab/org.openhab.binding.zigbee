@@ -29,11 +29,12 @@ import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorCapabilitiesEnum;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
+ * Channel converter for color temperature, converting between the color control cluster and a percent-typed channel.
  *
  * @author Chris Jackson - Initial Contribution
- *
  */
 public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
+
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterColorTemperature.class);
 
     private ZclColorControlCluster clusterColorControl;
@@ -50,7 +51,8 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
     public boolean initializeConverter() {
         clusterColorControl = (ZclColorControlCluster) endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID);
         if (clusterColorControl == null) {
-            logger.error("{}: Error opening device control controls", endpoint.getIeeeAddress());
+            logger.error("{}: Error opening color control input cluster on endpoint {}", endpoint.getIeeeAddress(),
+                    endpoint.getEndpointId());
             return false;
         }
 
@@ -70,9 +72,10 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
         } else {
             kelvinMax = miredToKelvin(minTemperatureInMired);
         }
+
         kelvinRange = kelvinMax - kelvinMin;
 
-        clusterColorControl.bind();
+        bind(clusterColorControl);
 
         clusterColorControl.addAttributeListener(this);
 
@@ -94,15 +97,15 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
 
     @Override
     public void handleCommand(final Command command) {
-        PercentType colorTemp = PercentType.ZERO;
+        PercentType colorTemperaturePercentage = PercentType.ZERO;
         if (command instanceof PercentType) {
-            colorTemp = (PercentType) command;
+            colorTemperaturePercentage = (PercentType) command;
         } else if (command instanceof OnOffType) {
             // TODO: Should this turn the lamp on/off?
             return;
         }
 
-        clusterColorControl.moveToColorTemperatureCommand(percentToMired(colorTemp), 10);
+        clusterColorControl.moveToColorTemperatureCommand(percentToMired(colorTemperaturePercentage), 10);
     }
 
     @Override
@@ -110,7 +113,8 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
         ZclColorControlCluster clusterColorControl = (ZclColorControlCluster) endpoint
                 .getInputCluster(ZclColorControlCluster.CLUSTER_ID);
         if (clusterColorControl == null) {
-            logger.trace("{}: Color control cluster not found", endpoint.getIeeeAddress());
+            logger.trace("{}: Color control cluster not found on endpoint {}", endpoint.getIeeeAddress(),
+                    endpoint.getEndpointId());
             return null;
         }
 
@@ -119,14 +123,14 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
                 // Device is not supporting attribute reporting - instead, just read the attributes
                 Integer capabilities = clusterColorControl.getColorCapabilities(Long.MAX_VALUE);
                 if (capabilities == null && clusterColorControl.getColorTemperature(Long.MAX_VALUE) == null) {
-                    logger.trace("{}: Color control color temperature attribute returned null",
-                            endpoint.getIeeeAddress());
+                    logger.trace("{}: Color control color temperature attribute returned null on endpoint {}",
+                            endpoint.getIeeeAddress(), endpoint.getEndpointId());
                     return null;
                 }
                 if (capabilities != null && (capabilities & ColorCapabilitiesEnum.COLOR_TEMPERATURE.getKey()) == 0) {
                     // No support for color temperature
-                    logger.trace("{}: Color control color temperature capability not supported",
-                            endpoint.getIeeeAddress());
+                    logger.trace("{}: Color control color temperature capability not supported on endpoint {}",
+                            endpoint.getIeeeAddress(), endpoint.getEndpointId());
                     return null;
                 }
             } else if (clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_COLORCAPABILITIES)) {
@@ -134,16 +138,18 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
                 Integer capabilities = clusterColorControl.getColorCapabilities(Long.MAX_VALUE);
                 if (capabilities != null && (capabilities & ColorCapabilitiesEnum.COLOR_TEMPERATURE.getKey()) == 0) {
                     // No support for color temperature
-                    logger.trace("{}: Color control color temperature capability not supported",
-                            endpoint.getIeeeAddress());
+                    logger.trace("{}: Color control color temperature capability not supported on endpoint {}",
+                            endpoint.getIeeeAddress(), endpoint.getEndpointId());
                     return null;
                 }
             } else if (!clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_COLORTEMPERATURE)) {
-                logger.trace("{}: Color control color temperature attribute not supported", endpoint.getIeeeAddress());
+                logger.trace("{}: Color control color temperature attribute not supported on endpoint {}",
+                        endpoint.getIeeeAddress(), endpoint.getEndpointId());
                 return null;
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.warn("{}: Exception discovering attributes in color control cluster", endpoint.getIeeeAddress(), e);
+            logger.warn(String.format("%s: Exception discovering attributes in color control cluster on endpoint %d",
+                    endpoint.getIeeeAddress(), endpoint.getEndpointId()), e);
         }
 
         return ChannelBuilder
@@ -156,7 +162,8 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
+        logger.debug("{}: ZigBee attribute reports {}  on endpoint {}", endpoint.getIeeeAddress(), attribute,
+                endpoint.getEndpointId());
         if (attribute.getCluster() == ZclClusterType.COLOR_CONTROL
                 && attribute.getId() == ZclColorControlCluster.ATTR_COLORTEMPERATURE) {
             Integer temperatureInMired = (Integer) attribute.getLastValue();
@@ -186,7 +193,8 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
      * Convert color temperature given as percentage to Kelvin.
      */
     private int percentToKelvin(PercentType temperatureInPercent) {
-        return (int) (((temperatureInPercent.doubleValue() * kelvinRange / 100.0) + kelvinMin) + 0.5);
+        double value = ((100.0 - temperatureInPercent.doubleValue()) * kelvinRange / 100.0) + kelvinMin;
+        return (int) (value + 0.5);
     }
 
     /**
@@ -200,7 +208,8 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
      * Convert color temperature given in Kelvin to percentage.
      */
     private PercentType kelvinToPercent(int temperatureInKelvin) {
-        return new PercentType((int) ((temperatureInKelvin - kelvinMin) * 100.0 / kelvinRange + 0.5));
+        double value = 100.0 - (temperatureInKelvin - kelvinMin) * 100.0 / kelvinRange;
+        return new PercentType((int) (value + 0.5));
     }
 
     /**

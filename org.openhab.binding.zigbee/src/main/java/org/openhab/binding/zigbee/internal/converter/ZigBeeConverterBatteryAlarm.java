@@ -75,7 +75,7 @@ public class ZigBeeConverterBatteryAlarm extends ZigBeeBaseChannelConverter impl
         }
 
         try {
-            CommandResult bindResponse = cluster.bind().get();
+            CommandResult bindResponse = bind(cluster).get();
             if (bindResponse.isSuccess()) {
                 CommandResult reportingResponse = cluster.setReporting(cluster.getAttribute(ATTR_BATTERYALARMSTATE),
                         ALARMSTATE_MIN_REPORTING_INTERVAL, ALARMSTATE_MAX_REPORTING_INTERVAL).get();
