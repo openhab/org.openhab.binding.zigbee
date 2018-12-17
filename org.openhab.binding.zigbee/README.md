@@ -65,6 +65,18 @@ The Ember EZSP NCP (Network Co-Processor) supports the Silabs EM358 or MightyGec
 
 Note that there are generally two versions of the Ember NCP firmware in use. One operates at a baud rate of 115200 with RTS/CTS flow control (i.e. hardware flow control), the other operates at a baud rate of 57600, and XON/XOFF flow control (i.e. software flow control). If you are programming your own stick (e.g. the CEL stick) then it should be advisable to use the hardware flow control version - many commercial sticks seem to use the lower speed and software flow control (e.g. Bitron and Nortek HUSBZB-1).
 
+If the usb dongle is not recognized, it might be necessary to make the dongle's device id known to the CP240x driver by Silicon Labs:
+
+- Find the device id (as listed by the command ```lsusb```). For the Bitron Funkstick that might be 10c4 8b34. 
+- Unplug the device
+- Enter the following commands (replace the id 10c4 8b34 with the one listed by  ```lsusb```):
+```
+sudo -s
+modprobe cp210x
+echo 10c4 8b34 > /sys/bus/usb-serial/drivers/cp210x/new_id
+```
+- Plug in the dongle. It should now be recognized properly as ttyUSBx.
+
 #### Telegesis ETRX3
 
 The thing type is ```coordinator_telegesis```.
@@ -163,6 +175,7 @@ The following channels are supported -:
 | ias_motionpresence | ```IAS_ZONE``` (0x0500) | Switch |  |
 | ias_standard_system | ```IAS_ZONE``` (0x0500) | Switch |  |
 | ias_water | ```IAS_ZONE``` (0x0500) | Switch |  |
+| ias_tamper | ```IAS_ZONE``` (0x0500) | Switch |  |
 | measurement_illuminance | ```ILLUMINANCE_MEASUREMENT``` (0x0400) | Number |   |
 | measurement_pressure | ```PRESSURE_MEASUREMENT``` (0x0403) | Number:Pressure |   |
 | measurement_relativehumidity | ```RELATIVE_HUMIDITY_MEASUREMENT``` (0x0405) | Number |   |
@@ -184,8 +197,9 @@ When things don't appear to be working as expected you should check the logs to 
 ```
 log:set debug org.openhab.binding.zigbee
 log:set debug com.zsmartsystems.zigbee
+log:set info com.zsmartsystems.zigbee.dongle.ember.internal.ash
 ```
 
-This will log data into the standard openhab.log file.
+This will log data into the standard openhab.log file. There is an [online log viewer](https://www.cd-jackson.com/index.php/openhab/zigbee-log-viewer) available for viewing the logs.
 
 Note that logs can only show what is happening at a high level - it can't show all data exchanges between the device and the coordinator - just what the coordinator sends to the binding. For this reason it can be difficult to debug issues where devices are not joining the network, or other low level issues need resolving. In such cases a network sniffer log is required, which requires additional hardware and software.
