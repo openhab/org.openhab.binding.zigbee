@@ -810,6 +810,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 }
                 break;
             case OFFLINE:
+                Bridge bridge = getThing();
+                // do not try to reconnect if there is a firmware update in progress
+                if (bridge.getStatus() == ThingStatus.OFFLINE
+                        && bridge.getStatusInfo().getStatusDetail() == ThingStatusDetail.FIRMWARE_UPDATING) {
+                    break;
+                }
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
                 startReconnectJobIfNotRunning();
                 break;
