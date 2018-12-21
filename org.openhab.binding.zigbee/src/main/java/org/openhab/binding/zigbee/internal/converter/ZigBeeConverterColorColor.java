@@ -8,6 +8,7 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -184,7 +185,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         }
 
         // Create a configuration handler and get the available options
-        configLevelControl = new ZclLevelControlConfig(clusterLevelControl);
+        configLevelControl = new ZclLevelControlConfig();
+        configLevelControl.initialize(clusterLevelControl);
         configOptions = configLevelControl.getConfiguration();
 
         return true;
@@ -459,8 +461,9 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     }
 
     @Override
-    public Configuration updateConfiguration(@NonNull Configuration configuration) {
-        return configLevelControl.updateConfiguration(configuration);
+    public void updateConfiguration(@NonNull Configuration currentConfiguration,
+            Map<String, Object> updatedParameters) {
+        configLevelControl.updateConfiguration(currentConfiguration, updatedParameters);
     }
 
     @Override

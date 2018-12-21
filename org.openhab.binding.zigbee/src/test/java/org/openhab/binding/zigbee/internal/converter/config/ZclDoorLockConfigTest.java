@@ -10,64 +10,36 @@ package org.openhab.binding.zigbee.internal.converter.config;
 
 import static org.junit.Assert.assertEquals;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
-import org.eclipse.smarthome.config.core.Configuration;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
-import com.zsmartsystems.zigbee.zcl.clusters.ZclLevelControlCluster;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclDoorLockCluster;
 
 /**
  *
  * @author Chris Jackson - Initial Contribution
  *
  */
-public class ZclLevelControlConfigTest {
-    private final String CONFIG_DEFAULTTRANSITIONTIME = "zigbee_levelcontrol_transitiontimedefault";
-
+public class ZclDoorLockConfigTest {
     @Test
     public void getConfiguration() {
-        ZclLevelControlCluster cluster = Mockito.mock(ZclLevelControlCluster.class);
+        ZclDoorLockCluster cluster = Mockito.mock(ZclDoorLockCluster.class);
         Mockito.when(cluster.discoverAttributes(ArgumentMatchers.anyBoolean())).thenReturn(new MockedBooleanFuture());
         Mockito.when(cluster.isAttributeSupported(ArgumentMatchers.anyInt())).thenReturn(true);
 
-        ZclLevelControlConfig config = new ZclLevelControlConfig();
+        ZclDoorLockConfig config = new ZclDoorLockConfig();
         config.initialize(cluster);
         List<ConfigDescriptionParameter> configuration = config.getConfiguration();
 
-        assertEquals(6, configuration.size());
-        ConfigDescriptionParameter cfg = configuration.get(0);
-        assertEquals(CONFIG_DEFAULTTRANSITIONTIME, cfg.getName());
-    }
-
-    @Test
-    public void getDefaultTransitionTime() {
-        ZclLevelControlCluster cluster = Mockito.mock(ZclLevelControlCluster.class);
-        Mockito.when(cluster.discoverAttributes(ArgumentMatchers.anyBoolean())).thenReturn(new MockedBooleanFuture());
-        Mockito.when(cluster.isAttributeSupported(ArgumentMatchers.anyInt())).thenReturn(true);
-
-        ZclLevelControlConfig config = new ZclLevelControlConfig();
-        config.initialize(cluster);
-        config.getConfiguration();
-
-        Configuration configuration = new Configuration();
-
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put(CONFIG_DEFAULTTRANSITIONTIME, new BigDecimal(45));
-
-        config.updateConfiguration(configuration, parameters);
-
-        assertEquals(45, config.getDefaultTransitionTime());
+        assertEquals(4, configuration.size());
     }
 
     class MockedBooleanFuture implements Future<Boolean> {

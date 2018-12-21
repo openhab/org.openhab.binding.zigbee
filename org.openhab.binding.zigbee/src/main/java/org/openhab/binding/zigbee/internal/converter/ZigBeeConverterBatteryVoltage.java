@@ -11,7 +11,10 @@ package org.openhab.binding.zigbee.internal.converter;
 import java.math.BigDecimal;
 import java.util.concurrent.ExecutionException;
 
-import org.eclipse.smarthome.core.library.types.DecimalType;
+import javax.measure.quantity.ElectricPotential;
+
+import org.eclipse.smarthome.core.library.types.QuantityType;
+import org.eclipse.smarthome.core.library.unit.SmartHomeUnits;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
@@ -122,7 +125,8 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
                 // The value 0xFF indicates an invalid or unknown reading.
                 return;
             }
-            updateChannelState(new DecimalType(BigDecimal.valueOf(value, 1)));
+            BigDecimal valueInVolt = BigDecimal.valueOf(value, 1);
+            updateChannelState(new QuantityType<ElectricPotential>(valueInVolt, SmartHomeUnits.VOLT));
         }
     }
 }
