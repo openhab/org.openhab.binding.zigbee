@@ -42,7 +42,7 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
  */
 public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
         implements ZclAttributeListener, ZclCommandListener {
-    private Logger logger = LoggerFactory.getLogger(ZigBeeConverterSwitchOnoff.class);
+    private final Logger logger = LoggerFactory.getLogger(ZigBeeConverterSwitchOnoff.class);
 
     private ZclOnOffCluster clusterOnOffClient;
     private ZclOnOffCluster clusterOnOffServer;
@@ -67,7 +67,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
                         pollingPeriod = POLLING_PERIOD_HIGH;
                     }
                 } else {
-                    logger.error("{}: Error 0x{} setting server binding", endpoint.getIeeeAddress(),
+                    logger.debug("{}: Error 0x{} setting server binding", endpoint.getIeeeAddress(),
                             Integer.toHexString(bindResponse.getStatusCode()));
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }
