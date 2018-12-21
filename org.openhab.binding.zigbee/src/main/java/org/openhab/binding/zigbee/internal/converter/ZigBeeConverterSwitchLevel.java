@@ -8,6 +8,7 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -107,7 +108,8 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         clusterLevelControl.addAttributeListener(this);
 
         // Create a configuration handler and get the available options
-        configLevelControl = new ZclLevelControlConfig(clusterLevelControl);
+        configLevelControl = new ZclLevelControlConfig();
+        configLevelControl.initialize(clusterLevelControl);
         configOptions = configLevelControl.getConfiguration();
 
         return true;
@@ -195,8 +197,9 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
     }
 
     @Override
-    public Configuration updateConfiguration(@NonNull Configuration configuration) {
-        return configLevelControl.updateConfiguration(configuration);
+    public void updateConfiguration(@NonNull Configuration currentConfiguration,
+            Map<String, Object> updatedParameters) {
+        configLevelControl.updateConfiguration(currentConfiguration, updatedParameters);
     }
 
     @Override

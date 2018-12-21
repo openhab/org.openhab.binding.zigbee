@@ -8,10 +8,12 @@
  */
 package org.openhab.binding.zigbee.internal;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.smarthome.config.core.Configuration;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,15 +44,24 @@ public class ZigBeeDeviceConfigHandler {
     }
 
     /**
-     * Handles a device configuration update
+     * Processes the updated configuration. As required, the method shall process each known configuration parameter and
+     * set a local variable for local parameters, and update the remote device for remote parameters.
+     * The currentConfiguration shall be updated.
      *
-     * @param configuration map of configuration parameters
-     * @return a map of updated configuration parameters
+     * @param currentConfiguration the current {@link Configuration}
+     * @param updatedParameters a map containing the updated configuration parameters to be set
      */
-    public Map<String, Object> handleConfigurationUpdate(Map<String, Object> configuration) {
-        Map<String, Object> updatedConfiguration = new HashMap<>();
+    public void updateConfiguration(@NonNull Configuration currentConfiguration,
+            Map<String, Object> updatedParameters) {
 
-        for (Entry<String, Object> configurationParameter : configuration.entrySet()) {
+        for (Entry<String, Object> configurationParameter : updatedParameters.entrySet()) {
+            // Ignore any configuration parameters that have not changed
+            if (Objects.equals(configurationParameter.getValue(),
+                    currentConfiguration.get(configurationParameter.getKey()))) {
+                logger.debug("Configuration update: Ignored {} as no change", configurationParameter.getKey());
+                continue;
+            }
+
             // Since there is no ability to parameterise configuration parameters from
             // the device perspective, we need to embed the properties into the key
             // eg. attribute_02_in_0406_0030_18 = endpoint_direction_cluster_attribute_datatype
@@ -68,12 +79,10 @@ public class ZigBeeDeviceConfigHandler {
                     int dataTypeId = Integer.parseInt(cfg[5], 16);
                     updateAttribute(endpointId, direction, clusterId, attributeId, dataTypeId,
                             configurationParameter.getValue());
-                    updatedConfiguration.put(configurationParameter.getKey(), configurationParameter.getValue());
+                    currentConfiguration.put(configurationParameter.getKey(), configurationParameter.getValue());
                     break;
             }
         }
-
-        return updatedConfiguration;
     }
 
     /**

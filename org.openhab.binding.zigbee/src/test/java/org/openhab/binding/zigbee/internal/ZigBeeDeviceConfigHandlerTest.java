@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.eclipse.smarthome.config.core.Configuration;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
@@ -37,9 +38,9 @@ public class ZigBeeDeviceConfigHandlerTest {
         ZclCluster clusterIn = Mockito.mock(ZclCluster.class);
         ZclCluster clusterOut = Mockito.mock(ZclCluster.class);
 
-        Mockito.when(node.getEndpoint(Mockito.anyInt())).thenReturn(endpoint);
-        Mockito.when(endpoint.getInputCluster(Mockito.anyInt())).thenReturn(clusterIn);
-        Mockito.when(endpoint.getOutputCluster(Mockito.anyInt())).thenReturn(clusterOut);
+        Mockito.when(node.getEndpoint(ArgumentMatchers.anyInt())).thenReturn(endpoint);
+        Mockito.when(endpoint.getInputCluster(ArgumentMatchers.anyInt())).thenReturn(clusterIn);
+        Mockito.when(endpoint.getOutputCluster(ArgumentMatchers.anyInt())).thenReturn(clusterOut);
 
         ArgumentCaptor<Integer> attributeCapture = ArgumentCaptor.forClass(Integer.class);
         ArgumentCaptor<ZclDataType> dataTypeCapture = ArgumentCaptor.forClass(ZclDataType.class);
@@ -55,9 +56,10 @@ public class ZigBeeDeviceConfigHandlerTest {
         Map<String, Object> configuration = new TreeMap<>();
         configuration.put("attribute_02_in_0404_0030_18", Integer.valueOf(1));
         configuration.put("attribute_02_out_0406_0032_29", Integer.valueOf(2));
-        Map<String, Object> updatedConfig = configHandler.handleConfigurationUpdate(configuration);
+        Configuration updatedConfig = new Configuration();
+        configHandler.updateConfiguration(updatedConfig, configuration);
 
-        assertEquals(2, updatedConfig.size());
+        assertEquals(2, updatedConfig.getProperties().size());
 
         assertEquals(2, attributeCapture.getAllValues().size());
 

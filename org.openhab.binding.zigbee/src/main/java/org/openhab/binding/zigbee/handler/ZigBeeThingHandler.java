@@ -9,6 +9,7 @@
 package org.openhab.binding.zigbee.handler;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.config.core.ConfigDescription;
+import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
 import org.eclipse.smarthome.config.core.ConfigDescriptionProvider;
 import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.thing.Channel;
@@ -54,6 +57,8 @@ import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
 import org.openhab.binding.zigbee.internal.ZigBeeDeviceConfigHandler;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeChannelConverterFactory;
+import org.openhab.binding.zigbee.internal.converter.config.ZclClusterConfigFactory;
+import org.openhab.binding.zigbee.internal.converter.config.ZclClusterConfigHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,6 +99,16 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     private final Map<ChannelUID, ZigBeeBaseChannelConverter> channels = new HashMap<>();
 
     /**
+     * A list of all the configuration handlers at node level.
+     */
+    private final List<ZclClusterConfigHandler> configHandlers = new ArrayList<>();
+
+    /**
+     * The configuration description if dynamically generated
+     */
+    private ConfigDescription configDescription;
+
+    /**
      * The {@link IeeeAddress} for this device
      */
     private IeeeAddress nodeIeeeAddress = null;
@@ -120,11 +135,17 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     /**
      * The factory to create the converters for the different channels.
      */
-    private final ZigBeeChannelConverterFactory factory;
+    private final ZigBeeChannelConverterFactory channelFactory;
 
-    public ZigBeeThingHandler(Thing zigbeeDevice, ZigBeeChannelConverterFactory factory) {
+    /**
+     * Creates a ZigBee thing.
+     *
+     * @param zigbeeDevice the {@link Thing}
+     * @param channelFactory the {@link ZigBeeChannelConverterFactory} to be used to create the channels
+     */
+    public ZigBeeThingHandler(Thing zigbeeDevice, ZigBeeChannelConverterFactory channelFactory) {
         super(zigbeeDevice);
-        this.factory = factory;
+        this.channelFactory = channelFactory;
     }
 
     @Override
@@ -213,6 +234,13 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         // Clear the channels in case we are reinitialising
         channels.clear();
 
+        // Get the configuration handlers applicable for the thing
+        ZclClusterConfigFactory configFactory = new ZclClusterConfigFactory();
+        for (ZigBeeEndpoint endpoint : coordinatorHandler.getNodeEndpoints(nodeIeeeAddress)) {
+            List<ZclClusterConfigHandler> handlers = configFactory.getConfigHandlers(endpoint);
+            configHandlers.addAll(handlers);
+        }
+
         List<Channel> nodeChannels;
 
         if (getThing().getThingTypeUID().equals(ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE)) {
@@ -221,9 +249,21 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             nodeChannels = new ArrayList<>();
             for (ZigBeeEndpoint endpoint : coordinatorHandler.getNodeEndpoints(nodeIeeeAddress)) {
                 logger.debug("{}: Checking endpoint {} channels", nodeIeeeAddress, endpoint.getEndpointId());
-                nodeChannels.addAll(factory.getChannels(getThing().getUID(), endpoint));
+                nodeChannels.addAll(channelFactory.getChannels(getThing().getUID(), endpoint));
             }
             logger.debug("{}: Dynamically created {} channels", nodeIeeeAddress, nodeChannels.size());
+
+            try {
+                List<ConfigDescriptionParameter> parameters = new ArrayList<ConfigDescriptionParameter>();
+
+                for (ZclClusterConfigHandler handler : configHandlers) {
+                    parameters.addAll(handler.getConfiguration());
+                }
+
+                configDescription = new ConfigDescription(new URI("thing:" + getThing().getUID()), parameters);
+            } catch (IllegalArgumentException | URISyntaxException e) {
+                logger.debug("Error creating URI for thing description:", e);
+            }
         } else {
             // We already have the correct thing type so just use the channels
             nodeChannels = getThing().getChannels();
@@ -307,7 +347,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 // Process the channel properties
                 Map<String, String> properties = channel.getProperties();
 
-                ZigBeeBaseChannelConverter handler = factory.createConverter(this, channel, coordinatorHandler,
+                ZigBeeBaseChannelConverter handler = channelFactory.createConverter(this, channel, coordinatorHandler,
                         node.getIeeeAddress(),
                         Integer.parseInt(properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_ENDPOINT)));
                 if (handler == null) {
@@ -324,7 +364,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 handler.handleRefresh();
 
                 // TODO: Update the channel configuration from the device if method available
-                handler.updateConfiguration(channel.getConfiguration());
+                handler.updateConfiguration(new Configuration(), channel.getConfiguration().getProperties());
 
                 channels.put(channel.getUID(), handler);
 
@@ -500,6 +540,13 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         Configuration configuration = editConfiguration();
         for (Entry<String, Object> configurationParameter : configurationParameters.entrySet()) {
+            // Ignore any configuration parameters that have not changed
+            if (Objects.equals(configurationParameter.getValue(), configuration.get(configurationParameter.getKey()))) {
+                logger.debug("{}: Configuration update: Ignored {} as no change", nodeIeeeAddress,
+                        configurationParameter.getKey());
+                continue;
+            }
+
             switch (configurationParameter.getKey()) {
                 case ZigBeeBindingConstants.CONFIGURATION_JOINENABLE:
                     coordinatorHandler.permitJoin(nodeIeeeAddress, 60);
@@ -507,14 +554,19 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 case ZigBeeBindingConstants.CONFIGURATION_LEAVE:
                     coordinatorHandler.leave(nodeIeeeAddress);
                     break;
+                default:
+                    break;
             }
+        }
+
+        for (ZclClusterConfigHandler handler : configHandlers) {
+            handler.updateConfiguration(configuration, configurationParameters);
         }
 
         ZigBeeNode node = coordinatorHandler.getNode(nodeIeeeAddress);
         ZigBeeDeviceConfigHandler deviceConfigHandler = new ZigBeeDeviceConfigHandler(node);
-        Map<String, Object> updatedParameters = deviceConfigHandler.handleConfigurationUpdate(configurationParameters);
+        deviceConfigHandler.updateConfiguration(configuration, configurationParameters);
 
-        configuration.setProperties(updatedParameters);
         // Persist changes
         updateConfiguration(configuration);
     }
@@ -696,6 +748,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     @Override
     public ConfigDescription getConfigDescription(URI uri, Locale locale) {
+        if (configDescription != null && configDescription.getUID().equals(uri)) {
+            return configDescription;
+        }
+
         if ("channel".equals(uri.getScheme()) == false) {
             return null;
         }
