@@ -359,8 +359,12 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 }
 
                 logger.debug("{}: Initializing channel {} with {}", nodeIeeeAddress, channel.getUID(), handler);
+                if (handler.initializeDevice() == false) {
+                    logger.info("{}: Channel {} failed to initialise device", nodeIeeeAddress, channel.getUID());
+                    continue;
+                }
                 if (handler.initializeConverter() == false) {
-                    logger.info("{}: Channel {} failed to initialise", nodeIeeeAddress, channel.getUID());
+                    logger.info("{}: Channel {} failed to initialise converter", nodeIeeeAddress, channel.getUID());
                     continue;
                 }
 
