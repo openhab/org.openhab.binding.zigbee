@@ -84,6 +84,25 @@
 					<option value="0">Normal</option>
 				</options>
 			</parameter>
+			
+            <parameter name="zigbee_childtimeout" type="integer" groupName="ember">
+                <label>Child Aging Timeout</label>
+                <description>Sets the period over which the coordinator will age children. Children who have not checked in within this period will be removed from the child table may be asked to rejoin the network. Note that setting this value too high may prevent new devices joining the network.</description>
+                <default>86400</default>
+                <options>
+                    <option value="320">5 Minutes</option>
+                    <option value="1800">30 Minutes</option>
+                    <option value="7200">2 Hours</option>
+                    <option value="43200">12 Hours</option>
+                    <option value="86400">1 Day</option>
+                    <option value="172800">2 Days</option>
+                    <option value="432000">5 Days</option>
+                    <option value="864000">10 Days</option>
+                    <option value="1209600">2 Weeks</option>
+                    <option value="2419200">4 Weeks</option>
+                    <option value="4233600">7 Weeks</option>
+                </options>
+            </parameter>
 
 			<parameter name="zigbee_initialise" type="boolean" groupName="network">
 				<label>Reset Controller</label>
