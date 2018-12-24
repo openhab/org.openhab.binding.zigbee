@@ -5,5 +5,6 @@ bitron-video-902010-23,vendor=Bitron Home,modelId=902010/23
 bitron-video-av2010-34,vendor=Bitron Video,modelId=AV2010/34
 xiaomi_lumisensorht,modelId=lumi.sensor_ht
 xiaomi_lumisensor-motion,modelId=lumi.sensor_motion
+xiaomi_lumiremoteb286acn01,modelId=lumi.remote.b286acn01
 innr-rc-110,vendor=innr,modelId=RC 110
 osram-switch-4x-eu,vendor=OSRAM,modelId=Switch 4x EU-LIGHTIFY
