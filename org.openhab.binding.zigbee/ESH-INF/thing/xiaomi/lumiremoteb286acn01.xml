@@ -41,6 +41,16 @@
 					<property name="zigbee_doublepress_attribute_value">2</property>
 				</properties>
 			</channel>
+
+			<channel id="range-check" typeId="system.button">
+				<label>Range Check</label>
+				<properties>
+					<property name="zigbee_endpoint">1</property>
+					<property name="zigbee_shortpress_cluster_id">0x00</property>
+					<property name="zigbee_shortpress_attribute_id">5</property>
+					<property name="zigbee_shortpress_attribute_value">lumi.remote.b286acn01</property>
+				</properties>
+			</channel>
 		</channels>
 
 		<properties>
