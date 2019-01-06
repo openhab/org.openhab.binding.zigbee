@@ -189,6 +189,7 @@ public class ZigBeeBindingConstants {
     public static final String CONFIGURATION_TRUSTCENTREMODE = "zigbee_trustcentremode";
     public static final String CONFIGURATION_POWERMODE = "zigbee_powermode";
     public static final String CONFIGURATION_TXPOWER = "zigbee_txpower";
+    public static final String CONFIGURATION_MESHUPDATEPERIOD = "zigbee_meshupdateperiod";
 
     public static final String CONFIGURATION_MACADDRESS = "zigbee_macaddress";
     public static final String CONFIGURATION_JOINENABLE = "zigbee_joinenable";
