@@ -97,6 +97,21 @@
                 <advanced>true</advanced>
             </parameter>
 
+            <parameter name="zigbee_meshupdateperiod" type="integer" groupName="network">
+                <label>Mesh Update Period</label>
+                <description>The period between subsequent updates of the mesh topology</description>
+                <advanced>true</advanced>
+                <default>86400</default>
+                <options>
+                    <option value="0">Never</option>
+                    <option value="300">5 Minutes</option>
+                    <option value="1800">30 Minutes</option>
+                    <option value="3600">1 Hour</option>
+                    <option value="21600">6 Hours</option>
+                    <option value="86400">1 Day</option>
+                    <option value="604800">1 Week</option>
+                </options>
+            </parameter>
 		</config-description>
 
 	</bridge-type>

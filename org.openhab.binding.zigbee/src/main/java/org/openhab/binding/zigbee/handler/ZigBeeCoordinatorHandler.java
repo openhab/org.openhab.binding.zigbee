@@ -109,7 +109,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     private boolean macAddressSet = false;
 
-    private final int MESH_UPDATE_TIME = 300;
+    private final int MESH_UPDATE_PERIOD = 86400;
 
     /**
      * Set to true on startup if we want to reinitialize the network
@@ -373,9 +373,15 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         networkManager.addNetworkStateListener(this);
         networkManager.addNetworkNodeListener(this);
 
+        int meshUpdateTime = MESH_UPDATE_PERIOD;
+        if (getConfig().get(CONFIGURATION_MESHUPDATEPERIOD) != null) {
+            logger.debug("Mesh Update Period {}", getConfig().get(CONFIGURATION_MESHUPDATEPERIOD));
+            meshUpdateTime = ((BigDecimal) getConfig().get(CONFIGURATION_MESHUPDATEPERIOD)).intValue();
+        }
+
         // Add the extensions to the network
         ZigBeeDiscoveryExtension discoveryExtension = new ZigBeeDiscoveryExtension();
-        discoveryExtension.setUpdatePeriod(MESH_UPDATE_TIME);
+        discoveryExtension.setUpdatePeriod(meshUpdateTime);
         networkManager.addExtension(discoveryExtension);
 
         networkManager.addExtension(new ZigBeeIasCieExtension());
