@@ -173,6 +173,11 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
                 endpoint.getEndpointId());
         if (attribute.getCluster() == ZclClusterType.COLOR_CONTROL
                 && attribute.getId() == ZclColorControlCluster.ATTR_COLORTEMPERATURE) {
+
+            if (!isCurrentColorModeTemperature()) {
+                return;
+            }
+
             Integer temperatureInMired = (Integer) attribute.getLastValue();
 
             PercentType percent = miredToPercent(temperatureInMired);
@@ -183,6 +188,12 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
                 && attribute.getId() == ZclColorControlCluster.ATTR_COLORMODE) {
             Integer colorMode = (Integer) attribute.getLastValue();
             if (ColorModeEnum.COLORTEMPERATURE.getKey() != colorMode) {
+                updateChannelState(UnDefType.UNDEF);
+            }
+        } else if (attribute.getCluster() == ZclClusterType.COLOR_CONTROL
+                && attribute.getId() == ZclColorControlCluster.ATTR_COLORMODE) {
+            Integer colorMode = (Integer) attribute.getLastValue();
+            if (ColorModeEnum.getByValue(colorMode) != ColorModeEnum.COLORTEMPERATURE) {
                 updateChannelState(UnDefType.UNDEF);
             }
         }
@@ -238,6 +249,12 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             return null;
         }
         return kelvinToPercent(miredToKelvin(temperatureInMired));
+    }
+
+    private boolean isCurrentColorModeTemperature() {
+        ZclAttribute colorModeAttribute = clusterColorControl.getAttribute(ZclColorControlCluster.ATTR_COLORMODE);
+        Integer colorMode = (Integer) colorModeAttribute.getLastValue();
+        return ColorModeEnum.COLORTEMPERATURE == ColorModeEnum.getByValue(colorMode);
     }
 
 }
