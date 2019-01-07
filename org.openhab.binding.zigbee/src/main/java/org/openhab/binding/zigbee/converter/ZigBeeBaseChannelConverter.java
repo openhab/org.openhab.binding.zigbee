@@ -47,13 +47,18 @@ import com.zsmartsystems.zigbee.zcl.ZclCluster;
  * required features are available. If so, it should return the channel. This method allows dynamic channel detection
  * for unknown devices and may not be called if a device is defined through another mechanism.
  * <li>The thing handler will call the
- * {@link ZigBeeBaseChannelConverter#initialize(ZigBeeThingHandler, Channel, ZigBeeCoordinatorHandler, IeeeAddress, int)}
- * to initialise the
- * channel converter. The converter should get any clusters via the
- * {@link ZigBeeCoordinatorHandler#getEndpoint(IeeeAddress, int)} and {@link ZigBeeEndpoint#getInputCluster(int)} or
- * {@link ZigBeeEndpoint#getOutputCluster(int)}. It should configure the binding by calling {@link ZclCluster#bind()}
- * and configure reporting for attributes that are required to maintain state. It should configure any listeners for
- * Attribute changes or incoming commands. During the initialisation, the converter should populate
+ * {@link #initialize(ZigBeeThingHandler, Channel, ZigBeeCoordinatorHandler, IeeeAddress, int)} to initialise the
+ * channel
+ * converter. This simply links the converter to the node endpoint.
+ * <li>The thing handler will call {@link #initializeDevice()} to initialise the device. This method may not be called
+ * every time the converter is created, and may only be called when the device is first installed on the network, or
+ * when the device needs to be reconfigured. It should configure the binding by calling {@link ZclCluster#bind()} and
+ * configure reporting for attributes that are required to maintain state, along with any other one time device/channel
+ * specific configuration that may be required.
+ * <li>The thing handler will call {@link #initializeConverter()} to initialise the converter. The converter should get
+ * any clusters via the {@link ZigBeeCoordinatorHandler#getEndpoint(IeeeAddress, int)} and
+ * {@link ZigBeeEndpoint#getInputCluster(int)} or {@link ZigBeeEndpoint#getOutputCluster(int)}. It should configure any
+ * listeners for Attribute changes or incoming commands. During the initialisation, the converter should populate
  * {@link #configOptions} with any configuration options that the device supports that may need to be adjusted by the
  * user.
  * <li>If the converter receives information from the ZigBee library that updates the channel state, it should update
@@ -80,7 +85,7 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * Our logger
      */
-    private Logger logger = LoggerFactory.getLogger(ZigBeeBaseChannelConverter.class);
+    private final Logger logger = LoggerFactory.getLogger(ZigBeeBaseChannelConverter.class);
 
     /**
      * Default minimum reporting period. Should be short to ensure we get dynamic state changes in a reasonable time
@@ -141,10 +146,8 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * The polling period used for this channel in seconds. Normally this should be left at the default
      * ({@link ZigBeeBaseChannelConverter#POLLING_PERIOD_DEFAULT}), however if the channel does not support reporting,
-     * it can be set to a higher
-     * period such as {@link ZigBeeBaseChannelConverter#POLLING_PERIOD_HIGH}. Any period may be used, however it is
-     * recommended to use these
-     * standard settings.
+     * it can be set to a higher period such as {@link ZigBeeBaseChannelConverter#POLLING_PERIOD_HIGH}. Any period may
+     * be used, however it is recommended to use these standard settings.
      */
     protected int pollingPeriod = POLLING_PERIOD_DEFAULT;
 
@@ -157,7 +160,7 @@ public abstract class ZigBeeBaseChannelConverter {
     }
 
     /**
-     * Creates the converter handler
+     * Creates the converter handler.
      *
      * @param thing the {@link ZigBeeThingHandler} the channel is part of
      * @param channel the {@link Channel} for the channel
@@ -178,12 +181,25 @@ public abstract class ZigBeeBaseChannelConverter {
     }
 
     /**
-     * Initialise the converter. This is called by the {@link ZigBeeThingHandler} when the channel is created. The
-     * converter should initialise any internal states, open any clusters, add reporting and binding that it needs to
-     * operate.
+     * Configures the device. This method should perform the one off device configuration such as performing the bind
+     * and reporting configuration.
      * <p>
      * The binding should initialise reporting using one of the {@link ZclCluster#setReporting} commands. If this fails,
      * the {@link #pollingPeriod} variable should be set to {@link #POLLING_PERIOD_HIGH}.
+     * <p>
+     * Note that this method should be self contained, and may not make any assumptions about the initialisation of any
+     * internal fields of the converter other than those initialised in the {@link #initialize} method.
+     *
+     * @return true if the device was configured correctly
+     */
+    public boolean initializeDevice() {
+        return true;
+    }
+
+    /**
+     * Initialise the converter. This is called by the {@link ZigBeeThingHandler} when the channel is created. The
+     * converter should initialise any internal states, open any clusters, add reporting and binding that it needs to
+     * operate.
      * <p>
      * A list of configuration parameters for the thing should be built and added to {@link #configOptions} based on the
      * features the device supports.
