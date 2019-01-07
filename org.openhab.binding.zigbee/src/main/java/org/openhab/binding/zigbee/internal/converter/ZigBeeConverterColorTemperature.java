@@ -45,6 +45,8 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
     private double kelvinMax;
     private double kelvinRange;
 
+    private ColorModeEnum lastColorMode;
+
     // Default range of 2000K to 6500K
     private final Integer DEFAULT_MIN_TEMPERATURE_IN_KELVIN = 2000;
     private final Integer DEFAULT_MAX_TEMPERATURE_IN_KELVIN = 6500;
@@ -174,26 +176,19 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
         if (attribute.getCluster() == ZclClusterType.COLOR_CONTROL
                 && attribute.getId() == ZclColorControlCluster.ATTR_COLORTEMPERATURE) {
 
-            if (!isCurrentColorModeTemperature()) {
-                return;
-            }
+            if (lastColorMode == null || lastColorMode == ColorModeEnum.COLORTEMPERATURE) {
+                Integer temperatureInMired = (Integer) attribute.getLastValue();
 
-            Integer temperatureInMired = (Integer) attribute.getLastValue();
-
-            PercentType percent = miredToPercent(temperatureInMired);
-            if (percent != null) {
-                updateChannelState(percent);
+                PercentType percent = miredToPercent(temperatureInMired);
+                if (percent != null) {
+                    updateChannelState(percent);
+                }
             }
         } else if (attribute.getCluster() == ZclClusterType.COLOR_CONTROL
                 && attribute.getId() == ZclColorControlCluster.ATTR_COLORMODE) {
             Integer colorMode = (Integer) attribute.getLastValue();
-            if (ColorModeEnum.COLORTEMPERATURE.getKey() != colorMode) {
-                updateChannelState(UnDefType.UNDEF);
-            }
-        } else if (attribute.getCluster() == ZclClusterType.COLOR_CONTROL
-                && attribute.getId() == ZclColorControlCluster.ATTR_COLORMODE) {
-            Integer colorMode = (Integer) attribute.getLastValue();
-            if (ColorModeEnum.getByValue(colorMode) != ColorModeEnum.COLORTEMPERATURE) {
+            lastColorMode = ColorModeEnum.getByValue(colorMode);
+            if (lastColorMode != ColorModeEnum.COLORTEMPERATURE) {
                 updateChannelState(UnDefType.UNDEF);
             }
         }
@@ -249,12 +244,6 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             return null;
         }
         return kelvinToPercent(miredToKelvin(temperatureInMired));
-    }
-
-    private boolean isCurrentColorModeTemperature() {
-        ZclAttribute colorModeAttribute = clusterColorControl.getAttribute(ZclColorControlCluster.ATTR_COLORMODE);
-        Integer colorMode = (Integer) colorModeAttribute.getLastValue();
-        return ColorModeEnum.COLORTEMPERATURE == ColorModeEnum.getByValue(colorMode);
     }
 
 }

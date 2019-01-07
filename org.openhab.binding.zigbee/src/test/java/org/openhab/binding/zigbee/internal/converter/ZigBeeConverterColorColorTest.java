@@ -16,6 +16,7 @@ import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.types.State;
+import org.eclipse.smarthome.core.types.UnDefType;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
@@ -26,6 +27,7 @@ import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
+import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorModeEnum;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclDataType;
 
@@ -102,4 +104,79 @@ public class ZigBeeConverterColorColorTest {
                 stateCapture.capture());
         assertEquals(new HSBType("0,0,20"), stateCapture.getValue());
     }
+
+    @Test
+    public void testAttributeNotUpdatedWhenColorModeIsColorTemperature() {
+        ZigBeeEndpoint endpoint = Mockito.mock(ZigBeeEndpoint.class);
+        ZigBeeCoordinatorHandler coordinatorHandler = Mockito.mock(ZigBeeCoordinatorHandler.class);
+        Mockito.when(coordinatorHandler.getEndpoint(ArgumentMatchers.any(IeeeAddress.class), ArgumentMatchers.anyInt()))
+                .thenReturn(endpoint);
+
+        ZigBeeConverterColorColor converter = new ZigBeeConverterColorColor();
+        ArgumentCaptor<ChannelUID> channelCapture = ArgumentCaptor.forClass(ChannelUID.class);
+        ArgumentCaptor<State> stateCapture = ArgumentCaptor.forClass(State.class);
+        ZigBeeThingHandler thingHandler = Mockito.mock(ZigBeeThingHandler.class);
+        Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
+        converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
+
+        ZclAttribute colorModeAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 8, "ColorMode",
+                ZclDataType.ENUMERATION_8_BIT, false, false, false, false);
+        ZclAttribute onAttribute = new ZclAttribute(ZclClusterType.ON_OFF, 0, "OnOff", ZclDataType.BOOLEAN, false,
+                false, false, false);
+        ZclAttribute levelAttribute = new ZclAttribute(ZclClusterType.LEVEL_CONTROL, 0, "Level", ZclDataType.BOOLEAN,
+                false, false, false, false);
+        ZclAttribute currentHueAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 0, "CurrentHue",
+                ZclDataType.UNSIGNED_8_BIT_INTEGER, false, false, false, false);
+        ZclAttribute currentSaturationAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 1, "CurrentSaturation",
+                ZclDataType.UNSIGNED_8_BIT_INTEGER, false, false, false, false);
+        ZclAttribute currentXAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 3, "CurrentX",
+                ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, false, false);
+        ZclAttribute currentYAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 4, "CurrentY",
+                ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, false, false);
+
+        // Update the color mode to COLOR_TEMPERATURE and ensure that the state is set to UNDEF
+        colorModeAttribute.updateValue(ColorModeEnum.COLORTEMPERATURE.getKey());
+        converter.attributeUpdated(colorModeAttribute);
+        Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+        assertEquals(UnDefType.UNDEF, stateCapture.getValue());
+
+        // Turn ON and ensure that the channel is not set
+        onAttribute.updateValue(new Boolean(true));
+        converter.attributeUpdated(onAttribute);
+        Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+
+        // Set the level and ensure that the channel is not set
+        levelAttribute.updateValue(new Integer(50));
+        converter.attributeUpdated(levelAttribute);
+        Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+
+        // Set the hue and ensure that the channel is not set
+        currentHueAttribute.updateValue(new Integer(10));
+        converter.attributeUpdated(currentHueAttribute);
+        Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+
+        // Set the saturation and ensure that the channel is not set
+        currentSaturationAttribute.updateValue(new Integer(10));
+        converter.attributeUpdated(currentSaturationAttribute);
+        Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+
+        // Set the currentX and ensure that the channel is not set
+        currentXAttribute.updateValue(new Integer(10));
+        converter.attributeUpdated(currentXAttribute);
+        Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+
+        // Set the level and ensure that the channel is not set
+        currentYAttribute.updateValue(new Integer(10));
+        converter.attributeUpdated(currentYAttribute);
+        Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+
+    }
+
 }

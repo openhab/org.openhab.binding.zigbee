@@ -77,6 +77,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     private boolean xChanged = false;
     private boolean yChanged = false;
 
+    private ColorModeEnum lastColorMode;
+
     private final AtomicBoolean currentState = new AtomicBoolean(true);
 
     private ZclLevelControlConfig configLevelControl;
@@ -427,7 +429,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         HSBType newHSB = new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), brightness);
         currentHSB = newHSB;
         lastBrightness = brightness;
-        if (currentState.get() && !isCurrentColorModeTemperature()) {
+        if (currentState.get() && lastColorMode != ColorModeEnum.COLORTEMPERATURE) {
             updateChannelState(newHSB);
         }
     }
@@ -437,7 +439,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         HSBType oldHSB = currentHSB;
         HSBType newHSB = new HSBType(hue, saturation, oldHSB.getBrightness());
         currentHSB = newHSB;
-        if (currentState.get() && !isCurrentColorModeTemperature()) {
+        if (currentState.get() && lastColorMode != ColorModeEnum.COLORTEMPERATURE) {
             updateChannelState(newHSB);
         }
     }
@@ -463,12 +465,6 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         updateColorXY(x, y);
         xChanged = false;
         yChanged = false;
-    }
-
-    private boolean isCurrentColorModeTemperature() {
-        ZclAttribute colorModeAttribute = clusterColorControl.getAttribute(ZclColorControlCluster.ATTR_COLORMODE);
-        Integer colorMode = (Integer) colorModeAttribute.getLastValue();
-        return ColorModeEnum.COLORTEMPERATURE == ColorModeEnum.getByValue(colorMode);
     }
 
     @Override
@@ -525,7 +521,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                         }
                     } else if (attribute.getId() == ZclColorControlCluster.ATTR_COLORMODE) {
                         Integer colorMode = (Integer) attribute.getLastValue();
-                        if (ColorModeEnum.getByValue(colorMode) == ColorModeEnum.COLORTEMPERATURE) {
+                        lastColorMode = ColorModeEnum.getByValue(colorMode);
+                        if (lastColorMode == ColorModeEnum.COLORTEMPERATURE) {
                             updateChannelState(UnDefType.UNDEF);
                         }
                     }
