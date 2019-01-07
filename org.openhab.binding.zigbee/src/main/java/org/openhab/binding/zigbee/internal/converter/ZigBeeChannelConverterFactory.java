@@ -47,7 +47,7 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
  */
 @Component(immediate = true, service = ZigBeeChannelConverterFactory.class)
 public final class ZigBeeChannelConverterFactory {
-    private Logger logger = LoggerFactory.getLogger(ZigBeeChannelConverterFactory.class);
+    private final Logger logger = LoggerFactory.getLogger(ZigBeeChannelConverterFactory.class);
 
     /**
      * Map of all channels supported by the binding
@@ -117,11 +117,11 @@ public final class ZigBeeChannelConverterFactory {
     /**
      * Creates a channel converter for the requested {@link ChannelTypeUID}
      *
-     * @param thingHandler       the {@link ZigBeeThingHandler} for this channel
-     * @param channel            the {@link Channel} to create the converter for
+     * @param thingHandler the {@link ZigBeeThingHandler} for this channel
+     * @param channel the {@link Channel} to create the converter for
      * @param coordinatorHandler the {@link ZigBeeCoordinatorHandler}
-     * @param ieeeAddress        the {@link IeeeAddress} of the device
-     * @param endpointId         the endpoint ID for this channel on the device
+     * @param ieeeAddress the {@link IeeeAddress} of the device
+     * @param endpointId the endpoint ID for this channel on the device
      * @return the {@link ZigBeeBaseChannelConverter} or null if the channel is not supported
      */
     public ZigBeeBaseChannelConverter createConverter(ZigBeeThingHandler thingHandler, Channel channel,
