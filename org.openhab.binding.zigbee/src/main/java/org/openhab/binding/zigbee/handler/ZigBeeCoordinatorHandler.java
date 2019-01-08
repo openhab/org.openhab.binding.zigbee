@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.ExtendedPanId;
 import com.zsmartsystems.zigbee.IeeeAddress;
+import com.zsmartsystems.zigbee.ZigBeeAnnounceListener;
 import com.zsmartsystems.zigbee.ZigBeeChannel;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeEndpointAddress;
@@ -105,11 +106,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     private TransportConfig transportConfig;
 
-    private final Set<ZigBeeNetworkNodeListener> listeners = new HashSet<>();
+    private final Set<ZigBeeNetworkNodeListener> nodeListeners = new HashSet<>();
+    private final Set<ZigBeeAnnounceListener> announceListeners = new HashSet<>();
 
     private boolean macAddressSet = false;
 
-    private final int MESH_UPDATE_TIME = 300;
+    private final int MESH_UPDATE_PERIOD = 86400;
 
     /**
      * Set to true on startup if we want to reinitialize the network
@@ -308,9 +310,14 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         }
 
         if (networkManager != null) {
-            synchronized (listeners) {
-                for (ZigBeeNetworkNodeListener listener : listeners) {
+            synchronized (nodeListeners) {
+                for (ZigBeeNetworkNodeListener listener : nodeListeners) {
                     networkManager.removeNetworkNodeListener(listener);
+                }
+            }
+            synchronized (announceListeners) {
+                for (ZigBeeAnnounceListener listener : announceListeners) {
+                    networkManager.removeAnnounceListener(listener);
                 }
             }
 
@@ -383,18 +390,29 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         networkManager.addNetworkStateListener(this);
         networkManager.addNetworkNodeListener(this);
 
+        int meshUpdateTime = MESH_UPDATE_PERIOD;
+        if (getConfig().get(CONFIGURATION_MESHUPDATEPERIOD) != null) {
+            logger.debug("Mesh Update Period {}", getConfig().get(CONFIGURATION_MESHUPDATEPERIOD));
+            meshUpdateTime = ((BigDecimal) getConfig().get(CONFIGURATION_MESHUPDATEPERIOD)).intValue();
+        }
+
         // Add the extensions to the network
         ZigBeeDiscoveryExtension discoveryExtension = new ZigBeeDiscoveryExtension();
-        discoveryExtension.setUpdatePeriod(MESH_UPDATE_TIME);
+        discoveryExtension.setUpdatePeriod(meshUpdateTime);
         networkManager.addExtension(discoveryExtension);
 
         networkManager.addExtension(new ZigBeeIasCieExtension());
         networkManager.addExtension(new ZigBeeOtaUpgradeExtension());
 
         // Add any listeners that were registered before the manager was registered
-        synchronized (listeners) {
-            for (ZigBeeNetworkNodeListener listener : listeners) {
+        synchronized (nodeListeners) {
+            for (ZigBeeNetworkNodeListener listener : nodeListeners) {
                 networkManager.addNetworkNodeListener(listener);
+            }
+        }
+        synchronized (announceListeners) {
+            for (ZigBeeAnnounceListener listener : announceListeners) {
+                networkManager.addAnnounceListener(listener);
             }
         }
 
@@ -640,12 +658,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     /**
      * Adds a {@link ZigBeeNetworkNodeListener} to receive updates on node status
      *
-     * @param listener
+     * @param listener the {@link ZigBeeNetworkNodeListener} to add
      */
     public void addNetworkNodeListener(ZigBeeNetworkNodeListener listener) {
         // Save the listeners until the network is initialised
-        synchronized (listeners) {
-            listeners.add(listener);
+        synchronized (nodeListeners) {
+            nodeListeners.add(listener);
         }
 
         if (networkManager == null) {
@@ -657,17 +675,50 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     /**
      * Removes a {@link ZigBeeNetworkNodeListener} to receive updates on node status
      *
-     * @param listener
+     * @param listener the {@link ZigBeeNetworkNodeListener} to remove
      */
     public void removeNetworkNodeListener(ZigBeeNetworkNodeListener listener) {
-        synchronized (listeners) {
-            listeners.remove(listener);
+        synchronized (nodeListeners) {
+            nodeListeners.remove(listener);
         }
 
         if (networkManager == null) {
             return;
         }
         networkManager.removeNetworkNodeListener(listener);
+    }
+
+    /**
+     * Adds a {@link ZigBeeAnnounceListener} to receive node announce messages
+     *
+     * @param listener the {@link ZigBeeAnnounceListener} to add
+     */
+    public void addAnnounceListener(ZigBeeAnnounceListener listener) {
+        // Save the listeners until the network is initialised
+        synchronized (announceListeners) {
+            announceListeners.add(listener);
+        }
+
+        if (networkManager == null) {
+            return;
+        }
+        networkManager.addAnnounceListener(listener);
+    }
+
+    /**
+     * Removes a {@link ZigBeeAnnounceListener}
+     *
+     * @param listener the {@link ZigBeeAnnounceListener} to remove
+     */
+    public void removeAnnounceListener(ZigBeeAnnounceListener listener) {
+        synchronized (announceListeners) {
+            announceListeners.remove(listener);
+        }
+
+        if (networkManager == null) {
+            return;
+        }
+        networkManager.removeAnnounceListener(listener);
     }
 
     @Override

@@ -63,9 +63,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.IeeeAddress;
+import com.zsmartsystems.zigbee.ZigBeeAnnounceListener;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
+import com.zsmartsystems.zigbee.ZigBeeNodeStatus;
 import com.zsmartsystems.zigbee.ZigBeeProfileType;
 import com.zsmartsystems.zigbee.app.otaserver.ZclOtaUpgradeServer;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaFile;
@@ -81,8 +83,8 @@ import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
  * @author Chris Jackson - Initial Contribution
  * @author Thomas Höfer - Injected ZigBeeChannelConverterFactory via constructor
  */
-public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetworkNodeListener, FirmwareUpdateHandler,
-        ConfigDescriptionProvider, DynamicStateDescriptionProvider {
+public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetworkNodeListener, ZigBeeAnnounceListener,
+        FirmwareUpdateHandler, ConfigDescriptionProvider, DynamicStateDescriptionProvider {
     /**
      * Our logger
      */
@@ -188,6 +190,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         coordinatorHandler = (ZigBeeCoordinatorHandler) getBridge().getHandler();
         coordinatorHandler.addNetworkNodeListener(this);
+        coordinatorHandler.addAnnounceListener(this);
         coordinatorHandler.rediscoverNode(nodeIeeeAddress);
 
         initialiseZigBeeNode();
@@ -356,8 +359,12 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 }
 
                 logger.debug("{}: Initializing channel {} with {}", nodeIeeeAddress, channel.getUID(), handler);
+                if (handler.initializeDevice() == false) {
+                    logger.info("{}: Channel {} failed to initialise device", nodeIeeeAddress, channel.getUID());
+                    continue;
+                }
                 if (handler.initializeConverter() == false) {
-                    logger.info("{}: Channel {} failed to initialise", nodeIeeeAddress, channel.getUID());
+                    logger.info("{}: Channel {} failed to initialise converter", nodeIeeeAddress, channel.getUID());
                     continue;
                 }
 
@@ -436,6 +443,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         if (nodeIeeeAddress != null) {
             if (coordinatorHandler != null) {
                 coordinatorHandler.removeNetworkNodeListener(this);
+                coordinatorHandler.removeAnnounceListener(this);
             }
             nodeIeeeAddress = null;
         }
@@ -509,6 +517,17 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                     pollingPeriodMs, TimeUnit.MILLISECONDS);
             logger.debug("{}: Polling initialised at {}ms", nodeIeeeAddress, pollingPeriodMs);
         }
+    }
+
+    @Override
+    public void deviceStatusUpdate(ZigBeeNodeStatus deviceStatus, Integer networkAddress, IeeeAddress ieeeAddress) {
+        // A node has joined - or come back online
+        if (!nodeIeeeAddress.equals(ieeeAddress)) {
+            return;
+        }
+
+        // Use this to update channel information - eg bulb state will likely change when the device was powered off/on.
+        startPolling();
     }
 
     @Override

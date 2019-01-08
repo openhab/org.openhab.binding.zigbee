@@ -94,6 +94,52 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
                 Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
 
         dongle.updateDefaultConfiguration(EzspConfigId.EZSP_CONFIG_TX_POWER_MODE, config.zigbee_powermode);
+
+        // Set the child aging timeout.
+        // Formulae is EZSP_CONFIG_END_DEVICE_POLL_TIMEOUT * 2 ^ EZSP_CONFIG_END_DEVICE_POLL_TIMEOUT_SHIFT
+        int pollTimeoutValue;
+        int pollTimeoutShift;
+
+        if (config.zigbee_childtimeout <= 320) {
+            pollTimeoutValue = 5;
+            pollTimeoutShift = 6;
+        } else if (config.zigbee_childtimeout <= 1800) {
+            pollTimeoutValue = 225;
+            pollTimeoutShift = 3;
+        } else if (config.zigbee_childtimeout <= 7200) {
+            pollTimeoutValue = 225;
+            pollTimeoutShift = 5;
+        } else if (config.zigbee_childtimeout <= 43200) {
+            pollTimeoutValue = 169;
+            pollTimeoutShift = 8;
+        } else if (config.zigbee_childtimeout <= 86400) {
+            pollTimeoutValue = 169;
+            pollTimeoutShift = 9;
+        } else if (config.zigbee_childtimeout <= 172800) {
+            pollTimeoutValue = 169;
+            pollTimeoutShift = 10;
+        } else if (config.zigbee_childtimeout <= 432000) {
+            pollTimeoutValue = 211;
+            pollTimeoutShift = 11;
+        } else if (config.zigbee_childtimeout <= 864000) {
+            pollTimeoutValue = 211;
+            pollTimeoutShift = 12;
+        } else if (config.zigbee_childtimeout <= 1209600) {
+            pollTimeoutValue = 147;
+            pollTimeoutShift = 13;
+        } else if (config.zigbee_childtimeout <= 2419200) {
+            pollTimeoutValue = 147;
+            pollTimeoutShift = 14;
+        } else {
+            pollTimeoutValue = 255;
+            pollTimeoutShift = 14;
+        }
+
+        logger.debug("Ember end device poll timout set to ({} * 2^{}) = {} seconds", pollTimeoutValue, pollTimeoutShift,
+                (int) (pollTimeoutValue * Math.pow(2, pollTimeoutShift)));
+        dongle.updateDefaultConfiguration(EzspConfigId.EZSP_CONFIG_END_DEVICE_POLL_TIMEOUT, pollTimeoutValue);
+        dongle.updateDefaultConfiguration(EzspConfigId.EZSP_CONFIG_END_DEVICE_POLL_TIMEOUT_SHIFT, pollTimeoutShift);
+
         TransportConfig transportConfig = new TransportConfig();
 
         startZigBee(dongle, transportConfig, DefaultSerializer.class, DefaultDeserializer.class);
