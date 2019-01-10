@@ -46,7 +46,8 @@
                <property name="zigbee_shortpress_parameter_value">1</property>
             </properties>
          </channel>
-         <!--<channel id="dimStop" typeId="system.button">
+         <!-- This channel works but it isn't very usefull as long as long press start and short press can not be distinguished.
+          <channel id="dimStop" typeId="system.button">
             <label>Dim Buttons released</label>
             <description>Triggered when the dim up or the dim down button is released after beeing long pressed.</description>
             <properties>
@@ -55,6 +56,23 @@
                <property name="zigbee_shortpress_command_id">0x03</property>
             </properties>
           </channel>-->
+
+         <channel id="batteryLevel" typeId="system.battery-level">
+            <properties>
+               <property name="zigbee_endpoint">2</property>
+            </properties>
+         </channel>
+         <channel id="batteryVoltage" typeId="battery_voltage">
+            <properties>
+               <property name="zigbee_endpoint">2</property>
+            </properties>
+         </channel>
+         <!-- TODO find out if this is supported
+         <channel id="batteryAlarm" typeId="battery_alarm">
+            <properties>
+               <property name="zigbee_endpoint">2</property>
+            </properties>
+         </channel>-->
       </channels>
       <config-description>
          <parameter name="zigbee_macaddress"
