@@ -16,11 +16,13 @@ import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
+import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.ZclCommand;
 import com.zsmartsystems.zigbee.zcl.ZclCommandListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclIasZoneCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.iaszone.ZoneStatusChangeNotificationCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.iaszone.ZoneTypeEnum;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
  * Converter for the IAS zone sensors. This is an abstract class used as a base for different IAS sensors.
@@ -28,7 +30,8 @@ import com.zsmartsystems.zigbee.zcl.clusters.iaszone.ZoneTypeEnum;
  * @author Chris Jackson - Initial Contribution
  *
  */
-public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter implements ZclCommandListener {
+public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter
+        implements ZclCommandListener, ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterIas.class);
 
     private ZclIasZoneCluster clusterIasZone;
@@ -51,7 +54,8 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter impl
 
     @Override
     public boolean initializeConverter() {
-        logger.debug("{}: Initialising device IAS Zone cluster", endpoint.getIeeeAddress());
+        logger.debug("{}: Initialising device IAS Zone cluster for {}", endpoint.getIeeeAddress(),
+                channel.getChannelTypeUID());
 
         clusterIasZone = (ZclIasZoneCluster) endpoint.getInputCluster(ZclIasZoneCluster.CLUSTER_ID);
         if (clusterIasZone == null) {
@@ -63,6 +67,7 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter impl
 
         // Add a listener, then request the status
         clusterIasZone.addCommandListener(this);
+        clusterIasZone.addAttributeListener(this);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
         ZclAttribute attribute = clusterIasZone.getAttribute(ZclIasZoneCluster.ATTR_ZONESTATUS);
@@ -75,15 +80,12 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter impl
         logger.debug("{}: Closing device IAS zone cluster", endpoint.getIeeeAddress());
 
         clusterIasZone.removeCommandListener(this);
+        clusterIasZone.removeAttributeListener(this);
     }
 
     @Override
     public void handleRefresh() {
-        Integer status = clusterIasZone.getZoneStatus(0);
-        if (status == null) {
-            return;
-        }
-        updateChannelState(status);
+        clusterIasZone.getZoneStatus(0);
     }
 
     protected boolean supportsIasChannel(ZigBeeEndpoint endpoint, ZoneTypeEnum requiredZoneType) {
@@ -123,6 +125,15 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter impl
         if (command instanceof ZoneStatusChangeNotificationCommand) {
             ZoneStatusChangeNotificationCommand zoneStatus = (ZoneStatusChangeNotificationCommand) command;
             updateChannelState(zoneStatus.getZoneStatus());
+        }
+    }
+
+    @Override
+    public void attributeUpdated(ZclAttribute attribute) {
+        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
+        if (attribute.getCluster() == ZclClusterType.IAS_ZONE
+                && attribute.getId() == ZclIasZoneCluster.ATTR_ZONESTATUS) {
+            updateChannelState((Integer) attribute.getLastValue());
         }
     }
 
