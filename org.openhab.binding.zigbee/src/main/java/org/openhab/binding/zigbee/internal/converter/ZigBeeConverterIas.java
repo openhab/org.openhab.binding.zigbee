@@ -79,7 +79,11 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter impl
 
     @Override
     public void handleRefresh() {
-        clusterIasZone.getZoneStatus(0);
+        Integer status = clusterIasZone.getZoneStatus(0);
+        if (status == null) {
+            return;
+        }
+        updateChannelState(status);
     }
 
     protected boolean supportsIasChannel(ZigBeeEndpoint endpoint, ZoneTypeEnum requiredZoneType) {
@@ -115,21 +119,24 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter impl
 
     @Override
     public void commandReceived(ZclCommand command) {
+        logger.debug("{}: ZigBee command report {}", endpoint.getIeeeAddress(), command);
         if (command instanceof ZoneStatusChangeNotificationCommand) {
             ZoneStatusChangeNotificationCommand zoneStatus = (ZoneStatusChangeNotificationCommand) command;
-            switch (channel.getAcceptedItemType()) {
-                case "Switch":
-                    updateChannelState(((zoneStatus.getZoneStatus() & bitTest) != 0) ? OnOffType.ON : OnOffType.OFF);
-                    break;
-                case "Contact":
-                    updateChannelState(((zoneStatus.getZoneStatus() & bitTest) != 0) ? OpenClosedType.OPEN
-                            : OpenClosedType.CLOSED);
-                    break;
-                default:
-                    logger.warn("{}: Unsupported item type {}", endpoint.getIeeeAddress(),
-                            channel.getAcceptedItemType());
-                    break;
-            }
+            updateChannelState(zoneStatus.getZoneStatus());
+        }
+    }
+
+    private void updateChannelState(Integer state) {
+        switch (channel.getAcceptedItemType()) {
+            case "Switch":
+                updateChannelState(((state & bitTest) != 0) ? OnOffType.ON : OnOffType.OFF);
+                break;
+            case "Contact":
+                updateChannelState(((state & bitTest) != 0) ? OpenClosedType.OPEN : OpenClosedType.CLOSED);
+                break;
+            default:
+                logger.warn("{}: Unsupported item type {}", endpoint.getIeeeAddress(), channel.getAcceptedItemType());
+                break;
         }
     }
 }
