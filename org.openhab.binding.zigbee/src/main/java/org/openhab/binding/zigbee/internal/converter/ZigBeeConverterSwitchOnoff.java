@@ -48,20 +48,20 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
     private ZclOnOffCluster clusterOnOffServer;
 
     @Override
-    public boolean initializeConverter() {
-        clusterOnOffClient = (ZclOnOffCluster) endpoint.getOutputCluster(ZclOnOffCluster.CLUSTER_ID);
-        clusterOnOffServer = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
-        if (clusterOnOffClient == null && clusterOnOffServer == null) {
+    public boolean initializeDevice() {
+        ZclOnOffCluster clientCluster = (ZclOnOffCluster) endpoint.getOutputCluster(ZclOnOffCluster.CLUSTER_ID);
+        ZclOnOffCluster serverCluster = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
+        if (clientCluster == null && serverCluster == null) {
             logger.error("{}: Error opening device on/off controls", endpoint.getIeeeAddress());
             return false;
         }
 
-        if (clusterOnOffServer != null) {
+        if (serverCluster != null) {
             try {
-                CommandResult bindResponse = bind(clusterOnOffServer).get();
+                CommandResult bindResponse = bind(serverCluster).get();
                 if (bindResponse.isSuccess()) {
                     // Configure reporting
-                    CommandResult reportingResponse = clusterOnOffServer
+                    CommandResult reportingResponse = serverCluster
                             .setOnOffReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX).get();
                     if (reportingResponse.isError()) {
                         pollingPeriod = POLLING_PERIOD_HIGH;
@@ -74,14 +74,11 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
             } catch (InterruptedException | ExecutionException e) {
                 logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
             }
-
-            // Add the listener
-            clusterOnOffServer.addAttributeListener(this);
         }
 
-        if (clusterOnOffClient != null) {
+        if (clientCluster != null) {
             try {
-                CommandResult bindResponse = bind(clusterOnOffClient).get();
+                CommandResult bindResponse = bind(clientCluster).get();
                 if (!bindResponse.isSuccess()) {
                     logger.error("{}: Error 0x{} setting client binding", endpoint.getIeeeAddress(),
                             Integer.toHexString(bindResponse.getStatusCode()));
@@ -89,7 +86,26 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
             } catch (InterruptedException | ExecutionException e) {
                 logger.error("{}: Exception setting binding ", endpoint.getIeeeAddress(), e);
             }
+        }
 
+        return true;
+    }
+
+    @Override
+    public boolean initializeConverter() {
+        clusterOnOffClient = (ZclOnOffCluster) endpoint.getOutputCluster(ZclOnOffCluster.CLUSTER_ID);
+        clusterOnOffServer = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
+        if (clusterOnOffClient == null && clusterOnOffServer == null) {
+            logger.error("{}: Error opening device on/off controls", endpoint.getIeeeAddress());
+            return false;
+        }
+
+        if (clusterOnOffServer != null) {
+            // Add the listener
+            clusterOnOffServer.addAttributeListener(this);
+        }
+
+        if (clusterOnOffClient != null) {
             // Add the command listener
             clusterOnOffClient.addCommandListener(this);
         }
