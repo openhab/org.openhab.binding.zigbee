@@ -90,9 +90,8 @@ public class TelegesisHandler extends ZigBeeCoordinatorHandler implements Firmwa
     public void updateFirmware(Firmware firmware, ProgressCallback progressCallback) {
         logger.debug("Telegesis coordinator: update firmware with {}", firmware.getVersion());
 
-        updateStatus(ThingStatus.OFFLINE);
-        zigbeeTransport.shutdown();
         updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.FIRMWARE_UPDATING);
+        zigbeeTransport.shutdown();
 
         // Define the sequence of the firmware update so that external consumers can listen for the progress
         progressCallback.defineSequence(ProgressStep.DOWNLOADING, ProgressStep.TRANSFERRING, ProgressStep.UPDATING);
