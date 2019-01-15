@@ -15,7 +15,24 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.eclipse.smarthome.core.library.types.PercentType;
+import org.eclipse.smarthome.core.thing.Channel;
+import org.eclipse.smarthome.core.thing.ChannelUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
+import org.eclipse.smarthome.core.types.State;
+import org.eclipse.smarthome.core.types.UnDefType;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
+import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+
+import com.zsmartsystems.zigbee.IeeeAddress;
+import com.zsmartsystems.zigbee.ZigBeeEndpoint;
+import com.zsmartsystems.zigbee.zcl.ZclAttribute;
+import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorModeEnum;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclDataType;
 
 /**
  *
@@ -99,4 +116,111 @@ public class ZigBeeConverterColorTemperatureTest {
         assertEquals(PercentType.HUNDRED, convertMiredToPercent(converter, 500));
         assertEquals(PercentType.ZERO, convertMiredToPercent(converter, 154));
     }
+
+    @Test
+    public void testAttributeNotUpdatedWhenColorModeIsNotColorTemperature() {
+        ZigBeeEndpoint endpoint = Mockito.mock(ZigBeeEndpoint.class);
+        ZigBeeCoordinatorHandler coordinatorHandler = Mockito.mock(ZigBeeCoordinatorHandler.class);
+        Mockito.when(coordinatorHandler.getEndpoint(ArgumentMatchers.any(IeeeAddress.class), ArgumentMatchers.anyInt()))
+                .thenReturn(endpoint);
+
+        ZigBeeConverterColorTemperature converter = getConverter();
+        ArgumentCaptor<ChannelUID> channelCapture = ArgumentCaptor.forClass(ChannelUID.class);
+        ArgumentCaptor<State> stateCapture = ArgumentCaptor.forClass(State.class);
+        ZigBeeThingHandler thingHandler = Mockito.mock(ZigBeeThingHandler.class);
+        Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
+        converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
+
+        ZclAttribute colorModeAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 8, "ColorMode",
+                ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, false, false);
+        ZclAttribute colorTemperatureAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 7, "ColorTemperature",
+                ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, false, false);
+
+        // Update the color mode to CURRENTHUE_AND_CURRENTSATURATION and ensure that the state is set to UNDEF
+        colorModeAttribute.updateValue(ColorModeEnum.CURRENTHUE_AND_CURRENTSATURATION.getKey());
+        converter.attributeUpdated(colorModeAttribute);
+        Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+        assertEquals(UnDefType.UNDEF, stateCapture.getValue());
+
+        // Set the color temperature and ensure that the channel is not set
+        colorTemperatureAttribute.updateValue(new Integer(100));
+        converter.attributeUpdated(colorTemperatureAttribute);
+        Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+
+        // Update the color mode to CURRENTX_AND_CURRENTY and ensure that the state is set to UNDEF
+        colorModeAttribute.updateValue(ColorModeEnum.CURRENTX_AND_CURRENTY.getKey());
+        converter.attributeUpdated(colorModeAttribute);
+        Mockito.verify(thingHandler, Mockito.times(2)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+        assertEquals(UnDefType.UNDEF, stateCapture.getValue());
+
+        // Set the color temperature and ensure that the channel is not set
+        colorTemperatureAttribute.updateValue(new Integer(100));
+        converter.attributeUpdated(colorTemperatureAttribute);
+        Mockito.verify(thingHandler, Mockito.times(2)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+    }
+
+    @Test
+    public void testAttributeUpdatedWhenColorModeIsNull() {
+        ZigBeeEndpoint endpoint = Mockito.mock(ZigBeeEndpoint.class);
+        ZigBeeCoordinatorHandler coordinatorHandler = Mockito.mock(ZigBeeCoordinatorHandler.class);
+        Mockito.when(coordinatorHandler.getEndpoint(ArgumentMatchers.any(IeeeAddress.class), ArgumentMatchers.anyInt()))
+                .thenReturn(endpoint);
+
+        ZigBeeConverterColorTemperature converter = getConverter();
+        ArgumentCaptor<ChannelUID> channelCapture = ArgumentCaptor.forClass(ChannelUID.class);
+        ArgumentCaptor<State> stateCapture = ArgumentCaptor.forClass(State.class);
+        ZigBeeThingHandler thingHandler = Mockito.mock(ZigBeeThingHandler.class);
+        Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
+        converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
+
+        ZclAttribute colorTemperatureAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 7, "ColorTemperature",
+                ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, false, false);
+
+        // Do not initialize the color mode
+
+        // Set the color temperature and ensure that the channel is set
+        colorTemperatureAttribute.updateValue(new Integer(250));
+        converter.attributeUpdated(colorTemperatureAttribute);
+        Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+        assertEquals(convertMiredToPercent(converter, 250), stateCapture.getValue());
+    }
+
+    @Test
+    public void testAttributeUpdatedWhenColorModeIsColorTemperature() {
+        ZigBeeEndpoint endpoint = Mockito.mock(ZigBeeEndpoint.class);
+        ZigBeeCoordinatorHandler coordinatorHandler = Mockito.mock(ZigBeeCoordinatorHandler.class);
+        Mockito.when(coordinatorHandler.getEndpoint(ArgumentMatchers.any(IeeeAddress.class), ArgumentMatchers.anyInt()))
+                .thenReturn(endpoint);
+
+        ZigBeeConverterColorTemperature converter = getConverter();
+        ArgumentCaptor<ChannelUID> channelCapture = ArgumentCaptor.forClass(ChannelUID.class);
+        ArgumentCaptor<State> stateCapture = ArgumentCaptor.forClass(State.class);
+        ZigBeeThingHandler thingHandler = Mockito.mock(ZigBeeThingHandler.class);
+        Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
+        converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
+
+        ZclAttribute colorModeAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 8, "ColorMode",
+                ZclDataType.ENUMERATION_8_BIT, false, false, false, false);
+        ZclAttribute colorTemperatureAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 7, "ColorTemperature",
+                ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, false, false);
+
+        // Update the color mode to COLOR_TEMPERATURE and ensure that the state is not set
+        colorModeAttribute.updateValue(ColorModeEnum.COLORTEMPERATURE.getKey());
+        converter.attributeUpdated(colorModeAttribute);
+        Mockito.verify(thingHandler, Mockito.times(0)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+
+        // Set the color temperature and ensure that the channel is not set
+        colorTemperatureAttribute.updateValue(new Integer(250));
+        converter.attributeUpdated(colorTemperatureAttribute);
+        Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
+                stateCapture.capture());
+        assertEquals(convertMiredToPercent(converter, 250), stateCapture.getValue());
+    }
+
 }

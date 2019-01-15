@@ -94,7 +94,7 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
 
     @Override
     public void handleRefresh() {
-        clusterMeasurement.getTotalActivePower(0);
+        clusterMeasurement.getActivePower(0);
     }
 
     @Override

@@ -182,9 +182,8 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
     public void updateFirmware(Firmware firmware, ProgressCallback progressCallback) {
         logger.debug("Ember coordinator: update firmware with {}", firmware.getVersion());
 
-        updateStatus(ThingStatus.OFFLINE);
-        zigbeeTransport.shutdown();
         updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.FIRMWARE_UPDATING);
+        zigbeeTransport.shutdown();
 
         // Define the sequence of the firmware update so that external consumers can listen for the progress
         progressCallback.defineSequence(ProgressStep.DOWNLOADING, ProgressStep.TRANSFERRING, ProgressStep.UPDATING);
