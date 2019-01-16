@@ -28,7 +28,7 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclPressureMeasurementCluster;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclStandardClusterType;
 
 /**
  * Converter for the atmospheric pressure channel.
@@ -111,7 +111,7 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
     @Override
     public synchronized void attributeUpdated(ZclAttribute attribute) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() != ZclClusterType.PRESSURE_MEASUREMENT) {
+        if (attribute.getCluster() != ZclStandardClusterType.PRESSURE_MEASUREMENT) {
             return;
         }
 

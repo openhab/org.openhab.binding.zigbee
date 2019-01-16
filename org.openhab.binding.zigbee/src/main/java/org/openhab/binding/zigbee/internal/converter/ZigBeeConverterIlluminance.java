@@ -23,7 +23,7 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclIlluminanceMeasurementCluster;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclStandardClusterType;
 
 /**
  * Converter for the illuminance channel
@@ -82,7 +82,7 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.ILLUMINANCE_MEASUREMENT
+        if (attribute.getCluster() == ZclStandardClusterType.ILLUMINANCE_MEASUREMENT
                 && attribute.getId() == ZclIlluminanceMeasurementCluster.ATTR_MEASUREDVALUE) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {

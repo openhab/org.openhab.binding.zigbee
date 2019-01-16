@@ -32,7 +32,7 @@ import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclLevelControlCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclStandardClusterType;
 
 /**
  * Level control converter uses both the {@link ZclLevelControlCluster} and the {@link ZclOnOffCluster}. If the
@@ -205,14 +205,15 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
     @Override
     public synchronized void attributeUpdated(ZclAttribute attribute) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.LEVEL_CONTROL
+        if (attribute.getCluster() == ZclStandardClusterType.LEVEL_CONTROL
                 && attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
             lastLevel = levelToPercent((Integer) attribute.getLastValue());
             if (currentOnOffState.get()) {
                 // Note that state is only updated if the current On/Off state is TRUE (ie ON)
                 updateChannelState(lastLevel);
             }
-        } else if (attribute.getCluster() == ZclClusterType.ON_OFF && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
+        } else if (attribute.getCluster() == ZclStandardClusterType.ON_OFF
+                && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
             if (attribute.getLastValue() != null) {
                 currentOnOffState.set((Boolean) attribute.getLastValue());
                 updateChannelState(currentOnOffState.get() ? lastLevel : OnOffType.OFF);

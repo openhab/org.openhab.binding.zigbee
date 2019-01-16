@@ -21,7 +21,7 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOccupancySensingCluster;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclStandardClusterType;
 
 /**
  * Converter for the occupancy sensor.
@@ -84,7 +84,7 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.OCCUPANCY_SENSING
+        if (attribute.getCluster() == ZclStandardClusterType.OCCUPANCY_SENSING
                 && attribute.getId() == ZclOccupancySensingCluster.ATTR_OCCUPANCY) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null && value == 1) {

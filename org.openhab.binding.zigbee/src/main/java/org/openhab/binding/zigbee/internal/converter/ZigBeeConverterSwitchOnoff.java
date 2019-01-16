@@ -31,7 +31,7 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OffCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OffWithEffectCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OnCommand;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclStandardClusterType;
 
 /**
  * This channel supports changes through attribute updates, and also through received commands. This allows a switch
@@ -181,7 +181,8 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.ON_OFF && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
+        if (attribute.getCluster() == ZclStandardClusterType.ON_OFF
+                && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
             Boolean value = (Boolean) attribute.getLastValue();
             if (value != null && value) {
                 updateChannelState(OnOffType.ON);

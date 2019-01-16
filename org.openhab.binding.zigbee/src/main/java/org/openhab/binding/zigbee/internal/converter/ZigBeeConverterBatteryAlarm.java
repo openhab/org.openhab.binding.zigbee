@@ -28,7 +28,7 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclPowerConfigurationCluster;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclStandardClusterType;
 
 /**
  * Converter for a battery alarm channel.
@@ -143,7 +143,7 @@ public class ZigBeeConverterBatteryAlarm extends ZigBeeBaseChannelConverter impl
 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
-        if (attribute.getCluster() == ZclClusterType.POWER_CONFIGURATION
+        if (attribute.getCluster() == ZclStandardClusterType.POWER_CONFIGURATION
                 && attribute.getId() == ZclPowerConfigurationCluster.ATTR_BATTERYALARMSTATE) {
 
             logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);

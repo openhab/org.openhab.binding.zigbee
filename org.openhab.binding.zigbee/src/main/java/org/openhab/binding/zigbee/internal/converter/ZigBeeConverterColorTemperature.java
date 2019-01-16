@@ -28,7 +28,7 @@ import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorCapabilitiesEnum;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorModeEnum;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclStandardClusterType;
 
 /**
  * Channel converter for color temperature, converting between the color control cluster and a percent-typed channel.
@@ -173,7 +173,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
     public void attributeUpdated(ZclAttribute attribute) {
         logger.debug("{}: ZigBee attribute reports {}  on endpoint {}", endpoint.getIeeeAddress(), attribute,
                 endpoint.getEndpointId());
-        if (attribute.getCluster() == ZclClusterType.COLOR_CONTROL
+        if (attribute.getCluster() == ZclStandardClusterType.COLOR_CONTROL
                 && attribute.getId() == ZclColorControlCluster.ATTR_COLORTEMPERATURE) {
 
             if (lastColorMode == null || lastColorMode == ColorModeEnum.COLORTEMPERATURE) {

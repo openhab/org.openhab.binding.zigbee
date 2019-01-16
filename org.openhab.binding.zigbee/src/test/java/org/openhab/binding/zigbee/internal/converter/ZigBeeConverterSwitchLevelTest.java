@@ -26,8 +26,8 @@ import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclDataType;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclStandardClusterType;
 
 /**
  * Tests for Level converter
@@ -51,10 +51,10 @@ public class ZigBeeConverterSwitchLevelTest {
         Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
         converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
 
-        ZclAttribute onAttribute = new ZclAttribute(ZclClusterType.ON_OFF, 0, "OnOff", ZclDataType.BOOLEAN, false,
-                false, false, false);
-        ZclAttribute levelAttribute = new ZclAttribute(ZclClusterType.LEVEL_CONTROL, 0, "Level", ZclDataType.BOOLEAN,
+        ZclAttribute onAttribute = new ZclAttribute(ZclStandardClusterType.ON_OFF, 0, "OnOff", ZclDataType.BOOLEAN,
                 false, false, false, false);
+        ZclAttribute levelAttribute = new ZclAttribute(ZclStandardClusterType.LEVEL_CONTROL, 0, "Level",
+                ZclDataType.BOOLEAN, false, false, false, false);
 
         // The following sequence checks that the level is ignored if the OnOff state is OFF
         // Initial value of level is 100%

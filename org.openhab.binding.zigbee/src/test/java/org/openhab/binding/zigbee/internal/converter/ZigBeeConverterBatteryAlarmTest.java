@@ -1,7 +1,7 @@
 package org.openhab.binding.zigbee.internal.converter;
 
 import static com.zsmartsystems.zigbee.zcl.clusters.ZclPowerConfigurationCluster.*;
-import static com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType.*;
+import static com.zsmartsystems.zigbee.zcl.protocol.ZclStandardClusterType.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.*;
@@ -54,46 +54,40 @@ public class ZigBeeConverterBatteryAlarmTest {
     public void testAttributeUpdateForMinThreshold() {
         // Bit 0 indicates BatteryMinThreshold
         converter.attributeUpdated(makeAlarmState(0b0001));
-        verify(thingHandler).setChannelState(channel.getUID(),
-                new StringType(STATE_OPTION_BATTERY_MIN_THRESHOLD));
+        verify(thingHandler).setChannelState(channel.getUID(), new StringType(STATE_OPTION_BATTERY_MIN_THRESHOLD));
     }
 
     @Test
     public void testAttributeUpdateForThreshold1() {
         // Bit 1 indicates threshold 1
         converter.attributeUpdated(makeAlarmState(0b0010));
-        verify(thingHandler).setChannelState(channel.getUID(),
-                new StringType(STATE_OPTION_BATTERY_THRESHOLD_1));
+        verify(thingHandler).setChannelState(channel.getUID(), new StringType(STATE_OPTION_BATTERY_THRESHOLD_1));
     }
 
     @Test
     public void testAttributeUpdateForThreshold2() {
         // Bit 2 indicates threshold 2
         converter.attributeUpdated(makeAlarmState(0b0100));
-        verify(thingHandler).setChannelState(channel.getUID(),
-                new StringType(STATE_OPTION_BATTERY_THRESHOLD_2));
+        verify(thingHandler).setChannelState(channel.getUID(), new StringType(STATE_OPTION_BATTERY_THRESHOLD_2));
     }
 
     @Test
     public void testAttributeUpdateForThreshold3() {
         // Bit 3 indicates threshold 3
         converter.attributeUpdated(makeAlarmState(0b1000));
-        verify(thingHandler).setChannelState(channel.getUID(),
-                new StringType(STATE_OPTION_BATTERY_THRESHOLD_3));
+        verify(thingHandler).setChannelState(channel.getUID(), new StringType(STATE_OPTION_BATTERY_THRESHOLD_3));
     }
 
     @Test
     public void testAttributeUpdateForNoThreshold() {
         converter.attributeUpdated(makeAlarmState(0b0000));
-        verify(thingHandler).setChannelState(channel.getUID(),
-                new StringType(STATE_OPTION_BATTERY_NO_THRESHOLD));
+        verify(thingHandler).setChannelState(channel.getUID(), new StringType(STATE_OPTION_BATTERY_NO_THRESHOLD));
     }
 
     @Test
     public void testAttributeUpdateMultipleThresholds() {
         converter.attributeUpdated(makeAlarmState(0b1110));
-        verify(thingHandler).setChannelState(channel.getUID(),
-                new StringType(STATE_OPTION_BATTERY_THRESHOLD_1));
+        verify(thingHandler).setChannelState(channel.getUID(), new StringType(STATE_OPTION_BATTERY_THRESHOLD_1));
     }
 
     @Test

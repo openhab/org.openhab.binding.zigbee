@@ -68,7 +68,8 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.ZigBeeNodeStatus;
-import com.zsmartsystems.zigbee.ZigBeeProfileType;
+import com.zsmartsystems.zigbee.ZigBeeProfileTypeRegistry;
+import com.zsmartsystems.zigbee.ZigBeeStandardProfileType;
 import com.zsmartsystems.zigbee.app.otaserver.ZclOtaUpgradeServer;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaFile;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaServerStatus;
@@ -282,13 +283,13 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             if (endpoint == null) {
                 int profileId;
                 if (properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_PROFILEID) == null) {
-                    profileId = ZigBeeProfileType.ZIGBEE_HOME_AUTOMATION.getKey();
+                    profileId = ZigBeeStandardProfileType.ZIGBEE_HOME_AUTOMATION.getKey();
                 } else {
                     profileId = Integer.parseInt(properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_PROFILEID));
                 }
 
                 logger.debug("{}: Creating statically defined device endpoint {} with profile {}", nodeIeeeAddress,
-                        endpointId, ZigBeeProfileType.getByValue(profileId));
+                        endpointId, ZigBeeProfileTypeRegistry.getInstance().getByProfileId(profileId));
                 endpoint = new ZigBeeEndpoint(node, endpointId);
                 endpoint.setProfileId(profileId);
                 node.addEndpoint(endpoint);

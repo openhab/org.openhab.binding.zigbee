@@ -34,6 +34,7 @@ import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeProfileType;
+import com.zsmartsystems.zigbee.ZigBeeStandardProfileType;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
 
 /**
@@ -373,6 +374,6 @@ public abstract class ZigBeeBaseChannelConverter {
      */
     protected Future<CommandResult> bind(ZclCluster cluster) {
         return cluster.bind(coordinator.getLocalIeeeAddress(),
-                coordinator.getLocalEndpointId(ZigBeeProfileType.ZIGBEE_HOME_AUTOMATION));
+                coordinator.getLocalEndpointId(ZigBeeStandardProfileType.ZIGBEE_HOME_AUTOMATION));
     }
 }

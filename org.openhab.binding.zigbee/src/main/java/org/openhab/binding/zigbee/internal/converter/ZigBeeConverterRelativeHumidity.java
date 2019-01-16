@@ -15,6 +15,8 @@ import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.clusters.centralite.CentraliteManufacturerSpecificConstants;
+import org.openhab.binding.zigbee.clusters.centralite.CentraliteRelativeHumidityMeasurementCluster;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,51 +25,83 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclRelativeHumidityMeasurementCluster;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterTypeRegistry;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclStandardClusterType;
 
 /**
- * Converter for the relative humidity channel
+ * Converter for the relative humidity channel. This converter can handle both the cluster for relative humidity from
+ * the ZigBee cluster library, and the manufacturer-specific cluster provided by Centralite that serves the same
+ * purpose.
  *
  * @author Chris Jackson - Initial Contribution
- *
+ * @author Henning Sudbrock - addition of manufacturer-specific cluster
  */
 public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterRelativeHumidity.class);
 
-    private ZclRelativeHumidityMeasurementCluster cluster;
+    private ZclRelativeHumidityMeasurementCluster relativeHumiditycluster;
+    private CentraliteRelativeHumidityMeasurementCluster centraliteRelativeHumidityCluster;
 
     @Override
     public boolean initializeConverter() {
-        cluster = (ZclRelativeHumidityMeasurementCluster) endpoint
+        relativeHumiditycluster = (ZclRelativeHumidityMeasurementCluster) endpoint
                 .getInputCluster(ZclRelativeHumidityMeasurementCluster.CLUSTER_ID);
-        if (cluster == null) {
+
+        if (relativeHumiditycluster == null) {
+            centraliteRelativeHumidityCluster = (CentraliteRelativeHumidityMeasurementCluster) endpoint
+                    .getInputCluster(CentraliteRelativeHumidityMeasurementCluster.CLUSTER_ID);
+        }
+
+        if (relativeHumiditycluster == null && centraliteRelativeHumidityCluster == null) {
             logger.error("{}: Error opening device relative humidity measurement cluster", endpoint.getIeeeAddress());
             return false;
         }
 
-        bind(cluster);
+        if (relativeHumiditycluster != null) {
+            bind(relativeHumiditycluster);
+        } else {
+            bind(centraliteRelativeHumidityCluster);
+        }
 
         // Add a listener, then request the status
-        cluster.addAttributeListener(this);
+        if (relativeHumiditycluster != null) {
+            relativeHumiditycluster.addAttributeListener(this);
+        } else {
+            centraliteRelativeHumidityCluster.addAttributeListener(this);
+        }
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        cluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1);
+        if (relativeHumiditycluster != null) {
+            relativeHumiditycluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1);
+        } else {
+            centraliteRelativeHumidityCluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1);
+        }
+
         return true;
     }
 
     @Override
     public void disposeConverter() {
-        cluster.removeAttributeListener(this);
+        if (relativeHumiditycluster != null) {
+            relativeHumiditycluster.removeAttributeListener(this);
+        } else {
+            centraliteRelativeHumidityCluster.removeAttributeListener(this);
+        }
     }
 
     @Override
     public void handleRefresh() {
-        cluster.getMeasuredValue(0);
+        if (relativeHumiditycluster != null) {
+            relativeHumiditycluster.getMeasuredValue(0);
+        } else {
+            centraliteRelativeHumidityCluster.getMeasuredValue(0);
+        }
     }
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
-        if (endpoint.getInputCluster(ZclRelativeHumidityMeasurementCluster.CLUSTER_ID) == null) {
+        if (endpoint.getInputCluster(ZclRelativeHumidityMeasurementCluster.CLUSTER_ID) == null
+                && endpoint.getInputCluster(CentraliteRelativeHumidityMeasurementCluster.CLUSTER_ID) == null) {
             logger.trace("{}: Relative humidity cluster not found", endpoint.getIeeeAddress());
             return null;
         }
@@ -83,7 +117,10 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.RELATIVE_HUMIDITY_MEASUREMENT
+        if ((attribute.getCluster() == ZclStandardClusterType.RELATIVE_HUMIDITY_MEASUREMENT
+                || attribute.getCluster() == ZclClusterTypeRegistry.getInstance().getByManufacturerAndClusterId(
+                        CentraliteManufacturerSpecificConstants.MANUFACTURER_CODE,
+                        CentraliteRelativeHumidityMeasurementCluster.CLUSTER_ID))
                 && attribute.getId() == ZclRelativeHumidityMeasurementCluster.ATTR_MEASUREDVALUE) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {

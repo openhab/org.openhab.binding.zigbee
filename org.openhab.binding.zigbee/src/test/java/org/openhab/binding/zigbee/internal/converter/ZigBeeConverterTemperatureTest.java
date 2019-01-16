@@ -29,7 +29,7 @@ import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclTemperatureMeasurementCluster;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclStandardClusterType;
 
 /**
  * Tests for Temperature converter
@@ -54,7 +54,7 @@ public class ZigBeeConverterTemperatureTest {
         converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
 
         ZclAttribute attribute = Mockito.mock(ZclAttribute.class);
-        Mockito.when(attribute.getCluster()).thenReturn(ZclClusterType.TEMPERATURE_MEASUREMENT);
+        Mockito.when(attribute.getCluster()).thenReturn(ZclStandardClusterType.TEMPERATURE_MEASUREMENT);
         Mockito.when(attribute.getId()).thenReturn(ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE);
         Mockito.when(attribute.getLastValue()).thenReturn(Integer.valueOf(2345));
 
