@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -97,7 +96,7 @@ public class ZigBeeThingTypeProviderTest {
     private ZigBeeThingTypeProvider createProvider(final ThingTypeUID... thingTypeUIDs) {
         return new ZigBeeThingTypeProvider() {
             @Override
-            public @NonNull Set<@NonNull ThingTypeUID> getThingTypeUIDs() {
+            public Set<ThingTypeUID> getThingTypeUIDs() {
                 return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(thingTypeUIDs)));
             }
         };
