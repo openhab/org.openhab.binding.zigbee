@@ -16,7 +16,7 @@ import org.openhab.binding.zigbee.thingtype.ZigBeeThingTypeProvider;
 import org.osgi.service.component.annotations.Component;
 
 /**
- * This class is the basic binding implementation to provide non generic thing types.
+ * This class is the basic binding implementation to provide non-generic thing types.
  *
  * @author Thomas Höfer - Initial Implementation
  */

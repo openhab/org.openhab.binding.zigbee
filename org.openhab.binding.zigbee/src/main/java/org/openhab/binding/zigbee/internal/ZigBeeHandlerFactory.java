@@ -41,7 +41,7 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
 
     private ZigBeeChannelConverterFactory zigbeeChannelConverterFactory;
 
-    private final Set<ThingTypeUID> thingTypeUIDs = new CopyOnWriteArraySet<>();
+    private final Set<ZigBeeThingTypeProvider> providers = new CopyOnWriteArraySet<>();
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -50,7 +50,8 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
             return true;
         }
 
-        return thingTypeUIDs.contains(thingTypeUID);
+        return providers.stream().map(ZigBeeThingTypeProvider::getThingTypeUIDs).flatMap(Set::stream)
+                .anyMatch(uid -> uid.equals(thingTypeUID));
     }
 
     @Override
@@ -79,10 +80,10 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
 
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
     public void addZigBeeThingTypeProvider(ZigBeeThingTypeProvider zigBeeThingTypeProvider) {
-        thingTypeUIDs.addAll(zigBeeThingTypeProvider.getThingTypeUIDs());
+        providers.add(zigBeeThingTypeProvider);
     }
 
     public void removeZigBeeThingTypeProvider(ZigBeeThingTypeProvider zigBeeThingTypeProvider) {
-        thingTypeUIDs.removeAll(zigBeeThingTypeProvider.getThingTypeUIDs());
+        providers.remove(zigBeeThingTypeProvider);
     }
 }
