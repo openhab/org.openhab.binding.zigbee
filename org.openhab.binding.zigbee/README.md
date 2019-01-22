@@ -213,12 +213,37 @@ The following channels are supported -:
 | sensor_occupancy | ```OCCUPANCY_SENSING``` (0x0406) | Switch  |  |
 | switch_dimmer | ```LEVEL_CONTROL``` (0x0008) | Dimmer |   |
 | switch_onoff | ```ON_OFF``` (0x0006) | Switch  |
+| warning_device | ```IAS_WD``` (0x0502) | String  |
 
 
 ### Updates
 
 The binding will attempt to configure a connection with the device to receive automatic and instantaneous reports when the device status changes. Should this configuration fail, the binding will resort to using a fast polling (note that "fast" is approximately 30 seconds at this time).
 
+### Warning devices
+
+For devices implementing the cluster `IAS_WD` (e.g., sirens or, in some cases, smoke detectors), the binding adds a channel of type `warning_device`.
+To make the device emit a warning (by siren and/or strobe signal) for a specified time, a command of type `String` must be sent to the channel, where the command encodes the configuration of the warning.
+
+Examples:
+
+| Command string | Effect of the command |
+|----------------|-----------------------|
+| `useStrobe=true warningMode=BURGLAR sirenLevel=HIGH duration=PT30S` | Start a warning using both strobe signal and siren (type 'burglar alarm'), with a duration of 30 seconds.|
+| `useStrobe=false warningMode=FIRE sirenLevel=HIGH duration=PT60S` | Start a warning using only siren (type 'fire alarm'), with a duration of 60 seconds.|
+| `useStrobe=false warningMode=STOP sirenLevel=HIGH duration=PT30S` | If the device is currently emitting a warning, this stops the warning.|
+
+The syntax for the command strings is as in the examples above, where the possible values for `useStrobe`, `warningMode`, `sirenLevel`, and `duration` are as follows:
+
+| Command parameter | Value range |
+|-------------------|-------------|
+| useStrobe | `true` and `false` |
+| warningMode | `STOP`, `BURGLAR`, `FIRE`, `EMERGENCY`, `POLICE_PANIC`, `FIRE_PANIC`, `EMERGENCY_PANIC` |
+| sirenLevel | `LOW`, `MEDIUM`, `HIGH`, `VERY_HIGH` |
+| duration | A duration specified in the ISO-8601 duration format |
+
+Note that it is possible to dynamically add command descriptions for specific warning types to a `warning_device` channel by configuring the channel configuration property `zigbee_iaswd_warningTypes`, using String parameters of the form `label=>commandString`, where `label` is the label provided to UIs to render, e.g., buttons for the provided command options (as done, e.g., by PaperUI).
+Also note that solutions integrating the binding can add implementations of type `WarningCommandOptionProvider` to provide warning types together with command descriptions for all channels of type `warning_device`. 
 
 ## When things don't appear to be working
 
