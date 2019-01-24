@@ -27,6 +27,7 @@ import com.zsmartsystems.zigbee.console.ZigBeeConsoleAttributeWriteCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleBindCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleBindingTableCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleCommand;
+import com.zsmartsystems.zigbee.console.ZigBeeConsoleCommandsSupportedCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleDescribeEndpointCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleDescribeNodeCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleDeviceInformationCommand;
@@ -52,13 +53,14 @@ public class GeneralZigBeeConsoleCommandProvider implements ZigBeeConsoleCommand
     public static final List<ZigBeeConsoleCommand> GENERAL_COMMANDS = unmodifiableList(
             asList(new ZigBeeConsoleAttributeReadCommand(), new ZigBeeConsoleAttributeSupportedCommand(),
                     new ZigBeeConsoleAttributeWriteCommand(), new ZigBeeConsoleBindCommand(),
-                    new ZigBeeConsoleBindingTableCommand(), new ZigBeeConsoleDescribeEndpointCommand(),
-                    new ZigBeeConsoleDescribeNodeCommand(), new ZigBeeConsoleDeviceInformationCommand(),
-                    new ZigBeeConsoleInstallKeyCommand(), new ZigBeeConsoleLinkKeyCommand(),
-                    new ZigBeeConsoleNetworkJoinCommand(), new ZigBeeConsoleNetworkLeaveCommand(),
-                    new ZigBeeConsoleNodeListCommand(), new ZigBeeConsoleOtaUpgradeCommand(),
-                    new ZigBeeConsoleReportingConfigCommand(), new ZigBeeConsoleReportingSubscribeCommand(),
-                    new ZigBeeConsoleReportingUnsubscribeCommand(), new ZigBeeConsoleUnbindCommand()));
+                    new ZigBeeConsoleBindingTableCommand(), new ZigBeeConsoleCommandsSupportedCommand(),
+                    new ZigBeeConsoleDescribeEndpointCommand(), new ZigBeeConsoleDescribeNodeCommand(),
+                    new ZigBeeConsoleDeviceInformationCommand(), new ZigBeeConsoleInstallKeyCommand(),
+                    new ZigBeeConsoleLinkKeyCommand(), new ZigBeeConsoleNetworkJoinCommand(),
+                    new ZigBeeConsoleNetworkLeaveCommand(), new ZigBeeConsoleNodeListCommand(),
+                    new ZigBeeConsoleOtaUpgradeCommand(), new ZigBeeConsoleReportingConfigCommand(),
+                    new ZigBeeConsoleReportingSubscribeCommand(), new ZigBeeConsoleReportingUnsubscribeCommand(),
+                    new ZigBeeConsoleUnbindCommand()));
 
     private Map<String, ZigBeeConsoleCommand> generalCommands = GENERAL_COMMANDS.stream()
             .collect(toMap(ZigBeeConsoleCommand::getCommand, identity()));

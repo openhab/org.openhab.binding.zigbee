@@ -28,9 +28,6 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclIasWdCluster;
 
 /**
  * Channel converter for warning devices, based on the IAS WD cluster.
- * <p>
- * Possible improvements: Do not only support the 'sendWarning' command, but also the 'squawk' command of the IAS WD
- * cluster.
  *
  * @author Henning Sudbrock - initial contribution
  */
@@ -95,11 +92,20 @@ public class ZigBeeConverterWarningDevice extends ZigBeeBaseChannelConverter {
             return;
         }
 
-        String warningCommand = ((StringType) command).toFullString();
-        WarningType warningType = WarningType.parse(warningCommand);
+        String commandString = ((StringType) command).toFullString();
 
-        sendWarning(warningType);
-
+        WarningType warningType = WarningType.parse(commandString);
+        if (warningType != null) {
+            sendWarning(warningType);
+        } else {
+            SquawkType squawkType = SquawkType.parse(commandString);
+            if (squawkType != null) {
+                squawk(squawkType);
+            } else {
+                logger.warn("{}: Ignoring command that is neither warning nor squawk command: {}",
+                        endpoint.getIeeeAddress(), commandString);
+            }
+        }
     }
 
     private void sendWarning(WarningType warningType) {
@@ -113,6 +119,19 @@ public class ZigBeeConverterWarningDevice extends ZigBeeBaseChannelConverter {
         result |= warningMode;
         result |= (useStrobe ? 1 : 0) << 4;
         result |= sirenLevel << 6;
+        return result;
+    }
+
+    private void squawk(SquawkType squawkType) {
+        iasWdCluster.squawkCommand(
+                makeSquawkHeader(squawkType.getSquawkMode(), squawkType.isUseStrobe(), squawkType.getSquawkLevel()));
+    }
+
+    private Integer makeSquawkHeader(int squawkMode, boolean useStrobe, int squawkLevel) {
+        int result = 0;
+        result |= squawkMode;
+        result |= (useStrobe ? 1 : 0) << 4;
+        result |= squawkLevel << 6;
         return result;
     }
 

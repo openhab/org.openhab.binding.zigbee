@@ -8,16 +8,14 @@
  */
 package org.openhab.binding.zigbee.internal.converter.warningdevice;
 
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toList;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CHANNEL_WARNING_DEVICE;
 import static org.osgi.service.component.annotations.ReferenceCardinality.MULTIPLE;
 import static org.osgi.service.component.annotations.ReferencePolicy.DYNAMIC;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -50,9 +48,8 @@ public class DynamicWarningCommandDescriptionProvider implements DynamicCommandD
             @Nullable CommandDescription originalCommandDescription, @Nullable Locale locale) {
         if (CHANNEL_WARNING_DEVICE.equals(channel.getChannelTypeUID())) {
             CommandDescriptionBuilder resultBuilder = CommandDescriptionBuilder.create();
-            for (Entry<String, WarningType> warningType : getWarningTypes(channel).entrySet()) {
-                resultBuilder.withCommandOption(
-                        new CommandOption(warningType.getValue().serializeToCommand(), warningType.getKey()));
+            for (CommandOption commandOption : getCommandOptions(channel)) {
+                resultBuilder.withCommandOption(commandOption);
             }
             return resultBuilder.build();
         } else {
@@ -70,32 +67,32 @@ public class DynamicWarningCommandDescriptionProvider implements DynamicCommandD
     }
 
     /**
-     * @return all provider {@link WarningType}s.
+     * @return all command options (provided and configured).
      */
-    private Map<String, WarningType> getWarningTypes(Channel channel) {
-        Map<String, WarningType> result = new HashMap<>();
-        result.putAll(getProvidedWarningTypes());
-        result.putAll(getConfiguredWarningTypes(channel));
+    private List<CommandOption> getCommandOptions(Channel channel) {
+        List<CommandOption> result = new ArrayList<>();
+        result.addAll(getProvidedWarningTypes());
+        result.addAll(getConfiguredWarningTypes(channel));
         return result;
     }
 
-    private Map<String, WarningType> getProvidedWarningTypes() {
-        return providers.stream().map(WarningTypeCommandDescriptionProvider::getWarningTypes)
-                .flatMap(map -> map.entrySet().stream()).collect(toMap(Entry::getKey, Entry::getValue));
+    private List<CommandOption> getProvidedWarningTypes() {
+        return providers.stream().map(WarningTypeCommandDescriptionProvider::getWarningAndSquawCommandOptions)
+                .flatMap(List::stream).collect(toList());
     }
 
-    private Map<String, WarningType> getConfiguredWarningTypes(Channel channel) {
-        Map<String, WarningType> result = new HashMap<>();
+    private List<CommandOption> getConfiguredWarningTypes(Channel channel) {
+        List<CommandOption> result = new ArrayList<>();
 
-        Object warningTypeConfigObject = channel.getConfiguration().get("zigbee_iaswd_warningTypes");
-        if (warningTypeConfigObject instanceof List) {
+        Object commandOptionConfigObject = channel.getConfiguration().get("zigbee_iaswd_commandOptions");
+        if (commandOptionConfigObject instanceof List) {
             @SuppressWarnings("rawtypes")
-            List warningTypeConfigs = (List) warningTypeConfigObject;
-            for (Object warningTypeConfig : warningTypeConfigs) {
-                if (warningTypeConfig instanceof String) {
-                    String[] parts = ((String) warningTypeConfig).split("=>");
+            List commandOptionConfigs = (List) commandOptionConfigObject;
+            for (Object commandOptionConfig : commandOptionConfigs) {
+                if (commandOptionConfig instanceof String) {
+                    String[] parts = ((String) commandOptionConfig).split("=>");
                     if (parts.length == 2) {
-                        result.put(parts[0], WarningType.parse(parts[1]));
+                        result.add(new CommandOption(parts[1], parts[0]));
                     }
                 }
             }

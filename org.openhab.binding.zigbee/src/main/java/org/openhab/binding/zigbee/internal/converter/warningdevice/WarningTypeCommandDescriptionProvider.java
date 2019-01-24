@@ -8,7 +8,9 @@
  */
 package org.openhab.binding.zigbee.internal.converter.warningdevice;
 
-import java.util.Map;
+import java.util.List;
+
+import org.eclipse.smarthome.core.types.CommandOption;
 
 /**
  * Interface for providers of additional warning device configurations that are provided as command options for warning
@@ -19,8 +21,9 @@ import java.util.Map;
 public interface WarningTypeCommandDescriptionProvider {
 
     /**
-     * @return A map mapping labels for warning command descriptions (to be used by UIs) to {@link WarningType}s.
+     * @return A map mapping labels for warning/squawk command descriptions (to be used by UIs) to the serializes
+     *         warning/squawk commands.
      */
-    Map<String, WarningType> getWarningTypes();
+    List<CommandOption> getWarningAndSquawCommandOptions();
 
 }

@@ -9,25 +9,21 @@
 package org.openhab.binding.zigbee.internal.converter.warningdevice;
 
 /**
- * Possible siren level values.
+ * Possible values for the squawk mode in a squawk type.
  *
  * @author Henning Sudbrock - initial contribution
  */
-public enum SirenLevel {
-
-    LOW(0),
-    MEDIUM(1),
-    HIGH(2),
-    VERY_HIGH(3);
+public enum SquawkMode {
+    ARMED(0),
+    DISARMED(1);
 
     private int value;
 
-    SirenLevel(int value) {
+    SquawkMode(int value) {
         this.value = value;
     }
 
     public int getValue() {
         return value;
     }
-
 }

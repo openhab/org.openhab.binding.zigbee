@@ -312,14 +312,16 @@
 				<unitLabel>seconds</unitLabel>
 				<limitToOptions>false</limitToOptions>
 			</parameter>
-			<parameter name="zigbee_iaswd_warningTypes" type="text" multiple="true">
+			<parameter name="zigbee_iaswd_commandOptions" type="text" multiple="true">
 				<default>60</default>
-				<label>Warning type command options</label>
-				<description>This configuration parameter is used to configure command options for warning types to be displayed by UIs; format: label=>warning_command, where multiple entries can be separated by commas; see options for examples</description>
+				<label>Command options for warning/squawk types</label>
+				<description>This configuration parameter is used to configure command options for warning/squawk types to be displayed by UIs; see options for examples</description>
 				<options>
-				    <option value="Burglar Alarm (30s)=>useStrobe=true warningMode=BURGLAR sirenLevel=HIGH duration=PT30S">Burglar Alarm (30s)</option>
-				    <option value="Fire Alarm (60s, only siren)=>useStrobe=false warningMode=FIRE sirenLevel=HIGH duration=PT60S">Fire Alarm (60s, only siren)</option>
-				    <option value="Stop Alarm=>useStrobe=false warningMode=STOP sirenLevel=HIGH duration=PT30S">Stop Alarm</option>
+				    <option value="Burglar Alarm (30s)=>type=warning useStrobe=true warningMode=BURGLAR sirenLevel=HIGH duration=PT30S">Burglar Alarm (30s)</option>
+				    <option value="Fire Alarm (60s, only siren)=>type=warning useStrobe=false warningMode=FIRE sirenLevel=HIGH duration=PT60S">Fire Alarm (60s, only siren)</option>
+				    <option value="Stop Alarm=>type=warning useStrobe=false warningMode=STOP sirenLevel=HIGH duration=PT30S">Stop Alarm</option>
+				    <option value="Signal Armed=>type=squawk useStrobe=false squawkMode=ARMED squawkLevel=HIGH">Signal Armed</option>
+				    <option value="Signal Disarmed=>type=squawk useStrobe=false squawkMode=DISARMED squawkLevel=HIGH">Signal Disarmed</option>
 				</options>
 				<limitToOptions>false</limitToOptions>
 			</parameter>

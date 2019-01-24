@@ -11,7 +11,7 @@ package org.openhab.binding.zigbee.internal.converter.warningdevice;
 import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
-import static org.openhab.binding.zigbee.internal.converter.warningdevice.SirenLevel.HIGH;
+import static org.openhab.binding.zigbee.internal.converter.warningdevice.SoundLevel.HIGH;
 import static org.openhab.binding.zigbee.internal.converter.warningdevice.WarningMode.BURGLAR;
 
 import java.time.Duration;
@@ -26,7 +26,7 @@ import org.eclipse.smarthome.core.library.types.StringType;
  * rather simple format is used, by configuring the properties of the type using 'key=value' pairs that are
  * separated by whitespace.
  * <p>
- * Example for such a command: 'useStrobe=true warningMode=BURGLAR sirenLevel=HIGH duration=PT15M'.
+ * Example for such a command: 'type=warning useStrobe=true warningMode=BURGLAR sirenLevel=HIGH duration=PT15M'.
  * <p>
  * Note that the duration is specified using the ISO-8601 duration format (see {@link Duration#parse(CharSequence)} for
  * more details).
@@ -86,21 +86,26 @@ public class WarningType {
      * @return Generates the ESH command representing this warning
      */
     public String serializeToCommand() {
-        return String.format("useStrobe=%s warningMode=%s sirenLevel=%s duration=%s", useStrobe, warningMode,
-                sirenLevel, duration);
+        return String.format("type=warning useStrobe=%s warningMode=%s sirenLevel=%s duration=%s", useStrobe,
+                warningMode, sirenLevel, duration);
     }
 
     /**
      * @param command An ESH command representing a warning
-     * @return The {@link WarningType} represented by the ESH command
+     * @return The {@link WarningType} represented by the ESH command, or null if the command does not represent a
+     *         {@link WarningType}.
      */
     public static WarningType parse(String command) {
         Map<String, String> parameters = stream(command.split("\\s+")).filter(s -> s.contains("="))
                 .collect(toMap(s -> s.split("=")[0], s -> s.split("=")[1]));
 
-        return new WarningType(Boolean.valueOf(parameters.getOrDefault("useStrobe", "true")),
-                getWarningMode(parameters.get("warningMode")), getSirenLevel(parameters.get("sirenLevel")),
-                Duration.parse(parameters.getOrDefault("duration", Duration.ofSeconds(15).toString())));
+        if ("warning".equals(parameters.get("type"))) {
+            return new WarningType(Boolean.valueOf(parameters.getOrDefault("useStrobe", "true")),
+                    getWarningMode(parameters.get("warningMode")), getSirenLevel(parameters.get("sirenLevel")),
+                    Duration.parse(parameters.getOrDefault("duration", Duration.ofSeconds(15).toString())));
+        } else {
+            return null;
+        }
     }
 
     private static int getWarningMode(String warningModeString) {
@@ -127,7 +132,7 @@ public class WarningType {
         }
 
         try {
-            return SirenLevel.valueOf(sirenLevelString).getValue();
+            return SoundLevel.valueOf(sirenLevelString).getValue();
         } catch (IllegalArgumentException e) {
             // ignore - try to parse the sirenLevelString as number
         }

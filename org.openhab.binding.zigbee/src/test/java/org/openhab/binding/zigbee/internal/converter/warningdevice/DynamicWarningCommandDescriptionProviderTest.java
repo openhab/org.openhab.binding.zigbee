@@ -14,7 +14,6 @@ import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CHANNEL_WARNING_
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.config.core.Configuration;
@@ -25,9 +24,6 @@ import org.eclipse.smarthome.core.types.CommandDescription;
 import org.eclipse.smarthome.core.types.CommandOption;
 import org.junit.Before;
 import org.junit.Test;
-import org.openhab.binding.zigbee.internal.converter.warningdevice.DynamicWarningCommandDescriptionProvider;
-import org.openhab.binding.zigbee.internal.converter.warningdevice.WarningType;
-import org.openhab.binding.zigbee.internal.converter.warningdevice.WarningTypeCommandDescriptionProvider;
 
 /**
  * Unit tests for the {@link DynamicWarningCommandDescriptionProvider}.
@@ -45,7 +41,7 @@ public class DynamicWarningCommandDescriptionProviderTest {
 
     @Test
     public void testGetCommandDescriptionsWithProviderCommandDescription() {
-        WarningType providedWarningType = WarningType.parse("");
+        WarningType providedWarningType = WarningType.parse("type=warning");
         provider.addProvider(makeWarningTypeCommandDescriptionProvider("someLabel", providedWarningType));
 
         Channel channel = ChannelBuilder.create(new ChannelUID("binding:thing-type:thing:channel"), "String")
@@ -62,9 +58,9 @@ public class DynamicWarningCommandDescriptionProviderTest {
 
     @Test
     public void testGetCommandDescriptionsWithConfiguredCommandDescription() {
-        WarningType configuredWarningType = WarningType.parse("");
+        WarningType configuredWarningType = WarningType.parse("type=warning");
         Configuration configuration = new Configuration();
-        configuration.put("zigbee_iaswd_warningTypes",
+        configuration.put("zigbee_iaswd_commandOptions",
                 asList("someLabel=>" + configuredWarningType.serializeToCommand()));
         Channel channel = ChannelBuilder.create(new ChannelUID("binding:thing-type:thing:channel"), "String")
                 .withType(CHANNEL_WARNING_DEVICE).withConfiguration(configuration).build();
@@ -91,8 +87,8 @@ public class DynamicWarningCommandDescriptionProviderTest {
         return new WarningTypeCommandDescriptionProvider() {
 
             @Override
-            public Map<String, WarningType> getWarningTypes() {
-                return Collections.singletonMap(label, warningType);
+            public List<CommandOption> getWarningAndSquawCommandOptions() {
+                return Collections.singletonList(new CommandOption(warningType.serializeToCommand(), label));
             }
         };
     }

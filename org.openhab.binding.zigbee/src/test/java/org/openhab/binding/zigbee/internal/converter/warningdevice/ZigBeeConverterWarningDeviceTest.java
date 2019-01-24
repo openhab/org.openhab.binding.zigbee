@@ -64,7 +64,7 @@ public class ZigBeeConverterWarningDeviceTest {
 
     @Test
     public void testHandleCommandBurglarVeryHighStrobe() {
-        WarningType warningType = new WarningType(true, WarningMode.BURGLAR.getValue(), SirenLevel.VERY_HIGH.getValue(),
+        WarningType warningType = new WarningType(true, WarningMode.BURGLAR.getValue(), SoundLevel.VERY_HIGH.getValue(),
                 Duration.ofSeconds(50));
         converter.handleCommand(new StringType(warningType.serializeToCommand()));
 
@@ -76,12 +76,22 @@ public class ZigBeeConverterWarningDeviceTest {
     @Test
     public void testHandleCommandEmergencyPanicMediumNoStrobe() {
         WarningType warningType = new WarningType(false, WarningMode.EMERGENCY_PANIC.getValue(),
-                SirenLevel.MEDIUM.getValue(), Duration.ofMinutes(2));
+                SoundLevel.MEDIUM.getValue(), Duration.ofMinutes(2));
         converter.handleCommand(new StringType(warningType.serializeToCommand()));
 
         // Warning header is composed of: (a) siren level, (b) strobe, (3) warning mode
         // In our case: siren level medium: 1=0b01; strobe false: 0=0b00; warning mode emergency panic: 6=0b0110
         verify(cluster).startWarningCommand(0b01000110, 2 * 60);
+    }
+
+    @Test
+    public void testHandleSquawk() {
+        SquawkType squawkType = new SquawkType(false, SquawkMode.DISARMED.getValue(), SoundLevel.MEDIUM.getValue());
+        converter.handleCommand(new StringType(squawkType.serializeToCommand()));
+
+        // Squawk header is composed of: (a) squawk level, (b) strobe, (3) warning mode
+        // In our case: squawk level medium: 1=0b01; strobe false: 0=0b00; squawk mode disarmed: 6=0b0001
+        verify(cluster).squawkCommand(0b01000001);
     }
 
     @Test
