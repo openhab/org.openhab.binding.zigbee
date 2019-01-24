@@ -64,7 +64,7 @@ public class ZigBeeConverterWarningDeviceTest {
 
     @Test
     public void testHandleCommandBurglarVeryHighStrobe() {
-        WarningType warningType = new WarningType(true, WarningMode.BURGLAR, SirenLevel.VERY_HIGH,
+        WarningType warningType = new WarningType(true, WarningMode.BURGLAR.getValue(), SirenLevel.VERY_HIGH.getValue(),
                 Duration.ofSeconds(50));
         converter.handleCommand(new StringType(warningType.serializeToCommand()));
 
@@ -75,8 +75,8 @@ public class ZigBeeConverterWarningDeviceTest {
 
     @Test
     public void testHandleCommandEmergencyPanicMediumNoStrobe() {
-        WarningType warningType = new WarningType(false, WarningMode.EMERGENCY_PANIC, SirenLevel.MEDIUM,
-                Duration.ofMinutes(2));
+        WarningType warningType = new WarningType(false, WarningMode.EMERGENCY_PANIC.getValue(),
+                SirenLevel.MEDIUM.getValue(), Duration.ofMinutes(2));
         converter.handleCommand(new StringType(warningType.serializeToCommand()));
 
         // Warning header is composed of: (a) siren level, (b) strobe, (3) warning mode

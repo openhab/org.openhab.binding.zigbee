@@ -35,12 +35,15 @@ import org.eclipse.smarthome.core.library.types.StringType;
  */
 public class WarningType {
 
+    private static final int DEFAULT_WARNING_MODE = BURGLAR.getValue();
+    private static final int DEFAULT_SIREN_LEVEL = HIGH.getValue();
+
     private final boolean useStrobe;
-    private final WarningMode warningMode;
-    private final SirenLevel sirenLevel;
+    private final int warningMode;
+    private final int sirenLevel;
     private final Duration duration;
 
-    public WarningType(boolean useStrobe, WarningMode warningMode, SirenLevel sirenLevel, Duration duration) {
+    public WarningType(boolean useStrobe, int warningMode, int sirenLevel, Duration duration) {
         requireNonNull(warningMode);
         requireNonNull(sirenLevel);
         requireNonNull(duration);
@@ -59,16 +62,16 @@ public class WarningType {
     }
 
     /**
-     * @return the {@link WarningMode} to use
+     * @return the warning mode to use
      */
-    public WarningMode getWarningMode() {
+    public int getWarningMode() {
         return warningMode;
     }
 
     /**
-     * @return the {@link SirenLevel} to use
+     * @return the siren level to use
      */
-    public SirenLevel getSirenLevel() {
+    public int getSirenLevel() {
         return sirenLevel;
     }
 
@@ -96,9 +99,44 @@ public class WarningType {
                 .collect(toMap(s -> s.split("=")[0], s -> s.split("=")[1]));
 
         return new WarningType(Boolean.valueOf(parameters.getOrDefault("useStrobe", "true")),
-                WarningMode.valueOf(parameters.getOrDefault("warningMode", BURGLAR.toString())),
-                SirenLevel.valueOf(parameters.getOrDefault("sirenLevel", HIGH.toString())),
+                getWarningMode(parameters.get("warningMode")), getSirenLevel(parameters.get("sirenLevel")),
                 Duration.parse(parameters.getOrDefault("duration", Duration.ofSeconds(15).toString())));
+    }
+
+    private static int getWarningMode(String warningModeString) {
+        if (warningModeString == null) {
+            return DEFAULT_WARNING_MODE;
+        }
+
+        try {
+            return WarningMode.valueOf(warningModeString).getValue();
+        } catch (IllegalArgumentException e) {
+            // ignore - try to parse the warningModeString as number
+        }
+
+        try {
+            return Integer.parseInt(warningModeString);
+        } catch (NumberFormatException e) {
+            return DEFAULT_WARNING_MODE;
+        }
+    }
+
+    private static int getSirenLevel(String sirenLevelString) {
+        if (sirenLevelString == null) {
+            return DEFAULT_SIREN_LEVEL;
+        }
+
+        try {
+            return SirenLevel.valueOf(sirenLevelString).getValue();
+        } catch (IllegalArgumentException e) {
+            // ignore - try to parse the sirenLevelString as number
+        }
+
+        try {
+            return Integer.parseInt(sirenLevelString);
+        } catch (NumberFormatException e) {
+            return DEFAULT_SIREN_LEVEL;
+        }
     }
 
 }

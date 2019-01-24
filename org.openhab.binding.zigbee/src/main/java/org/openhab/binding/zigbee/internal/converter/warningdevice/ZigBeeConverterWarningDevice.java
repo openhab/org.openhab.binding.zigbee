@@ -108,11 +108,11 @@ public class ZigBeeConverterWarningDevice extends ZigBeeBaseChannelConverter {
                 (int) warningType.getDuration().getSeconds());
     }
 
-    private int makeWarningHeader(WarningMode warningMode, boolean useStrobe, SirenLevel sirenLevel) {
+    private int makeWarningHeader(int warningMode, boolean useStrobe, int sirenLevel) {
         int result = 0;
-        result |= warningMode.getValue();
+        result |= warningMode;
         result |= (useStrobe ? 1 : 0) << 4;
-        result |= sirenLevel.getValue() << 6;
+        result |= sirenLevel << 6;
         return result;
     }
 

@@ -13,9 +13,6 @@ import static org.junit.Assert.*;
 import java.time.Duration;
 
 import org.junit.Test;
-import org.openhab.binding.zigbee.internal.converter.warningdevice.SirenLevel;
-import org.openhab.binding.zigbee.internal.converter.warningdevice.WarningMode;
-import org.openhab.binding.zigbee.internal.converter.warningdevice.WarningType;
 
 /**
  * Unit tests for {@link WarningType}.
@@ -26,9 +23,10 @@ public class WarningTypeTest {
 
     @Test
     public void testSerializeWarningType() {
-        WarningType warningType = new WarningType(true, WarningMode.FIRE, SirenLevel.VERY_HIGH, Duration.ofSeconds(30));
+        WarningType warningType = new WarningType(true, WarningMode.FIRE.getValue(), SirenLevel.VERY_HIGH.getValue(),
+                Duration.ofSeconds(30));
         String commandString = warningType.serializeToCommand();
-        assertEquals("useStrobe=true warningMode=FIRE sirenLevel=VERY_HIGH duration=PT30S", commandString);
+        assertEquals("useStrobe=true warningMode=2 sirenLevel=3 duration=PT30S", commandString);
     }
 
     @Test
@@ -36,8 +34,8 @@ public class WarningTypeTest {
         WarningType warningType = WarningType
                 .parse("useStrobe=true warningMode=FIRE sirenLevel=VERY_HIGH duration=PT30S");
         assertEquals(Duration.ofSeconds(30), warningType.getDuration());
-        assertEquals(SirenLevel.VERY_HIGH, warningType.getSirenLevel());
-        assertEquals(WarningMode.FIRE, warningType.getWarningMode());
+        assertEquals(SirenLevel.VERY_HIGH.getValue(), warningType.getSirenLevel());
+        assertEquals(WarningMode.FIRE.getValue(), warningType.getWarningMode());
         assertTrue(warningType.isUseStrobe());
     }
 
@@ -45,8 +43,8 @@ public class WarningTypeTest {
     public void testParseCommandDefaults() {
         WarningType warningType = WarningType.parse("");
         assertEquals(Duration.ofSeconds(15), warningType.getDuration());
-        assertEquals(SirenLevel.HIGH, warningType.getSirenLevel());
-        assertEquals(WarningMode.BURGLAR, warningType.getWarningMode());
+        assertEquals(SirenLevel.HIGH.getValue(), warningType.getSirenLevel());
+        assertEquals(WarningMode.BURGLAR.getValue(), warningType.getWarningMode());
         assertTrue(warningType.isUseStrobe());
     }
 
