@@ -308,7 +308,7 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter imp
                 CommandResult bindResponse = bind(cluster).get();
                 if (!bindResponse.isSuccess()) {
                     logger.error("{}: Error 0x{} setting {} binding for cluster {}", endpoint.getIeeeAddress(),
-                            clusterType, toHexString(bindResponse.getStatusCode()), clusterId);
+                            toHexString(bindResponse.getStatusCode()), clusterType, clusterId);
                 }
             } catch (InterruptedException | ExecutionException e) {
                 logger.error("{}: Exception setting {} binding to cluster {}", endpoint.getIeeeAddress(), clusterType, clusterId, e);
