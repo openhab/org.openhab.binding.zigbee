@@ -44,8 +44,6 @@ public class WarningType {
     private final Duration duration;
 
     public WarningType(boolean useStrobe, int warningMode, int sirenLevel, Duration duration) {
-        requireNonNull(warningMode);
-        requireNonNull(sirenLevel);
         requireNonNull(duration);
 
         this.useStrobe = useStrobe;

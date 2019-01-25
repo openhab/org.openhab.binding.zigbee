@@ -9,7 +9,6 @@
 package org.openhab.binding.zigbee.internal.converter.warningdevice;
 
 import static java.util.Arrays.stream;
-import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
 import static org.openhab.binding.zigbee.internal.converter.warningdevice.SoundLevel.HIGH;
 
@@ -38,9 +37,6 @@ public class SquawkType {
     private final int squawkLevel;
 
     public SquawkType(boolean useStrobe, int squawkMode, int squawkLevel) {
-        requireNonNull(squawkMode);
-        requireNonNull(squawkLevel);
-
         this.useStrobe = useStrobe;
         this.squawkMode = squawkMode;
         this.squawkLevel = squawkLevel;

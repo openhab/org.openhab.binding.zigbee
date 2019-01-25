@@ -313,7 +313,6 @@
 				<limitToOptions>false</limitToOptions>
 			</parameter>
 			<parameter name="zigbee_iaswd_commandOptions" type="text" multiple="true">
-				<default>60</default>
 				<label>Command options for warning/squawk types</label>
 				<description>This configuration parameter is used to configure command options for warning/squawk types to be displayed by UIs; see options for examples</description>
 				<options>
