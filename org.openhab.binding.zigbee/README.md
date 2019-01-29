@@ -8,7 +8,8 @@ The ZigBee binding supports an interface to a wireless ZigBee home automation ne
 
 A ZigBee Coordinator is the network controller, and is therefore the heart of the ZigBee network. It also acts as the trust centre to control security access to the network.
 
-Coordinators need to be installed manually and the serial port and baud rate must be set. These are set to match the configuration that the dongle is in. Should you wish to use a different baud rate than the default speed of the device, you must change the configuration of the dongle using some other, and then configure the binding to match your change. If in doubt, you should leave the settings at their default values which should work in most cases.
+Coordinators need to be installed manually and the serial port and baud rate must be set. These are set to match the configuration that the dongle is in. Should you wish to use a different baud rate than the default speed of the device, you must change the configuration of the dongle using some other, and then configure the binding to match your change. If in doubt, you should leave the settings at their default values which should work in most cases. 
+If you are running on Linux, then you need to add the uesr 'openhab' to the tty group, and enable "Extra_Java_Opts" for the serial port your coordinator uses. Additionally for Docker users, you will need to pass the serial port through Docker to openHAB. You can refer to your installation guide for specific instructions. 
 
 #### Coordinator Configuration
 
