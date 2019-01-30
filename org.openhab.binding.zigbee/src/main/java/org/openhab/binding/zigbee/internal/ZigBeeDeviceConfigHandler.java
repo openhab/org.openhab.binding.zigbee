@@ -53,10 +53,24 @@ public class ZigBeeDeviceConfigHandler {
      */
     public void updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> updatedParameters) {
+        updateConfiguration(currentConfiguration, updatedParameters, true);
+    }
+
+    /**
+     * Processes the updated configuration. As required, the method shall process each known configuration parameter and
+     * set a local variable for local parameters, and update the remote device for remote parameters.
+     * The currentConfiguration shall be updated.
+     *
+     * @param currentConfiguration the current {@link Configuration}
+     * @param updatedParameters a map containing the updated configuration parameters to be set
+     * @param ignoreUnchangedParameters ignore parameters that have not changed
+     */
+    public void updateConfiguration(@NonNull Configuration currentConfiguration, Map<String, Object> updatedParameters,
+            boolean ignoreUnchangedParameters) {
 
         for (Entry<String, Object> configurationParameter : updatedParameters.entrySet()) {
-            // Ignore any configuration parameters that have not changed
-            if (Objects.equals(configurationParameter.getValue(),
+            // If required, ignore any configuration parameters that have not changed
+            if (ignoreUnchangedParameters && Objects.equals(configurationParameter.getValue(),
                     currentConfiguration.get(configurationParameter.getKey()))) {
                 logger.debug("Configuration update: Ignored {} as no change", configurationParameter.getKey());
                 continue;

@@ -402,6 +402,12 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             logger.error("{}: Exception getting binding table ", nodeIeeeAddress, e);
         }
 
+        // Update the configuration of the device
+        Map<String, Object> configProperties = thing.getConfiguration().getProperties();
+        if (!configProperties.isEmpty()) {
+            handleConfigurationUpdate(configProperties, false);
+        }
+
         updateStatus(ThingStatus.ONLINE);
 
         startPolling();
@@ -555,12 +561,17 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     @Override
     public void handleConfigurationUpdate(Map<String, Object> configurationParameters) {
+        handleConfigurationUpdate(configurationParameters, true);
+    }
+
+    private void handleConfigurationUpdate(Map<String, Object> configurationParameters, boolean ignoreUnchangedParameters) {
         logger.debug("{}: Configuration received: {}", nodeIeeeAddress, configurationParameters);
 
         Configuration configuration = editConfiguration();
         for (Entry<String, Object> configurationParameter : configurationParameters.entrySet()) {
-            // Ignore any configuration parameters that have not changed
-            if (Objects.equals(configurationParameter.getValue(), configuration.get(configurationParameter.getKey()))) {
+            // If required, ignore any configuration parameters that have not changed
+            if (ignoreUnchangedParameters && Objects.equals(configurationParameter.getValue(),
+                    configuration.get(configurationParameter.getKey()))) {
                 logger.debug("{}: Configuration update: Ignored {} as no change", nodeIeeeAddress,
                         configurationParameter.getKey());
                 continue;
@@ -584,7 +595,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         ZigBeeNode node = coordinatorHandler.getNode(nodeIeeeAddress);
         ZigBeeDeviceConfigHandler deviceConfigHandler = new ZigBeeDeviceConfigHandler(node);
-        deviceConfigHandler.updateConfiguration(configuration, configurationParameters);
+        deviceConfigHandler.updateConfiguration(configuration, configurationParameters, ignoreUnchangedParameters);
 
         // Persist changes
         updateConfiguration(configuration);
