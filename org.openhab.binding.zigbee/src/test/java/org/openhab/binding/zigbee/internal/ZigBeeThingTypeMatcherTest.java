@@ -27,7 +27,7 @@ public class ZigBeeThingTypeMatcherTest {
     @Test
     public void testMatcher()
             throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-        ZigBeeThingTypeMatcher matcher = ZigBeeThingTypeMatcher.getInstance();
+        ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
         Map<String, Object> properties;
 
         properties = new HashMap<>();
