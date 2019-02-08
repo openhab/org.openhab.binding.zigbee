@@ -8,6 +8,7 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.smarthome.core.library.types.OnOffType;
@@ -18,6 +19,7 @@ import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +48,8 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
 
     private ZclOnOffCluster clusterOnOffClient;
     private ZclOnOffCluster clusterOnOffServer;
+
+    private ZclReportingConfig configReporting;
 
     @Override
     public boolean initializeDevice() {
@@ -110,6 +114,11 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
             clusterOnOffClient.addCommandListener(this);
         }
 
+        configReporting = new ZclReportingConfig();
+
+        configOptions = new ArrayList<>();
+        configOptions.addAll(configReporting.getConfiguration());
+
         return true;
     }
 
@@ -123,6 +132,11 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
         if (clusterOnOffServer != null) {
             clusterOnOffServer.removeAttributeListener(this);
         }
+    }
+
+    @Override
+    public int getPollingPeriod() {
+        return configReporting.getPollingPeriod();
     }
 
     @Override
