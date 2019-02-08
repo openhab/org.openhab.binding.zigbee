@@ -11,6 +11,7 @@ package org.openhab.binding.zigbee.handler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Enumeration;
 import java.util.TooManyListenersException;
 
 import org.slf4j.Logger;
@@ -121,6 +122,15 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
         try {
             logger.debug("Connecting to serial port [{}] at {} baud, flow control {}.", portName, baudRate,
                     flowControl);
+
+            // in some rare cases we have to check whether a port really exists, because if it doesn't the call to
+            // CommPortIdentifier#open will kill the whole JVM
+            Enumeration<?> portList = CommPortIdentifier.getPortIdentifiers();
+            if (!portList.hasMoreElements()) {
+                logger.debug("No communication ports found, cannot connect to [{}]", portName);
+                return false;
+            }
+
             try {
                 CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
                 CommPort commPort = portIdentifier.open("org.openhab.binding.zigbee", 100);
@@ -179,7 +189,6 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
         try {
             if (serialPort != null) {
                 serialPort.removeEventListener();
-                serialPort.enableReceiveTimeout(1);
 
                 outputStream.flush();
 

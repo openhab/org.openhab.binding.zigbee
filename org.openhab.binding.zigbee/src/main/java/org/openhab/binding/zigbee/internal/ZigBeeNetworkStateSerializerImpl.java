@@ -86,6 +86,9 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
      */
     private final String networkStateFilePath;
 
+    private final Object concurrentWriteCountSync = new Object();
+    private int concurrentWriteCount = 0;
+
     public ZigBeeNetworkStateSerializerImpl(String networkId) {
         this.networkId = networkId;
         networkStateFilePath = ConfigConstants.getUserDataFolder() + "/" + ZigBeeBindingConstants.BINDING_ID;
@@ -125,8 +128,7 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
      *
      * @param networkManager the network state
      */
-    @Override
-    public synchronized void serialize(final ZigBeeNetworkManager networkManager) {
+    private synchronized void doSerialize(final ZigBeeNetworkManager networkManager) {
         XStream stream = openStream();
 
         logger.debug("Saving ZigBee network state: Start.");
@@ -168,6 +170,60 @@ public class ZigBeeNetworkStateSerializerImpl implements ZigBeeNetworkStateSeria
         }
 
         logger.debug("Saving ZigBee network state: Done.");
+    }
+
+    /**
+     * Serializes the network state.
+     * Synchonization is handled within the method with a latching mechanism: the first concurrent call will
+     * wait till the ongoing write finishes. The rest of concurrent calls will be skipped returning
+     * immediately. This guarrantees we write the file immediately after the first call, and only once more
+     * for all concurrent calls that happened meanwhile
+     *
+     * @param networkManager the network state
+     */
+
+    @Override
+    public void serialize(final ZigBeeNetworkManager networkManager) {
+
+        boolean wait = false;
+
+        synchronized (concurrentWriteCountSync) {
+            if (concurrentWriteCount == 2) {
+                logger.debug("Skipping ZigBee network state save (another thread already waiting)");
+                return;
+            }
+            wait = concurrentWriteCount > 0;
+            concurrentWriteCount++;
+        }
+
+        try {
+            if (!wait) {
+                logger.debug("Saving ZigBee network state");
+            } else {
+                logger.debug("Deferring ZigBee network state file save (another thread already writing)");
+                synchronized (concurrentWriteCountSync) {
+                    // Check again, as the writing thread might already have finished when we get here
+                    if (concurrentWriteCount > 1)
+                        concurrentWriteCountSync.wait();
+                }
+                logger.debug("Resuming ZigBee network state file save (previous thread finished)");
+            }
+        } catch (Exception e) {
+            // Eat me up. The file will anyway be saved as this is still pending
+            // The doSerialize method is synchronized, so it will wait if necessary
+            logger.debug("Error waiting to write network state file", e);
+        }
+
+        try {
+            doSerialize(networkManager);
+        } catch (Exception e) {
+            logger.debug("Error writing the network state file", e);
+        }
+
+        synchronized (concurrentWriteCountSync) {
+            concurrentWriteCount--;
+            concurrentWriteCountSync.notify();
+        }
     }
 
     /**

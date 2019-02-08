@@ -237,10 +237,8 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter imp
 
         public boolean matchesCommand(ZclCommand command) {
             boolean commandIdMatches = command.getCommandId().intValue() == commandId;
-            boolean commandParameterMatches = commandParameterName == null || commandParameterValue == null
-                    || matchesParameter(command);
-
-            return commandIdMatches && commandParameterMatches;
+            return commandIdMatches
+                    && (commandParameterName == null || commandParameterValue == null || matchesParameter(command));
         }
 
         private boolean matchesParameter(ZclCommand command) {
