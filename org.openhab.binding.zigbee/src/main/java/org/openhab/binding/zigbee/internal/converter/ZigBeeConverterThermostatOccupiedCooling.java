@@ -75,7 +75,7 @@ public class ZigBeeConverterThermostatOccupiedCooling extends ZigBeeBaseChannelC
 
     @Override
     public void handleRefresh() {
-        cluster.getLocalTemperature(0);
+        cluster.getOccupiedCoolingSetpoint(0);
     }
 
     @Override

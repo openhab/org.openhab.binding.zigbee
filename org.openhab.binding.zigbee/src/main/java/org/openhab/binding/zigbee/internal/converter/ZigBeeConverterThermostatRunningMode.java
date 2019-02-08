@@ -77,7 +77,7 @@ public class ZigBeeConverterThermostatRunningMode extends ZigBeeBaseChannelConve
 
     @Override
     public void handleRefresh() {
-        cluster.getLocalTemperature(0);
+        cluster.read(cluster.getAttribute(ZclThermostatCluster.ATTR_THERMOSTATRUNNINGMODE));
     }
 
     @Override

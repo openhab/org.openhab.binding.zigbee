@@ -75,7 +75,7 @@ public class ZigBeeConverterThermostatOutdoorTemperature extends ZigBeeBaseChann
 
     @Override
     public void handleRefresh() {
-        cluster.getLocalTemperature(0);
+        cluster.getOutdoorTemperature(0);
     }
 
     @Override

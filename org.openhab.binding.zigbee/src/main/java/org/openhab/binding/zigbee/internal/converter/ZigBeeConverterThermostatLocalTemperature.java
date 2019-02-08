@@ -38,6 +38,8 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
         implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterThermostatLocalTemperature.class);
 
+    private final int INVALID_TEMPERATURE = 0x8000;
+
     private ZclThermostatCluster cluster;
 
     @Override
@@ -116,7 +118,7 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
         if (attribute.getCluster() == ZclClusterType.THERMOSTAT
                 && attribute.getId() == ZclThermostatCluster.ATTR_LOCALTEMPERATURE) {
             Integer value = (Integer) attribute.getLastValue();
-            if (value != null) {
+            if (value != null && value != INVALID_TEMPERATURE) {
                 updateChannelState(new QuantityType<>(BigDecimal.valueOf(value, 2), SIUnits.CELSIUS));
             }
         }

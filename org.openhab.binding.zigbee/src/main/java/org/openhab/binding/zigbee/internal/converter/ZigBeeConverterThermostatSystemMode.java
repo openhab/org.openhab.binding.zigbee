@@ -53,7 +53,7 @@ public class ZigBeeConverterThermostatSystemMode extends ZigBeeBaseChannelConver
             } else {
                 // Configure reporting
                 ZclAttribute attribute = cluster.getAttribute(ZclThermostatCluster.ATTR_SYSTEMMODE);
-                cluster.setReporting(attribute, REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 0.1);
+                cluster.setReporting(attribute, REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX);
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
@@ -72,7 +72,7 @@ public class ZigBeeConverterThermostatSystemMode extends ZigBeeBaseChannelConver
 
     @Override
     public void handleRefresh() {
-        cluster.getLocalTemperature(0);
+        cluster.getSystemMode(0);
     }
 
     @Override

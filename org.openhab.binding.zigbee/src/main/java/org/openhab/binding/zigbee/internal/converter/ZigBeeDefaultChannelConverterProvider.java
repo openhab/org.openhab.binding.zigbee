@@ -73,6 +73,7 @@ public final class ZigBeeDefaultChannelConverterProvider implements ZigBeeChanne
                 ZigBeeConverterThermostatUnoccupiedHeating.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_THERMOSTAT_RUNNINGMODE,
                 ZigBeeConverterThermostatRunningMode.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_THERMOSTAT_SYSTEMMODE, ZigBeeConverterThermostatSystemMode.class);
     }
 
     @Override

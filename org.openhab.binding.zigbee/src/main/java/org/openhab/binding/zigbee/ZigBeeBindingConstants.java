@@ -151,8 +151,8 @@ public class ZigBeeBindingConstants {
     public static final ChannelTypeUID CHANNEL_THERMOSTAT_OUTDOORTEMPERATURE = new ChannelTypeUID(
             "zigbee:thermostat_outdoortemp");
 
-    public static final String CHANNEL_NAME_THERMOSTAT_OCCUPIEDCOOLING = "thermostatunoccupiedcooling";
-    public static final String CHANNEL_LABEL_THERMOSTAT_OCCUPIEDCOOLING = "Unoccupied Cooling Setpoint";
+    public static final String CHANNEL_NAME_THERMOSTAT_OCCUPIEDCOOLING = "thermostatoccupiedcooling";
+    public static final String CHANNEL_LABEL_THERMOSTAT_OCCUPIEDCOOLING = "Occupied Cooling Setpoint";
     public static final ChannelTypeUID CHANNEL_THERMOSTAT_OCCUPIEDCOOLING = new ChannelTypeUID(
             "zigbee:thermostat_occupiedcooling");
 
