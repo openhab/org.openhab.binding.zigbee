@@ -9,6 +9,8 @@
 package org.openhab.binding.zigbee.internal;
 
 import java.util.Hashtable;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.eclipse.smarthome.config.core.ConfigDescriptionProvider;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -20,8 +22,11 @@ import org.eclipse.smarthome.core.thing.type.DynamicStateDescriptionProvider;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeChannelConverterFactory;
+import org.openhab.binding.zigbee.thingtype.ZigBeeThingTypeProvider;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 
 /**
  * The {@link ZigBeeHandlerFactory} is responsible for creating things and thing
@@ -36,7 +41,7 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
 
     private ZigBeeChannelConverterFactory zigbeeChannelConverterFactory;
 
-    private final ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
+    private final Set<ZigBeeThingTypeProvider> providers = new CopyOnWriteArraySet<>();
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -45,7 +50,8 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
             return true;
         }
 
-        return matcher.getSupportedThingTypeUIDs().contains(thingTypeUID);
+        return providers.stream().map(ZigBeeThingTypeProvider::getThingTypeUIDs).flatMap(Set::stream)
+                .anyMatch(uid -> uid.equals(thingTypeUID));
     }
 
     @Override
@@ -70,5 +76,14 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
 
     protected void unsetZigBeeChannelConverterFactory(ZigBeeChannelConverterFactory zigbeeChannelConverterFactory) {
         this.zigbeeChannelConverterFactory = null;
+    }
+
+    @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
+    public void addZigBeeThingTypeProvider(ZigBeeThingTypeProvider zigBeeThingTypeProvider) {
+        providers.add(zigBeeThingTypeProvider);
+    }
+
+    public void removeZigBeeThingTypeProvider(ZigBeeThingTypeProvider zigBeeThingTypeProvider) {
+        providers.remove(zigBeeThingTypeProvider);
     }
 }
