@@ -3,7 +3,7 @@
     xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
     xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
 
-    <thing-type id="smartthings_motionv4">
+    <thing-type id="smartthings_motionv4" listed="false">
         <label>SmartThings Motion Sensor V4</label>
         <description>SmartThings Motion and Temperature Sensor</description>
 
