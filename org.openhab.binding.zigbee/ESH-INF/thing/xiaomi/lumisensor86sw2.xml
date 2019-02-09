@@ -6,7 +6,7 @@
 
 	<thing-type id="xiaomi_lumisensor86sw2">
 		<label>Xiaomi Wireless 2-Button Switch</label>
-		<description>Xiaomi Wireless 2-Button Switch</description>
+		<description>Xiaomi Wireless 2-Button Switch. These devices do not correctly report their clusters, so these need to be injected by the binding.</description>
 
 		<channels>
 			<channel id="switch_1" typeId="switch_onoff">
