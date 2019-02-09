@@ -4,9 +4,11 @@
 	xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
 	xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
 
-	<thing-type id="xiaomi_lumisensor86sw2">
+	<!-- These devices do not correctly report their clusters, so they need a static thing definition for the binding to inject the correct clusters into the ZigBeeNode -->
+
+	<thing-type id="xiaomi_lumisensor86sw2" listed="false">
 		<label>Xiaomi Wireless 2-Button Switch</label>
-		<description>Xiaomi Wireless 2-Button Switch. This specific Thing Type is needed because these devices do not correctly report their clusters.</description>
+		<description>Xiaomi Wireless 2-Button Switch</description>
 
 		<channels>
 			<channel id="switch_1" typeId="switch_onoff">
