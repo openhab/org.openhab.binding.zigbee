@@ -66,13 +66,14 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     private Object colorUpdateSync = new Object();
 
     private boolean supportsHue = false;
-    private float lastHue = -1.0f;
-    private float lastSaturation = -1.0f;
+
+    private int lastHue = -1;
+    private int lastSaturation = -1;
     private boolean hueChanged = false;
     private boolean saturationChanged = false;
 
-    private float lastX = -1.0f;
-    private float lastY = -1.0f;
+    private int lastX = -1;
+    private int lastY = -1;
     private boolean xChanged = false;
     private boolean yChanged = false;
 
@@ -388,11 +389,16 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     private void updateOnOff(OnOffType onOff) {
         boolean on = onOff == OnOffType.ON;
         currentOnOffState.set(on);
-        if (!on) {
+
+        if (lastColorMode != ColorModeEnum.COLORTEMPERATURE) {
+            // Extra temp variable to avoid thread sync concurrency issues on lastHSB
+            HSBType oldHSB = lastHSB;
+            HSBType newHSB = on ? lastHSB : new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), PercentType.ZERO);
+            updateChannelState(newHSB);
+        } else if (!on) {
             updateChannelState(OnOffType.OFF);
-        } else if (lastColorMode != ColorModeEnum.COLORTEMPERATURE) {
-            updateChannelState(lastHSB);
         }
+
     }
 
     private void updateBrightness(PercentType brightness) {
@@ -423,16 +429,20 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     }
 
     private void updateColorHSB() {
-        DecimalType hue = new DecimalType(Float.valueOf(lastHue).toString());
-        PercentType saturation = new PercentType(Float.valueOf(lastSaturation).toString());
+        float hueValue = lastHue * 360.0f / 254.0f;
+        float saturationValue = lastSaturation * 100.0f / 254.0f;
+        DecimalType hue = new DecimalType(Float.valueOf(hueValue).toString());
+        PercentType saturation = new PercentType(Float.valueOf(saturationValue).toString());
         updateColorHSB(hue, saturation);
         hueChanged = false;
         saturationChanged = false;
     }
 
     private void updateColorXY() {
-        PercentType x = new PercentType(Float.valueOf(lastX * 100.0f).toString());
-        PercentType y = new PercentType(Float.valueOf(lastY * 100.0f).toString());
+        float xValue = lastX / 65536.0f;
+        float yValue = lastY / 65536.0f;
+        PercentType x = new PercentType(Float.valueOf(xValue * 100.0f).toString());
+        PercentType y = new PercentType(Float.valueOf(yValue * 100.0f).toString());
         updateColorXY(x, y);
         xChanged = false;
         yChanged = false;
@@ -463,30 +473,26 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                     }
                 } else if (attribute.getCluster().getId() == ZclColorControlCluster.CLUSTER_ID) {
                     if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTHUE) {
-                        Integer value = (Integer) attribute.getLastValue();
-                        float hue = value * 360.0f / 254.0f;
-                        if (Math.abs(hue - lastHue) < .0000001) {
+                        int hue = ((Integer) attribute.getLastValue()).intValue();
+                        if (hue != lastHue) {
                             lastHue = hue;
                             hueChanged = true;
                         }
                     } else if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTSATURATION) {
-                        Integer value = (Integer) attribute.getLastValue();
-                        float saturation = value * 100.0f / 254.0f;
-                        if (Math.abs(saturation - lastSaturation) < .0000001) {
+                        int saturation = ((Integer) attribute.getLastValue()).intValue();
+                        if (saturation != lastSaturation) {
                             lastSaturation = saturation;
                             saturationChanged = true;
                         }
                     } else if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTX) {
-                        Integer value = (Integer) attribute.getLastValue();
-                        float x = value / 65536.0f;
-                        if (Math.abs(x - lastX) < .0000001) {
+                        int x = ((Integer) attribute.getLastValue()).intValue();
+                        if (x != lastX) {
                             lastX = x;
                             xChanged = true;
                         }
                     } else if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTY) {
-                        Integer value = (Integer) attribute.getLastValue();
-                        float y = value / 65536.0f;
-                        if (Math.abs(y - lastY) < .0000001) {
+                        int y = ((Integer) attribute.getLastValue()).intValue();
+                        if (y != lastY) {
                             lastY = y;
                             yChanged = true;
                         }
@@ -495,6 +501,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                         lastColorMode = ColorModeEnum.getByValue(colorMode);
                         if (lastColorMode == ColorModeEnum.COLORTEMPERATURE) {
                             updateChannelState(UnDefType.UNDEF);
+                        } else if (currentOnOffState.get()) {
+                            updateChannelState(lastHSB);
                         }
                     }
                 }
