@@ -32,7 +32,6 @@ import com.zsmartsystems.zigbee.zdo.field.PowerDescriptor;
  *
  */
 public class ZigBeeNodePropertyDiscoverer {
-    private static final String HEX_PREFIX = "0x";
     private Logger logger = LoggerFactory.getLogger(ZigBeeNodePropertyDiscoverer.class);
 
     private Map<String, String> properties = new HashMap<String, String>();
@@ -186,7 +185,8 @@ public class ZigBeeNodePropertyDiscoverer {
         if (otaCluster != null) {
             Integer fileVersion = otaCluster.getCurrentFileVersion(Long.MAX_VALUE);
             if (fileVersion != null) {
-                properties.put(Thing.PROPERTY_FIRMWARE_VERSION, String.format("%s%08X",HEX_PREFIX, fileVersion));
+                properties.put(Thing.PROPERTY_FIRMWARE_VERSION,
+                        String.format("%s%08X", ZigBeeBindingConstants.FIRMWARE_VERSION_HEX_PREFIX, fileVersion));
             } else {
                 logger.debug("{}: OTA firmware failed", node.getIeeeAddress());
             }
