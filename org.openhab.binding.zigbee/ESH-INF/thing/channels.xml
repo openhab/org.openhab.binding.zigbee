@@ -213,6 +213,7 @@
         <label>Local Temperature</label>
         <description>Indicates the local temperature provided by the thermostat</description>
         <category>HVAC</category>
+        <state pattern="%.1f %unit%" readOnly="true"/>
     </channel-type>
 
     <!-- Thermostat Outdoor Temperature -->
@@ -221,6 +222,7 @@
         <label>Outdoor Temperature</label>
         <description>Indicates the outdoor temperature provided by the thermostat</description>
         <category>HVAC</category>
+        <state pattern="%.1f %unit%" readOnly="true"/>
     </channel-type>
 
     <!-- Thermostat Occupied Heating -->
@@ -229,6 +231,7 @@
         <label>Occupied Heating Setpoint</label>
         <description>Set the heating temperature when the room is occupied</description>
         <category>HVAC</category>
+        <state pattern="%.1f %unit%"/>
     </channel-type>
 
     <!-- Thermostat Occupied Cooling -->
@@ -237,6 +240,7 @@
         <label>Occupied Cooling Setpoint</label>
         <description>Set the cooling temperature when the room is occupied</description>
         <category>HVAC</category>
+        <state pattern="%.1f %unit%"/>
     </channel-type>
 
     <!-- Thermostat Unoccupied Heating -->
@@ -245,6 +249,7 @@
         <label>Unoccupied Heating Setpoint</label>
         <description>Set the heating temperature when the room is unoccupied</description>
         <category>HVAC</category>
+        <state pattern="%.1f %unit%"/>
     </channel-type>
 
     <!-- Thermostat Unoccupied Cooling -->
@@ -253,6 +258,7 @@
         <label>Unoccupied Cooling Setpoint</label>
         <description>Set the cooling temperature when the room is unoccupied</description>
         <category>HVAC</category>
+        <state pattern="%.1f %unit%"/>
     </channel-type>
 
     <!-- Thermostat System Mode -->
@@ -282,7 +288,7 @@
         <label>Running Mode</label>
         <description>The running mode of the thermostat</description>
         <category>HVAC</category>
-        <state>
+        <state readOnly="true">
             <options>
                 <option value="0">Off</option>
                 <option value="3">Cool</option>
