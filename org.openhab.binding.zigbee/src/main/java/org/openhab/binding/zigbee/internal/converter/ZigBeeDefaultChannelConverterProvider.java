@@ -60,6 +60,21 @@ public final class ZigBeeDefaultChannelConverterProvider implements ZigBeeChanne
         channelMap.put(ZigBeeBindingConstants.CHANNEL_ELECTRICAL_RMSCURRENT,
                 ZigBeeConverterMeasurementRmsCurrent.class);
         channelMap.put(DefaultSystemChannelTypeProvider.SYSTEM_BUTTON.getUID(), ZigBeeConverterGenericButton.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_THERMOSTAT_LOCALTEMPERATURE,
+                ZigBeeConverterThermostatLocalTemperature.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_THERMOSTAT_OUTDOORTEMPERATURE,
+                ZigBeeConverterThermostatOutdoorTemperature.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_THERMOSTAT_OCCUPIEDCOOLING,
+                ZigBeeConverterThermostatOccupiedCooling.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_THERMOSTAT_OCCUPIEDHEATING,
+                ZigBeeConverterThermostatOccupiedHeating.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_THERMOSTAT_UNOCCUPIEDCOOLING,
+                ZigBeeConverterThermostatUnoccupiedCooling.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_THERMOSTAT_UNOCCUPIEDHEATING,
+                ZigBeeConverterThermostatUnoccupiedHeating.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_THERMOSTAT_RUNNINGMODE,
+                ZigBeeConverterThermostatRunningMode.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_THERMOSTAT_SYSTEMMODE, ZigBeeConverterThermostatSystemMode.class);
     }
 
     @Override
