@@ -30,11 +30,11 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclLevelControlCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 
 /**
- * Testing the {@link ZigBeeChannelConverterFactory}.
+ * Testing the {@link ZigBeeChannelConverterFactoryImpl}.
  *
  * @author Thomas Höfer - Initial contribution
  */
-public final class ZigBeeChannelConverterFactoryTest {
+public final class ZigBeeChannelConverterFactoryImplTest {
 
     private final ThingUID thingUID = new ThingUID("zigbee:generic:thing");
 
@@ -42,12 +42,12 @@ public final class ZigBeeChannelConverterFactoryTest {
 
     private final ZigBeeEndpoint endpoint = createEndpoint();
 
-    private ZigBeeChannelConverterFactory factory;
+    private ZigBeeChannelConverterFactoryImpl factory;
     private ZigBeeChannelConverterProvider provider;
 
     @Before
     public void setup() {
-        factory = new ZigBeeChannelConverterFactory();
+        factory = new ZigBeeChannelConverterFactoryImpl();
 
         converters.put(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF, ZigBeeConverterSwitchOnoff.class);
         converters.put(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL, ZigBeeConverterSwitchLevel.class);
