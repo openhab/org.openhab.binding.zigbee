@@ -125,6 +125,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     private ScheduledFuture<?> reconnectPollingTimer;
     private ScheduledExecutorService reconnectPollingScheduler;
     private final Object reconnectLock = new Object();
+    private boolean currentReconnectAttemptFinished = false;
 
     /**
      * Default ZigBeeAlliance09 link key
@@ -522,12 +523,22 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 // especially shutdown the port
                 networkManager.shutdown();
 
+                synchronized (reconnectLock) {
+                    currentReconnectAttemptFinished = false;
+                }
+
                 // Initialize the network again
                 initialiseZigBee();
 
+                waitForReconnectAttemptToFinish();
+            }
+
+            private void waitForReconnectAttemptToFinish() {
                 synchronized (reconnectLock) {
                     try {
-                        reconnectLock.wait();
+                        while (!currentReconnectAttemptFinished) {
+                            reconnectLock.wait();
+                        }
                     } catch (InterruptedException e) {
                         // thread may be killed if callback reports that we are connected again
                     }
@@ -874,10 +885,15 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 break;
         }
 
+        if (state != ZigBeeTransportState.INITIALISING && state != ZigBeeTransportState.UNINITIALISED) {
+            notifyReconnectJobAboutFinishedInitialization();
+        }
+    }
+
+    private void notifyReconnectJobAboutFinishedInitialization() {
         synchronized (reconnectLock) {
-            if (state != ZigBeeTransportState.INITIALISING) {
-                reconnectLock.notify();
-            }
+            currentReconnectAttemptFinished = true;
+            reconnectLock.notifyAll();
         }
     }
 
