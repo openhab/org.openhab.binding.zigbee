@@ -50,7 +50,6 @@ import org.slf4j.LoggerFactory;
  * </ul>
  *
  * @author Chris Jackson - Initial Implementation
- * @author Thomas Höfer - Refactored class to provide only one single instance
  */
 public class ZigBeeThingTypeMatcher {
     private final Logger logger = LoggerFactory.getLogger(ZigBeeThingTypeMatcher.class);
@@ -58,21 +57,6 @@ public class ZigBeeThingTypeMatcher {
     private final Map<String, List<RequiredProperty>> discoveryProperties = new HashMap<>();
 
     private static final String DISCOVERY_PROPERTIES_FILE = "/discovery.txt";
-
-    private static final ZigBeeThingTypeMatcher MATCHER = new ZigBeeThingTypeMatcher();
-
-    private ZigBeeThingTypeMatcher() {
-        // use the getInstance operation to get the single instance of this class
-    }
-
-    /**
-     * Provides the instance of this thing type matcher.
-     *
-     * @return the instance of this matcher
-     */
-    public static synchronized ZigBeeThingTypeMatcher getInstance() {
-        return MATCHER;
-    }
 
     /**
      * Matches a set of properties to a single thing type. If no match is found, null is returned.

@@ -4,28 +4,36 @@
 	xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
 	xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
 
-	<thing-type id="xiaomi_lumisensorht" listed="false">
-		<label>Xiaomi Temperature and Humidity Sensor</label>
-		<description>Xiaomi Temperature and Humidity Sensor</description>
+	<!-- These devices do not correctly report their clusters, so they need a static thing definition for the binding to inject the correct clusters into the ZigBeeNode -->
+
+	<thing-type id="xiaomi_lumisensor86sw2" listed="false">
+		<label>Xiaomi Wireless 2-Button Switch</label>
+		<description>Xiaomi Wireless 2-Button Switch</description>
 
 		<channels>
-			<channel id="temperature" typeId="measurement_temperature">
+			<channel id="switch_1" typeId="switch_onoff">
 				<properties>
 					<property name="zigbee_endpoint">1</property>
-					<property name="zigbee_inputclusters">1026</property>
+					<property name="zigbee_inputclusters">6</property>
 				</properties>
 			</channel>
-			<channel id="humidity" typeId="measurement_relativehumidity">
+			<channel id="switch_2" typeId="switch_onoff">
 				<properties>
-					<property name="zigbee_endpoint">1</property>
-					<property name="zigbee_inputclusters">1029</property>
+					<property name="zigbee_endpoint">2</property>
+					<property name="zigbee_inputclusters">6</property>
+				</properties>
+			</channel>
+			<channel id="switch_3" typeId="switch_onoff">
+				<properties>
+					<property name="zigbee_endpoint">3</property>
+					<property name="zigbee_inputclusters">6</property>
 				</properties>
 			</channel>
 		</channels>
 
 		<properties>
 			<property name="vendor">Xiaomi</property>
-			<property name="modelId">lumi.sensor_ht</property>
+			<property name="modelId">lumi.sensor_86sw2</property>
 			<property name="zigbee_logicaltype">END_DEVICE</property>
 		</properties>
 

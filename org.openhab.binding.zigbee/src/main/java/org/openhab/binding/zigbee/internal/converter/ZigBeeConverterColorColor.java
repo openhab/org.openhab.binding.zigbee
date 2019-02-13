@@ -54,14 +54,13 @@ import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorModeEnum;
 public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterColorColor.class);
 
-    private HSBType currentHSB = new HSBType();
+    private HSBType lastHSB = new HSBType("0,0,100");
     private ZclColorControlCluster clusterColorControl;
     private ZclLevelControlCluster clusterLevelControl;
     private ZclOnOffCluster clusterOnOff;
 
     private boolean delayedColorChange = false; // Wait for brightness transition before changing color
 
-    private PercentType lastBrightness = PercentType.HUNDRED;
     private ScheduledExecutorService colorUpdateScheduler;
     private ScheduledFuture<?> colorUpdateTimer = null;
     private Object colorUpdateSync = new Object();
@@ -79,7 +78,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
     private ColorModeEnum lastColorMode;
 
-    private final AtomicBoolean currentState = new AtomicBoolean(true);
+    private final AtomicBoolean currentOnOffState = new AtomicBoolean(true);
 
     private ZclLevelControlConfig configLevelControl;
 
@@ -246,21 +245,15 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
     private void changeOnOff(OnOffType onoff) throws InterruptedException, ExecutionException {
         boolean on = onoff == OnOffType.ON;
-        PercentType brightness = on ? PercentType.HUNDRED : PercentType.ZERO;
-
-        if (clusterLevelControl != null) {
-            changeBrightness(brightness);
-            return;
-        }
 
         if (clusterOnOff == null) {
-            logger.warn("{}: ignoring on/off command", endpoint.getIeeeAddress());
+            if (clusterLevelControl == null) {
+                logger.warn("{}: ignoring on/off command", endpoint.getIeeeAddress());
+            } else {
+                changeBrightness(on ? PercentType.HUNDRED : PercentType.ZERO);
+            }
             return;
         }
-
-        HSBType oldHSB = currentHSB;
-        currentHSB = new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), brightness);
-        lastBrightness = brightness;
 
         if (on) {
             clusterOnOff.onCommand().get();
@@ -271,17 +264,13 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
     private void changeBrightness(PercentType brightness) throws InterruptedException, ExecutionException {
         if (clusterLevelControl == null) {
-            if (clusterOnOff != null) {
-                changeOnOff(brightness.intValue() == 0 ? OnOffType.OFF : OnOffType.ON);
-            } else {
+            if (clusterOnOff == null) {
                 logger.warn("{}: ignoring brightness command", endpoint.getIeeeAddress());
+            } else {
+                changeOnOff(brightness.intValue() == 0 ? OnOffType.OFF : OnOffType.ON);
             }
             return;
         }
-
-        HSBType oldHSB = currentHSB;
-        currentHSB = new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), brightness);
-        lastBrightness = brightness;
 
         int level = percentToLevel(brightness);
 
@@ -298,8 +287,6 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     }
 
     private void changeColorHueSaturation(HSBType color) throws InterruptedException, ExecutionException {
-        HSBType oldHSB = currentHSB;
-        currentHSB = new HSBType(color.getHue(), color.getSaturation(), oldHSB.getBrightness());
         int hue = (int) (color.getHue().floatValue() * 254.0f / 360.0f + 0.5f);
         int saturation = percentToLevel(color.getSaturation());
 
@@ -310,11 +297,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     private void changeColorXY(HSBType color) throws InterruptedException, ExecutionException {
         PercentType xy[] = color.toXY();
 
-        HSBType oldHSB = currentHSB;
-        currentHSB = new HSBType(color.getHue(), color.getSaturation(), oldHSB.getBrightness());
-
         logger.debug("{}: Change Color HSV ({}, {}, {}) -> XY ({}, {})", endpoint.getIeeeAddress(), color.getHue(),
-                color.getSaturation(), oldHSB.getBrightness(), xy[0], xy[1]);
+                color.getSaturation(), color.getBrightness(), xy[0], xy[1]);
         int x = (int) (xy[0].floatValue() / 100.0f * 65536.0f + 0.5f); // up to 65279
         int y = (int) (xy[1].floatValue() / 100.0f * 65536.0f + 0.5f); // up to 65279
 
@@ -325,32 +309,19 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     public void handleCommand(final Command command) {
         try {
             if (command instanceof HSBType) {
-                HSBType current = currentHSB;
                 HSBType color = (HSBType) command;
                 PercentType brightness = color.getBrightness();
 
-                boolean changeColor = true;
-                if (delayedColorChange) {
-                    // Color conversion (HUE -> XY -> HUE) makes this necessary due to rounding & precision
-                    int changeSensitivity = supportsHue ? 0 : 1;
-                    changeColor = Math.abs(current.getHue().intValue() - color.getHue().intValue()) > changeSensitivity
-                            || Math.abs(current.getSaturation().intValue()
-                                    - color.getSaturation().intValue()) > changeSensitivity;
+                changeBrightness(brightness);
+
+                if (delayedColorChange && brightness.intValue() != lastHSB.getBrightness().intValue()) {
+                    Thread.sleep(1100);
                 }
 
-                if (brightness.intValue() != currentHSB.getBrightness().intValue()) {
-                    changeBrightness(brightness);
-                    if (changeColor && delayedColorChange) {
-                        Thread.sleep(1100);
-                    }
-                }
-
-                if (changeColor) {
-                    if (supportsHue) {
-                        changeColorHueSaturation(color);
-                    } else {
-                        changeColorXY(color);
-                    }
+                if (supportsHue) {
+                    changeColorHueSaturation(color);
+                } else {
+                    changeColorXY(color);
                 }
             } else if (command instanceof PercentType) {
                 changeBrightness((PercentType) command);
@@ -415,31 +386,31 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     }
 
     private void updateOnOff(OnOffType onOff) {
-        currentState.set(onOff == OnOffType.ON);
-        if (onOff == OnOffType.ON) {
-            updateBrightness(lastBrightness);
-        } else {
-            updateChannelState(onOff);
+        boolean on = onOff == OnOffType.ON;
+        currentOnOffState.set(on);
+        if (!on) {
+            updateChannelState(OnOffType.OFF);
+        } else if (lastColorMode != ColorModeEnum.COLORTEMPERATURE) {
+            updateChannelState(lastHSB);
         }
     }
 
     private void updateBrightness(PercentType brightness) {
-        // Extra temp variable to avoid thread sync concurrency issues on currentHSB
-        HSBType oldHSB = currentHSB;
+        // Extra temp variable to avoid thread sync concurrency issues on lastHSB
+        HSBType oldHSB = lastHSB;
         HSBType newHSB = new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), brightness);
-        currentHSB = newHSB;
-        lastBrightness = brightness;
-        if (currentState.get() && lastColorMode != ColorModeEnum.COLORTEMPERATURE) {
+        lastHSB = newHSB;
+        if (currentOnOffState.get() && lastColorMode != ColorModeEnum.COLORTEMPERATURE) {
             updateChannelState(newHSB);
         }
     }
 
     private void updateColorHSB(DecimalType hue, PercentType saturation) {
-        // Extra temp variable to avoid thread sync concurrency issues on currentHSB
-        HSBType oldHSB = currentHSB;
+        // Extra temp variable to avoid thread sync concurrency issues on lastHSB
+        HSBType oldHSB = lastHSB;
         HSBType newHSB = new HSBType(hue, saturation, oldHSB.getBrightness());
-        currentHSB = newHSB;
-        if (currentState.get() && lastColorMode != ColorModeEnum.COLORTEMPERATURE) {
+        lastHSB = newHSB;
+        if (currentOnOffState.get() && lastColorMode != ColorModeEnum.COLORTEMPERATURE) {
             updateChannelState(newHSB);
         }
     }
@@ -447,7 +418,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     private void updateColorXY(PercentType x, PercentType y) {
         HSBType color = HSBType.fromXY(x.floatValue() / 100.0f, y.floatValue() / 100.0f);
         logger.debug("{}: Update Color XY ({}, {}) -> HSV ({}, {}, {})", endpoint.getIeeeAddress(), x.toString(),
-                y.toString(), color.getHue(), color.getSaturation(), currentHSB.getBrightness());
+                y.toString(), color.getHue(), color.getSaturation(), lastHSB.getBrightness());
         updateColorHSB(color.getHue(), color.getSaturation());
     }
 

@@ -54,11 +54,12 @@ import org.eclipse.smarthome.core.types.State;
 import org.eclipse.smarthome.core.types.StateDescription;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
 import org.openhab.binding.zigbee.internal.ZigBeeDeviceConfigHandler;
-import org.openhab.binding.zigbee.internal.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.internal.converter.config.ZclClusterConfigFactory;
 import org.openhab.binding.zigbee.internal.converter.config.ZclClusterConfigHandler;
+import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -142,7 +143,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     /**
      * Creates a ZigBee thing.
      *
-     * @param zigbeeDevice the {@link Thing}
+     * @param zigbeeDevice   the {@link Thing}
      * @param channelFactory the {@link ZigBeeChannelConverterFactory} to be used to create the channels
      */
     public ZigBeeThingHandler(Thing zigbeeDevice, ZigBeeChannelConverterFactory channelFactory) {
@@ -368,6 +369,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                     continue;
                 }
 
+                if (channel.getConfiguration().get(ZclReportingConfig.CONFIG_POLLING) == null) {
+                    channel.getConfiguration().put(ZclReportingConfig.CONFIG_POLLING, handler.getPollingPeriod());
+                }
+
                 handler.handleRefresh();
 
                 // TODO: Update the channel configuration from the device if method available
@@ -418,7 +423,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * Process a static cluster list and add it to the existing list
      *
      * @param initialClusters a collection of existing clusters
-     * @param newClusters a string containing a comma separated list of clusters
+     * @param newClusters     a string containing a comma separated list of clusters
      * @return a list of clusters if the list is updated, or an empty list if it has not changed
      */
     private List<Integer> processClusterList(Collection<Integer> initialClusters, String newClusters) {
@@ -642,7 +647,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * changes.
      *
      * @param channel the {@link ChannelUID} to be updated
-     * @param state the new {link State}
+     * @param state   the new {link State}
      */
     public void setChannelState(ChannelUID channel, State state) {
         if (firmwareUpdateInProgress) {
@@ -660,7 +665,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * received.
      *
      * @param channel the {@link ChannelUID} to be triggered
-     * @param event the event to be emitted
+     * @param event   the event to be emitted
      */
     @Override
     public void triggerChannel(ChannelUID channel, String event) {
