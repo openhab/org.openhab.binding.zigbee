@@ -881,13 +881,18 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     break;
                 }
                 
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
                 
-                // try to reconnect (unless the bridge is being removed or uninitialized)
-                if (!Arrays.asList(ThingStatus.UNINITIALIZED, ThingStatus.REMOVING, ThingStatus.REMOVED)
+                // - Do not set the status to OFFLINE when the bridge is in one of these statuses. According to the
+                // documentation https://www.eclipse.org/smarthome/documentation/concepts/things.html#status-transitions
+                // the thing must not change from these statuses to OFFLINE
+                // - Do not try to reconnect if the bridge is being removed.
+                if (Arrays.asList(ThingStatus.UNINITIALIZED, ThingStatus.REMOVING, ThingStatus.REMOVED)
                         .contains(bridge.getStatus())) {
-                    startReconnectJobIfNotRunning();
+                    break;
                 }
+                
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
+                startReconnectJobIfNotRunning();
 
                 break;
             default:
