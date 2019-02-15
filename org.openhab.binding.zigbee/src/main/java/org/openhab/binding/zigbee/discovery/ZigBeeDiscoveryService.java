@@ -8,6 +8,8 @@
  */
 package org.openhab.binding.zigbee.discovery;
 
+import static java.util.stream.Collectors.toSet;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -62,7 +64,6 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
     private final Set<ZigBeeCoordinatorHandler> coordinatorHandlers = new CopyOnWriteArraySet<>();
 
     private final Set<ZigBeeDiscoveryParticipant> participants = new CopyOnWriteArraySet<>();
-    private final Set<ThingTypeUID> supportedThingTypes = new CopyOnWriteArraySet<>();
     private final Map<UID, ZigBeeNetworkNodeListener> registeredListeners = new ConcurrentHashMap<>();
 
     public ZigBeeDiscoveryService() {
@@ -73,15 +74,10 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
     protected void addZigBeeDiscoveryParticipant(ZigBeeDiscoveryParticipant participant) {
         participants.add(participant);
-        supportedThingTypes.addAll(participant.getSupportedThingTypeUIDs());
     }
 
     protected void removeZigBeeDiscoveryParticipant(ZigBeeDiscoveryParticipant participant) {
         participants.remove(participant);
-        supportedThingTypes.clear();
-        for (ZigBeeDiscoveryParticipant currentParticipant : participants) {
-            supportedThingTypes.addAll(currentParticipant.getSupportedThingTypeUIDs());
-        }
     }
 
     @Override
@@ -124,7 +120,8 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService implements 
 
     @Override
     public Set<ThingTypeUID> getSupportedThingTypes() {
-        return supportedThingTypes;
+        return participants.stream().flatMap(participant -> participant.getSupportedThingTypeUIDs().stream())
+                .collect(toSet());
     }
 
     @Override

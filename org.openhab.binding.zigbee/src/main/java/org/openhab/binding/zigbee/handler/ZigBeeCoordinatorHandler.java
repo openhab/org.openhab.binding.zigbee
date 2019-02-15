@@ -11,6 +11,7 @@ package org.openhab.binding.zigbee.handler;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.*;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -125,6 +126,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     private ScheduledFuture<?> reconnectPollingTimer;
     private ScheduledExecutorService reconnectPollingScheduler;
     private final Object reconnectLock = new Object();
+    private boolean currentReconnectAttemptFinished = false;
 
     /**
      * Default ZigBeeAlliance09 link key
@@ -522,12 +524,22 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 // especially shutdown the port
                 networkManager.shutdown();
 
+                synchronized (reconnectLock) {
+                    currentReconnectAttemptFinished = false;
+                }
+
                 // Initialize the network again
                 initialiseZigBee();
 
+                waitForReconnectAttemptToFinish();
+            }
+
+            private void waitForReconnectAttemptToFinish() {
                 synchronized (reconnectLock) {
                     try {
-                        reconnectLock.wait();
+                        while (!currentReconnectAttemptFinished) {
+                            reconnectLock.wait();
+                        }
                     } catch (InterruptedException e) {
                         // thread may be killed if callback reports that we are connected again
                     }
@@ -862,22 +874,40 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 break;
             case OFFLINE:
                 Bridge bridge = getThing();
+
                 // do not try to reconnect if there is a firmware update in progress
                 if (bridge.getStatus() == ThingStatus.OFFLINE
                         && bridge.getStatusInfo().getStatusDetail() == ThingStatusDetail.FIRMWARE_UPDATING) {
                     break;
                 }
+                
+                
+                // - Do not set the status to OFFLINE when the bridge is in one of these statuses. According to the
+                // documentation https://www.eclipse.org/smarthome/documentation/concepts/things.html#status-transitions
+                // the thing must not change from these statuses to OFFLINE
+                // - Do not try to reconnect if the bridge is being removed.
+                if (Arrays.asList(ThingStatus.UNINITIALIZED, ThingStatus.REMOVING, ThingStatus.REMOVED)
+                        .contains(bridge.getStatus())) {
+                    break;
+                }
+                
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
                 startReconnectJobIfNotRunning();
+
                 break;
             default:
                 break;
         }
 
+        if (state != ZigBeeTransportState.INITIALISING && state != ZigBeeTransportState.UNINITIALISED) {
+            notifyReconnectJobAboutFinishedInitialization();
+        }
+    }
+
+    private void notifyReconnectJobAboutFinishedInitialization() {
         synchronized (reconnectLock) {
-            if (state != ZigBeeTransportState.INITIALISING) {
-                reconnectLock.notify();
-            }
+            currentReconnectAttemptFinished = true;
+            reconnectLock.notifyAll();
         }
     }
 
