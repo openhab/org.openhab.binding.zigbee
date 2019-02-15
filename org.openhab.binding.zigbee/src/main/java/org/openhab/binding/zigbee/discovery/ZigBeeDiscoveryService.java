@@ -206,17 +206,17 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
                     thingRemoved(defaultThingUID);
                 } else {
                     // If we know the manufacturer and model, then give this device a name and a thing type
-                    if ((properties.get(Thing.PROPERTY_VENDOR) != null)
-                            && (properties.get(Thing.PROPERTY_MODEL_ID) != null)) {
-                        String updatedLabel = properties.get(Thing.PROPERTY_VENDOR) + " "
-                                + properties.get(Thing.PROPERTY_MODEL_ID);
+                    if ((nodeProperties.get(Thing.PROPERTY_VENDOR) != null)
+                            && (nodeProperties.get(Thing.PROPERTY_MODEL_ID) != null)) {
+                        String updatedLabel = nodeProperties.get(Thing.PROPERTY_VENDOR) + " "
+                                + nodeProperties.get(Thing.PROPERTY_MODEL_ID);
 
                         logger.debug("{}: Update ZigBee device {} with bridge {}, label '{}'", node.getIeeeAddress(),
                                 defaultThingTypeUID, bridgeUID, updatedLabel);
 
                         DiscoveryResult updatedDiscoveryResult = DiscoveryResultBuilder.create(defaultThingUID)
-                                .withThingType(defaultThingTypeUID).withProperties(defaultProperties)
-                                .withBridge(bridgeUID).withLabel(updatedLabel).build();
+                                .withThingType(defaultThingTypeUID).withProperties(nodeProperties).withBridge(bridgeUID)
+                                .withLabel(updatedLabel).build();
 
                         thingDiscovered(updatedDiscoveryResult);
                     }
