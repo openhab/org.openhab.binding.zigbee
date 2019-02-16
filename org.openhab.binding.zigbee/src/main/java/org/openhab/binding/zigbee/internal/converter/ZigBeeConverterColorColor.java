@@ -242,6 +242,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         if (clusterLevelControl != null) {
             clusterLevelControl.getCurrentLevel(0);
         }
+
+        clusterColorControl.getColorMode(0);
     }
 
     private void changeOnOff(OnOffType onoff) throws InterruptedException, ExecutionException {
