@@ -15,7 +15,6 @@ import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CHANNEL_WARNING_
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ChannelUID;
@@ -50,7 +49,7 @@ public class DynamicWarningCommandDescriptionProviderTest {
         CommandDescription commandDescription = provider.getCommandDescription(channel, null, null);
         assertNotNull(commandDescription);
 
-        List<@NonNull CommandOption> commandOptions = commandDescription.getCommandOptions();
+        List<CommandOption> commandOptions = commandDescription.getCommandOptions();
         assertEquals(1, commandOptions.size());
         assertEquals("someLabel", commandOptions.get(0).getLabel());
         assertEquals(providedWarningType.serializeToCommand(), commandOptions.get(0).getCommand());
@@ -68,7 +67,7 @@ public class DynamicWarningCommandDescriptionProviderTest {
         CommandDescription commandDescription = provider.getCommandDescription(channel, null, null);
         assertNotNull(commandDescription);
 
-        List<@NonNull CommandOption> commandOptions = commandDescription.getCommandOptions();
+        List<CommandOption> commandOptions = commandDescription.getCommandOptions();
         assertEquals(1, commandOptions.size());
         assertEquals("someLabel", commandOptions.get(0).getLabel());
         assertEquals(configuredWarningType.serializeToCommand(), commandOptions.get(0).getCommand());
@@ -82,8 +81,8 @@ public class DynamicWarningCommandDescriptionProviderTest {
         assertNull(commandDescription);
     }
 
-    private WarningTypeCommandDescriptionProvider makeWarningTypeCommandDescriptionProvider(String label,
-            WarningType warningType) {
+    private WarningTypeCommandDescriptionProvider makeWarningTypeCommandDescriptionProvider(final String label,
+            final WarningType warningType) {
         return new WarningTypeCommandDescriptionProvider() {
 
             @Override
