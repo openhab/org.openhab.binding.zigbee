@@ -70,7 +70,8 @@ This is the Texas Instruments ZNP stack. The thing type is ```coordinator_cc2531
 The CC2531 USB dongle must be flashed with the correct firmware in order to work with this binding.
 The file can be downloaded from TI website archives (http://www.ti.com/tool/z-stack-archive) as part
 of the `Z-STACK-HOME v.1.2.2a` package.
-The file name is `CC2531ZNP-Pro-Secure_Standard.hex` and its sha256 is `3cc5dc571ef0f49e3f42c6c2ca076d6f8fef33a945c71e6f951b839ba0599d3c`.
+Wine can be used to run the downloaded file extract the file.
+The file name is `CC2531ZNP-Pro-Secure_Standard.hex` path `.wine/drive_c/Texas Instruments/Z-Stack Home 1.2.2a.44539/Projects/zstack/ZAP/ZNP-HexFiles/CC2531/CC2531ZNP-Pro-Secure_Standard.hex` and its sha256 is `3cc5dc571ef0f49e3f42c6c2ca076d6f8fef33a945c71e6f951b839ba0599d3c`.
 
 ##### Flashing on Linux
 
