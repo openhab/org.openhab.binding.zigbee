@@ -4,7 +4,7 @@
 	xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
 	xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
 
-	<thing-type id="xiaomi_lumiremoteb286acn01">
+	<thing-type id="xiaomi_lumiremoteb286acn01" listed="false">
 		<label>Xiaomi Wall Switch</label>
 		<description>Xiaomi Wall Switch</description>
 		<category>WallSwitch</category>
