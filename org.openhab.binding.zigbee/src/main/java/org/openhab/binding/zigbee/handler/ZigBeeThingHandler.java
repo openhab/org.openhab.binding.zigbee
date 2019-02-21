@@ -884,7 +884,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 for (int retry = 0; retry < 3; retry++) {
                     Integer fileVersion = finalOtaServer.getCurrentFileVersion();
                     if (fileVersion != null) {
-                        updateProperty(Thing.PROPERTY_FIRMWARE_VERSION, String.format("%08X", fileVersion));
+                        updateProperty(Thing.PROPERTY_FIRMWARE_VERSION, String.format("%s%08X",
+                                ZigBeeBindingConstants.FIRMWARE_VERSION_HEX_PREFIX, fileVersion));
                         break;
                     } else {
                         logger.debug("{}: OTA firmware request timeout (retry {})", node.getIeeeAddress(), retry);
