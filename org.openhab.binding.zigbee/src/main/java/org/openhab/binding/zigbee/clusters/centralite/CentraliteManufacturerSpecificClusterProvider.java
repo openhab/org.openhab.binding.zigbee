@@ -7,8 +7,6 @@ import java.util.Collection;
 import org.openhab.binding.zigbee.cluster.ManufacturerSpecificClusterProvider;
 import org.osgi.service.component.annotations.Component;
 
-import com.zsmartsystems.zigbee.ZigBeeProfileType;
-import com.zsmartsystems.zigbee.ZigBeeStandardProfileType;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
@@ -31,11 +29,6 @@ public class CentraliteManufacturerSpecificClusterProvider implements Manufactur
 
     private ZclClusterType createRelativeHumidityCluster() {
         return new ZclClusterType() {
-
-            @Override
-            public ZigBeeProfileType getProfileType() {
-                return ZigBeeStandardProfileType.ZIGBEE_HOME_AUTOMATION;
-            }
 
             @Override
             public String getLabel() {

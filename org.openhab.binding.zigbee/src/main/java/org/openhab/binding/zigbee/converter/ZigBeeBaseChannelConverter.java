@@ -34,7 +34,6 @@ import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeProfileType;
-import com.zsmartsystems.zigbee.ZigBeeStandardProfileType;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
 
 /**
@@ -163,11 +162,11 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * Creates the converter handler.
      *
-     * @param thing the {@link ZigBeeThingHandler} the channel is part of
-     * @param channel the {@link Channel} for the channel
+     * @param thing       the {@link ZigBeeThingHandler} the channel is part of
+     * @param channel     the {@link Channel} for the channel
      * @param coordinator the {@link ZigBeeCoordinatorHandler} this endpoint is part of
-     * @param address the {@link IeeeAddress} of the node
-     * @param endpointId the endpoint this channel is linked to
+     * @param address     the {@link IeeeAddress} of the node
+     * @param endpointId  the endpoint this channel is linked to
      */
     public void initialize(ZigBeeThingHandler thing, Channel channel, ZigBeeCoordinatorHandler coordinator,
             IeeeAddress address, int endpointId) {
@@ -310,8 +309,8 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * Creates a standard channel UID given the {@link ZigBeeEndpoint}
      *
-     * @param thingUID the {@link ThingUID}
-     * @param endpoint the {@link ZigBeeEndpoint}
+     * @param thingUID    the {@link ThingUID}
+     * @param endpoint    the {@link ZigBeeEndpoint}
      * @param channelName the name of the channel
      * @return
      */
@@ -359,7 +358,7 @@ public abstract class ZigBeeBaseChannelConverter {
      * The currentConfiguration shall be updated.
      *
      * @param currentConfiguration the current {@link Configuration}
-     * @param updatedParameters a map containing the updated configuration parameters to be set
+     * @param updatedParameters    a map containing the updated configuration parameters to be set
      */
     public void updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> updatedParameters) {
@@ -374,6 +373,6 @@ public abstract class ZigBeeBaseChannelConverter {
      */
     protected Future<CommandResult> bind(ZclCluster cluster) {
         return cluster.bind(coordinator.getLocalIeeeAddress(),
-                coordinator.getLocalEndpointId(ZigBeeStandardProfileType.ZIGBEE_HOME_AUTOMATION));
+                coordinator.getLocalEndpointId(ZigBeeProfileType.ZIGBEE_HOME_AUTOMATION));
     }
 }

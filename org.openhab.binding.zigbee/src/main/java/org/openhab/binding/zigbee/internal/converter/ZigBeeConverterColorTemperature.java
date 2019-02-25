@@ -8,6 +8,8 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import static com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster.ATTR_COLORTEMPERATURE;
+
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.smarthome.core.library.types.OnOffType;
@@ -84,11 +86,11 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
         clusterColorControl.addAttributeListener(this);
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        clusterColorControl.setColorTemperatureReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1);
+        clusterColorControl.setReporting(clusterColorControl.getAttribute(ATTR_COLORTEMPERATURE), 1,
+                REPORTING_PERIOD_DEFAULT_MAX, 1);
 
         // ColorMode reporting
-        ZclAttribute colorModeAttribute = clusterColorControl
-                .getAttribute(ZclColorControlCluster.ATTR_COLORMODE);
+        ZclAttribute colorModeAttribute = clusterColorControl.getAttribute(ZclColorControlCluster.ATTR_COLORMODE);
         clusterColorControl.setReporting(colorModeAttribute, 1, REPORTING_PERIOD_DEFAULT_MAX, 1);
 
         return true;
@@ -176,7 +178,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
         if (attribute.getCluster() == ZclStandardClusterType.COLOR_CONTROL
                 && attribute.getId() == ZclColorControlCluster.ATTR_COLORTEMPERATURE) {
 
-            if (lastColorMode == null || lastColorMode == ColorModeEnum.COLORTEMPERATURE) {
+            if (lastColorMode == null || lastColorMode == ColorModeEnum.COLOR_TEMPERATURE) {
                 Integer temperatureInMired = (Integer) attribute.getLastValue();
 
                 PercentType percent = miredToPercent(temperatureInMired);
@@ -184,11 +186,11 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
                     updateChannelState(percent);
                 }
             }
-        } else if (attribute.getCluster() == ZclClusterType.COLOR_CONTROL
+        } else if (attribute.getCluster() == ZclStandardClusterType.COLOR_CONTROL
                 && attribute.getId() == ZclColorControlCluster.ATTR_COLORMODE) {
             Integer colorMode = (Integer) attribute.getLastValue();
             lastColorMode = ColorModeEnum.getByValue(colorMode);
-            if (lastColorMode != ColorModeEnum.COLORTEMPERATURE) {
+            if (lastColorMode != ColorModeEnum.COLOR_TEMPERATURE) {
                 updateChannelState(UnDefType.UNDEF);
             }
         }

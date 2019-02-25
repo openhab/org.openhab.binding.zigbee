@@ -8,6 +8,8 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import static com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster.*;
+
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -137,12 +139,14 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                 pollingPeriod = POLLING_PERIOD_HIGH;
             }
             if (supportsHue) {
-                CommandResult reportResponse = clusterColorControl
-                        .setCurrentHueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                CommandResult reportResponse = clusterColorControl.setReporting(
+                        clusterColorControl.getAttribute(ATTR_CURRENTHUE), 1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
                 if (!reportResponse.isSuccess()) {
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }
-                reportResponse = clusterColorControl.setCurrentSaturationReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1)
+                reportResponse = clusterColorControl
+                        .setReporting(clusterColorControl.getAttribute(ATTR_CURRENTSATURATION), 1,
+                                REPORTING_PERIOD_DEFAULT_MAX, 1)
                         .get();
                 if (!reportResponse.isSuccess()) {
                     pollingPeriod = POLLING_PERIOD_HIGH;
@@ -392,7 +396,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         boolean on = onOff == OnOffType.ON;
         currentOnOffState.set(on);
 
-        if (lastColorMode != ColorModeEnum.COLORTEMPERATURE) {
+        if (lastColorMode != ColorModeEnum.COLOR_TEMPERATURE) {
             // Extra temp variable to avoid thread sync concurrency issues on lastHSB
             HSBType oldHSB = lastHSB;
             HSBType newHSB = on ? lastHSB : new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), PercentType.ZERO);
@@ -408,7 +412,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         HSBType oldHSB = lastHSB;
         HSBType newHSB = new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), brightness);
         lastHSB = newHSB;
-        if (currentOnOffState.get() && lastColorMode != ColorModeEnum.COLORTEMPERATURE) {
+        if (currentOnOffState.get() && lastColorMode != ColorModeEnum.COLOR_TEMPERATURE) {
             updateChannelState(newHSB);
         }
     }
@@ -418,7 +422,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         HSBType oldHSB = lastHSB;
         HSBType newHSB = new HSBType(hue, saturation, oldHSB.getBrightness());
         lastHSB = newHSB;
-        if (currentOnOffState.get() && lastColorMode != ColorModeEnum.COLORTEMPERATURE) {
+        if (currentOnOffState.get() && lastColorMode != ColorModeEnum.COLOR_TEMPERATURE) {
             updateChannelState(newHSB);
         }
     }
@@ -501,7 +505,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                     } else if (attribute.getId() == ZclColorControlCluster.ATTR_COLORMODE) {
                         Integer colorMode = (Integer) attribute.getLastValue();
                         lastColorMode = ColorModeEnum.getByValue(colorMode);
-                        if (lastColorMode == ColorModeEnum.COLORTEMPERATURE) {
+                        if (lastColorMode == ColorModeEnum.COLOR_TEMPERATURE) {
                             updateChannelState(UnDefType.UNDEF);
                         } else if (currentOnOffState.get()) {
                             updateChannelState(lastHSB);

@@ -26,7 +26,7 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclThermostatCluster;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclStandardClusterType;
 
 /**
  * Converter for the thermostat occupied heating setpoint channel
@@ -114,7 +114,7 @@ public class ZigBeeConverterThermostatOccupiedHeating extends ZigBeeBaseChannelC
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.THERMOSTAT
+        if (attribute.getCluster() == ZclStandardClusterType.THERMOSTAT
                 && attribute.getId() == ZclThermostatCluster.ATTR_OCCUPIEDHEATINGSETPOINT) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null) {

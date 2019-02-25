@@ -11,7 +11,6 @@ package org.openhab.binding.zigbee.internal.converter;
 import static org.junit.Assert.assertEquals;
 
 import org.eclipse.smarthome.core.library.types.HSBType;
-import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
@@ -27,6 +26,7 @@ import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
+import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorModeEnum;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclDataType;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclStandardClusterType;
 
@@ -118,23 +118,23 @@ public class ZigBeeConverterColorColorTest {
         Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
         converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
 
-        ZclAttribute colorModeAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 8, "ColorMode",
+        ZclAttribute colorModeAttribute = new ZclAttribute(ZclStandardClusterType.COLOR_CONTROL, 8, "ColorMode",
                 ZclDataType.ENUMERATION_8_BIT, false, false, false, false);
-        ZclAttribute onAttribute = new ZclAttribute(ZclClusterType.ON_OFF, 0, "OnOff", ZclDataType.BOOLEAN, false,
-                false, false, false);
-        ZclAttribute levelAttribute = new ZclAttribute(ZclClusterType.LEVEL_CONTROL, 0, "Level", ZclDataType.BOOLEAN,
+        ZclAttribute onAttribute = new ZclAttribute(ZclStandardClusterType.ON_OFF, 0, "OnOff", ZclDataType.BOOLEAN,
                 false, false, false, false);
-        ZclAttribute currentHueAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 0, "CurrentHue",
+        ZclAttribute levelAttribute = new ZclAttribute(ZclStandardClusterType.LEVEL_CONTROL, 0, "Level",
+                ZclDataType.BOOLEAN, false, false, false, false);
+        ZclAttribute currentHueAttribute = new ZclAttribute(ZclStandardClusterType.COLOR_CONTROL, 0, "CurrentHue",
                 ZclDataType.UNSIGNED_8_BIT_INTEGER, false, false, false, false);
-        ZclAttribute currentSaturationAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 1, "CurrentSaturation",
-                ZclDataType.UNSIGNED_8_BIT_INTEGER, false, false, false, false);
-        ZclAttribute currentXAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 3, "CurrentX",
+        ZclAttribute currentSaturationAttribute = new ZclAttribute(ZclStandardClusterType.COLOR_CONTROL, 1,
+                "CurrentSaturation", ZclDataType.UNSIGNED_8_BIT_INTEGER, false, false, false, false);
+        ZclAttribute currentXAttribute = new ZclAttribute(ZclStandardClusterType.COLOR_CONTROL, 3, "CurrentX",
                 ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, false, false);
-        ZclAttribute currentYAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 4, "CurrentY",
+        ZclAttribute currentYAttribute = new ZclAttribute(ZclStandardClusterType.COLOR_CONTROL, 4, "CurrentY",
                 ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, false, false);
 
         // Update the color mode to COLOR_TEMPERATURE and ensure that the state is set to UNDEF
-        colorModeAttribute.updateValue(ColorModeEnum.COLORTEMPERATURE.getKey());
+        colorModeAttribute.updateValue(ColorModeEnum.COLOR_TEMPERATURE.getKey());
         converter.attributeUpdated(colorModeAttribute);
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());

@@ -26,7 +26,7 @@ import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclDoorLockCluster;
 import com.zsmartsystems.zigbee.zcl.field.ByteArray;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclStandardClusterType;
 
 /**
  * This channel supports changes through attribute updates to the door lock state. ON=Locked, OFF=Unlocked.
@@ -107,7 +107,7 @@ public class ZigBeeConverterDoorLock extends ZigBeeBaseChannelConverter implemen
     @Override
     public void attributeUpdated(ZclAttribute attribute) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.DOOR_LOCK
+        if (attribute.getCluster() == ZclStandardClusterType.DOOR_LOCK
                 && attribute.getId() == ZclDoorLockCluster.ATTR_LOCKSTATE) {
             Integer value = (Integer) attribute.getLastValue();
             if (value != null && value == 1) {

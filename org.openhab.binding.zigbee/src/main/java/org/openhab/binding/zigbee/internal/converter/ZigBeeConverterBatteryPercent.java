@@ -8,6 +8,8 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import static com.zsmartsystems.zigbee.zcl.clusters.ZclPowerConfigurationCluster.ATTR_BATTERYPERCENTAGEREMAINING;
+
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
@@ -51,7 +53,7 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
             CommandResult bindResponse = bind(cluster).get();
             if (bindResponse.isSuccess()) {
                 // Configure reporting - no faster than once per ten minutes - no slower than every 2 hours.
-                cluster.setBatteryPercentageRemainingReporting(600, 7200, 1).get();
+                cluster.setReporting(cluster.getAttribute(ATTR_BATTERYPERCENTAGEREMAINING), 600, 7200, 1).get();
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);

@@ -8,6 +8,7 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import static com.zsmartsystems.zigbee.zcl.clusters.ZclPressureMeasurementCluster.ATTR_SCALEDVALUE;
 import static org.eclipse.smarthome.core.library.unit.MetricPrefix.HECTO;
 
 import java.math.BigDecimal;
@@ -72,7 +73,7 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
 
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
         if (enhancedScale != null) {
-            cluster.setScaledValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1);
+            cluster.setReporting(cluster.getAttribute(ATTR_SCALEDVALUE), 1, REPORTING_PERIOD_DEFAULT_MAX, 0.1);
         } else {
             cluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1);
         }

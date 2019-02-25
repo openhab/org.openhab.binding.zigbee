@@ -31,8 +31,8 @@ import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorModeEnum;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclDataType;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclStandardClusterType;
 
 /**
  *
@@ -131,13 +131,13 @@ public class ZigBeeConverterColorTemperatureTest {
         Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
         converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
 
-        ZclAttribute colorModeAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 8, "ColorMode",
+        ZclAttribute colorModeAttribute = new ZclAttribute(ZclStandardClusterType.COLOR_CONTROL, 8, "ColorMode",
                 ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, false, false);
-        ZclAttribute colorTemperatureAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 7, "ColorTemperature",
-                ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, false, false);
+        ZclAttribute colorTemperatureAttribute = new ZclAttribute(ZclStandardClusterType.COLOR_CONTROL, 7,
+                "ColorTemperature", ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, false, false);
 
         // Update the color mode to CURRENTHUE_AND_CURRENTSATURATION and ensure that the state is set to UNDEF
-        colorModeAttribute.updateValue(ColorModeEnum.CURRENTHUE_AND_CURRENTSATURATION.getKey());
+        colorModeAttribute.updateValue(ColorModeEnum.CURRENT_HUE_AND_CURRENT_SATURATION.getKey());
         converter.attributeUpdated(colorModeAttribute);
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
@@ -150,7 +150,7 @@ public class ZigBeeConverterColorTemperatureTest {
                 stateCapture.capture());
 
         // Update the color mode to CURRENTX_AND_CURRENTY and ensure that the state is set to UNDEF
-        colorModeAttribute.updateValue(ColorModeEnum.CURRENTX_AND_CURRENTY.getKey());
+        colorModeAttribute.updateValue(ColorModeEnum.CURRENT_X_AND_CURRENT_Y.getKey());
         converter.attributeUpdated(colorModeAttribute);
         Mockito.verify(thingHandler, Mockito.times(2)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
@@ -177,8 +177,8 @@ public class ZigBeeConverterColorTemperatureTest {
         Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
         converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
 
-        ZclAttribute colorTemperatureAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 7, "ColorTemperature",
-                ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, false, false);
+        ZclAttribute colorTemperatureAttribute = new ZclAttribute(ZclStandardClusterType.COLOR_CONTROL, 7,
+                "ColorTemperature", ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, false, false);
 
         // Do not initialize the color mode
 
@@ -204,13 +204,13 @@ public class ZigBeeConverterColorTemperatureTest {
         Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
         converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
 
-        ZclAttribute colorModeAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 8, "ColorMode",
+        ZclAttribute colorModeAttribute = new ZclAttribute(ZclStandardClusterType.COLOR_CONTROL, 8, "ColorMode",
                 ZclDataType.ENUMERATION_8_BIT, false, false, false, false);
-        ZclAttribute colorTemperatureAttribute = new ZclAttribute(ZclClusterType.COLOR_CONTROL, 7, "ColorTemperature",
-                ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, false, false);
+        ZclAttribute colorTemperatureAttribute = new ZclAttribute(ZclStandardClusterType.COLOR_CONTROL, 7,
+                "ColorTemperature", ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, false, false);
 
         // Update the color mode to COLOR_TEMPERATURE and ensure that the state is not set
-        colorModeAttribute.updateValue(ColorModeEnum.COLORTEMPERATURE.getKey());
+        colorModeAttribute.updateValue(ColorModeEnum.COLOR_TEMPERATURE.getKey());
         converter.attributeUpdated(colorModeAttribute);
         Mockito.verify(thingHandler, Mockito.times(0)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
