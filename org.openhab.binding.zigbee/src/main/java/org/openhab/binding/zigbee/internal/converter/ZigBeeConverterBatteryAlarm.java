@@ -158,17 +158,17 @@ public class ZigBeeConverterBatteryAlarm extends ZigBeeBaseChannelConverter impl
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         if (attribute.getCluster() == ZclClusterType.POWER_CONFIGURATION
                 && attribute.getId() == ZclPowerConfigurationCluster.ATTR_BATTERYALARMSTATE) {
 
             logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
 
-            // The value is a 32-bit bitmap, represented by an Integer
-            Integer value = (Integer) attribute.getLastValue();
-            if (value == null) {
+            if (!(val instanceof Integer)) {
                 return;
             }
+            // The value is a 32-bit bitmap, represented by an Integer
+            Integer value = (Integer) val;
 
             if ((value & MIN_THRESHOLD_BITMASK) != 0) {
                 updateChannelState(new StringType(STATE_OPTION_BATTERY_MIN_THRESHOLD));

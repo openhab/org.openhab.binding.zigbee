@@ -110,11 +110,11 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.TEMPERATURE_MEASUREMENT
                 && attribute.getId() == ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE) {
-            Integer value = (Integer) attribute.getLastValue();
+            Integer value = (Integer) val;
             if (value != null) {
                 updateChannelState(new QuantityType<>(BigDecimal.valueOf(value, 2), SIUnits.CELSIUS));
             }

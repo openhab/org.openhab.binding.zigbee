@@ -100,7 +100,7 @@ public class ZigBeeConverterWarningDeviceTest {
 
         // Squawk header is composed of: (a) squawk level, (b) strobe, (3) warning mode
         // In our case: squawk level medium: 1=0b01; strobe false: 0=0b00; squawk mode disarmed: 6=0b0001
-        verify(cluster).squawkCommand(0b01000001);
+        verify(cluster).squawk(0b01000001);
     }
 
     @Test

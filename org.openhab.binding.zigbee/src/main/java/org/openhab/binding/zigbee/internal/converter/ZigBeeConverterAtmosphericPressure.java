@@ -12,6 +12,7 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import static com.zsmartsystems.zigbee.zcl.clusters.ZclPressureMeasurementCluster.ATTR_SCALEDVALUE;
 import static org.eclipse.smarthome.core.library.unit.MetricPrefix.HECTO;
 
 import java.math.BigDecimal;
@@ -73,8 +74,8 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
                 // Configure reporting - no faster than once per second - no slower than 2 hours.
                 CommandResult reportingResponse;
                 if (enhancedScale != null) {
-                    reportingResponse = serverCluster.setScaledValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1)
-                            .get();
+                    reportingResponse = serverCluster.setReporting(serverCluster.getAttribute(ATTR_SCALEDVALUE), 1,
+                            REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
                     handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
                 } else {
                     reportingResponse = serverCluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1)
@@ -141,7 +142,7 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
     }
 
     @Override
-    public synchronized void attributeUpdated(ZclAttribute attribute) {
+    public synchronized void attributeUpdated(ZclAttribute attribute, Object value) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() != ZclClusterType.PRESSURE_MEASUREMENT) {
             return;
@@ -149,7 +150,7 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
 
         // Handle automatic reporting of the enhanced attribute configuration
         if (attribute.getId() == ZclPressureMeasurementCluster.ATTR_SCALE) {
-            enhancedScale = (Integer) attribute.getLastValue();
+            enhancedScale = (Integer) value;
             if (enhancedScale != null) {
                 enhancedScale *= -1;
             }
@@ -157,18 +158,17 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
         }
 
         if (attribute.getId() == ZclPressureMeasurementCluster.ATTR_SCALEDVALUE && enhancedScale != null) {
-            Integer value = (Integer) attribute.getLastValue();
-            if (value != null) {
-                updateChannelState(
-                        new QuantityType<Pressure>(BigDecimal.valueOf(value, enhancedScale), HECTO(SIUnits.PASCAL)));
+            if (value instanceof Integer) {
+                updateChannelState(new QuantityType<Pressure>(BigDecimal.valueOf((Integer) value, enhancedScale),
+                        HECTO(SIUnits.PASCAL)));
             }
             return;
         }
 
         if (attribute.getId() == ZclPressureMeasurementCluster.ATTR_MEASUREDVALUE && enhancedScale == null) {
-            Integer value = (Integer) attribute.getLastValue();
-            if (value != null) {
-                updateChannelState(new QuantityType<Pressure>(BigDecimal.valueOf(value, 0), HECTO(SIUnits.PASCAL)));
+            if (value instanceof Integer) {
+                updateChannelState(
+                        new QuantityType<Pressure>(BigDecimal.valueOf((Integer) value, 0), HECTO(SIUnits.PASCAL)));
             }
             return;
         }
