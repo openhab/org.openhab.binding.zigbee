@@ -20,6 +20,7 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterProvider;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
@@ -33,21 +34,10 @@ import org.slf4j.LoggerFactory;
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 
-/**
- * ZigBeeChannelFactory class provides a factory for creating channel converters for the ZigBee binding.
- * <p>
- * The factory performs two functions -
- * <ul>
- * <li>gets a list of channels the thing supports. This uses methods in each converter to decide if they are supported.
- * <li>instantiates converters based on the channel UID.
- * </ul>
- *
- * @author Chris Jackson
- * @author Thomas Höfer - osgified the mechanism how converters are made available to the binding
- */
-@Component(immediate = true, service = ZigBeeChannelConverterFactory.class)
-public final class ZigBeeChannelConverterFactory {
-    private final Logger logger = LoggerFactory.getLogger(ZigBeeChannelConverterFactory.class);
+@Component(immediate = true)
+public final class ZigBeeChannelConverterFactoryImpl implements ZigBeeChannelConverterFactory {
+
+    private final Logger logger = LoggerFactory.getLogger(ZigBeeChannelConverterFactoryImpl.class);
 
     /**
      * Map of all channels supported by the binding
@@ -59,7 +49,7 @@ public final class ZigBeeChannelConverterFactory {
      */
     private final Map<ChannelTypeUID, ChannelTypeUID> channelConsolidation = new LinkedHashMap<>();
 
-    public ZigBeeChannelConverterFactory() {
+    public ZigBeeChannelConverterFactoryImpl() {
         // Add the hierarchical list of channels that are to be removed due to inheritance
         // Note that order is important in the event that there are multiple removals...
         // eg we want to remove switch before dimmer, then dimmer if color is present
@@ -73,14 +63,7 @@ public final class ZigBeeChannelConverterFactory {
                 ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL);
     }
 
-    /**
-     * Gets a list of all channels supported by the {@link ZigBeeEndpoint}
-     *
-     * @param thingUID the {@link ThingUID} of the thing
-     * @param endpoint the {@link ZigBeeEndpoint} to generate the channels for
-     *
-     * @return a collection of all channels supported by the {@link ZigBeeEndpoint}
-     */
+    @Override
     @SuppressWarnings("unchecked")
     public Collection<Channel> getChannels(ThingUID thingUID, ZigBeeEndpoint endpoint) {
         Map<ChannelTypeUID, Channel> channels = new HashMap<>();
@@ -114,16 +97,7 @@ public final class ZigBeeChannelConverterFactory {
         return channels.values();
     }
 
-    /**
-     * Creates a channel converter for the requested {@link ChannelTypeUID}
-     *
-     * @param thingHandler the {@link ZigBeeThingHandler} for this channel
-     * @param channel the {@link Channel} to create the converter for
-     * @param coordinatorHandler the {@link ZigBeeCoordinatorHandler}
-     * @param ieeeAddress the {@link IeeeAddress} of the device
-     * @param endpointId the endpoint ID for this channel on the device
-     * @return the {@link ZigBeeBaseChannelConverter} or null if the channel is not supported
-     */
+    @Override
     public ZigBeeBaseChannelConverter createConverter(ZigBeeThingHandler thingHandler, Channel channel,
             ZigBeeCoordinatorHandler coordinatorHandler, IeeeAddress ieeeAddress, int endpointId) {
         Constructor<? extends ZigBeeBaseChannelConverter> constructor;
@@ -153,4 +127,5 @@ public final class ZigBeeChannelConverterFactory {
     public void removeZigBeeChannelConverterProvider(ZigBeeChannelConverterProvider zigBeeChannelConverterProvider) {
         channelMap.keySet().removeAll(zigBeeChannelConverterProvider.getChannelConverters().keySet());
     }
+
 }

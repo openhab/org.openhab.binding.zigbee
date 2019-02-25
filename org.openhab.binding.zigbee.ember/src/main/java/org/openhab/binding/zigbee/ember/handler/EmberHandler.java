@@ -32,7 +32,10 @@ import com.zsmartsystems.zigbee.dongle.ember.ZigBeeDongleEzsp;
 import com.zsmartsystems.zigbee.dongle.ember.ezsp.structure.EzspConfigId;
 import com.zsmartsystems.zigbee.serialization.DefaultDeserializer;
 import com.zsmartsystems.zigbee.serialization.DefaultSerializer;
+import com.zsmartsystems.zigbee.transport.ConcentratorConfig;
+import com.zsmartsystems.zigbee.transport.ConcentratorType;
 import com.zsmartsystems.zigbee.transport.TransportConfig;
+import com.zsmartsystems.zigbee.transport.TransportConfigOption;
 import com.zsmartsystems.zigbee.transport.ZigBeePort;
 import com.zsmartsystems.zigbee.transport.ZigBeePort.FlowControl;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareCallback;
@@ -141,6 +144,20 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
         dongle.updateDefaultConfiguration(EzspConfigId.EZSP_CONFIG_END_DEVICE_POLL_TIMEOUT_SHIFT, pollTimeoutShift);
 
         TransportConfig transportConfig = new TransportConfig();
+
+        // Configure the concentrator
+        // Max Hops defaults to system max
+        ConcentratorConfig concentratorConfig = new ConcentratorConfig();
+        if (config.zigbee_concentrator == 1) {
+            concentratorConfig.setType(ConcentratorType.HIGH_RAM);
+        } else {
+            concentratorConfig.setType(ConcentratorType.LOW_RAM);
+        }
+        concentratorConfig.setMaxFailures(8);
+        concentratorConfig.setMaxHops(0);
+        concentratorConfig.setRefreshMinimum(60);
+        concentratorConfig.setRefreshMaximum(3600);
+        transportConfig.addOption(TransportConfigOption.CONCENTRATOR_CONFIG, concentratorConfig);
 
         startZigBee(dongle, transportConfig, DefaultSerializer.class, DefaultDeserializer.class);
 

@@ -8,6 +8,7 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -23,6 +24,7 @@ import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.internal.converter.config.ZclLevelControlConfig;
+import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,10 +45,12 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclStandardClusterType;
  * @author Chris Jackson - Initial Contribution
  */
 public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
-    private Logger logger = LoggerFactory.getLogger(ZigBeeConverterSwitchLevel.class);
+    private final Logger logger = LoggerFactory.getLogger(ZigBeeConverterSwitchLevel.class);
 
     private ZclOnOffCluster clusterOnOff;
     private ZclLevelControlCluster clusterLevelControl;
+
+    private ZclReportingConfig configReporting;
     private ZclLevelControlConfig configLevelControl;
 
     private final AtomicBoolean currentOnOffState = new AtomicBoolean(true);
@@ -108,9 +112,13 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         clusterLevelControl.addAttributeListener(this);
 
         // Create a configuration handler and get the available options
+        configReporting = new ZclReportingConfig();
         configLevelControl = new ZclLevelControlConfig();
         configLevelControl.initialize(clusterLevelControl);
-        configOptions = configLevelControl.getConfiguration();
+
+        configOptions = new ArrayList<>();
+        configOptions.addAll(configReporting.getConfiguration());
+        configOptions.addAll(configLevelControl.getConfiguration());
 
         return true;
     }
@@ -121,6 +129,11 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         if (clusterOnOff != null) {
             clusterOnOff.removeAttributeListener(this);
         }
+    }
+
+    @Override
+    public int getPollingPeriod() {
+        return configReporting.getPollingPeriod();
     }
 
     @Override
@@ -199,6 +212,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
     @Override
     public void updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> updatedParameters) {
+        configReporting.updateConfiguration(currentConfiguration, updatedParameters);
         configLevelControl.updateConfiguration(currentConfiguration, updatedParameters);
     }
 

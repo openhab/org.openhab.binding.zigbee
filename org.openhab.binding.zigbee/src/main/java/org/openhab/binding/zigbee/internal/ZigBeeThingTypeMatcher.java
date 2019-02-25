@@ -50,14 +50,13 @@ import org.slf4j.LoggerFactory;
  * </ul>
  *
  * @author Chris Jackson - Initial Implementation
- *
  */
 public class ZigBeeThingTypeMatcher {
     private final Logger logger = LoggerFactory.getLogger(ZigBeeThingTypeMatcher.class);
 
     private final Map<String, List<RequiredProperty>> discoveryProperties = new HashMap<>();
 
-    private final static String DISCOVERY_PROPERTIES_FILE = "/discovery.txt";
+    private static final String DISCOVERY_PROPERTIES_FILE = "/discovery.txt";
 
     /**
      * Matches a set of properties to a single thing type. If no match is found, null is returned.

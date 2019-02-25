@@ -75,13 +75,13 @@ public class ZigBeeConverterColorColorTest {
                 stateCapture.capture());
         assertEquals(new HSBType("0,0,20"), stateCapture.getValue());
 
-        // Turn OFF, and state should be OFF
+        // Turn OFF, and state should be OFF (indeed 0,0,0)
         onAttribute.updateValue(new Boolean(false));
         converter.attributeUpdated(onAttribute);
         Mockito.verify(thingHandler, Mockito.times(3)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
         assertEquals(new ChannelUID("a:b:c:d"), channelCapture.getValue());
-        assertEquals(OnOffType.OFF, stateCapture.getValue());
+        assertEquals(new HSBType("0,0,0"), stateCapture.getValue());
 
         // No update here since state is OFF, but we remember the level (20%)...
         levelAttribute.updateValue(new Integer(101));

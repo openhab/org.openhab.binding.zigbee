@@ -3,7 +3,7 @@
                           xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
                           bindingId="zigbee"
                           xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
-   <thing-type id="bitron-video-av2010-34">
+   <thing-type id="bitron-video-av2010-34" listed="false">
       <label>Bitron Video Wall Switch AV2010/34</label>
       <channels>
          <channel id="button1" typeId="system.button">

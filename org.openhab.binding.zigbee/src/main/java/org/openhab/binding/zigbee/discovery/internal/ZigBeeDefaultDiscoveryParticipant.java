@@ -30,7 +30,8 @@ import com.zsmartsystems.zigbee.ZigBeeNode;
  */
 @Component(immediate = true)
 public class ZigBeeDefaultDiscoveryParticipant implements ZigBeeDiscoveryParticipant {
-    private ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
+
+    private final ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
 
     @Override
     public Set<ThingTypeUID> getSupportedThingTypeUIDs() {

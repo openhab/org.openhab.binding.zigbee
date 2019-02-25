@@ -4,28 +4,22 @@
 	xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
 	xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
 
-	<thing-type id="xiaomi_lumisensorht" listed="false">
-		<label>Xiaomi Temperature and Humidity Sensor</label>
-		<description>Xiaomi Temperature and Humidity Sensor</description>
+	<thing-type id="xiaomi_lumisensor-motion" listed="false">
+		<label>Xiaomi Lumi Motion Sensor</label>
+		<description>Xiaomi Motion Sensor</description>
 
 		<channels>
-			<channel id="temperature" typeId="measurement_temperature">
+			<channel id="occupancy" typeId="sensor_occupancy">
 				<properties>
 					<property name="zigbee_endpoint">1</property>
-					<property name="zigbee_inputclusters">1026</property>
-				</properties>
-			</channel>
-			<channel id="humidity" typeId="measurement_relativehumidity">
-				<properties>
-					<property name="zigbee_endpoint">1</property>
-					<property name="zigbee_inputclusters">1029</property>
+					<property name="zigbee_inputclusters">1030</property>
 				</properties>
 			</channel>
 		</channels>
 
 		<properties>
 			<property name="vendor">Xiaomi</property>
-			<property name="modelId">lumi.sensor_ht</property>
+			<property name="modelId">lumi.sensor_motion</property>
 			<property name="zigbee_logicaltype">END_DEVICE</property>
 		</properties>
 

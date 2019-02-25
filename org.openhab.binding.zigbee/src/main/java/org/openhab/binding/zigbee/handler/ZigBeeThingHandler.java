@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -35,6 +36,7 @@ import org.eclipse.smarthome.config.core.ConfigDescription;
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
 import org.eclipse.smarthome.config.core.ConfigDescriptionProvider;
 import org.eclipse.smarthome.config.core.Configuration;
+import org.eclipse.smarthome.core.common.ThreadPoolManager;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -54,11 +56,12 @@ import org.eclipse.smarthome.core.types.State;
 import org.eclipse.smarthome.core.types.StateDescription;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
 import org.openhab.binding.zigbee.internal.ZigBeeDeviceConfigHandler;
-import org.openhab.binding.zigbee.internal.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.internal.converter.config.ZclClusterConfigFactory;
 import org.openhab.binding.zigbee.internal.converter.config.ZclClusterConfigHandler;
+import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,6 +132,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     private boolean firmwareUpdateInProgress = false;
 
+    private ExecutorService commandScheduler = ThreadPoolManager.getPool("zigbee-thinghandler-commands");
+
     /**
      * A set of channels that have been linked to items. This is used to ensure we only poll channels that are linked to
      * keep network activity to a minimum.
@@ -143,7 +148,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     /**
      * Creates a ZigBee thing.
      *
-     * @param zigbeeDevice the {@link Thing}
+     * @param zigbeeDevice   the {@link Thing}
      * @param channelFactory the {@link ZigBeeChannelConverterFactory} to be used to create the channels
      */
     public ZigBeeThingHandler(Thing zigbeeDevice, ZigBeeChannelConverterFactory channelFactory) {
@@ -369,6 +374,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                     continue;
                 }
 
+                if (channel.getConfiguration().get(ZclReportingConfig.CONFIG_POLLING) == null) {
+                    channel.getConfiguration().put(ZclReportingConfig.CONFIG_POLLING, handler.getPollingPeriod());
+                }
+
                 handler.handleRefresh();
 
                 // TODO: Update the channel configuration from the device if method available
@@ -419,7 +428,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * Process a static cluster list and add it to the existing list
      *
      * @param initialClusters a collection of existing clusters
-     * @param newClusters a string containing a comma separated list of clusters
+     * @param newClusters     a string containing a comma separated list of clusters
      * @return a list of clusters if the list is updated, or an empty list if it has not changed
      */
     private List<Integer> processClusterList(Collection<Integer> initialClusters, String newClusters) {
@@ -624,7 +633,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 }
             }
         };
-        scheduler.schedule(commandHandler, 0, TimeUnit.MILLISECONDS);
+        commandScheduler.execute(commandHandler);
     }
 
     @Override
@@ -643,7 +652,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * changes.
      *
      * @param channel the {@link ChannelUID} to be updated
-     * @param state the new {link State}
+     * @param state   the new {link State}
      */
     public void setChannelState(ChannelUID channel, State state) {
         if (firmwareUpdateInProgress) {
@@ -661,7 +670,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * received.
      *
      * @param channel the {@link ChannelUID} to be triggered
-     * @param event the event to be emitted
+     * @param event   the event to be emitted
      */
     @Override
     public void triggerChannel(ChannelUID channel, String event) {
@@ -880,7 +889,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 for (int retry = 0; retry < 3; retry++) {
                     Integer fileVersion = finalOtaServer.getCurrentFileVersion();
                     if (fileVersion != null) {
-                        updateProperty(Thing.PROPERTY_FIRMWARE_VERSION, String.format("%08X", fileVersion));
+                        updateProperty(Thing.PROPERTY_FIRMWARE_VERSION, String.format("%s%08X",
+                                ZigBeeBindingConstants.FIRMWARE_VERSION_HEX_PREFIX, fileVersion));
                         break;
                     } else {
                         logger.debug("{}: OTA firmware request timeout (retry {})", node.getIeeeAddress(), retry);

@@ -141,6 +141,46 @@ public class ZigBeeBindingConstants {
     public static final ChannelTypeUID CHANNEL_ELECTRICAL_RMSCURRENT = new ChannelTypeUID(
             "zigbee:electrical_rmscurrent");
 
+    public static final String CHANNEL_NAME_THERMOSTAT_LOCALTEMPERATURE = "thermostatlocaltemp";
+    public static final String CHANNEL_LABEL_THERMOSTAT_LOCALTEMPERATURE = "Local Temperature";
+    public static final ChannelTypeUID CHANNEL_THERMOSTAT_LOCALTEMPERATURE = new ChannelTypeUID(
+            "zigbee:thermostat_localtemp");
+
+    public static final String CHANNEL_NAME_THERMOSTAT_OUTDOORTEMPERATURE = "thermostatoutdoortemp";
+    public static final String CHANNEL_LABEL_THERMOSTAT_OUTDOORTEMPERATURE = "Outdoor Temperature";
+    public static final ChannelTypeUID CHANNEL_THERMOSTAT_OUTDOORTEMPERATURE = new ChannelTypeUID(
+            "zigbee:thermostat_outdoortemp");
+
+    public static final String CHANNEL_NAME_THERMOSTAT_OCCUPIEDCOOLING = "thermostatoccupiedcooling";
+    public static final String CHANNEL_LABEL_THERMOSTAT_OCCUPIEDCOOLING = "Occupied Cooling Setpoint";
+    public static final ChannelTypeUID CHANNEL_THERMOSTAT_OCCUPIEDCOOLING = new ChannelTypeUID(
+            "zigbee:thermostat_occupiedcooling");
+
+    public static final String CHANNEL_NAME_THERMOSTAT_OCCUPIEDHEATING = "thermostatoccupiedheating";
+    public static final String CHANNEL_LABEL_THERMOSTAT_OCCUPIEDHEATING = "Occupied Heating Setpoint";
+    public static final ChannelTypeUID CHANNEL_THERMOSTAT_OCCUPIEDHEATING = new ChannelTypeUID(
+            "zigbee:thermostat_occupiedheating");
+
+    public static final String CHANNEL_NAME_THERMOSTAT_UNOCCUPIEDCOOLING = "thermostatunoccupiedcooling";
+    public static final String CHANNEL_LABEL_THERMOSTAT_UNOCCUPIEDCOOLING = "Unoccupied Cooling Setpoint";
+    public static final ChannelTypeUID CHANNEL_THERMOSTAT_UNOCCUPIEDCOOLING = new ChannelTypeUID(
+            "zigbee:thermostat_unoccupiedcooling");
+
+    public static final String CHANNEL_NAME_THERMOSTAT_UNOCCUPIEDHEATING = "thermostatunoccupiedheating";
+    public static final String CHANNEL_LABEL_THERMOSTAT_UNOCCUPIEDHEATING = "Unoccupied Heating Setpoint";
+    public static final ChannelTypeUID CHANNEL_THERMOSTAT_UNOCCUPIEDHEATING = new ChannelTypeUID(
+            "zigbee:thermostat_unoccupiedheating");
+
+    public static final String CHANNEL_NAME_THERMOSTAT_SYSTEMMODE = "thermostatsystemmode";
+    public static final String CHANNEL_LABEL_THERMOSTAT_SYSTEMMODE = "System Mode";
+    public static final ChannelTypeUID CHANNEL_THERMOSTAT_SYSTEMMODE = new ChannelTypeUID(
+            "zigbee:thermostat_systemmode");
+
+    public static final String CHANNEL_NAME_THERMOSTAT_RUNNINGMODE = "thermostatrunningmode";
+    public static final String CHANNEL_LABEL_THERMOSTAT_RUNNINGMODE = "RUNNING Mode";
+    public static final ChannelTypeUID CHANNEL_THERMOSTAT_RUNNINGMODE = new ChannelTypeUID(
+            "zigbee:thermostat_runningmode");
+
     public static final String CHANNEL_NAME_DOORLOCK_STATE = "doorlockstate";
     public static final String CHANNEL_LABEL_DOORLOCK_STATE = "Door Lock State";
     public static final ChannelTypeUID CHANNEL_DOORLOCK_STATE = new ChannelTypeUID("zigbee:door_state");
@@ -205,6 +245,7 @@ public class ZigBeeBindingConstants {
     public static final String OFFLINE_DISCOVERY_INCOMPLETE = "@text/zigbee.status.offline_discoveryincomplete";
 
     public static final String FIRMWARE_FAILED = "@text/zigbee.firmware.failed";
+    public static final String FIRMWARE_VERSION_HEX_PREFIX = "0x";
 
     // List of channel state constants
     public static final String STATE_OPTION_BATTERY_MIN_THRESHOLD = "minThreshold";
