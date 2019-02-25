@@ -33,6 +33,7 @@
 
   <properties>
     <report.fail.on.error>false</report.fail.on.error>
+    <zsmartsystems.version>1.2.1-SNAPSHOT</zsmartsystems.version>
   </properties>
 
   <scm>
@@ -184,6 +185,11 @@
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
+    </repository>
+    <repository>
+      <id>snapshots-zsmartsystems-com.zsmartsystems</id>
+      <name>zsmartsystems-com.zsmartsystems</name>
+      <url>https://oss.jfrog.org/artifactory/oss-snapshot-local/</url>
     </repository>
   </repositories>
 

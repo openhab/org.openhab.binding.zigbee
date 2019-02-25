@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeNode;
+import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclBasicCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOtaUpgradeCluster;
 import com.zsmartsystems.zigbee.zdo.field.PowerDescriptor;
@@ -196,7 +197,12 @@ public class ZigBeeNodePropertyDiscoverer {
         }
 
         if (otaCluster != null) {
-            Integer fileVersion = otaCluster.getCurrentFileVersion(Long.MAX_VALUE);
+            logger.debug("{}: ZigBee node property discovery using OTA cluster on endpoint {}", node.getIeeeAddress(),
+                    otaCluster.getZigBeeAddress());
+
+            ZclAttribute attribute = otaCluster.getAttribute(ZclOtaUpgradeCluster.ATTR_CURRENTFILEVERSION);
+            Object fileVersion = attribute.readValue(Long.MAX_VALUE);
+
             if (fileVersion != null) {
                 properties.put(Thing.PROPERTY_FIRMWARE_VERSION,
                         String.format("%s%08X", ZigBeeBindingConstants.FIRMWARE_VERSION_HEX_PREFIX, fileVersion));

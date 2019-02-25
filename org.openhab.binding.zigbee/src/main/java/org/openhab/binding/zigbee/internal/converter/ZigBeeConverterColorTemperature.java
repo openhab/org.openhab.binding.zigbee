@@ -12,6 +12,8 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import static com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster.ATTR_COLORTEMPERATURE;
+
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.smarthome.core.library.types.OnOffType;
@@ -71,7 +73,9 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             if (bindResponse.isSuccess()) {
                 // Configure reporting - no faster than once per second - no slower than 2 hours.
                 CommandResult reportingResponse = serverClusterColorControl
-                        .setColorTemperatureReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                        .setReporting(serverClusterColorControl.getAttribute(ATTR_COLORTEMPERATURE), 1,
+                                REPORTING_PERIOD_DEFAULT_MAX, 1)
+                        .get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
 
                 // ColorMode reporting
@@ -180,14 +184,14 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}  on endpoint {}", endpoint.getIeeeAddress(), attribute,
                 endpoint.getEndpointId());
         if (attribute.getCluster() == ZclClusterType.COLOR_CONTROL
                 && attribute.getId() == ZclColorControlCluster.ATTR_COLORTEMPERATURE) {
 
-            if (lastColorMode == null || lastColorMode == ColorModeEnum.COLORTEMPERATURE) {
-                Integer temperatureInMired = (Integer) attribute.getLastValue();
+            if (lastColorMode == null || lastColorMode == ColorModeEnum.COLOR_TEMPERATURE) {
+                Integer temperatureInMired = (Integer) val;
 
                 PercentType percent = miredToPercent(temperatureInMired);
                 if (percent != null) {
@@ -196,9 +200,9 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             }
         } else if (attribute.getCluster() == ZclClusterType.COLOR_CONTROL
                 && attribute.getId() == ZclColorControlCluster.ATTR_COLORMODE) {
-            Integer colorMode = (Integer) attribute.getLastValue();
+            Integer colorMode = (Integer) val;
             lastColorMode = ColorModeEnum.getByValue(colorMode);
-            if (lastColorMode != ColorModeEnum.COLORTEMPERATURE) {
+            if (lastColorMode != ColorModeEnum.COLOR_TEMPERATURE) {
                 updateChannelState(UnDefType.UNDEF);
             }
         }

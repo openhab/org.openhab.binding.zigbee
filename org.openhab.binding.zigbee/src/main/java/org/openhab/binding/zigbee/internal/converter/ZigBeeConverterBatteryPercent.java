@@ -12,6 +12,8 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import static com.zsmartsystems.zigbee.zcl.clusters.ZclPowerConfigurationCluster.ATTR_BATTERYPERCENTAGEREMAINING;
+
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
@@ -57,7 +59,10 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
             if (bindResponse.isSuccess()) {
                 // Configure reporting - no faster than once per ten minutes - no slower than every 2 hours.
                 CommandResult reportingResponse = serverCluster
-                        .setBatteryPercentageRemainingReporting(600, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                        .setReporting(serverCluster.getAttribute(ATTR_BATTERYPERCENTAGEREMAINING), 600,
+                                REPORTING_PERIOD_DEFAULT_MAX, 1)
+                        .get();
+
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 logger.error("{}: Error 0x{} setting server binding", endpoint.getIeeeAddress(),
@@ -131,14 +136,14 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.POWER_CONFIGURATION
                 && attribute.getId() == ZclPowerConfigurationCluster.ATTR_BATTERYPERCENTAGEREMAINING) {
-            Integer value = (Integer) attribute.getLastValue();
-            if (value == null) {
+            if (!(val instanceof Integer)) {
                 return;
             }
+            Integer value = (Integer) val;
 
             updateChannelState(new DecimalType(value / 2));
         }

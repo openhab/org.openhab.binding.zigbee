@@ -53,6 +53,7 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeEndpointAddress;
 import com.zsmartsystems.zigbee.ZigBeeNetworkManager;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
+import com.zsmartsystems.zigbee.ZigBeeNetworkState;
 import com.zsmartsystems.zigbee.ZigBeeNetworkStateListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.ZigBeeProfileType;
@@ -70,7 +71,6 @@ import com.zsmartsystems.zigbee.transport.TransportConfig;
 import com.zsmartsystems.zigbee.transport.TransportConfigOption;
 import com.zsmartsystems.zigbee.transport.TrustCentreJoinMode;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareUpdate;
-import com.zsmartsystems.zigbee.transport.ZigBeeTransportState;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclIasZoneCluster;
 import com.zsmartsystems.zigbee.zdo.field.NeighborTable;
@@ -359,9 +359,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      * Common initialisation point for all ZigBee coordinators.
      * Called by bridge implementations after they have initialised their interfaces.
      *
-     * @param zigbeeTransport a {@link ZigBeeTransportTransmit} interface instance
-     * @param transportConfig any binding specific configuration that needs to be sent
-     * @param serializerClass a {@link ZigBeeSerializer} Class
+     * @param zigbeeTransport   a {@link ZigBeeTransportTransmit} interface instance
+     * @param transportConfig   any binding specific configuration that needs to be sent
+     * @param serializerClass   a {@link ZigBeeSerializer} Class
      * @param deserializerClass a {@link ZigBeeDeserializer} Class
      */
     protected void startZigBee(ZigBeeTransportTransmit zigbeeTransport, TransportConfig transportConfig,
@@ -387,11 +387,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         logger.debug("Initialising ZigBee coordinator");
 
         String networkId = getThing().getUID().toString().replaceAll(":", "_");
-        networkStateSerializer = new ZigBeeNetworkStateSerializerImpl(networkId);
+
+        networkManager = new ZigBeeNetworkManager(zigbeeTransport);
+        networkStateSerializer = new ZigBeeNetworkStateSerializerImpl(networkId, networkManager);
 
         // Configure the network manager
-        networkManager = new ZigBeeNetworkManager(zigbeeTransport);
-        networkManager.setNetworkStateSerializer(networkStateSerializer);
+        networkManager.setNetworkDataStore(networkStateSerializer);
         networkManager.setSerializer(serializerClass, deserializerClass);
         networkManager.addNetworkStateListener(this);
         networkManager.addNetworkNodeListener(this);
@@ -516,8 +517,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         reconnectPollingTimer = reconnectPollingScheduler.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                ZigBeeTransportState state = networkManager.getNetworkState();
-                if (state == ZigBeeTransportState.ONLINE || state == ZigBeeTransportState.INITIALISING) {
+                ZigBeeNetworkState state = networkManager.getNetworkState();
+                if (state == ZigBeeNetworkState.ONLINE || state == ZigBeeNetworkState.INITIALISING) {
                     return;
                 }
 
@@ -644,7 +645,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     /**
      * Process the adding of an install code
      *
-     * @param installCode the string representation of the install code
+     * @param installCode     the string representation of the install code
      * @param transportConfig the {@link TransportConfig} to populate with the configuration
      */
     private void addInstallCode(String installCode) {
@@ -862,7 +863,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     }
 
     @Override
-    public void networkStateUpdated(final ZigBeeTransportState state) {
+    public void networkStateUpdated(final ZigBeeNetworkState state) {
         logger.debug("{}: networkStateUpdated called with state={}", nodeIeeeAddress, state);
         switch (state) {
             case UNINITIALISED:
@@ -884,8 +885,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                         && bridge.getStatusInfo().getStatusDetail() == ThingStatusDetail.FIRMWARE_UPDATING) {
                     break;
                 }
-                
-                
+
                 // - Do not set the status to OFFLINE when the bridge is in one of these statuses. According to the
                 // documentation https://www.eclipse.org/smarthome/documentation/concepts/things.html#status-transitions
                 // the thing must not change from these statuses to OFFLINE
@@ -894,7 +894,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                         .contains(bridge.getStatus())) {
                     break;
                 }
-                
+
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
                 startReconnectJobIfNotRunning();
 
@@ -903,7 +903,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 break;
         }
 
-        if (state != ZigBeeTransportState.INITIALISING && state != ZigBeeTransportState.UNINITIALISED) {
+        if (state != ZigBeeNetworkState.INITIALISING && state != ZigBeeNetworkState.UNINITIALISED) {
             notifyReconnectJobAboutFinishedInitialization();
         }
     }
@@ -960,7 +960,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     /**
      * Permit joining only for the specified node
      *
-     * @param address the 16 bit network address of the node to enable joining
+     * @param address  the 16 bit network address of the node to enable joining
      * @param duration the duration of the join
      */
     public boolean permitJoin(IeeeAddress address, int duration) {
@@ -1019,7 +1019,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      */
     public void serializeNetwork() {
         if (networkStateSerializer != null) {
-            networkStateSerializer.serialize(networkManager);
+            networkStateSerializer.serialize(networkManager.getNodes());
         }
     }
 

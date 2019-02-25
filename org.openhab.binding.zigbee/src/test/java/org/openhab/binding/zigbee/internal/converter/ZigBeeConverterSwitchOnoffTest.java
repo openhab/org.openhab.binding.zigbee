@@ -28,7 +28,7 @@ import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclDataType;
 
 /**
@@ -52,9 +52,9 @@ public class ZigBeeConverterSwitchOnoffTest {
         ZigBeeThingHandler thingHandler = Mockito.mock(ZigBeeThingHandler.class);
         Channel channel = new Channel(new ChannelUID("a:b:c:d"), "");
         converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
-        ZclAttribute attribute = new ZclAttribute(ZclClusterType.ON_OFF, 0, "OnOff", ZclDataType.BOOLEAN, false, false,
-                false, false);
-        converter.attributeUpdated(attribute);
+        ZclAttribute attribute = new ZclAttribute(new ZclOnOffCluster(endpoint), 0, "OnOff", ZclDataType.BOOLEAN, false,
+                false, false, false);
+        converter.attributeUpdated(attribute, attribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
 

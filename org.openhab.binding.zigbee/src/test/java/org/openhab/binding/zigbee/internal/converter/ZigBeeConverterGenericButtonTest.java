@@ -13,18 +13,13 @@
 package org.openhab.binding.zigbee.internal.converter;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import com.zsmartsystems.zigbee.zcl.ZclAttribute;
-import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
-import com.zsmartsystems.zigbee.zcl.ZclCommandListener;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclDataType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.CommonTriggerEvents;
 import org.eclipse.smarthome.core.thing.ThingUID;
@@ -39,8 +34,13 @@ import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeCommand;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeProfileType;
+import com.zsmartsystems.zigbee.zcl.ZclAttribute;
+import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
+import com.zsmartsystems.zigbee.zcl.ZclCommandListener;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclMultistateInputBasicCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.MoveHueCommand;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclDataType;
 
 /**
  * Unit tests for the {@link ZigBeeConverterGenericButton}.
@@ -283,18 +283,15 @@ public class ZigBeeConverterGenericButtonTest {
         mockCluster(768);
         converter.initializeConverter();
 
-        ZclAttribute attribute = new ZclAttribute(
-                ZclClusterType.MULTISTATE_INPUT__BASIC, 85, "foo",
-                ZclDataType.UNSIGNED_16_BIT_INTEGER,
-                false, false, true, true);
+        ZclAttribute attribute = new ZclAttribute(new ZclMultistateInputBasicCluster(endpoint), 85, "foo",
+                ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, true, true);
         attribute.updateValue(1);
-        converter.attributeUpdated(attribute);
+        converter.attributeUpdated(attribute, attribute.getLastValue());
 
         verify(thingHandler, times(1)).triggerChannel(channel.getUID(), CommonTriggerEvents.SHORT_PRESSED);
         verify(thingHandler, times(0)).triggerChannel(channel.getUID(), CommonTriggerEvents.LONG_PRESSED);
         verify(thingHandler, times(0)).triggerChannel(channel.getUID(), CommonTriggerEvents.DOUBLE_PRESSED);
     }
-
 
     @Test
     public void commandWithNonMatchingSpecifiedParamNameIsNotHandled() {
@@ -340,18 +337,15 @@ public class ZigBeeConverterGenericButtonTest {
         mockCluster(768);
         converter.initializeConverter();
 
-        ZclAttribute attribute = new ZclAttribute(
-                ZclClusterType.MULTISTATE_INPUT__BASIC, 85, "foo",
-                ZclDataType.UNSIGNED_16_BIT_INTEGER,
-                false, false, true, true);
+        ZclAttribute attribute = new ZclAttribute(new ZclMultistateInputBasicCluster(endpoint), 85, "foo",
+                ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, true, true);
         attribute.updateValue(2);
-        converter.attributeUpdated(attribute);
+        converter.attributeUpdated(attribute, attribute.getLastValue());
 
         verify(thingHandler, times(0)).triggerChannel(channel.getUID(), CommonTriggerEvents.SHORT_PRESSED);
         verify(thingHandler, times(0)).triggerChannel(channel.getUID(), CommonTriggerEvents.LONG_PRESSED);
         verify(thingHandler, times(0)).triggerChannel(channel.getUID(), CommonTriggerEvents.DOUBLE_PRESSED);
     }
-
 
     @Test
     public void commandTypeIsCorrectlyDetected() {
@@ -391,12 +385,10 @@ public class ZigBeeConverterGenericButtonTest {
         mockCluster(768);
         converter.initializeConverter();
 
-        ZclAttribute attribute = new ZclAttribute(
-                ZclClusterType.MULTISTATE_INPUT__BASIC, 0x17, "foo",
-                ZclDataType.UNSIGNED_16_BIT_INTEGER,
-                false, false, true, true);
+        ZclAttribute attribute = new ZclAttribute(new ZclMultistateInputBasicCluster(endpoint), 0x17, "foo",
+                ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, true, true);
         attribute.updateValue(2);
-        converter.attributeUpdated(attribute);
+        converter.attributeUpdated(attribute, attribute.getLastValue());
 
         verify(thingHandler, times(0)).triggerChannel(channel.getUID(), CommonTriggerEvents.SHORT_PRESSED);
         verify(thingHandler, times(1)).triggerChannel(channel.getUID(), CommonTriggerEvents.LONG_PRESSED);

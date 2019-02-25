@@ -143,11 +143,11 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.ELECTRICAL_MEASUREMENT
                 && attribute.getId() == ZclElectricalMeasurementCluster.ATTR_ACTIVEPOWER) {
-            Integer value = (Integer) attribute.getLastValue();
+            Integer value = (Integer) val;
             if (value != null) {
                 BigDecimal valueInWatt = BigDecimal.valueOf(value * multiplier / divisor);
                 updateChannelState(new QuantityType<Power>(valueInWatt, SmartHomeUnits.WATT));

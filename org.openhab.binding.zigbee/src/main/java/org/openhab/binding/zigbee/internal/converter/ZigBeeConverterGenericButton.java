@@ -16,14 +16,18 @@ import static java.lang.Integer.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import com.zsmartsystems.zigbee.zcl.*;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.CommonTriggerEvents;
 import org.eclipse.smarthome.core.thing.ThingUID;
@@ -33,6 +37,11 @@ import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
+import com.zsmartsystems.zigbee.zcl.ZclAttribute;
+import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
+import com.zsmartsystems.zigbee.zcl.ZclCluster;
+import com.zsmartsystems.zigbee.zcl.ZclCommand;
+import com.zsmartsystems.zigbee.zcl.ZclCommandListener;
 
 /**
  * Generic converter for buttons (e.g., from remote controls).
@@ -45,7 +54,8 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
  * @author Henning Sudbrock - initial contribution
  * @author Thomas Weißschuh - support for attribute-based buttons
  */
-public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter implements ZclCommandListener, ZclAttributeListener {
+public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter
+        implements ZclCommandListener, ZclAttributeListener {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -77,13 +87,12 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter imp
 
         boolean allBindsSucceeded = true;
 
-        for (EventSpec eventSpec: handledEvents.values()) {
+        for (EventSpec eventSpec : handledEvents.values()) {
             allBindsSucceeded &= eventSpec.bindCluster();
         }
 
         return allBindsSucceeded;
     }
-
 
     @Override
     public void disposeConverter() {
@@ -121,7 +130,7 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter imp
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         ButtonPressType buttonPressType = getButtonPressType(attribute);
         if (buttonPressType != null) {
             logger.debug("{}: Matching ZigBee attribute for press type {} received: {}", endpoint.getIeeeAddress(),
@@ -192,7 +201,8 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter imp
         }
     }
 
-    private AttributeReportSpec parseAttributeReportSpec(int clusterId, Map<String, String> properties, ButtonPressType pressType) {
+    private AttributeReportSpec parseAttributeReportSpec(int clusterId, Map<String, String> properties,
+            ButtonPressType pressType) {
         String attributeIdProperty = properties.get(getParameterName(ATTRIBUTE_ID, pressType));
         String attributeValue = properties.get(getParameterName(ATTRIBUTE_VALUE, pressType));
 
@@ -244,7 +254,6 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter imp
             return null;
         }
 
-
         return new CommandSpec(clusterId, commandId, commandParameterName, commandParameterValue);
     }
 
@@ -289,13 +298,13 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter imp
         }
 
         abstract boolean matches(ZclCommand command);
+
         abstract boolean matches(ZclAttribute attribute);
+
         abstract boolean bindCluster();
 
         boolean bindCluster(String clusterType, Collection<ZclCluster> existingClusters, int clusterId,
-                            Function<Integer, ZclCluster> getClusterById,
-                            Consumer<ZclCluster> registrationFunction
-        ) {
+                Function<Integer, ZclCluster> getClusterById, Consumer<ZclCluster> registrationFunction) {
             if (existingClusters.stream().anyMatch(c -> c.getClusterId().intValue() == clusterId)) {
                 // bind to each output cluster only once
                 return true;
@@ -303,8 +312,8 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter imp
 
             ZclCluster cluster = getClusterById.apply(clusterId);
             if (cluster == null) {
-                logger.error("{}: Error opening {} cluster {} on endpoint {}", endpoint.getIeeeAddress(), clusterType, clusterId,
-                        endpoint.getEndpointId());
+                logger.error("{}: Error opening {} cluster {} on endpoint {}", endpoint.getIeeeAddress(), clusterType,
+                        clusterId, endpoint.getEndpointId());
                 return false;
             }
 
@@ -315,7 +324,8 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter imp
                             toHexString(bindResponse.getStatusCode()), clusterType, clusterId);
                 }
             } catch (InterruptedException | ExecutionException e) {
-                logger.error("{}: Exception setting {} binding to cluster {}", endpoint.getIeeeAddress(), clusterType, clusterId, e);
+                logger.error("{}: Exception setting {} binding to cluster {}", endpoint.getIeeeAddress(), clusterType,
+                        clusterId, e);
             }
 
             registrationFunction.accept(cluster);
@@ -345,17 +355,13 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter imp
                 return false;
             }
             boolean attributeIdMatches = attribute.getId() == attributeId;
-            boolean attributeValueMatches = Objects.equals(
-                    Objects.toString(attribute.getLastValue()),
-                    attributeValue
-            );
+            boolean attributeValueMatches = Objects.equals(Objects.toString(attribute.getLastValue()), attributeValue);
             return attributeIdMatches && attributeValueMatches;
         }
 
         @Override
         boolean bindCluster() {
-            return bindCluster(
-                    "server", serverClusters, getClusterId(), endpoint::getInputCluster,
+            return bindCluster("server", serverClusters, getClusterId(), endpoint::getInputCluster,
                     cluster -> cluster.addAttributeListener(ZigBeeConverterGenericButton.this));
         }
     }
@@ -365,7 +371,8 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter imp
         private final String commandParameterName;
         private final String commandParameterValue;
 
-        private CommandSpec(int clusterId, Integer commandId, String commandParameterName, String commandParameterValue) {
+        private CommandSpec(int clusterId, Integer commandId, String commandParameterName,
+                String commandParameterValue) {
             super(clusterId);
             this.commandId = commandId;
             this.commandParameterName = commandParameterName;
