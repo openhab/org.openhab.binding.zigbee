@@ -8,7 +8,11 @@
  */
 package org.openhab.binding.zigbee.internal.converter.warningdevice;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.config.core.Configuration;
@@ -19,7 +23,6 @@ import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
-import org.openhab.binding.zigbee.internal.converter.config.ZclWarningDeviceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,10 +36,12 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclIasWdCluster;
  */
 public class ZigBeeConverterWarningDevice extends ZigBeeBaseChannelConverter {
 
+    private static final String CONFIG_PREFIX = "zigbee_iaswd_";
+    private static final String CONFIG_MAXDURATION = CONFIG_PREFIX + "maxDuration";
+
     private final Logger logger = LoggerFactory.getLogger(ZigBeeConverterWarningDevice.class);
 
     private ZclIasWdCluster iasWdCluster;
-    private ZclWarningDeviceConfig warningDeviceConfig;
 
     @Override
     public boolean initializeDevice() {
@@ -50,10 +55,6 @@ public class ZigBeeConverterWarningDevice extends ZigBeeBaseChannelConverter {
             logger.error("{}: Error opening warning device controls", endpoint.getIeeeAddress());
             return false;
         }
-
-        // Create a configuration handler and get the available options
-        warningDeviceConfig = new ZclWarningDeviceConfig();
-        warningDeviceConfig.setCluster(iasWdCluster);
 
         return true;
     }
@@ -76,7 +77,33 @@ public class ZigBeeConverterWarningDevice extends ZigBeeBaseChannelConverter {
     @Override
     public void updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> updatedParameters) {
-        warningDeviceConfig.updateConfiguration(currentConfiguration, updatedParameters);
+        for (Entry<String, Object> updatedParameter : updatedParameters.entrySet()) {
+            if (updatedParameter.getKey().startsWith(CONFIG_PREFIX)) {
+                if (Objects.equals(updatedParameter.getValue(), currentConfiguration.get(updatedParameter.getKey()))) {
+                    logger.debug("Configuration update: Ignored {} as no change", updatedParameter.getKey());
+                } else {
+                    updateConfigParameter(currentConfiguration, updatedParameter);
+                }
+            }
+        }
+    }
+
+    private void updateConfigParameter(Configuration currentConfiguration, Entry<String, Object> updatedParameter) {
+        logger.debug("{}: Update IAS WD configuration property {}->{} ({})", iasWdCluster.getZigBeeAddress(),
+                updatedParameter.getKey(), updatedParameter.getValue(),
+                updatedParameter.getValue().getClass().getSimpleName());
+
+        if (CONFIG_MAXDURATION.equals(updatedParameter.getKey())) {
+            iasWdCluster.setMaxDuration(((BigDecimal) (updatedParameter.getValue())).intValue());
+            Integer response = iasWdCluster.getMaxDuration(0);
+
+            if (response != null) {
+                currentConfiguration.put(updatedParameter.getKey(), BigInteger.valueOf(response));
+            }
+        } else {
+            logger.warn("{}: Unhandled configuration property {}", iasWdCluster.getZigBeeAddress(),
+                    updatedParameter.getKey());
+        }
     }
 
     @Override
