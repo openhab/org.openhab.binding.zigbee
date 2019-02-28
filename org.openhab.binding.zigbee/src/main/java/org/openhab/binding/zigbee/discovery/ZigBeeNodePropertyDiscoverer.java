@@ -28,22 +28,24 @@ import com.zsmartsystems.zigbee.zdo.field.PowerDescriptor;
 /**
  * Implements a reusable method to return a set of properties about the device
  *
- * @author Chris Jackson
- *
+ * @author Chris Jackson - initial contribution
+ * @author Henning Sudbrock - read multiple attributes with a single command
  */
 public class ZigBeeNodePropertyDiscoverer {
-    private Logger logger = LoggerFactory.getLogger(ZigBeeNodePropertyDiscoverer.class);
+
+    private final Logger logger = LoggerFactory.getLogger(ZigBeeNodePropertyDiscoverer.class);
+
+    private static final int MAX_RETRIES = 3;
 
     private Map<String, String> properties = new HashMap<String, String>();
 
-    private int maxRetries = 3;
     private boolean alwaysUpdate = false;
 
     /**
      * Sets initial properties
      *
-     * @param property
-     * @param value If set to null the property will be removed
+     * @param property The name of the property
+     * @param value The value of the property; if set to null the property will be removed
      */
     public void setProperty(@NonNull String property, @Nullable String value) {
         if (value == null) {
@@ -56,7 +58,7 @@ public class ZigBeeNodePropertyDiscoverer {
     /**
      * Sets the initial properties to be updated
      *
-     * @param properties
+     * @param properties The properties to be updated
      */
     public void setProperties(@NonNull Map<@NonNull String, @NonNull String> properties) {
         this.properties.putAll(properties);
@@ -109,7 +111,7 @@ public class ZigBeeNodePropertyDiscoverer {
                 basicCluster.getZigBeeAddress());
 
         if (alwaysUpdate || properties.get(Thing.PROPERTY_VENDOR) == null) {
-            for (int retry = 0; retry < maxRetries; retry++) {
+            for (int retry = 0; retry < MAX_RETRIES; retry++) {
                 String manufacturer = basicCluster.getManufacturerName(Long.MAX_VALUE);
                 if (manufacturer != null) {
                     properties.put(Thing.PROPERTY_VENDOR, manufacturer.trim());
@@ -121,7 +123,7 @@ public class ZigBeeNodePropertyDiscoverer {
         }
 
         if (alwaysUpdate || properties.get(Thing.PROPERTY_MODEL_ID) == null) {
-            for (int retry = 0; retry < maxRetries; retry++) {
+            for (int retry = 0; retry < MAX_RETRIES; retry++) {
                 String model = basicCluster.getModelIdentifier(Long.MAX_VALUE);
                 if (model != null) {
                     properties.put(Thing.PROPERTY_MODEL_ID, model.trim());
