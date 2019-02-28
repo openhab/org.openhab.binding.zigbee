@@ -8,9 +8,9 @@
  */
 package org.openhab.binding.zigbee.discovery;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -26,7 +26,7 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclOtaUpgradeCluster;
 import com.zsmartsystems.zigbee.zdo.field.PowerDescriptor;
 
 /**
- * Implements a reusable method to return a set of properties about the device
+ * Implements a reusable method to return a set of properties about the device.
  *
  * @author Chris Jackson - initial contribution
  * @author Henning Sudbrock - read multiple attributes with a single command
@@ -45,7 +45,7 @@ public class ZigBeeNodePropertyDiscoverer {
      * Sets initial properties
      *
      * @param property The name of the property
-     * @param value The value of the property; if set to null the property will be removed
+     * @param value    The value of the property; if set to null the property will be removed
      */
     public void setProperty(@NonNull String property, @Nullable String value) {
         if (value == null) {
@@ -80,27 +80,12 @@ public class ZigBeeNodePropertyDiscoverer {
      * @return a {@link Map} of properties or an empty map if there was an error
      */
     public Map<String, String> getProperties(final ZigBeeNode node) {
-
         logger.debug("{}: ZigBee node property discovery start", node.getIeeeAddress());
 
-        // Create a list of endpoints for the discovery service to work with
-        Collection<ZigBeeEndpoint> endpoints = node.getEndpoints();
-
-        // Make sure the device has some endpoints!
-        if (endpoints.size() == 0) {
-            logger.debug("{}: Node has no endpoints", node.getIeeeAddress());
-            return properties;
-        }
-
         // Find an endpoint that supports the BASIC cluster and get device information
-        ZclBasicCluster basicCluster = null;
-
-        for (ZigBeeEndpoint device : endpoints) {
-            basicCluster = (ZclBasicCluster) device.getInputCluster(ZclBasicCluster.CLUSTER_ID);
-            if (basicCluster != null) {
-                break;
-            }
-        }
+        ZclBasicCluster basicCluster = (ZclBasicCluster) node.getEndpoints().stream()
+                .map(ep -> ep.getInputCluster(ZclBasicCluster.CLUSTER_ID)).filter(Objects::nonNull).findFirst()
+                .orElse(null);
 
         if (basicCluster == null) {
             logger.debug("{}: Node doesn't support basic cluster", node.getIeeeAddress());
