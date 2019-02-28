@@ -8,6 +8,9 @@
  */
 package org.openhab.binding.zigbee.discovery;
 
+import static org.eclipse.smarthome.core.thing.Thing.PROPERTY_FIRMWARE_VERSION;
+import static org.openhab.binding.zigbee.ZigBeeBindingConstants.*;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -19,7 +22,6 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclBasicCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOtaUpgradeCluster;
@@ -82,17 +84,47 @@ public class ZigBeeNodePropertyDiscoverer {
     public Map<String, String> getProperties(final ZigBeeNode node) {
         logger.debug("{}: ZigBee node property discovery start", node.getIeeeAddress());
 
-        // Find an endpoint that supports the BASIC cluster and get device information
+        addPropertiesFromNodeDescriptors(node);
+        addPropertiesFromBasicCluster(node);
+        addPropertiesFromOtaCluster(node);
+
+        logger.debug("{}: ZigBee node property discovery complete: {}", node.getIeeeAddress(), properties);
+
+        return properties;
+    }
+
+    private void addPropertiesFromNodeDescriptors(ZigBeeNode node) {
+        if (node.getLogicalType() != null) {
+            properties.put(THING_PROPERTY_LOGICALTYPE, node.getLogicalType().toString());
+        }
+
+        properties.put(THING_PROPERTY_NETWORKADDRESS, node.getNetworkAddress().toString());
+
+        PowerDescriptor powerDescriptor = node.getPowerDescriptor();
+        if (powerDescriptor != null) {
+            properties.put(THING_PROPERTY_AVAILABLEPOWERSOURCES, powerDescriptor.getAvailablePowerSources().toString());
+            properties.put(THING_PROPERTY_POWERSOURCE, powerDescriptor.getCurrentPowerSource().toString());
+            properties.put(THING_PROPERTY_POWERMODE, powerDescriptor.getCurrentPowerMode().toString());
+            properties.put(THING_PROPERTY_POWERLEVEL, powerDescriptor.getPowerLevel().toString());
+        }
+
+        if (node.getNodeDescriptor() != null) {
+            properties.put(THING_PROPERTY_MANUFACTURERCODE,
+                    String.format("0x%04x", node.getNodeDescriptor().getManufacturerCode()));
+        }
+    }
+
+    private void addPropertiesFromBasicCluster(ZigBeeNode node) {
         ZclBasicCluster basicCluster = (ZclBasicCluster) node.getEndpoints().stream()
                 .map(ep -> ep.getInputCluster(ZclBasicCluster.CLUSTER_ID)).filter(Objects::nonNull).findFirst()
                 .orElse(null);
 
         if (basicCluster == null) {
             logger.debug("{}: Node doesn't support basic cluster", node.getIeeeAddress());
-            return properties;
+            return;
         }
 
-        logger.debug("{}: ZigBee node property discovery using {}", node.getIeeeAddress(),
+        logger.debug("{}: ZigBee node property discovery using basic cluster on endpoint {}", node.getIeeeAddress(),
                 basicCluster.getZigBeeAddress());
 
         if (alwaysUpdate || properties.get(Thing.PROPERTY_VENDOR) == null) {
@@ -164,45 +196,26 @@ public class ZigBeeNodePropertyDiscoverer {
             }
         }
 
-        if (node.getLogicalType() != null) {
-            properties.put(ZigBeeBindingConstants.THING_PROPERTY_LOGICALTYPE, node.getLogicalType().toString());
-        }
-        properties.put(ZigBeeBindingConstants.THING_PROPERTY_NETWORKADDRESS, node.getNetworkAddress().toString());
+    }
 
-        // Find an OTA client if the device supports OTA upgrades
-        ZclOtaUpgradeCluster otaCluster = null;
-        for (ZigBeeEndpoint endpoint : node.getEndpoints()) {
-            otaCluster = (ZclOtaUpgradeCluster) endpoint.getOutputCluster(ZclOtaUpgradeCluster.CLUSTER_ID);
-            if (otaCluster != null) {
-                break;
-            }
-        }
+    private void addPropertiesFromOtaCluster(ZigBeeNode node) {
+        ZclOtaUpgradeCluster otaCluster = (ZclOtaUpgradeCluster) node.getEndpoints().stream()
+                .map(ep -> ep.getOutputCluster(ZclOtaUpgradeCluster.CLUSTER_ID)).filter(Objects::nonNull).findFirst()
+                .orElse(null);
 
         if (otaCluster != null) {
+            logger.debug("{}: ZigBee node property discovery using ota cluster on endpoint {}", node.getIeeeAddress(),
+                    otaCluster.getZigBeeAddress());
+
             Integer fileVersion = otaCluster.getCurrentFileVersion(Long.MAX_VALUE);
             if (fileVersion != null) {
-                properties.put(Thing.PROPERTY_FIRMWARE_VERSION,
-                        String.format("%s%08X", ZigBeeBindingConstants.FIRMWARE_VERSION_HEX_PREFIX, fileVersion));
+                properties.put(PROPERTY_FIRMWARE_VERSION, String.format("0x%08X", fileVersion));
             } else {
-                logger.debug("{}: OTA firmware failed", node.getIeeeAddress());
+                logger.debug("{}: Could not get OTA firmware version from device", node.getIeeeAddress());
             }
+        } else {
+            logger.debug("{}: Node doesn't support ota cluster", node.getIeeeAddress());
         }
-
-        PowerDescriptor powerDescriptor = node.getPowerDescriptor();
-        if (powerDescriptor != null) {
-            properties.put(ZigBeeBindingConstants.THING_PROPERTY_AVAILABLEPOWERSOURCES,
-                    powerDescriptor.getAvailablePowerSources().toString());
-            properties.put(ZigBeeBindingConstants.THING_PROPERTY_POWERSOURCE,
-                    powerDescriptor.getCurrentPowerSource().toString());
-            properties.put(ZigBeeBindingConstants.THING_PROPERTY_POWERMODE,
-                    powerDescriptor.getCurrentPowerMode().toString());
-            properties.put(ZigBeeBindingConstants.THING_PROPERTY_POWERLEVEL,
-                    powerDescriptor.getPowerLevel().toString());
-        }
-
-        logger.debug("{}: ZigBee node property discovery complete: {}", node.getIeeeAddress(), properties);
-
-        return properties;
     }
 
 }

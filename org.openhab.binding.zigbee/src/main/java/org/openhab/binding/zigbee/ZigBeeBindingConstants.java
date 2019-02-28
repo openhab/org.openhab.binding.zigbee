@@ -219,6 +219,7 @@ public class ZigBeeBindingConstants {
     public static final String THING_PROPERTY_ASSOCIATEDDEVICES = "zigbee_devices";
     public static final String THING_PROPERTY_INSTALLCODE = "zigbee_installcode";
     public static final String THING_PROPERTY_STACKCOMPLIANCE = "zigbee_stkcompliance";
+    public static final String THING_PROPERTY_MANUFACTURERCODE = "zigbee_manufacturercode";
 
     // List of all configuration parameters
     public static final String CONFIGURATION_PANID = "zigbee_panid";
@@ -250,7 +251,6 @@ public class ZigBeeBindingConstants {
     public static final String OFFLINE_DISCOVERY_INCOMPLETE = "@text/zigbee.status.offline_discoveryincomplete";
 
     public static final String FIRMWARE_FAILED = "@text/zigbee.firmware.failed";
-    public static final String FIRMWARE_VERSION_HEX_PREFIX = "0x";
 
     // List of channel state constants
     public static final String STATE_OPTION_BATTERY_MIN_THRESHOLD = "minThreshold";
