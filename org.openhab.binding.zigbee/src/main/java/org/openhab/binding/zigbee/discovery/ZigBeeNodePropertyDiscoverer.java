@@ -8,12 +8,17 @@
  */
 package org.openhab.binding.zigbee.discovery;
 
-import static org.eclipse.smarthome.core.thing.Thing.PROPERTY_FIRMWARE_VERSION;
+import static com.zsmartsystems.zigbee.zcl.clusters.ZclBasicCluster.*;
+import static org.eclipse.smarthome.core.thing.Thing.*;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -31,13 +36,26 @@ import com.zsmartsystems.zigbee.zdo.field.PowerDescriptor;
  * Implements a reusable method to return a set of properties about the device.
  *
  * @author Chris Jackson - initial contribution
- * @author Henning Sudbrock - read multiple attributes with a single command
+ * @author Henning Sudbrock - read multiple attributes from basic cluster with a single command to speedup discovery
  */
 public class ZigBeeNodePropertyDiscoverer {
 
     private final Logger logger = LoggerFactory.getLogger(ZigBeeNodePropertyDiscoverer.class);
 
     private static final int MAX_RETRIES = 3;
+
+    private static final Map<String, Integer> BASIC_CLUSTER_ATTRIBUTES_FOR_THING_PROPERTY;
+    static {
+        Map<String, Integer> map = new HashMap<String, Integer>();
+        map.put(PROPERTY_VENDOR, ATTR_MANUFACTURERNAME);
+        map.put(PROPERTY_MODEL_ID, ATTR_MODELIDENTIFIER);
+        map.put(PROPERTY_HARDWARE_VERSION, ATTR_HWVERSION);
+        map.put(THING_PROPERTY_APPLICATIONVERSION, ATTR_APPLICATIONVERSION);
+        map.put(THING_PROPERTY_STKVERSION, ATTR_STACKVERSION);
+        map.put(THING_PROPERTY_ZCLVERSION, ATTR_ZCLVERSION);
+        map.put(THING_PROPERTY_DATECODE, ATTR_DATECODE);
+        BASIC_CLUSTER_ATTRIBUTES_FOR_THING_PROPERTY = Collections.unmodifiableMap(map);
+    }
 
     private Map<String, String> properties = new HashMap<String, String>();
 
@@ -127,6 +145,20 @@ public class ZigBeeNodePropertyDiscoverer {
         logger.debug("{}: ZigBee node property discovery using basic cluster on endpoint {}", node.getIeeeAddress(),
                 basicCluster.getZigBeeAddress());
 
+        // Attempt to read all properties with a single command.
+        // If successful, this updates the cache with the property values.
+        try {
+            Map<String, Integer> propertiesToRead = getPropertiesToRead(basicCluster);
+            List<Integer> attributes = new ArrayList<>(propertiesToRead.values());
+            basicCluster.read(attributes).get();
+        } catch (InterruptedException | ExecutionException e) {
+            logger.info("{}: There was an error when trying to read all properties with a single command.",
+                    node.getIeeeAddress(), e);
+        }
+
+        // Now, get each single property via the basic cluster. If the above multi-attribute read was successful,
+        // this will get each property from the cache. Otherwise, it will try to get the property from the device again.
+
         if (alwaysUpdate || properties.get(Thing.PROPERTY_VENDOR) == null) {
             for (int retry = 0; retry < MAX_RETRIES; retry++) {
                 String manufacturer = basicCluster.getManufacturerName(Long.MAX_VALUE);
@@ -198,13 +230,24 @@ public class ZigBeeNodePropertyDiscoverer {
 
     }
 
+    private Map<String, Integer> getPropertiesToRead(ZclBasicCluster basicCluster) {
+        Map<String, Integer> result = new HashMap<>();
+        for (Map.Entry<String, Integer> entry : BASIC_CLUSTER_ATTRIBUTES_FOR_THING_PROPERTY.entrySet()) {
+            if (alwaysUpdate || properties.get(entry.getKey()) == null
+                    || !basicCluster.getAttribute(entry.getValue()).isLastValueCurrent(Long.MAX_VALUE)) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return result;
+    }
+
     private void addPropertiesFromOtaCluster(ZigBeeNode node) {
         ZclOtaUpgradeCluster otaCluster = (ZclOtaUpgradeCluster) node.getEndpoints().stream()
                 .map(ep -> ep.getOutputCluster(ZclOtaUpgradeCluster.CLUSTER_ID)).filter(Objects::nonNull).findFirst()
                 .orElse(null);
 
         if (otaCluster != null) {
-            logger.debug("{}: ZigBee node property discovery using ota cluster on endpoint {}", node.getIeeeAddress(),
+            logger.debug("{}: ZigBee node property discovery using OTA cluster on endpoint {}", node.getIeeeAddress(),
                     otaCluster.getZigBeeAddress());
 
             Integer fileVersion = otaCluster.getCurrentFileVersion(Long.MAX_VALUE);
@@ -214,7 +257,7 @@ public class ZigBeeNodePropertyDiscoverer {
                 logger.debug("{}: Could not get OTA firmware version from device", node.getIeeeAddress());
             }
         } else {
-            logger.debug("{}: Node doesn't support ota cluster", node.getIeeeAddress());
+            logger.debug("{}: Node doesn't support OTA cluster", node.getIeeeAddress());
         }
     }
 
