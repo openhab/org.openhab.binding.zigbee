@@ -26,6 +26,7 @@ import org.eclipse.smarthome.core.thing.type.DynamicCommandDescriptionProvider;
 import org.eclipse.smarthome.core.types.CommandDescription;
 import org.eclipse.smarthome.core.types.CommandDescriptionBuilder;
 import org.eclipse.smarthome.core.types.CommandOption;
+import org.openhab.binding.zigbee.converter.warningdevice.WarningTypeCommandDescriptionProvider;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
