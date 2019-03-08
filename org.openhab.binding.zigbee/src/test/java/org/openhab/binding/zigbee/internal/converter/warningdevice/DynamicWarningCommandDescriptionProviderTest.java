@@ -23,6 +23,7 @@ import org.eclipse.smarthome.core.types.CommandDescription;
 import org.eclipse.smarthome.core.types.CommandOption;
 import org.junit.Before;
 import org.junit.Test;
+import org.openhab.binding.zigbee.converter.warningdevice.WarningType;
 import org.openhab.binding.zigbee.converter.warningdevice.WarningTypeCommandDescriptionProvider;
 
 /**

@@ -6,28 +6,29 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.zigbee.internal.converter.warningdevice;
+package org.openhab.binding.zigbee.converter.warningdevice;
 
 /**
- * Possible siren level values (for both warning and squawk commands).
+ * Possible values for the warning mode in a warning type.
  *
  * @author Henning Sudbrock - initial contribution
  */
-public enum SoundLevel {
-
-    LOW(0),
-    MEDIUM(1),
-    HIGH(2),
-    VERY_HIGH(3);
+public enum WarningMode {
+    STOP(0),
+    BURGLAR(1),
+    FIRE(2),
+    EMERGENCY(3),
+    POLICE_PANIC(4),
+    FIRE_PANIC(5),
+    EMERGENCY_PANIC(6);
 
     private int value;
 
-    SoundLevel(int value) {
+    WarningMode(int value) {
         this.value = value;
     }
 
     public int getValue() {
         return value;
     }
-
 }
