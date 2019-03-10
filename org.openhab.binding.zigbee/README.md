@@ -131,6 +131,7 @@ The following devices have been tested with the binding
 | GE Bulbs                   |                                                   |
 | GE Tapt Wall Switch        | On/Off Switch                                     |
 | Hue Bulbs                  | Color LED Bulb                                    |
+| Hue Dimmer                 | Hue Dimmer Switch Remote *note2*                  |
 | Hue Motion Sensor          | Motion and Luminance sensor                       |
 | Innr Bulbs                 | *note1*                                           |
 | Osram Bulbs                |                                                   |
@@ -144,6 +145,8 @@ The following devices have been tested with the binding
 | Ubisys modules             | D1 Dimmer, S1/S2 Switch modules                   |
 
 Note 1: Some bulbs may not work with the Telegesis dongle.
+
+Note 2: The Hue Dimmer can be integrated but needs additional rule-configuration to work properly. See below for example. 
 
 ## Discovery
 
@@ -252,6 +255,28 @@ The syntax for the command strings is as in the examples above, where the possib
 
 Note that it is possible to dynamically add command descriptions for specific warning/squawk types to a `warning_device` channel by configuring the channel configuration property `zigbee_iaswd_commandOptions`, using String parameters of the form `label=>commandString`, where `label` is the label provided to UIs to render, e.g., buttons for the provided command options (as done, e.g., by PaperUI).
 Also note that solutions integrating the binding can add implementations of type `WarningTypeCommandDescriptionProvider` to provide warning/squawk types together with command descriptions for all channels of type `warning_device`. 
+
+
+## Channels triggered event & rules
+
+Some devices like the Philips Hue Dimmer can be discovered and added to openHAB through this binding but will not allow the Items to be created in PaperUI. These channels are set as Triggers and will generate output in the events.log that looks similar to this:
+
+```
+2019-03-08 20:51:18.609 [vent.ChannelTriggeredEvent] - zigbee:philips_rwl021:AAAAAAAA:BBBBBBBBBBBBBBBB:buttonI triggered SHORT_PRESSED
+```
+To utilize these events, no new Item is required and the rule can be used to directly trigger off of this event.
+The Channel that should be used can be copied directly from PaperUI under the Channels-section of the Thing or can be read from the events.log
+See the following example on how to integrate the Channel triggered event for a Hue Dimmer:
+
+```java
+rule "Philips Hue ButtonI"
+when
+    Channel 'zigbee:philips_rwl021:AAAAAAAA:BBBBBBBBBBBBBBBB:buttonI' triggered SHORT_PRESSED
+then
+    //execute your code here
+end
+```
+
 
 ## When things don't appear to be working
 
