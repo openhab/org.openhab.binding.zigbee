@@ -6,7 +6,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.zigbee.internal.converter.warningdevice;
+package org.openhab.binding.zigbee.converter.warningdevice;
 
 /**
  * Possible values for the squawk mode in a squawk type.

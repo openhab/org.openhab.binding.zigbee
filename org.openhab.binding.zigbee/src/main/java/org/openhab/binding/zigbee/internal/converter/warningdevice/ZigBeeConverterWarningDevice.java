@@ -23,6 +23,8 @@ import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.converter.warningdevice.SquawkType;
+import org.openhab.binding.zigbee.converter.warningdevice.WarningType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

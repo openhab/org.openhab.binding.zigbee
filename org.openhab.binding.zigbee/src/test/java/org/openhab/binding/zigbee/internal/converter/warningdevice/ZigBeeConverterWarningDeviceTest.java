@@ -19,6 +19,11 @@ import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.junit.Before;
 import org.junit.Test;
+import org.openhab.binding.zigbee.converter.warningdevice.SoundLevel;
+import org.openhab.binding.zigbee.converter.warningdevice.SquawkMode;
+import org.openhab.binding.zigbee.converter.warningdevice.SquawkType;
+import org.openhab.binding.zigbee.converter.warningdevice.WarningMode;
+import org.openhab.binding.zigbee.converter.warningdevice.WarningType;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 
