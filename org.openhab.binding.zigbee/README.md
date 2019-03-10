@@ -43,6 +43,12 @@ Once a child is removed from the child table of a router, it will be asked to re
 
 Note that ZigBee compliant devices should rejoin the network seamlessly, however some non-compliant devices may not rejoin which may leave them unusable without a manual rejoin.
 
+##### Concentrator Type (zigbee_concentrator)
+
+The Concentrator is used to improve routing within a ZigBee network, and is especially useful in a network where much of the traffic is sent to or from a central coordinator. If the coordinator has sufficient memory, it can store routing information, thus reducing network traffic.
+
+If supported, the High RAM concentrator should be used.
+
 ##### Mesh Update Period (zigbee_meshupdateperiod)
 
 The binding is able to search the network to get a list of what devices can communicate with other devices. This is a useful diagnostic feature as it allows users to see the links between devices, and the quality of these links. However, this can generate considerable traffic, and some battery devices may not poll their parents often enough to provide these updates, and users may consider that it is better to reduce the period, or disable this feature.
@@ -53,7 +59,7 @@ The following coordinators are known to be supported.
 
 | Name and Link              | Coordinator | Comment                       |
 |----------------------------|-------------|-------------------------------|
-|[Texas Instruments CC2531EMK](http://www.ti.com/tool/cc2531emk)|[CC2531](#cc2531-coordinator)|Needs extra hardware and correct firmware (might be hard to find) for flashing.<br>There are also cheap copies of the CC2531 Stick available on eBay, Aliexpress, etc. like [this](https://de.aliexpress.com/item/Drahtlose-Zigbee-CC2531-Sniffer-software-protokoll-analyse-Bareboard-Paket-Protokoll-Analyzer-Modul-Usb-schnittstelle-Dongle-Erfassen/32852226435.html) and a module to flash the firmware like [this](https://de.aliexpress.com/item/SmartRF04EB-CC1110-CC2530-ZigBee-Module-USB-Downloader-Emulator-MCU-M100/32673666126.html)<br>Also CC2530, CC2538 or CC2650 may work with the correct firmware but are not suggested|
+|[Texas Instruments CC2531EMK](http://www.ti.com/tool/cc2531emk)|[CC2531](#cc2531-coordinator)|Needs extra hardware and correct firmware (might be hard to find) for flashing.<br>There are also cheap copies of the CC2531 Stick available on eBay, Aliexpress, etc. like [this](https://de.aliexpress.com/item/Drahtlose-Zigbee-CC2531-Sniffer-software-protokoll-analyse-Bareboard-Paket-Protokoll-Analyzer-Modul-Usb-schnittstelle-Dongle-Erfassen/32852226435.html) and a module to flash the firmware like [this](https://de.aliexpress.com/item/SmartRF04EB-CC1110-CC2530-ZigBee-Module-USB-Downloader-Emulator-MCU-M100/32673666126.html) including a [connector board](https://de.aliexpress.com/item/CC2531-CC2540-Zigbee-Sniffer-software-protokoll-analyse-Wireless-Board-Bluetooth-BLE-4-0-Dongle-Capture-Modul/32869263224.html)<br>Also CC2530, CC2538 or CC2650 may work with the correct firmware but are not suggested|
 |[Bitron Video ZigBee USB Funkstick](http://www.bitronvideo.eu/index.php/produkte/smart-home-produkte/zb-funkstick/)|[Ember](#ember-ezsp-ncp-coordinator)| |
 |[Cortet EM358 USB Stick](https://www.cortet.com/iot-hardware/cortet-usb-sticks/em358-usb-stick)|[Ember](#ember-ezsp-ncp-coordinator)| Use baud rate 57600 and software flow control. |
 |[Nortek Security & Control HUSBZB-1](https://nortekcontrol.com/products/2gig/husbzb-1-gocontrol-quickstick-combo/)|[Ember](#ember-ezsp-ncp-coordinator)|Stick contains both Z-Wave and ZigBee. Use baud rate 57600 and software flow control. |
@@ -81,6 +87,10 @@ The required dependencies can be installed with `sudo apt install build-essentia
 
 The firmware can be flashed with `./cc-tool -e -w CC2531ZNP-Pro-Secure_Standard.hex -v r`. Change the path to the firmware accordingly.
 
+##### Flashing on Windows
+
+For flashing the dongle using windows you need the [TI Flash Programmer](http://www.ti.com/tool/flash-programmer) (version 1, not version 2) and the Cebal drivers from [this TI site](http://www.ti.com/tool/cc-debugger) (available in section Software).
+Extract and install the TI Flash Programmer, connect the CC-Debugger trough USB, and with the dongle using the connector board. In the Windows device manager update the device driver with the Cebal drivers. Now the TI Flash Programmer should show your device. Select the firmware file, flash and verify your dongle firmware.
 
 #### Ember EZSP NCP Coordinator
 
@@ -122,6 +132,7 @@ The following devices have been tested with the binding
 | GE Bulbs                   |                                                   |
 | GE Tapt Wall Switch        | On/Off Switch                                     |
 | Hue Bulbs                  | Color LED Bulb                                    |
+| Hue Dimmer                 | Hue Dimmer Switch Remote *note2*                  |
 | Hue Motion Sensor          | Motion and Luminance sensor                       |
 | Innr Bulbs                 | *note1*                                           |
 | Osram Bulbs                |                                                   |
@@ -135,6 +146,8 @@ The following devices have been tested with the binding
 | Ubisys modules             | D1 Dimmer, S1/S2 Switch modules                   |
 
 Note 1: Some bulbs may not work with the Telegesis dongle.
+
+Note 2: The Hue Dimmer can be integrated but needs additional rule-configuration to work properly. See below for example. 
 
 ## Discovery
 
@@ -208,11 +221,62 @@ The following channels are supported -:
 | sensor_occupancy | ```OCCUPANCY_SENSING``` (0x0406) | Switch  |  |
 | switch_dimmer | ```LEVEL_CONTROL``` (0x0008) | Dimmer |   |
 | switch_onoff | ```ON_OFF``` (0x0006) | Switch  |
+| warning_device | ```IAS_WD``` (0x0502) | String  |
 
 
 ### Updates
 
 The binding will attempt to configure a connection with the device to receive automatic and instantaneous reports when the device status changes. Should this configuration fail, the binding will resort to using a fast polling (note that "fast" is approximately 30 seconds at this time).
+
+### Warning devices
+
+For devices implementing the cluster `IAS_WD` (e.g., sirens or, in some cases, smoke detectors), the binding adds a channel of type `warning_device`.
+To make the device emit a warning (by siren and/or strobe signal) for a specified time, a command of type `String` must be sent to the channel, where the command encodes the configuration of the warning.
+Similarly, to make the device emit a squawk (by siren and/or strobe signal), a command of type `String` must be sent to the channel, where the command encodes the configuration of the squawk.
+
+Examples:
+
+| Command string | Effect of the command |
+|----------------|-----------------------|
+| `type=warning useStrobe=true warningMode=BURGLAR sirenLevel=HIGH duration=PT30S` | Start a warning using both strobe signal and siren (type 'burglar alarm'), with a duration of 30 seconds.|
+| `type=warning useStrobe=false warningMode=FIRE sirenLevel=HIGH duration=PT60S` | Start a warning using only siren (type 'fire alarm'), with a duration of 60 seconds.|
+| `type=warning useStrobe=false warningMode=STOP sirenLevel=HIGH duration=PT30S` | If the device is currently emitting a warning, this stops the warning.|
+| `type=squawk useStrobe=false squawkMode=ARMED squawkLevel=HIGH` | Makes the device emit a 'squawk' signaling 'armed', with high volume.|
+
+The syntax for the command strings is as in the examples above, where the possible values for `type`, `useStrobe`, `warningMode`, `squawkMode`, `sirenLevel`, `squawkLevel`, and `duration` are as follows:
+
+| Command parameter | Value range |
+|-------------------|-------------|
+| type | `warning` and `squawk` |
+| useStrobe | `true` and `false` |
+| warningMode | `STOP`, `BURGLAR`, `FIRE`, `EMERGENCY`, `POLICE_PANIC`, `FIRE_PANIC`, `EMERGENCY_PANIC`, any integer value (for devices supporting warning modes not specified in the ZCL) |
+| squawkMode | `ARMED`, `DISARMED`, any integer value (for devices supporting squawk modes not specified in the ZCL) |
+| sirenLevel / squawkLevel | `LOW`, `MEDIUM`, `HIGH`, `VERY_HIGH`, any integer value (for devices supporting levels not specified in the ZCL) |
+| duration | A duration specified in the ISO-8601 duration format |
+
+Note that it is possible to dynamically add command descriptions for specific warning/squawk types to a `warning_device` channel by configuring the channel configuration property `zigbee_iaswd_commandOptions`, using String parameters of the form `label=>commandString`, where `label` is the label provided to UIs to render, e.g., buttons for the provided command options (as done, e.g., by PaperUI).
+Also note that solutions integrating the binding can add implementations of type `WarningTypeCommandDescriptionProvider` to provide warning/squawk types together with command descriptions for all channels of type `warning_device`. 
+
+
+## Channels triggered event & rules
+
+Some devices like the Philips Hue Dimmer can be discovered and added to openHAB through this binding but will not allow the Items to be created in PaperUI. These channels are set as Triggers and will generate output in the events.log that looks similar to this:
+
+```
+2019-03-08 20:51:18.609 [vent.ChannelTriggeredEvent] - zigbee:philips_rwl021:AAAAAAAA:BBBBBBBBBBBBBBBB:buttonI triggered SHORT_PRESSED
+```
+To utilize these events, no new Item is required and the rule can be used to directly trigger off of this event.
+The Channel that should be used can be copied directly from PaperUI under the Channels-section of the Thing or can be read from the events.log
+See the following example on how to integrate the Channel triggered event for a Hue Dimmer:
+
+```java
+rule "Philips Hue ButtonI"
+when
+    Channel 'zigbee:philips_rwl021:AAAAAAAA:BBBBBBBBBBBBBBBB:buttonI' triggered SHORT_PRESSED
+then
+    //execute your code here
+end
+```
 
 
 ## When things don't appear to be working

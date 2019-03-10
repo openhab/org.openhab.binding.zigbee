@@ -297,4 +297,34 @@
         </state>
     </channel-type>
 
+	<!-- Warning device -->
+	<channel-type id="warning_device">
+		<item-type>String</item-type>
+		<label>Warning device</label>
+		<description>Triggers warnings on a warning device</description>
+		<category>Siren</category>
+		<state readOnly="true" />
+		<config-description>
+			<parameter name="zigbee_iaswd_maxDuration" type="integer" min="0" max="65534" unit="s">
+				<default>60</default>
+				<label>Maximal warning duration</label>
+				<description>Maximal time in seconds that the siren will sound continuously</description>
+				<unitLabel>seconds</unitLabel>
+				<limitToOptions>false</limitToOptions>
+			</parameter>
+			<parameter name="zigbee_iaswd_commandOptions" type="text" multiple="true">
+				<label>Command options for warning/squawk types</label>
+				<description>This configuration parameter is used to configure command options for warning/squawk types to be displayed by UIs; see options for examples</description>
+				<options>
+				    <option value="Burglar Alarm (30s)=>type=warning useStrobe=true warningMode=BURGLAR sirenLevel=HIGH duration=PT30S">Burglar Alarm (30s)</option>
+				    <option value="Fire Alarm (60s, only siren)=>type=warning useStrobe=false warningMode=FIRE sirenLevel=HIGH duration=PT60S">Fire Alarm (60s, only siren)</option>
+				    <option value="Stop Alarm=>type=warning useStrobe=false warningMode=STOP sirenLevel=HIGH duration=PT30S">Stop Alarm</option>
+				    <option value="Signal Armed=>type=squawk useStrobe=false squawkMode=ARMED squawkLevel=HIGH">Signal Armed</option>
+				    <option value="Signal Disarmed=>type=squawk useStrobe=false squawkMode=DISARMED squawkLevel=HIGH">Signal Disarmed</option>
+				</options>
+				<limitToOptions>false</limitToOptions>
+			</parameter>
+		</config-description>
+	</channel-type>
+
 </thing:thing-descriptions>

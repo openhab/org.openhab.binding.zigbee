@@ -17,6 +17,7 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterProvider;
+import org.openhab.binding.zigbee.internal.converter.warningdevice.ZigBeeConverterWarningDevice;
 import org.osgi.service.component.annotations.Component;
 
 /**
@@ -54,6 +55,7 @@ public final class ZigBeeDefaultChannelConverterProvider implements ZigBeeChanne
         channelMap.put(ZigBeeBindingConstants.CHANNEL_PRESSURE_VALUE, ZigBeeConverterAtmosphericPressure.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF, ZigBeeConverterSwitchOnoff.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL, ZigBeeConverterSwitchLevel.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_WARNING_DEVICE, ZigBeeConverterWarningDevice.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE, ZigBeeConverterTemperature.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_ELECTRICAL_RMSVOLTAGE,
                 ZigBeeConverterMeasurementRmsVoltage.class);

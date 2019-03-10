@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -35,6 +36,7 @@ import org.eclipse.smarthome.config.core.ConfigDescription;
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
 import org.eclipse.smarthome.config.core.ConfigDescriptionProvider;
 import org.eclipse.smarthome.config.core.Configuration;
+import org.eclipse.smarthome.core.common.ThreadPoolManager;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -129,6 +131,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     private boolean firmwareUpdateInProgress = false;
 
+    private ExecutorService commandScheduler = ThreadPoolManager.getPool("zigbee-thinghandler-commands");
+
     /**
      * A set of channels that have been linked to items. This is used to ensure we only poll channels that are linked to
      * keep network activity to a minimum.
@@ -215,7 +219,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         ZigBeeNode node = coordinatorHandler.getNode(nodeIeeeAddress);
         if (node == null) {
             logger.debug("{}: Node not found - deferring handler initialisation", nodeIeeeAddress);
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE, ZigBeeBindingConstants.OFFLINE_NODE_NOT_FOUND);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.GONE, ZigBeeBindingConstants.OFFLINE_NODE_NOT_FOUND);
             return;
         }
 
@@ -628,7 +632,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 }
             }
         };
-        scheduler.schedule(commandHandler, 0, TimeUnit.MILLISECONDS);
+        commandScheduler.execute(commandHandler);
     }
 
     @Override
@@ -761,7 +765,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         updateProperties(properties);
 
         if (getThing().getStatus() != ThingStatus.REMOVING) {
-            updateStatus(ThingStatus.OFFLINE);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.GONE);
         }
     }
 
@@ -884,7 +888,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 for (int retry = 0; retry < 3; retry++) {
                     Integer fileVersion = finalOtaServer.getCurrentFileVersion();
                     if (fileVersion != null) {
-                        updateProperty(Thing.PROPERTY_FIRMWARE_VERSION, String.format("%08X", fileVersion));
+                        updateProperty(Thing.PROPERTY_FIRMWARE_VERSION, String.format("%s%08X",
+                                ZigBeeBindingConstants.FIRMWARE_VERSION_HEX_PREFIX, fileVersion));
                         break;
                     } else {
                         logger.debug("{}: OTA firmware request timeout (retry {})", node.getIeeeAddress(), retry);

@@ -185,7 +185,8 @@ public class ZigBeeNodePropertyDiscoverer {
         if (otaCluster != null) {
             Integer fileVersion = otaCluster.getCurrentFileVersion(Long.MAX_VALUE);
             if (fileVersion != null) {
-                properties.put(Thing.PROPERTY_FIRMWARE_VERSION, String.format("%08X", fileVersion));
+                properties.put(Thing.PROPERTY_FIRMWARE_VERSION,
+                        String.format("%s%08X", ZigBeeBindingConstants.FIRMWARE_VERSION_HEX_PREFIX, fileVersion));
             } else {
                 logger.debug("{}: OTA firmware failed", node.getIeeeAddress());
             }
