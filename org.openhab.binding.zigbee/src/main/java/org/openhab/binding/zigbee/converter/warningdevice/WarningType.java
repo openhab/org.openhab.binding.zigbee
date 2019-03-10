@@ -6,13 +6,13 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.zigbee.internal.converter.warningdevice;
+package org.openhab.binding.zigbee.converter.warningdevice;
 
 import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
-import static org.openhab.binding.zigbee.internal.converter.warningdevice.SoundLevel.HIGH;
-import static org.openhab.binding.zigbee.internal.converter.warningdevice.WarningMode.BURGLAR;
+import static org.openhab.binding.zigbee.converter.warningdevice.SoundLevel.HIGH;
+import static org.openhab.binding.zigbee.converter.warningdevice.WarningMode.BURGLAR;
 
 import java.time.Duration;
 import java.util.Map;

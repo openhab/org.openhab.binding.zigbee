@@ -13,6 +13,9 @@ import static org.junit.Assert.*;
 import java.time.Duration;
 
 import org.junit.Test;
+import org.openhab.binding.zigbee.converter.warningdevice.SoundLevel;
+import org.openhab.binding.zigbee.converter.warningdevice.WarningMode;
+import org.openhab.binding.zigbee.converter.warningdevice.WarningType;
 
 /**
  * Unit tests for {@link WarningType}.
