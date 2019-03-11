@@ -227,6 +227,7 @@ public class ZigBeeBindingConstants {
     public static final String THING_PROPERTY_ASSOCIATEDDEVICES = "zigbee_devices";
     public static final String THING_PROPERTY_INSTALLCODE = "zigbee_installcode";
     public static final String THING_PROPERTY_STACKCOMPLIANCE = "zigbee_stkcompliance";
+    public static final String THING_PROPERTY_DEVICE_INITIALIZED = "zigbee_device_initialised";
 
     // List of all configuration parameters
     public static final String CONFIGURATION_PANID = "zigbee_panid";
@@ -239,6 +240,7 @@ public class ZigBeeBindingConstants {
     public static final String CONFIGURATION_LINKKEY = "zigbee_linkkey";
     public static final String CONFIGURATION_PASSWORD = "zigbee_password";
     public static final String CONFIGURATION_INITIALIZE = "zigbee_initialise";
+    public static final String CONFIGURATION_INITIALIZE_DEVICE = "zigbee_initialise_device";
     public static final String CONFIGURATION_TRUSTCENTREMODE = "zigbee_trustcentremode";
     public static final String CONFIGURATION_POWERMODE = "zigbee_powermode";
     public static final String CONFIGURATION_TXPOWER = "zigbee_txpower";

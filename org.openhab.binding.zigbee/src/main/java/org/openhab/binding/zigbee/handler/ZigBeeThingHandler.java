@@ -58,6 +58,7 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
+import org.openhab.binding.zigbee.internal.ZigBeeConfigDescriptionParameters;
 import org.openhab.binding.zigbee.internal.ZigBeeDeviceConfigHandler;
 import org.openhab.binding.zigbee.internal.converter.config.ZclClusterConfigFactory;
 import org.openhab.binding.zigbee.internal.converter.config.ZclClusterConfigHandler;
@@ -269,6 +270,9 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         List<Channel> nodeChannels;
 
+        List<ConfigDescriptionParameter> parameters = new ArrayList<>(
+                ZigBeeConfigDescriptionParameters.getParameters());
+
         if (getThing().getThingTypeUID().equals(ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE)) {
             // Dynamically create the channels from the device
             // Process all the endpoints for this device and add all channels as derived from the supported clusters
@@ -279,21 +283,19 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             }
             logger.debug("{}: Dynamically created {} channels", nodeIeeeAddress, nodeChannels.size());
 
-            try {
-                List<ConfigDescriptionParameter> parameters = new ArrayList<ConfigDescriptionParameter>();
-
-                for (ZclClusterConfigHandler handler : configHandlers) {
-                    parameters.addAll(handler.getConfiguration());
-                }
-
-                configDescription = new ConfigDescription(new URI("thing:" + getThing().getUID()), parameters);
-            } catch (IllegalArgumentException | URISyntaxException e) {
-                logger.debug("Error creating URI for thing description:", e);
+            for (ZclClusterConfigHandler handler : configHandlers) {
+                parameters.addAll(handler.getConfiguration());
             }
         } else {
             // We already have the correct thing type so just use the channels
             nodeChannels = getThing().getChannels();
             logger.debug("{}: Using static definition with existing {} channels", nodeIeeeAddress, nodeChannels.size());
+        }
+
+        try {
+            configDescription = new ConfigDescription(new URI("thing:" + getThing().getUID()), parameters);
+        } catch (IllegalArgumentException | URISyntaxException e) {
+            logger.debug("Error creating URI for thing description:", e);
         }
 
         // Add statically defined endpoints and clusters
@@ -368,24 +370,23 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 updateThing(thingBuilder.build());
             }
 
+            boolean initializeDevice = !Boolean
+                    .parseBoolean(thing.getProperties().get(ZigBeeBindingConstants.THING_PROPERTY_DEVICE_INITIALIZED));
+            if (initializeDevice) {
+                initializeDevice();
+            } else {
+                logger.debug("{}: Device initialization will be skipped as the device is already initialized",
+                        nodeIeeeAddress);
+            }
+
             // Create the channel map to simplify processing incoming events
             for (Channel channel : getThing().getChannels()) {
-                // Process the channel properties
-                Map<String, String> properties = channel.getProperties();
-
-                ZigBeeBaseChannelConverter handler = channelFactory.createConverter(this, channel, coordinatorHandler,
-                        node.getIeeeAddress(),
-                        Integer.parseInt(properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_ENDPOINT)));
+                ZigBeeBaseChannelConverter handler = createZigBeeBaseChannelConverter(channel);
                 if (handler == null) {
                     logger.debug("{}: No handler found for {}", nodeIeeeAddress, channel.getUID());
                     continue;
                 }
 
-                logger.debug("{}: Initializing channel {} with {}", nodeIeeeAddress, channel.getUID(), handler);
-                if (handler.initializeDevice() == false) {
-                    logger.info("{}: Channel {} failed to initialise device", nodeIeeeAddress, channel.getUID());
-                    continue;
-                }
                 if (handler.initializeConverter() == false) {
                     logger.info("{}: Channel {} failed to initialise converter", nodeIeeeAddress, channel.getUID());
                     continue;
@@ -461,6 +462,37 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      */
     public void aliveTimeoutReached() {
         updateStatus(ThingStatus.OFFLINE);
+    }
+
+    private synchronized void initializeDevice() {
+        logger.debug("{}: Initializing device", nodeIeeeAddress);
+
+        getThing().setProperty(ZigBeeBindingConstants.THING_PROPERTY_DEVICE_INITIALIZED, Boolean.FALSE.toString());
+
+        boolean channelInitializationSuccessful = true;
+        for (Channel channel : getThing().getChannels()) {
+            ZigBeeBaseChannelConverter handler = createZigBeeBaseChannelConverter(channel);
+            if (handler == null) {
+                logger.debug("{}: No handler found for {}", nodeIeeeAddress, channel.getUID());
+                continue;
+            }
+
+            logger.debug("{}: Initializing channel {} with {}", nodeIeeeAddress, channel.getUID(), handler);
+            if (handler.initializeDevice() == false) {
+                logger.info("{}: Channel {} failed to initialise device", nodeIeeeAddress, channel.getUID());
+                channelInitializationSuccessful = false;
+            }
+        }
+
+        thing.setProperty(ZigBeeBindingConstants.THING_PROPERTY_DEVICE_INITIALIZED,
+                channelInitializationSuccessful ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
+    }
+
+    private ZigBeeBaseChannelConverter createZigBeeBaseChannelConverter(Channel channel) {
+        ZigBeeNode node = coordinatorHandler.getNode(nodeIeeeAddress);
+        Map<String, String> properties = channel.getProperties();
+        return channelFactory.createConverter(this, channel, coordinatorHandler, node.getIeeeAddress(),
+                Integer.parseInt(properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_ENDPOINT)));
     }
 
     /**
@@ -608,6 +640,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     public void handleConfigurationUpdate(Map<String, Object> configurationParameters) {
         logger.debug("{}: Configuration received: {}", nodeIeeeAddress, configurationParameters);
 
+        boolean initializeDevice = false;
+
         Configuration configuration = editConfiguration();
         for (Entry<String, Object> configurationParameter : configurationParameters.entrySet()) {
             // Ignore any configuration parameters that have not changed
@@ -624,6 +658,9 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 case ZigBeeBindingConstants.CONFIGURATION_LEAVE:
                     coordinatorHandler.leave(nodeIeeeAddress);
                     break;
+                case ZigBeeBindingConstants.CONFIGURATION_INITIALIZE_DEVICE:
+                    initializeDevice = true;
+                    break;
                 default:
                     break;
             }
@@ -639,6 +676,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         // Persist changes
         updateConfiguration(configuration);
+
+        if (initializeDevice) {
+            initializeDevice();
+        }
     }
 
     @Override
