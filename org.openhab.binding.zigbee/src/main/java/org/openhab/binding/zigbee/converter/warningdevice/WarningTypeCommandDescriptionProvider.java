@@ -24,6 +24,6 @@ public interface WarningTypeCommandDescriptionProvider {
      * @return A map mapping labels for warning/squawk command descriptions (to be used by UIs) to the serializes
      *         warning/squawk commands.
      */
-    List<CommandOption> getWarningAndSquawCommandOptions();
+    List<CommandOption> getWarningAndSquawkCommandOptions();
 
 }
