@@ -71,9 +71,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
                 // Configure reporting
                 CommandResult reportingResponse = clusterLevelControl
                         .setCurrentLevelReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-                if (reportingResponse.isError()) {
-                    pollingPeriod = POLLING_PERIOD_HIGH;
-                }
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 pollingPeriod = POLLING_PERIOD_HIGH;
                 logger.debug("{}: Failed to bind level control cluster", endpoint.getIeeeAddress());
@@ -90,9 +88,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
                     // Configure reporting
                     CommandResult reportingResponse = clusterOnOff.setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX)
                             .get();
-                    if (reportingResponse.isError()) {
-                        pollingPeriod = POLLING_PERIOD_HIGH;
-                    }
+                    handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
                 } else {
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }

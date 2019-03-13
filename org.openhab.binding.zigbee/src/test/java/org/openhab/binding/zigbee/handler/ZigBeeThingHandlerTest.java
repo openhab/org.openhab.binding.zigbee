@@ -30,7 +30,7 @@ public class ZigBeeThingHandlerTest {
             SecurityException {
         Method privateMethod;
 
-        ZigBeeThingHandler handler = new ZigBeeThingHandler(null, null);
+        ZigBeeThingHandler handler = new ZigBeeThingHandler(null, null, null);
 
         privateMethod = ZigBeeThingHandler.class.getDeclaredMethod("processClusterList", Collection.class,
                 String.class);

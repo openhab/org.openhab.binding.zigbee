@@ -58,7 +58,9 @@ public class ZigBeeConverterThermostatRunningMode extends ZigBeeBaseChannelConve
             } else {
                 // Configure reporting
                 ZclAttribute attribute = cluster.getAttribute(ZclThermostatCluster.ATTR_THERMOSTATRUNNINGMODE);
-                cluster.setReporting(attribute, REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX);
+                CommandResult reportingResponse = cluster
+                        .setReporting(attribute, REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);

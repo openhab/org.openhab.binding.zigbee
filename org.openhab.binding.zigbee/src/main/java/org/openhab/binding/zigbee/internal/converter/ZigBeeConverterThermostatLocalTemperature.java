@@ -57,7 +57,10 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
                 logger.debug("{}: Failed to bind thermostat cluster", endpoint.getIeeeAddress());
             } else {
                 // Configure reporting
-                cluster.setLocalTemperatureReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 0.1);
+                CommandResult reportingResponse = cluster
+                        .setLocalTemperatureReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 0.1)
+                        .get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);

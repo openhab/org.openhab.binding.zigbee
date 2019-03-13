@@ -20,6 +20,7 @@ import org.eclipse.smarthome.core.thing.type.DynamicStateDescriptionProvider;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.binding.zigbee.handler.ZigbeeIsAliveTracker;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -37,6 +38,7 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
     private final ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
 
     private ZigBeeChannelConverterFactory zigbeeChannelConverterFactory;
+    private ZigbeeIsAliveTracker zigbeeIsAliveTracker;
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -54,7 +56,7 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
             return null;
         }
 
-        ZigBeeThingHandler handler = new ZigBeeThingHandler(thing, zigbeeChannelConverterFactory);
+        ZigBeeThingHandler handler = new ZigBeeThingHandler(thing, zigbeeChannelConverterFactory, zigbeeIsAliveTracker);
         bundleContext.registerService(ConfigDescriptionProvider.class.getName(), handler,
                 new Hashtable<String, Object>());
         bundleContext.registerService(DynamicStateDescriptionProvider.class.getName(), handler,
@@ -72,4 +74,12 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
         this.zigbeeChannelConverterFactory = null;
     }
 
+    @Reference
+    protected void setZigbeeIsAliveTracker(ZigbeeIsAliveTracker zigbeeIsAliveTracker) {
+        this.zigbeeIsAliveTracker = zigbeeIsAliveTracker;
+    }
+
+    protected void unsetZigbeeIsAliveTracker(ZigbeeIsAliveTracker zigbeeIsAliveTracker) {
+        this.zigbeeIsAliveTracker = null;
+    }
 }
