@@ -219,7 +219,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         ZigBeeNode node = coordinatorHandler.getNode(nodeIeeeAddress);
         if (node == null) {
             logger.debug("{}: Node not found - deferring handler initialisation", nodeIeeeAddress);
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE, ZigBeeBindingConstants.OFFLINE_NODE_NOT_FOUND);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.GONE, ZigBeeBindingConstants.OFFLINE_NODE_NOT_FOUND);
             return;
         }
 
@@ -765,7 +765,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         updateProperties(properties);
 
         if (getThing().getStatus() != ThingStatus.REMOVING) {
-            updateStatus(ThingStatus.OFFLINE);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.GONE);
         }
     }
 

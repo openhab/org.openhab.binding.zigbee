@@ -56,6 +56,7 @@ Service-Component: OSGI-INF/*.xml
 Export-Package: org.openhab.binding.zigbee,
  org.openhab.binding.zigbee.cluster,
  org.openhab.binding.zigbee.converter,
+ org.openhab.binding.zigbee.converter.warningdevice,
  org.openhab.binding.zigbee.discovery,
  org.openhab.binding.zigbee.handler
 Bundle-ClassPath: .
