@@ -88,7 +88,7 @@ public class DynamicWarningCommandDescriptionProviderTest {
         return new WarningTypeCommandDescriptionProvider() {
 
             @Override
-            public List<CommandOption> getWarningAndSquawCommandOptions() {
+            public List<CommandOption> getWarningAndSquawkCommandOptions() {
                 return Collections.singletonList(new CommandOption(warningType.serializeToCommand(), label));
             }
         };

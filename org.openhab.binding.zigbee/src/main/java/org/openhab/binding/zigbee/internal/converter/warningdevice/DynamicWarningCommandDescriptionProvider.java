@@ -79,7 +79,7 @@ public class DynamicWarningCommandDescriptionProvider implements DynamicCommandD
     }
 
     private List<CommandOption> getProvidedWarningTypes() {
-        return providers.stream().map(WarningTypeCommandDescriptionProvider::getWarningAndSquawCommandOptions)
+        return providers.stream().map(WarningTypeCommandDescriptionProvider::getWarningAndSquawkCommandOptions)
                 .flatMap(List::stream).collect(toList());
     }
 
