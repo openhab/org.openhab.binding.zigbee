@@ -141,6 +141,15 @@ public class ZigBeeNodePropertyDiscoverer {
             }
         }
 
+        if (alwaysUpdate || properties.get(ZigBeeBindingConstants.THING_PROPERTY_APPLICATIONVERSION) == null) {
+            Integer appVersion = basicCluster.getApplicationVersion(Long.MAX_VALUE);
+            if (appVersion != null) {
+                properties.put(ZigBeeBindingConstants.THING_PROPERTY_APPLICATIONVERSION, appVersion.toString());
+            } else {
+                logger.debug("{}: Application version failed", node.getIeeeAddress());
+            }
+        }
+
         if (alwaysUpdate || properties.get(ZigBeeBindingConstants.THING_PROPERTY_STKVERSION) == null) {
             Integer stkVersion = basicCluster.getStackVersion(Long.MAX_VALUE);
             if (stkVersion != null) {
