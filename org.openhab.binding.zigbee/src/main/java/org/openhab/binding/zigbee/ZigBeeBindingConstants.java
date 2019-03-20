@@ -203,6 +203,7 @@ public class ZigBeeBindingConstants {
     public static final String ITEM_TYPE_SWITCH = "Switch";
     public static final String ITEM_TYPE_STRING = "String";
 
+    public static final String THING_PROPERTY_APPLICATIONVERSION = "zigbee_applicationVersion";
     public static final String THING_PROPERTY_STKVERSION = "zigbee_stkversion";
     public static final String THING_PROPERTY_ZCLVERSION = "zigbee_zclversion";
     public static final String THING_PROPERTY_DATECODE = "zigbee_datecode";
