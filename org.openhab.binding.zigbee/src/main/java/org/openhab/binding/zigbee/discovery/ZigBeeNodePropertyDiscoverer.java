@@ -150,7 +150,9 @@ public class ZigBeeNodePropertyDiscoverer {
         try {
             Map<String, Integer> propertiesToRead = getPropertiesToRead(basicCluster);
             List<Integer> attributes = new ArrayList<>(propertiesToRead.values());
-            basicCluster.read(attributes).get();
+            if (!attributes.isEmpty()) {
+                basicCluster.read(attributes).get();
+            }
         } catch (InterruptedException | ExecutionException e) {
             logger.info("{}: There was an error when trying to read all properties with a single command.",
                     node.getIeeeAddress(), e);
