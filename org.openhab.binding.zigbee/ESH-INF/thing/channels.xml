@@ -136,6 +136,24 @@
         <category>Sensor</category>
         <state readOnly="true" />
     </channel-type>
+    
+    <!-- IAS Movement Sensor Channel -->
+    <channel-type id="ias_movement">
+        <item-type>Switch</item-type>
+        <label>Movement Sensor</label>
+        <description>Movement Sensor Alarm</description>
+        <category>Sensor</category>
+        <state readOnly="true" />
+    </channel-type>
+    
+    <!-- IAS Vibration Sensor Channel -->
+    <channel-type id="ias_vibration">
+        <item-type>Switch</item-type>
+        <label>Vibration Sensor</label>
+        <description>Vibration Sensor Alarm</description>
+        <category>Sensor</category>
+        <state readOnly="true" />
+    </channel-type>
 
     <!-- IAS Tamper Channel -->
     <channel-type id="ias_tamper">
