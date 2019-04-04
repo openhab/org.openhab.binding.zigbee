@@ -60,12 +60,10 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
             if (bindResponse.isSuccess()) {
                 ZclAttribute attribute = clusterMeasurement
                         .getAttribute(ZclElectricalMeasurementCluster.ATTR_RMSCURRENT);
-                // Configure reporting - no faster than once per second - no slower than 10 minutes.
+                // Configure reporting - no faster than once per second - no slower than 2 hours.
                 CommandResult reportingResponse = clusterMeasurement
                         .setReporting(attribute, 3, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-                if (reportingResponse.isError()) {
-                    pollingPeriod = POLLING_PERIOD_HIGH;
-                }
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 pollingPeriod = POLLING_PERIOD_HIGH;
             }

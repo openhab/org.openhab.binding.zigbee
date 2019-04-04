@@ -152,6 +152,12 @@ public abstract class ZigBeeBaseChannelConverter {
     protected int pollingPeriod = POLLING_PERIOD_DEFAULT;
 
     /**
+     * The smallest of all maximum reporting periods configured for the attributes used by the converter. By default it
+     * is set to {@code Integer.MAX_VALUE}, because we assume that not every converter implements reporting.
+     */
+    protected int minimalReportingPeriod = Integer.MAX_VALUE;
+
+    /**
      * Constructor. Creates a new instance of the {@link ZigBeeBaseChannelConverter} class.
      *
      */
@@ -162,11 +168,11 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * Creates the converter handler.
      *
-     * @param thing the {@link ZigBeeThingHandler} the channel is part of
-     * @param channel the {@link Channel} for the channel
+     * @param thing       the {@link ZigBeeThingHandler} the channel is part of
+     * @param channel     the {@link Channel} for the channel
      * @param coordinator the {@link ZigBeeCoordinatorHandler} this endpoint is part of
-     * @param address the {@link IeeeAddress} of the node
-     * @param endpointId the endpoint this channel is linked to
+     * @param address     the {@link IeeeAddress} of the node
+     * @param endpointId  the endpoint this channel is linked to
      */
     public void initialize(ZigBeeThingHandler thing, Channel channel, ZigBeeCoordinatorHandler coordinator,
             IeeeAddress address, int endpointId) {
@@ -307,10 +313,41 @@ public abstract class ZigBeeBaseChannelConverter {
     }
 
     /**
+     * Gets the minimum of all maximum reporting periods used in attribute reports. If no attribute reports are
+     * configured, the default {@code Integer.MAX_VALUE} will be returned.
+     *
+     * @return minimum of all maximum reporting periods in seconds
+     */
+    public int getMinimalReportingPeriod() {
+        return minimalReportingPeriod;
+    }
+
+    /**
+     * Sets the {@code pollingPeriod} and {@code maxReportingPeriod} depending on the success or failure of the given
+     * reporting response.
+     *
+     * @param reportResponse                    a {@link CommandResult} representing the response to a reporting request
+     * @param reportingFailedPollingInterval    the polling interval to be used in case configuring reporting has
+     *                                              failed
+     * @param reportingSuccessMaxReportInterval the maximum reporting interval in case reporting is successfully
+     *                                              configured
+     */
+    protected void handleReportingResponse(CommandResult reportResponse, int reportingFailedPollingInterval,
+            int reportingSuccessMaxReportInterval) {
+        if (!reportResponse.isSuccess()) {
+            // we want the minimum of all pollingPeriods
+            pollingPeriod = Math.min(pollingPeriod, reportingFailedPollingInterval);
+        } else {
+            // we want to know the minimum of all maximum reporting periods to be used as a timeout value
+            minimalReportingPeriod = Math.min(minimalReportingPeriod, reportingSuccessMaxReportInterval);
+        }
+    }
+
+    /**
      * Creates a standard channel UID given the {@link ZigBeeEndpoint}
      *
-     * @param thingUID the {@link ThingUID}
-     * @param endpoint the {@link ZigBeeEndpoint}
+     * @param thingUID    the {@link ThingUID}
+     * @param endpoint    the {@link ZigBeeEndpoint}
      * @param channelName the name of the channel
      * @return
      */
@@ -358,7 +395,7 @@ public abstract class ZigBeeBaseChannelConverter {
      * The currentConfiguration shall be updated.
      *
      * @param currentConfiguration the current {@link Configuration}
-     * @param updatedParameters a map containing the updated configuration parameters to be set
+     * @param updatedParameters    a map containing the updated configuration parameters to be set
      */
     public void updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> updatedParameters) {

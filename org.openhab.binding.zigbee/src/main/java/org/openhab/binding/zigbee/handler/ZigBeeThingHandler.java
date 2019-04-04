@@ -129,6 +129,15 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     private final int POLLING_PERIOD_DEFAULT = 1800;
     private int pollingPeriod = POLLING_PERIOD_DEFAULT;
 
+    /**
+     * We increase the timeout interval by this factor to allow for lost data
+     */
+    private final int POLLING_OR_REPORTING_FACTOR = 2;
+    /**
+     * Increase the timeout by a margin to capture the case where data arrives shortly after the specified interval
+     */
+    private final int POLLING_OR_REPORTING_MARGIN = 30;
+
     private boolean firmwareUpdateInProgress = false;
 
     private ExecutorService commandScheduler = ThreadPoolManager.getPool("zigbee-thinghandler-commands");
@@ -145,14 +154,23 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     private final ZigBeeChannelConverterFactory channelFactory;
 
     /**
+     * The service with timers to see if the device is still alive (ONLINE)
+     */
+    private final ZigbeeIsAliveTracker isAliveTracker;
+
+    /**
      * Creates a ZigBee thing.
      *
-     * @param zigbeeDevice   the {@link Thing}
-     * @param channelFactory the {@link ZigBeeChannelConverterFactory} to be used to create the channels
+     * @param zigbeeDevice         the {@link Thing}
+     * @param channelFactory       the {@link ZigBeeChannelConverterFactory} to be used to create the channels
+     * @param zigbeeIsAliveTracker the tracker which sets the {@link Thing} to OFFLINE after a period without
+     *                                 communication
      */
-    public ZigBeeThingHandler(Thing zigbeeDevice, ZigBeeChannelConverterFactory channelFactory) {
+    public ZigBeeThingHandler(Thing zigbeeDevice, ZigBeeChannelConverterFactory channelFactory,
+            ZigbeeIsAliveTracker zigbeeIsAliveTracker) {
         super(zigbeeDevice);
         this.channelFactory = channelFactory;
+        this.isAliveTracker = zigbeeIsAliveTracker;
     }
 
     @Override
@@ -401,6 +419,11 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         }
         logger.debug("{}: Channel initialisation complete", nodeIeeeAddress);
 
+        int expectedUpdatePeriod = getExpectedUpdatePeriod(channels);
+        expectedUpdatePeriod = (expectedUpdatePeriod * POLLING_OR_REPORTING_FACTOR) + POLLING_OR_REPORTING_MARGIN;
+        logger.debug("Setting ONLINE/OFFLINE timeout interval to: {}", expectedUpdatePeriod);
+        isAliveTracker.addHandler(this, expectedUpdatePeriod);
+
         // Update the binding table.
         // We're not doing anything with the information here, but we want it up to date so it's ready for use later.
         try {
@@ -421,6 +444,23 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         // Save the network state
         coordinatorHandler.serializeNetwork();
+    }
+
+    private int getExpectedUpdatePeriod(Map<ChannelUID, ZigBeeBaseChannelConverter> channels) {
+        Set<Integer> intervals = new HashSet<>();
+        for (ZigBeeBaseChannelConverter channelConverter : channels.values()) {
+            intervals.add(channelConverter.getPollingPeriod());
+            intervals.add(channelConverter.getMinimalReportingPeriod());
+        }
+        return Collections.min(intervals);
+    }
+
+    /**
+     * Whenever the {@link ZigbeeIsAliveTracker} determines that a handler has not reset its timeout timer within its
+     * reporting or polling interval, this callback method will be called to set the Thing to OFFLINE.
+     */
+    public void aliveTimeoutReached() {
+        updateStatus(ThingStatus.OFFLINE);
     }
 
     /**
@@ -448,6 +488,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         logger.debug("{}: Handler dispose.", nodeIeeeAddress);
 
         stopPolling();
+
+        isAliveTracker.removeHandler(this);
 
         if (nodeIeeeAddress != null) {
             if (coordinatorHandler != null) {
@@ -662,6 +704,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         logger.debug("{}: Updating ZigBee channel state {} to {}", nodeIeeeAddress, channel, state);
         updateState(channel, state);
         updateStatus(ThingStatus.ONLINE);
+        isAliveTracker.resetTimer(this);
     }
 
     /**
@@ -681,6 +724,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         logger.debug("{}: Triggering ZigBee channel {} with event {}", nodeIeeeAddress, channel, event);
         super.triggerChannel(channel, event);
         updateStatus(ThingStatus.ONLINE);
+        isAliveTracker.resetTimer(this);
     }
 
     @Override

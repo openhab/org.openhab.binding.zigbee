@@ -22,6 +22,7 @@ import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
@@ -83,13 +84,21 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
 
         clusterColorControl.addAttributeListener(this);
 
-        // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        clusterColorControl.setColorTemperatureReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1);
+        try {
+            // Configure reporting - no faster than once per second - no slower than 2 hours.
+            CommandResult reportingResponse = clusterColorControl
+                    .setColorTemperatureReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+            handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
 
-        // ColorMode reporting
-        ZclAttribute colorModeAttribute = clusterColorControl
-                .getAttribute(ZclColorControlCluster.ATTR_COLORMODE);
-        clusterColorControl.setReporting(colorModeAttribute, 1, REPORTING_PERIOD_DEFAULT_MAX, 1);
+            // ColorMode reporting
+            ZclAttribute colorModeAttribute = clusterColorControl.getAttribute(ZclColorControlCluster.ATTR_COLORMODE);
+            reportingResponse = clusterColorControl.setReporting(colorModeAttribute, 1, REPORTING_PERIOD_DEFAULT_MAX, 1)
+                    .get();
+            handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+        } catch (InterruptedException | ExecutionException e) {
+            logger.debug("{}: Exception configuring color temperature or color mode reporting",
+                    endpoint.getIeeeAddress(), e);
+        }
 
         return true;
     }

@@ -8,12 +8,15 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import java.util.concurrent.ExecutionException;
+
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.OpenClosedType;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
@@ -69,9 +72,15 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter
         clusterIasZone.addCommandListener(this);
         clusterIasZone.addAttributeListener(this);
 
-        // Configure reporting - no faster than once per second - no slower than 10 minutes.
+        // Configure reporting - no faster than once per second - no slower than 2 hours.
         ZclAttribute attribute = clusterIasZone.getAttribute(ZclIasZoneCluster.ATTR_ZONESTATUS);
-        clusterIasZone.setReporting(attribute, 3, REPORTING_PERIOD_DEFAULT_MAX);
+        try {
+            CommandResult reportingResponse = clusterIasZone.setReporting(attribute, 3, REPORTING_PERIOD_DEFAULT_MAX)
+                    .get();
+            handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+        } catch (InterruptedException | ExecutionException e) {
+            logger.debug("{}: Exception configuring ias zone status reporting", endpoint.getIeeeAddress(), e);
+        }
         return true;
     }
 

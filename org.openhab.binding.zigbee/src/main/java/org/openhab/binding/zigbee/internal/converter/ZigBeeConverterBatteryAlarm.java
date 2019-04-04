@@ -79,11 +79,8 @@ public class ZigBeeConverterBatteryAlarm extends ZigBeeBaseChannelConverter impl
             if (bindResponse.isSuccess()) {
                 CommandResult reportingResponse = cluster.setReporting(cluster.getAttribute(ATTR_BATTERYALARMSTATE),
                         ALARMSTATE_MIN_REPORTING_INTERVAL, ALARMSTATE_MAX_REPORTING_INTERVAL).get();
-                if (reportingResponse.isError()) {
-                    logger.debug("Could not configure reporting for the battery alarm state; polling every {} seconds",
-                            BATTERY_ALARM_POLLING_PERIOD);
-                    pollingPeriod = BATTERY_ALARM_POLLING_PERIOD;
-                }
+                handleReportingResponse(reportingResponse, BATTERY_ALARM_POLLING_PERIOD,
+                        ALARMSTATE_MAX_REPORTING_INTERVAL);
             } else {
                 pollingPeriod = BATTERY_ALARM_POLLING_PERIOD;
                 logger.debug(

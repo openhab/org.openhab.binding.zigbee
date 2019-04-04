@@ -136,20 +136,21 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             if (!bindResponse.isSuccess()) {
                 pollingPeriod = POLLING_PERIOD_HIGH;
             }
+            CommandResult reportingResponse;
             if (supportsHue) {
-                CommandResult reportResponse = clusterColorControl
-                        .setCurrentHueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-                if (!reportResponse.isSuccess()) {
-                    pollingPeriod = POLLING_PERIOD_HIGH;
-                }
-                reportResponse = clusterColorControl.setCurrentSaturationReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1)
+                reportingResponse = clusterColorControl.setCurrentHueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1)
                         .get();
-                if (!reportResponse.isSuccess()) {
-                    pollingPeriod = POLLING_PERIOD_HIGH;
-                }
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+
+                reportingResponse = clusterColorControl
+                        .setCurrentSaturationReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
-                clusterColorControl.setCurrentXReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-                clusterColorControl.setCurrentYReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                reportingResponse = clusterColorControl.setCurrentXReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+
+                reportingResponse = clusterColorControl.setCurrentYReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
             }
         } catch (ExecutionException | InterruptedException e) {
             logger.debug("{}: Exception configuring color reporting", endpoint.getIeeeAddress(), e);
@@ -162,11 +163,9 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                 if (!bindResponse.isSuccess()) {
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }
-                CommandResult reportResponse = clusterLevelControl
+                CommandResult reportingResponse = clusterLevelControl
                         .setCurrentLevelReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-                if (!reportResponse.isSuccess()) {
-                    pollingPeriod = POLLING_PERIOD_HIGH;
-                }
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
             } catch (ExecutionException | InterruptedException e) {
                 logger.debug("{}: Exception configuring level reporting", endpoint.getIeeeAddress(), e);
             }
@@ -179,17 +178,21 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                 if (!bindResponse.isSuccess()) {
                     pollingPeriod = POLLING_PERIOD_HIGH;
                 }
-                CommandResult reportResponse = clusterOnOff.setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX).get();
-                if (!reportResponse.isSuccess()) {
-                    pollingPeriod = POLLING_PERIOD_HIGH;
-                }
+                CommandResult reportingResponse = clusterOnOff.setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
             } catch (ExecutionException | InterruptedException e) {
                 logger.debug("{}: Exception configuring on/off reporting", endpoint.getIeeeAddress(), e);
             }
         }
 
-        ZclAttribute colorModeAttribute = clusterColorControl.getAttribute(ZclColorControlCluster.ATTR_COLORMODE);
-        clusterColorControl.setReporting(colorModeAttribute, 1, REPORTING_PERIOD_DEFAULT_MAX, 1);
+        try {
+            ZclAttribute colorModeAttribute = clusterColorControl.getAttribute(ZclColorControlCluster.ATTR_COLORMODE);
+            CommandResult reportingResponse = clusterColorControl
+                    .setReporting(colorModeAttribute, 1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+            handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+        } catch (ExecutionException | InterruptedException e) {
+            logger.debug("{}: Exception configuring color mode reporting", endpoint.getIeeeAddress(), e);
+        }
 
         // Create a configuration handler and get the available options
         configLevelControl = new ZclLevelControlConfig();
