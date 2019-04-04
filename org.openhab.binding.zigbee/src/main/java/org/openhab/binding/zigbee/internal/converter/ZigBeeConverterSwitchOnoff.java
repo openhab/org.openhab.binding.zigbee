@@ -67,9 +67,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
                     // Configure reporting
                     CommandResult reportingResponse = serverCluster
                             .setOnOffReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX).get();
-                    if (reportingResponse.isError()) {
-                        pollingPeriod = POLLING_PERIOD_HIGH;
-                    }
+                    handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
                 } else {
                     logger.debug("{}: Error 0x{} setting server binding", endpoint.getIeeeAddress(),
                             Integer.toHexString(bindResponse.getStatusCode()));

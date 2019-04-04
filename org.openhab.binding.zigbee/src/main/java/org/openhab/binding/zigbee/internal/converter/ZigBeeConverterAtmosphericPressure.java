@@ -11,6 +11,7 @@ package org.openhab.binding.zigbee.internal.converter;
 import static org.eclipse.smarthome.core.library.unit.MetricPrefix.HECTO;
 
 import java.math.BigDecimal;
+import java.util.concurrent.ExecutionException;
 
 import javax.measure.quantity.Pressure;
 
@@ -24,6 +25,7 @@ import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
@@ -70,12 +72,20 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
 
-        // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        if (enhancedScale != null) {
-            cluster.setScaledValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1);
-        } else {
-            cluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1);
+        // Configure reporting - no faster than once per second - no slower than 2 hours.
+        try {
+            CommandResult reportingResponse;
+            if (enhancedScale != null) {
+                reportingResponse = cluster.setScaledValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+            } else {
+                reportingResponse = cluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
         }
+
         return true;
     }
 
