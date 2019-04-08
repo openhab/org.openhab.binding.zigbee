@@ -145,7 +145,7 @@ The following devices have been tested with the binding
 | Ubisys modules                               | D1 Dimmer, S1/S2 Switch modules                   |
 | Xiaomi Aqara Door and Window Sensor          |                                                   |
 | Xiaomi Aqara Temperature and Humidity Sensor |                                                   |
-| Xiaomi Aqara Wireless Mini Switch            |                                                   |
+| Xiaomi Aqara Wireless Mini Switch            | variant with gyro is not supported                |
 | Xiaomi Aqara Wireless Remote Switch          | Double Rocker variant                             |
 
 Note 1: Some bulbs may not work with the Telegesis dongle.
