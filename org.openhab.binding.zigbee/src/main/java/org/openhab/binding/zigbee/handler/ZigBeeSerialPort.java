@@ -12,7 +12,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
+import java.util.Set;
 import java.util.TooManyListenersException;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,6 +96,8 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
      */
     private final Object bufferSynchronisationObject = new Object();
 
+    private Set<String> portOpenRuntimeExcepionMessages = ConcurrentHashMap.newKeySet();
+
     /**
      * Constructor setting port name and baud rate.
      *
@@ -157,6 +161,7 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
                 serialPort.notifyOnDataAvailable(true);
 
                 logger.debug("Serial port [{}] is initialized.", portName);
+                portOpenRuntimeExcepionMessages.clear();
             } catch (NoSuchPortException e) {
                 logger.error("Serial Error: Port {} does not exist.", portName);
                 return false;
@@ -168,6 +173,12 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
                 return false;
             } catch (TooManyListenersException e) {
                 logger.error("Serial Error: Too many listeners on Port {}.", portName);
+                return false;
+            } catch (RuntimeException e) {
+                if (!portOpenRuntimeExcepionMessages.contains(e.getMessage())) {
+                    portOpenRuntimeExcepionMessages.add(e.getMessage());
+                    logger.error("Serial Error: Device cannot be opened on Port {}. Caused by {}", portName, e.getMessage());
+                }
                 return false;
             }
 
