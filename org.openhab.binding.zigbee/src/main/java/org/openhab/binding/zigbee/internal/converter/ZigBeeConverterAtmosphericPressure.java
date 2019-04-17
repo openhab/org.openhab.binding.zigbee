@@ -52,40 +52,58 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
     private Integer enhancedScale = null;
 
     @Override
-    public synchronized boolean initializeConverter() {
+    public boolean initializeDevice() {
+        ZclPressureMeasurementCluster serverCluster = (ZclPressureMeasurementCluster) endpoint
+                .getInputCluster(ZclPressureMeasurementCluster.CLUSTER_ID);
+        if (serverCluster == null) {
+            logger.error("{}: Error opening device pressure measurement cluster", endpoint.getIeeeAddress());
+            return false;
+        }
+
+        // Check if the enhanced attributes are supported
+        if (serverCluster.getScaledValue(Long.MAX_VALUE) != null) {
+            enhancedScale = serverCluster.getScale(Long.MAX_VALUE);
+            if (enhancedScale != null) {
+                enhancedScale *= -1;
+            }
+        }
+
+        try {
+            CommandResult bindResponse = bind(serverCluster).get();
+            if (bindResponse.isSuccess()) {
+                // Configure reporting - no faster than once per second - no slower than 2 hours.
+                CommandResult reportingResponse;
+                if (enhancedScale != null) {
+                    reportingResponse = serverCluster.setScaledValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1)
+                            .get();
+                    handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+                } else {
+                    reportingResponse = serverCluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1)
+                            .get();
+                    handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+                }
+            } else {
+                logger.error("{}: Error 0x{} setting server binding", endpoint.getIeeeAddress(),
+                        Integer.toHexString(bindResponse.getStatusCode()));
+                pollingPeriod = POLLING_PERIOD_HIGH;
+                return false;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean initializeConverter() {
         cluster = (ZclPressureMeasurementCluster) endpoint.getInputCluster(ZclPressureMeasurementCluster.CLUSTER_ID);
         if (cluster == null) {
             logger.error("{}: Error opening device pressure measurement cluster", endpoint.getIeeeAddress());
             return false;
         }
 
-        // Check if the enhanced attributes are supported
-        if (cluster.getScaledValue(Long.MAX_VALUE) != null) {
-            enhancedScale = cluster.getScale(Long.MAX_VALUE);
-            if (enhancedScale != null) {
-                enhancedScale *= -1;
-            }
-        }
-
-        bind(cluster);
-
-        // Add a listener, then request the status
+        // Add a listener
         cluster.addAttributeListener(this);
-
-        // Configure reporting - no faster than once per second - no slower than 2 hours.
-        try {
-            CommandResult reportingResponse;
-            if (enhancedScale != null) {
-                reportingResponse = cluster.setScaledValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
-            } else {
-                reportingResponse = cluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
-        }
-
         return true;
     }
 

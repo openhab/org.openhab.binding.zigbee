@@ -190,11 +190,11 @@ public abstract class ZigBeeBaseChannelConverter {
      * Configures the device. This method should perform the one off device configuration such as performing the bind
      * and reporting configuration.
      * <p>
-     * The binding should initialise reporting using one of the {@link ZclCluster#setReporting} commands. If this fails,
+     * The binding should initialize reporting using one of the {@link ZclCluster#setReporting} commands. If this fails,
      * the {@link #pollingPeriod} variable should be set to {@link #POLLING_PERIOD_HIGH}.
      * <p>
-     * Note that this method should be self contained, and may not make any assumptions about the initialisation of any
-     * internal fields of the converter other than those initialised in the {@link #initialize} method.
+     * Note that this method should be self contained, and may not make any assumptions about the initialization of any
+     * internal fields of the converter other than those initialized in the {@link #initialize} method.
      *
      * @return true if the device was configured correctly
      */
