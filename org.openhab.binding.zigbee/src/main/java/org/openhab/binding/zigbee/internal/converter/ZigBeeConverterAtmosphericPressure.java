@@ -85,6 +85,8 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
             } else {
                 logger.error("{}: Error 0x{} setting server binding", endpoint.getIeeeAddress(),
                         Integer.toHexString(bindResponse.getStatusCode()));
+                pollingPeriod = POLLING_PERIOD_HIGH;
+                return false;
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
