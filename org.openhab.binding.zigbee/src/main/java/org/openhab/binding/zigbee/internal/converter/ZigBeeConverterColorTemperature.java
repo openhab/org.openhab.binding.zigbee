@@ -53,16 +53,17 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
     private final Integer DEFAULT_MAX_TEMPERATURE_IN_KELVIN = 6500;
 
     @Override
-    public boolean initializeConverter() {
-        clusterColorControl = (ZclColorControlCluster) endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID);
-        if (clusterColorControl == null) {
+    public boolean initializeDevice() {
+        ZclColorControlCluster serverClusterColorControl = (ZclColorControlCluster) endpoint
+                .getInputCluster(ZclColorControlCluster.CLUSTER_ID);
+        if (serverClusterColorControl == null) {
             logger.error("{}: Error opening color control input cluster on endpoint {}", endpoint.getIeeeAddress(),
                     endpoint.getEndpointId());
             return false;
         }
 
-        Integer minTemperatureInMired = clusterColorControl.getColorTemperatureMin(Long.MAX_VALUE);
-        Integer maxTemperatureInMired = clusterColorControl.getColorTemperatureMax(Long.MAX_VALUE);
+        Integer minTemperatureInMired = serverClusterColorControl.getColorTemperatureMin(Long.MAX_VALUE);
+        Integer maxTemperatureInMired = serverClusterColorControl.getColorTemperatureMax(Long.MAX_VALUE);
 
         // High Mired values correspond to low Kelvin values, hence the max Mired value yields the min Kelvin value
         if (maxTemperatureInMired == null) {
@@ -80,26 +81,38 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
 
         kelvinRange = kelvinMax - kelvinMin;
 
-        bind(clusterColorControl);
-
-        clusterColorControl.addAttributeListener(this);
-
         try {
-            // Configure reporting - no faster than once per second - no slower than 2 hours.
-            CommandResult reportingResponse = clusterColorControl
-                    .setColorTemperatureReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-            handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+            CommandResult bindResponse = bind(serverClusterColorControl).get();
+            if (bindResponse.isSuccess()) {
+                // Configure reporting - no faster than once per second - no slower than 2 hours.
+                CommandResult reportingResponse = serverClusterColorControl
+                        .setColorTemperatureReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
 
-            // ColorMode reporting
-            ZclAttribute colorModeAttribute = clusterColorControl.getAttribute(ZclColorControlCluster.ATTR_COLORMODE);
-            reportingResponse = clusterColorControl.setReporting(colorModeAttribute, 1, REPORTING_PERIOD_DEFAULT_MAX, 1)
-                    .get();
-            handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+                // ColorMode reporting
+                ZclAttribute colorModeAttribute = serverClusterColorControl
+                        .getAttribute(ZclColorControlCluster.ATTR_COLORMODE);
+                reportingResponse = serverClusterColorControl
+                        .setReporting(colorModeAttribute, 1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+            }
         } catch (InterruptedException | ExecutionException e) {
             logger.debug("{}: Exception configuring color temperature or color mode reporting",
                     endpoint.getIeeeAddress(), e);
         }
+        return true;
+    }
 
+    @Override
+    public boolean initializeConverter() {
+        clusterColorControl = (ZclColorControlCluster) endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID);
+        if (clusterColorControl == null) {
+            logger.error("{}: Error opening color control input cluster on endpoint {}", endpoint.getIeeeAddress(),
+                    endpoint.getEndpointId());
+            return false;
+        }
+
+        clusterColorControl.addAttributeListener(this);
         return true;
     }
 

@@ -39,6 +39,29 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
     private ZclIlluminanceMeasurementCluster cluster;
 
     @Override
+    public boolean initializeDevice() {
+        ZclIlluminanceMeasurementCluster serverCluster = (ZclIlluminanceMeasurementCluster) endpoint
+                .getInputCluster(ZclIlluminanceMeasurementCluster.CLUSTER_ID);
+        if (serverCluster == null) {
+            logger.error("{}: Error opening device illuminance measurement cluster", endpoint.getIeeeAddress());
+            return false;
+        }
+
+        try {
+            CommandResult bindResponse = bind(serverCluster).get();
+            if (bindResponse.isSuccess()) {
+                // Configure reporting - no faster than once per second - no slower than 2 hours.
+                CommandResult reportingResponse = serverCluster
+                        .setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.debug("{}: Exception configuring meassured value reporting", endpoint.getIeeeAddress(), e);
+        }
+        return true;
+    }
+
+    @Override
     public boolean initializeConverter() {
         cluster = (ZclIlluminanceMeasurementCluster) endpoint
                 .getInputCluster(ZclIlluminanceMeasurementCluster.CLUSTER_ID);
@@ -47,19 +70,8 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
             return false;
         }
 
-        bind(cluster);
-
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
-
-        // Configure reporting - no faster than once per second - no slower than 2 hours.
-        try {
-            CommandResult reportingResponse = cluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1)
-                    .get();
-            handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
-        } catch (InterruptedException | ExecutionException e) {
-            logger.debug("{}: Exception configuring meassured value reporting", endpoint.getIeeeAddress(), e);
-        }
         return true;
     }
 

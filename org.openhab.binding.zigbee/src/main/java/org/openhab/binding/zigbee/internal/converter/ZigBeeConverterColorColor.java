@@ -84,9 +84,128 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     private ZclLevelControlConfig configLevelControl;
 
     @Override
-    public boolean initializeConverter() {
+    public boolean initializeDevice() {
         colorUpdateScheduler = Executors.newSingleThreadScheduledExecutor();
 
+        ZclColorControlCluster serverClusterColorControl = (ZclColorControlCluster) endpoint
+                .getInputCluster(ZclColorControlCluster.CLUSTER_ID);
+        if (serverClusterColorControl == null) {
+            logger.error("{}: Error opening device color controls", endpoint.getIeeeAddress());
+            return false;
+        }
+
+        ZclLevelControlCluster serverClusterLevelControl = (ZclLevelControlCluster) endpoint
+                .getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
+        if (serverClusterLevelControl == null) {
+            logger.warn("{}: Device does not support level control", endpoint.getIeeeAddress());
+        }
+
+        ZclOnOffCluster serverClusterOnOff = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
+        if (serverClusterOnOff == null) {
+            logger.debug("{}: Device does not support on/off control", endpoint.getIeeeAddress());
+        }
+
+        // Discover whether the device supports HUE/SAT or XY color set of commands
+        try {
+            if (!serverClusterColorControl.discoverAttributes(false).get()) {
+                logger.warn("{}: Cannot determine whether device supports RGB color. Assuming it supports HUE/SAT",
+                        endpoint.getIeeeAddress());
+                supportsHue = true;
+            } else if (serverClusterColorControl.getSupportedAttributes()
+                    .contains(ZclColorControlCluster.ATTR_CURRENTHUE)) {
+                logger.debug("{}: Device supports Hue/Saturation color set of commands", endpoint.getIeeeAddress());
+                supportsHue = true;
+            } else if (serverClusterColorControl.getSupportedAttributes()
+                    .contains(ZclColorControlCluster.ATTR_CURRENTX)) {
+                logger.debug("{}: Device supports XY color set of commands", endpoint.getIeeeAddress());
+                supportsHue = false;
+                delayedColorChange = true; // For now, only for XY lights till this is configurable
+            } else {
+                logger.warn("{}: Device supports neither RGB color nor XY color", endpoint.getIeeeAddress());
+                pollingPeriod = POLLING_PERIOD_HIGH;
+                return false;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.warn(
+                    "{}: Exception checking whether device endpoint supports RGB color. Assuming it supports HUE/SAT",
+                    endpoint.getIeeeAddress(), e);
+            supportsHue = true;
+        }
+
+        // Bind to attribute reports, add listeners, then request the status
+        // Configure reporting - no faster than once per second - no slower than 10 minutes.
+        try {
+            CommandResult bindResponse = bind(serverClusterColorControl).get();
+            if (!bindResponse.isSuccess()) {
+                pollingPeriod = POLLING_PERIOD_HIGH;
+            }
+            CommandResult reportingResponse;
+            if (supportsHue) {
+                reportingResponse = serverClusterColorControl.setCurrentHueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1)
+                        .get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+
+                reportingResponse = serverClusterColorControl
+                        .setCurrentSaturationReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+            } else {
+                reportingResponse = serverClusterColorControl.setCurrentXReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1)
+                        .get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+
+                reportingResponse = serverClusterColorControl.setCurrentYReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1)
+                        .get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            logger.debug("{}: Exception configuring color reporting", endpoint.getIeeeAddress(), e);
+        }
+
+        if (serverClusterLevelControl != null) {
+            serverClusterLevelControl.addAttributeListener(this);
+            try {
+                CommandResult bindResponse = bind(serverClusterLevelControl).get();
+                if (!bindResponse.isSuccess()) {
+                    pollingPeriod = POLLING_PERIOD_HIGH;
+                }
+                CommandResult reportingResponse = serverClusterLevelControl
+                        .setCurrentLevelReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+            } catch (ExecutionException | InterruptedException e) {
+                logger.debug("{}: Exception configuring level reporting", endpoint.getIeeeAddress(), e);
+            }
+        }
+
+        if (serverClusterOnOff != null) {
+            serverClusterOnOff.addAttributeListener(this);
+            try {
+                CommandResult bindResponse = bind(serverClusterOnOff).get();
+                if (!bindResponse.isSuccess()) {
+                    pollingPeriod = POLLING_PERIOD_HIGH;
+                }
+                CommandResult reportingResponse = serverClusterOnOff.setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX)
+                        .get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+            } catch (ExecutionException | InterruptedException e) {
+                logger.debug("{}: Exception configuring on/off reporting", endpoint.getIeeeAddress(), e);
+            }
+        }
+
+        try {
+            ZclAttribute colorModeAttribute = serverClusterColorControl
+                    .getAttribute(ZclColorControlCluster.ATTR_COLORMODE);
+            CommandResult reportingResponse = serverClusterColorControl
+                    .setReporting(colorModeAttribute, 1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+            handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+        } catch (ExecutionException | InterruptedException e) {
+            logger.debug("{}: Exception configuring color mode reporting", endpoint.getIeeeAddress(), e);
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean initializeConverter() {
         clusterColorControl = (ZclColorControlCluster) endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID);
         if (clusterColorControl == null) {
             logger.error("{}: Error opening device color controls", endpoint.getIeeeAddress());
@@ -101,97 +220,6 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         clusterOnOff = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
         if (clusterOnOff == null) {
             logger.debug("{}: Device does not support on/off control", endpoint.getIeeeAddress());
-        }
-
-        // Discover whether the device supports HUE/SAT or XY color set of commands
-        try {
-            if (!clusterColorControl.discoverAttributes(false).get()) {
-                logger.warn("{}: Cannot determine whether device supports RGB color. Assuming it supports HUE/SAT",
-                        endpoint.getIeeeAddress());
-                supportsHue = true;
-            } else if (clusterColorControl.getSupportedAttributes().contains(ZclColorControlCluster.ATTR_CURRENTHUE)) {
-                logger.debug("{}: Device supports Hue/Saturation color set of commands", endpoint.getIeeeAddress());
-                supportsHue = true;
-            } else if (clusterColorControl.getSupportedAttributes().contains(ZclColorControlCluster.ATTR_CURRENTX)) {
-                logger.debug("{}: Device supports XY color set of commands", endpoint.getIeeeAddress());
-                supportsHue = false;
-                delayedColorChange = true; // For now, only for XY lights till this is configurable
-            } else {
-                logger.warn("{}: Device does not support RGB color", endpoint.getIeeeAddress());
-                return false;
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.warn(
-                    "{}: Exception checking whether device endpoint supports RGB color. Assuming it supports HUE/SAT",
-                    endpoint.getIeeeAddress(), e);
-            supportsHue = true;
-        }
-
-        // Bind to attribute reports, add listeners, then request the status
-        // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        clusterColorControl.addAttributeListener(this);
-
-        try {
-            CommandResult bindResponse = bind(clusterColorControl).get();
-            if (!bindResponse.isSuccess()) {
-                pollingPeriod = POLLING_PERIOD_HIGH;
-            }
-            CommandResult reportingResponse;
-            if (supportsHue) {
-                reportingResponse = clusterColorControl.setCurrentHueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1)
-                        .get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
-
-                reportingResponse = clusterColorControl
-                        .setCurrentSaturationReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
-            } else {
-                reportingResponse = clusterColorControl.setCurrentXReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
-
-                reportingResponse = clusterColorControl.setCurrentYReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
-            }
-        } catch (ExecutionException | InterruptedException e) {
-            logger.debug("{}: Exception configuring color reporting", endpoint.getIeeeAddress(), e);
-        }
-
-        if (clusterLevelControl != null) {
-            clusterLevelControl.addAttributeListener(this);
-            try {
-                CommandResult bindResponse = bind(clusterLevelControl).get();
-                if (!bindResponse.isSuccess()) {
-                    pollingPeriod = POLLING_PERIOD_HIGH;
-                }
-                CommandResult reportingResponse = clusterLevelControl
-                        .setCurrentLevelReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
-            } catch (ExecutionException | InterruptedException e) {
-                logger.debug("{}: Exception configuring level reporting", endpoint.getIeeeAddress(), e);
-            }
-        }
-
-        if (clusterOnOff != null) {
-            clusterOnOff.addAttributeListener(this);
-            try {
-                CommandResult bindResponse = bind(clusterOnOff).get();
-                if (!bindResponse.isSuccess()) {
-                    pollingPeriod = POLLING_PERIOD_HIGH;
-                }
-                CommandResult reportingResponse = clusterOnOff.setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX).get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
-            } catch (ExecutionException | InterruptedException e) {
-                logger.debug("{}: Exception configuring on/off reporting", endpoint.getIeeeAddress(), e);
-            }
-        }
-
-        try {
-            ZclAttribute colorModeAttribute = clusterColorControl.getAttribute(ZclColorControlCluster.ATTR_COLORMODE);
-            CommandResult reportingResponse = clusterColorControl
-                    .setReporting(colorModeAttribute, 1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-            handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
-        } catch (ExecutionException | InterruptedException e) {
-            logger.debug("{}: Exception configuring color mode reporting", endpoint.getIeeeAddress(), e);
         }
 
         // Create a configuration handler and get the available options

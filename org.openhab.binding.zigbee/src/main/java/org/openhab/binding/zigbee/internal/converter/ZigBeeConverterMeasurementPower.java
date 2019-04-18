@@ -44,23 +44,23 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
     private Integer multiplier;
 
     @Override
-    public boolean initializeConverter() {
+    public boolean initializeDevice() {
         logger.debug("{}: Initialising electrical measurement cluster", endpoint.getIeeeAddress());
 
-        clusterMeasurement = (ZclElectricalMeasurementCluster) endpoint
+        ZclElectricalMeasurementCluster serverClusterMeasurement = (ZclElectricalMeasurementCluster) endpoint
                 .getInputCluster(ZclElectricalMeasurementCluster.CLUSTER_ID);
-        if (clusterMeasurement == null) {
+        if (serverClusterMeasurement == null) {
             logger.error("{}: Error opening electrical measurement cluster", endpoint.getIeeeAddress());
             return false;
         }
 
         try {
-            CommandResult bindResponse = bind(clusterMeasurement).get();
+            CommandResult bindResponse = bind(serverClusterMeasurement).get();
             if (bindResponse.isSuccess()) {
-                ZclAttribute attribute = clusterMeasurement
+                ZclAttribute attribute = serverClusterMeasurement
                         .getAttribute(ZclElectricalMeasurementCluster.ATTR_ACTIVEPOWER);
                 // Configure reporting - no faster than once per second - no slower than 2 hours.
-                CommandResult reportingResponse = clusterMeasurement
+                CommandResult reportingResponse = serverClusterMeasurement
                         .setReporting(attribute, 3, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
@@ -70,16 +70,26 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
         }
 
-        divisor = clusterMeasurement.getAcPowerDivisor(Long.MAX_VALUE);
-        multiplier = clusterMeasurement.getAcPowerMultiplier(Long.MAX_VALUE);
+        divisor = serverClusterMeasurement.getAcPowerDivisor(Long.MAX_VALUE);
+        multiplier = serverClusterMeasurement.getAcPowerMultiplier(Long.MAX_VALUE);
         if (divisor == null || multiplier == null) {
             divisor = 1;
             multiplier = 1;
         }
+        return true;
+    }
+
+    @Override
+    public boolean initializeConverter() {
+        clusterMeasurement = (ZclElectricalMeasurementCluster) endpoint
+                .getInputCluster(ZclElectricalMeasurementCluster.CLUSTER_ID);
+        if (clusterMeasurement == null) {
+            logger.error("{}: Error opening electrical measurement cluster", endpoint.getIeeeAddress());
+            return false;
+        }
 
         // Add a listener, then request the status
         clusterMeasurement.addAttributeListener(this);
-
         return true;
     }
 

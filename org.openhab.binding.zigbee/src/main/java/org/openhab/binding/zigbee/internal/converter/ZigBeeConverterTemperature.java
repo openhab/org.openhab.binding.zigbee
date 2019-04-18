@@ -40,6 +40,32 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
     private ZclTemperatureMeasurementCluster cluster;
 
     @Override
+    public boolean initializeDevice() {
+        ZclTemperatureMeasurementCluster serverCluster = (ZclTemperatureMeasurementCluster) endpoint
+                .getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID);
+        if (serverCluster == null) {
+            logger.error("{}: Error opening device temperature measurement cluster", endpoint.getIeeeAddress());
+            return false;
+        }
+
+        try {
+            CommandResult bindResponse = bind(serverCluster).get();
+            if (bindResponse.isSuccess()) {
+                // Configure reporting
+                CommandResult reportingResponse = serverCluster
+                        .setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+            } else {
+                logger.debug("{}: Failed to bind temperature measurement cluster", endpoint.getIeeeAddress());
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+        }
+
+        return true;
+    }
+
+    @Override
     public boolean initializeConverter() {
         cluster = (ZclTemperatureMeasurementCluster) endpoint
                 .getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID);
@@ -48,24 +74,8 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
             return false;
         }
 
-        CommandResult bindResponse;
-        try {
-            bindResponse = bind(cluster).get();
-            if (!bindResponse.isSuccess()) {
-                logger.debug("{}: Failed to bind temperature measurement cluster", endpoint.getIeeeAddress());
-            } else {
-                // Configure reporting
-                CommandResult reportingResponse = cluster
-                        .setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
-        }
-
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
-
         return true;
     }
 

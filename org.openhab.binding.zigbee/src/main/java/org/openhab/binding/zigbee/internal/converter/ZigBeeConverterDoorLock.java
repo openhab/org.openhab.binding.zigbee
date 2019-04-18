@@ -40,24 +40,36 @@ public class ZigBeeConverterDoorLock extends ZigBeeBaseChannelConverter implemen
     private ZclDoorLockCluster cluster;
 
     @Override
-    public boolean initializeConverter() {
-        cluster = (ZclDoorLockCluster) endpoint.getInputCluster(ZclDoorLockCluster.CLUSTER_ID);
-        if (cluster == null) {
+    public boolean initializeDevice() {
+        ZclDoorLockCluster serverCluster = (ZclDoorLockCluster) endpoint.getInputCluster(ZclDoorLockCluster.CLUSTER_ID);
+        if (serverCluster == null) {
             logger.error("{}: Error opening device door lock controls", endpoint.getIeeeAddress());
             return false;
         }
 
         try {
-            CommandResult bindResponse = bind(cluster).get();
+            CommandResult bindResponse = bind(serverCluster).get();
             if (bindResponse.isSuccess()) {
                 // Configure reporting - no faster than once per second - no slower than 2 hours.
-                CommandResult reportingResponse = cluster.setDoorStateReporting(1, REPORTING_PERIOD_DEFAULT_MAX).get();
+                CommandResult reportingResponse = serverCluster.setDoorStateReporting(1, REPORTING_PERIOD_DEFAULT_MAX)
+                        .get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 pollingPeriod = POLLING_PERIOD_HIGH;
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean initializeConverter() {
+        cluster = (ZclDoorLockCluster) endpoint.getInputCluster(ZclDoorLockCluster.CLUSTER_ID);
+        if (cluster == null) {
+            logger.error("{}: Error opening device door lock controls", endpoint.getIeeeAddress());
+            return false;
         }
 
         // Add the listener

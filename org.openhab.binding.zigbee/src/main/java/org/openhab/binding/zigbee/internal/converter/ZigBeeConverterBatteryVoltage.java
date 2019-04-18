@@ -42,31 +42,41 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
     private ZclPowerConfigurationCluster cluster;
 
     @Override
-    public boolean initializeConverter() {
+    public boolean initializeDevice() {
         logger.debug("{}: Initialising device battery voltage converter", endpoint.getIeeeAddress());
 
+        ZclPowerConfigurationCluster serverCluster = (ZclPowerConfigurationCluster) endpoint
+                .getInputCluster(ZclPowerConfigurationCluster.CLUSTER_ID);
+        if (serverCluster == null) {
+            logger.error("{}: Error opening power configuration cluster", endpoint.getIeeeAddress());
+            return false;
+        }
+
+        try {
+            CommandResult bindResponse = bind(serverCluster).get();
+            if (bindResponse.isSuccess()) {
+                ZclAttribute attribute = serverCluster.getAttribute(ZclPowerConfigurationCluster.ATTR_BATTERYVOLTAGE);
+                // Configure reporting - no faster than once per ten minutes - no slower than every 2 hours.
+                CommandResult reportingResponse = serverCluster
+                        .setReporting(attribute, 600, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean initializeConverter() {
         cluster = (ZclPowerConfigurationCluster) endpoint.getInputCluster(ZclPowerConfigurationCluster.CLUSTER_ID);
         if (cluster == null) {
             logger.error("{}: Error opening power configuration cluster", endpoint.getIeeeAddress());
             return false;
         }
 
-        try {
-            CommandResult bindResponse = bind(cluster).get();
-            if (bindResponse.isSuccess()) {
-                ZclAttribute attribute = cluster.getAttribute(ZclPowerConfigurationCluster.ATTR_BATTERYVOLTAGE);
-                // Configure reporting - no faster than once per ten minutes - no slower than every 2 hours.
-                CommandResult reportingResponse = cluster.setReporting(attribute, 600, REPORTING_PERIOD_DEFAULT_MAX, 1)
-                        .get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
-        }
-
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
-
         return true;
     }
 
