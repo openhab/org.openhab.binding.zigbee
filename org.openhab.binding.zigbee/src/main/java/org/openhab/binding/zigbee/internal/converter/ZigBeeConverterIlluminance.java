@@ -57,6 +57,7 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.debug("{}: Exception configuring meassured value reporting", endpoint.getIeeeAddress(), e);
+            return false;
         }
         return true;
     }

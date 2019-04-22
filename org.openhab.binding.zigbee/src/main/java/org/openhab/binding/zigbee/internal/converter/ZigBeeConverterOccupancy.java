@@ -58,6 +58,7 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            return false;
         }
         return true;
     }

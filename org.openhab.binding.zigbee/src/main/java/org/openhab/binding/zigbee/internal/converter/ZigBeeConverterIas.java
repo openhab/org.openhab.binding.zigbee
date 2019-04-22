@@ -78,6 +78,7 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.debug("{}: Exception configuring ias zone status reporting", endpoint.getIeeeAddress(), e);
+            return false;
         }
         return true;
     }

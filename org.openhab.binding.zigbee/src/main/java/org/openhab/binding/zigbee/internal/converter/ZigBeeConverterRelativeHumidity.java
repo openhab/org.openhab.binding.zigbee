@@ -58,6 +58,7 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
             pollingPeriod = POLLING_PERIOD_HIGH;
+            return false;
         }
         return true;
     }

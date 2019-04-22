@@ -59,8 +59,8 @@ public class ZigBeeConverterDoorLock extends ZigBeeBaseChannelConverter implemen
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            return false;
         }
-
         return true;
     }
 

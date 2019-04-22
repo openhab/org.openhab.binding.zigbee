@@ -98,11 +98,13 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                 .getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
         if (serverClusterLevelControl == null) {
             logger.warn("{}: Device does not support level control", endpoint.getIeeeAddress());
+            return false;
         }
 
         ZclOnOffCluster serverClusterOnOff = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
         if (serverClusterOnOff == null) {
             logger.debug("{}: Device does not support on/off control", endpoint.getIeeeAddress());
+            return false;
         }
 
         // Discover whether the device supports HUE/SAT or XY color set of commands
@@ -136,59 +138,60 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
         try {
             CommandResult bindResponse = bind(serverClusterColorControl).get();
-            if (!bindResponse.isSuccess()) {
-                pollingPeriod = POLLING_PERIOD_HIGH;
-            }
-            CommandResult reportingResponse;
-            if (supportsHue) {
-                reportingResponse = serverClusterColorControl.setCurrentHueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1)
-                        .get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+            if (bindResponse.isSuccess()) {
+                CommandResult reportingResponse;
+                if (supportsHue) {
+                    reportingResponse = serverClusterColorControl
+                            .setCurrentHueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                    handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
 
-                reportingResponse = serverClusterColorControl
-                        .setCurrentSaturationReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+                    reportingResponse = serverClusterColorControl
+                            .setCurrentSaturationReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                    handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+                } else {
+                    reportingResponse = serverClusterColorControl
+                            .setCurrentXReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                    handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+
+                    reportingResponse = serverClusterColorControl
+                            .setCurrentYReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                    handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+                }
             } else {
-                reportingResponse = serverClusterColorControl.setCurrentXReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1)
-                        .get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
-
-                reportingResponse = serverClusterColorControl.setCurrentYReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1)
-                        .get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+                logger.error("{}: Error 0x{} setting server binding", endpoint.getIeeeAddress(),
+                        Integer.toHexString(bindResponse.getStatusCode()));
+                pollingPeriod = POLLING_PERIOD_HIGH;
+                return false;
             }
         } catch (ExecutionException | InterruptedException e) {
             logger.debug("{}: Exception configuring color reporting", endpoint.getIeeeAddress(), e);
         }
 
-        if (serverClusterLevelControl != null) {
-            serverClusterLevelControl.addAttributeListener(this);
-            try {
-                CommandResult bindResponse = bind(serverClusterLevelControl).get();
-                if (!bindResponse.isSuccess()) {
-                    pollingPeriod = POLLING_PERIOD_HIGH;
-                }
-                CommandResult reportingResponse = serverClusterLevelControl
-                        .setCurrentLevelReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
-            } catch (ExecutionException | InterruptedException e) {
-                logger.debug("{}: Exception configuring level reporting", endpoint.getIeeeAddress(), e);
+        serverClusterLevelControl.addAttributeListener(this);
+        try {
+            CommandResult bindResponse = bind(serverClusterLevelControl).get();
+            if (!bindResponse.isSuccess()) {
+                pollingPeriod = POLLING_PERIOD_HIGH;
             }
+            CommandResult reportingResponse = serverClusterLevelControl
+                    .setCurrentLevelReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+            handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+        } catch (ExecutionException | InterruptedException e) {
+            logger.debug("{}: Exception configuring level reporting", endpoint.getIeeeAddress(), e);
         }
 
-        if (serverClusterOnOff != null) {
-            serverClusterOnOff.addAttributeListener(this);
-            try {
-                CommandResult bindResponse = bind(serverClusterOnOff).get();
-                if (!bindResponse.isSuccess()) {
-                    pollingPeriod = POLLING_PERIOD_HIGH;
-                }
-                CommandResult reportingResponse = serverClusterOnOff.setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX)
-                        .get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
-            } catch (ExecutionException | InterruptedException e) {
-                logger.debug("{}: Exception configuring on/off reporting", endpoint.getIeeeAddress(), e);
+        serverClusterOnOff.addAttributeListener(this);
+        try {
+            CommandResult bindResponse = bind(serverClusterOnOff).get();
+            if (!bindResponse.isSuccess()) {
+                pollingPeriod = POLLING_PERIOD_HIGH;
             }
+            CommandResult reportingResponse = serverClusterOnOff.setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX)
+                    .get();
+            handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+        } catch (ExecutionException | InterruptedException e) {
+            logger.debug("{}: Exception configuring on/off reporting", endpoint.getIeeeAddress(), e);
+            return false;
         }
 
         try {
@@ -199,6 +202,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
         } catch (ExecutionException | InterruptedException e) {
             logger.debug("{}: Exception configuring color mode reporting", endpoint.getIeeeAddress(), e);
+            return false;
         }
 
         return true;

@@ -68,6 +68,7 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            return false;
         }
 
         divisor = serverClusterMeasurement.getAcPowerDivisor(Long.MAX_VALUE);

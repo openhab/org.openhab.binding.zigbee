@@ -85,6 +85,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error(String.format("%s: Exception setting level control reporting ", endpoint.getIeeeAddress()), e);
+            return false;
         }
 
         try {
@@ -96,9 +97,12 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 pollingPeriod = POLLING_PERIOD_HIGH;
+                logger.debug("{}: Failed to bind on off control cluster", endpoint.getIeeeAddress());
+                return false;
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error(String.format("%s: Exception setting on off reporting ", endpoint.getIeeeAddress()), e);
+            return false;
         }
 
         // Set the currentOnOffState to ON. This will ensure that we only ignore levelControl reports AFTER we have

@@ -89,6 +89,7 @@ public class ZigBeeConverterBatteryAlarm extends ZigBeeBaseChannelConverter impl
                 logger.debug(
                         "Could not bind to the power configuration cluster; polling battery alarm state every {} seconds",
                         BATTERY_ALARM_POLLING_PERIOD);
+                return false;
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting of battery alarm state ", endpoint.getIeeeAddress(), e);

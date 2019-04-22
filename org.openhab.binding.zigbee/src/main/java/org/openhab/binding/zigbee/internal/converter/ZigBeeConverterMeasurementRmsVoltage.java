@@ -69,6 +69,7 @@ public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConve
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            return false;
         }
 
         divisor = serverClusterMeasurement.getAcVoltageDivisor(Long.MAX_VALUE);

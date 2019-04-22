@@ -63,6 +63,7 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            return false;
         }
         return true;
     }

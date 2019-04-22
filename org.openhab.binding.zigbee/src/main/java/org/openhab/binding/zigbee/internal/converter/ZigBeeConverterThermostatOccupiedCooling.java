@@ -62,6 +62,7 @@ public class ZigBeeConverterThermostatOccupiedCooling extends ZigBeeBaseChannelC
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            return false;
         }
 
         return true;

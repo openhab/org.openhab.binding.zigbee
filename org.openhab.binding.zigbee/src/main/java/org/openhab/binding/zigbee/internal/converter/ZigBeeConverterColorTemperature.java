@@ -99,6 +99,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
         } catch (InterruptedException | ExecutionException e) {
             logger.debug("{}: Exception configuring color temperature or color mode reporting",
                     endpoint.getIeeeAddress(), e);
+            return false;
         }
         return true;
     }

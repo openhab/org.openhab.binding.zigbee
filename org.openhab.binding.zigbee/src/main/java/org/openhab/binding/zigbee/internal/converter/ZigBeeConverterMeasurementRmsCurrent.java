@@ -69,6 +69,7 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            return false;
         }
 
         divisor = serviceClusterMeasurement.getAcCurrentDivisor(Long.MAX_VALUE);
