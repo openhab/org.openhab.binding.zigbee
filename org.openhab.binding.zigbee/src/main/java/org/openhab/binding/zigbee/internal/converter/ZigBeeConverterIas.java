@@ -56,6 +56,34 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter
     protected static final int CIE_BATTERYDEFECT = 0x0200;
 
     @Override
+    public boolean initializeDevice() {
+        logger.debug("{}: Initialising device IAS Zone cluster for {}", endpoint.getIeeeAddress(),
+                channel.getChannelTypeUID());
+
+        ZclIasZoneCluster serverClusterIasZone = (ZclIasZoneCluster) endpoint
+                .getInputCluster(ZclIasZoneCluster.CLUSTER_ID);
+        if (serverClusterIasZone == null) {
+            logger.error("{}: Error opening IAS zone cluster", endpoint.getIeeeAddress());
+            return false;
+        }
+
+        try {
+            CommandResult bindResponse = bind(serverClusterIasZone).get();
+            if (bindResponse.isSuccess()) {
+                // Configure reporting - no faster than once per second - no slower than 2 hours.
+                ZclAttribute attribute = serverClusterIasZone.getAttribute(ZclIasZoneCluster.ATTR_ZONESTATUS);
+                CommandResult reportingResponse = serverClusterIasZone
+                        .setReporting(attribute, 3, REPORTING_PERIOD_DEFAULT_MAX).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.debug("{}: Exception configuring ias zone status reporting", endpoint.getIeeeAddress(), e);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
     public boolean initializeConverter() {
         logger.debug("{}: Initialising device IAS Zone cluster for {}", endpoint.getIeeeAddress(),
                 channel.getChannelTypeUID());
@@ -65,22 +93,10 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter
             logger.error("{}: Error opening IAS zone cluster", endpoint.getIeeeAddress());
             return false;
         }
-
-        bind(clusterIasZone);
-
         // Add a listener, then request the status
         clusterIasZone.addCommandListener(this);
         clusterIasZone.addAttributeListener(this);
 
-        // Configure reporting - no faster than once per second - no slower than 2 hours.
-        ZclAttribute attribute = clusterIasZone.getAttribute(ZclIasZoneCluster.ATTR_ZONESTATUS);
-        try {
-            CommandResult reportingResponse = clusterIasZone.setReporting(attribute, 3, REPORTING_PERIOD_DEFAULT_MAX)
-                    .get();
-            handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
-        } catch (InterruptedException | ExecutionException e) {
-            logger.debug("{}: Exception configuring ias zone status reporting", endpoint.getIeeeAddress(), e);
-        }
         return true;
     }
 

@@ -38,28 +38,41 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
     private ZclOccupancySensingCluster clusterOccupancy;
 
     @Override
-    public boolean initializeConverter() {
+    public boolean initializeDevice() {
         logger.debug("{}: Initialising device occupancy cluster", endpoint.getIeeeAddress());
 
+        ZclOccupancySensingCluster serverClusterOccupancy = (ZclOccupancySensingCluster) endpoint
+                .getInputCluster(ZclOccupancySensingCluster.CLUSTER_ID);
+        if (serverClusterOccupancy == null) {
+            logger.error("{}: Error opening occupancy cluster", endpoint.getIeeeAddress());
+            return false;
+        }
+
+        try {
+            CommandResult bindResponse = bind(serverClusterOccupancy).get();
+            if (bindResponse.isSuccess()) {
+                // Configure reporting - no faster than once per second - no slower than 2 hours.
+                CommandResult reportingResponse = serverClusterOccupancy
+                        .setOccupancyReporting(1, REPORTING_PERIOD_DEFAULT_MAX).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean initializeConverter() {
         clusterOccupancy = (ZclOccupancySensingCluster) endpoint.getInputCluster(ZclOccupancySensingCluster.CLUSTER_ID);
         if (clusterOccupancy == null) {
             logger.error("{}: Error opening occupancy cluster", endpoint.getIeeeAddress());
             return false;
         }
 
-        bind(clusterOccupancy);
-
         // Add a listener, then request the status
         clusterOccupancy.addAttributeListener(this);
-
-        // Configure reporting - no faster than once per second - no slower than 2 hours.
-        try {
-            CommandResult reportingResponse = clusterOccupancy.setOccupancyReporting(1, REPORTING_PERIOD_DEFAULT_MAX)
-                    .get();
-            handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
-        }
         return true;
     }
 

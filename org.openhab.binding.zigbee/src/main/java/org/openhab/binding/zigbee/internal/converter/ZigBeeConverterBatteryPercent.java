@@ -38,30 +38,44 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
     private ZclPowerConfigurationCluster cluster;
 
     @Override
-    public boolean initializeConverter() {
+    public boolean initializeDevice() {
         logger.debug("{}: Initialising device battery percent converter", endpoint.getIeeeAddress());
 
+        ZclPowerConfigurationCluster serverCluster = (ZclPowerConfigurationCluster) endpoint
+                .getInputCluster(ZclPowerConfigurationCluster.CLUSTER_ID);
+        if (serverCluster == null) {
+            logger.error("{}: Error opening power configuration cluster", endpoint.getIeeeAddress());
+            return false;
+        }
+
+        try {
+            CommandResult bindResponse = bind(serverCluster).get();
+            if (bindResponse.isSuccess()) {
+                // Configure reporting - no faster than once per ten minutes - no slower than every 2 hours.
+                CommandResult reportingResponse = serverCluster
+                        .setBatteryPercentageRemainingReporting(600, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+            } else {
+                logger.error("{}: Error 0x{} setting server binding", endpoint.getIeeeAddress(),
+                        Integer.toHexString(bindResponse.getStatusCode()));
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean initializeConverter() {
         cluster = (ZclPowerConfigurationCluster) endpoint.getInputCluster(ZclPowerConfigurationCluster.CLUSTER_ID);
         if (cluster == null) {
             logger.error("{}: Error opening power configuration cluster", endpoint.getIeeeAddress());
             return false;
         }
 
-        try {
-            CommandResult bindResponse = bind(cluster).get();
-            if (bindResponse.isSuccess()) {
-                // Configure reporting - no faster than once per ten minutes - no slower than every 2 hours.
-                CommandResult reportingResponse = cluster
-                        .setBatteryPercentageRemainingReporting(600, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
-        }
-
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
-
         return true;
     }
 

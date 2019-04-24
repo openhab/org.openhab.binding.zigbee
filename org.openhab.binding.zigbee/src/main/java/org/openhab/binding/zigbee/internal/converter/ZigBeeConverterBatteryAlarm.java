@@ -65,20 +65,23 @@ public class ZigBeeConverterBatteryAlarm extends ZigBeeBaseChannelConverter impl
     private ZclPowerConfigurationCluster cluster;
 
     @Override
-    public boolean initializeConverter() {
+    public boolean initializeDevice() {
         logger.debug("{}: Initialising device battery alarm converter", endpoint.getIeeeAddress());
 
-        cluster = (ZclPowerConfigurationCluster) endpoint.getInputCluster(ZclPowerConfigurationCluster.CLUSTER_ID);
-        if (cluster == null) {
+        ZclPowerConfigurationCluster serverCluster = (ZclPowerConfigurationCluster) endpoint
+                .getInputCluster(ZclPowerConfigurationCluster.CLUSTER_ID);
+        if (serverCluster == null) {
             logger.error("{}: Error opening power configuration cluster", endpoint.getIeeeAddress());
             return false;
         }
 
         try {
-            CommandResult bindResponse = bind(cluster).get();
+            CommandResult bindResponse = bind(serverCluster).get();
             if (bindResponse.isSuccess()) {
-                CommandResult reportingResponse = cluster.setReporting(cluster.getAttribute(ATTR_BATTERYALARMSTATE),
-                        ALARMSTATE_MIN_REPORTING_INTERVAL, ALARMSTATE_MAX_REPORTING_INTERVAL).get();
+                CommandResult reportingResponse = serverCluster
+                        .setReporting(serverCluster.getAttribute(ATTR_BATTERYALARMSTATE),
+                                ALARMSTATE_MIN_REPORTING_INTERVAL, ALARMSTATE_MAX_REPORTING_INTERVAL)
+                        .get();
                 handleReportingResponse(reportingResponse, BATTERY_ALARM_POLLING_PERIOD,
                         ALARMSTATE_MAX_REPORTING_INTERVAL);
             } else {
@@ -86,12 +89,24 @@ public class ZigBeeConverterBatteryAlarm extends ZigBeeBaseChannelConverter impl
                 logger.debug(
                         "Could not bind to the power configuration cluster; polling battery alarm state every {} seconds",
                         BATTERY_ALARM_POLLING_PERIOD);
+                return false;
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting of battery alarm state ", endpoint.getIeeeAddress(), e);
             return false;
         }
+        return true;
+    }
 
+    @Override
+    public boolean initializeConverter() {
+        cluster = (ZclPowerConfigurationCluster) endpoint.getInputCluster(ZclPowerConfigurationCluster.CLUSTER_ID);
+        if (cluster == null) {
+            logger.error("{}: Error opening power configuration cluster", endpoint.getIeeeAddress());
+            return false;
+        }
+
+        // Add a listener
         cluster.addAttributeListener(this);
         return true;
     }
