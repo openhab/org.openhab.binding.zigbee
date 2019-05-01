@@ -28,7 +28,6 @@
     <module>org.openhab.binding.zigbee.console</module>
     <module>org.openhab.binding.zigbee.console.ember</module>
     <module>org.openhab.binding.zigbee.console.telegesis</module>
-    <!--module>releng/org.openhab.binding.zigbee.p2repo</module-->
   </modules>
 
   <properties>
