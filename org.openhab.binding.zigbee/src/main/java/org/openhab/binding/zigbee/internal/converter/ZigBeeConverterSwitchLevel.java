@@ -105,19 +105,6 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
             return false;
         }
 
-        // Set the currentOnOffState to ON. This will ensure that we only ignore levelControl reports AFTER we have
-        // really received an OFF report, thus confirming ON_OFF reporting is working
-        currentOnOffState.set(true);
-
-        // Create a configuration handler and get the available options
-        configReporting = new ZclReportingConfig();
-        configLevelControl = new ZclLevelControlConfig();
-        configLevelControl.initialize(serverClusterLevelControl);
-
-        configOptions = new ArrayList<>();
-        configOptions.addAll(configReporting.getConfiguration());
-        configOptions.addAll(configLevelControl.getConfiguration());
-
         return true;
     }
 
@@ -138,6 +125,20 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         // Add a listeners
         clusterOnOff.addAttributeListener(this);
         clusterLevelControl.addAttributeListener(this);
+
+        // Set the currentOnOffState to ON. This will ensure that we only ignore levelControl reports AFTER we have
+        // really received an OFF report, thus confirming ON_OFF reporting is working
+        currentOnOffState.set(true);
+
+        // Create a configuration handler and get the available options
+        configReporting = new ZclReportingConfig();
+        configLevelControl = new ZclLevelControlConfig();
+        configLevelControl.initialize(clusterLevelControl);
+
+        configOptions = new ArrayList<>();
+        configOptions.addAll(configReporting.getConfiguration());
+        configOptions.addAll(configLevelControl.getConfiguration());
+
         return true;
     }
 

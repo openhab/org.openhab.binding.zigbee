@@ -393,6 +393,8 @@ public abstract class ZigBeeBaseChannelConverter {
      * Processes the updated configuration. As required, the method shall process each known configuration parameter and
      * set a local variable for local parameters, and update the remote device for remote parameters.
      * The currentConfiguration shall be updated.
+     * <p>
+     * This must not be called before the {@link #initializeConverter()} method has been called.
      *
      * @param currentConfiguration the current {@link Configuration}
      * @param updatedParameters    a map containing the updated configuration parameters to be set
