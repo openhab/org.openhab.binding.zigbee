@@ -62,24 +62,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             return false;
         }
 
-        Integer minTemperatureInMired = serverClusterColorControl.getColorTemperatureMin(Long.MAX_VALUE);
-        Integer maxTemperatureInMired = serverClusterColorControl.getColorTemperatureMax(Long.MAX_VALUE);
-
-        // High Mired values correspond to low Kelvin values, hence the max Mired value yields the min Kelvin value
-        if (maxTemperatureInMired == null) {
-            kelvinMin = DEFAULT_MIN_TEMPERATURE_IN_KELVIN;
-        } else {
-            kelvinMin = miredToKelvin(maxTemperatureInMired);
-        }
-
-        // Low Mired values correspond to high Kelvin values, hence the min Mired value yields the max Kelvin value
-        if (minTemperatureInMired == null) {
-            kelvinMax = DEFAULT_MAX_TEMPERATURE_IN_KELVIN;
-        } else {
-            kelvinMax = miredToKelvin(minTemperatureInMired);
-        }
-
-        kelvinRange = kelvinMax - kelvinMin;
+        determineMinMaxTemperature(serverClusterColorControl);
 
         try {
             CommandResult bindResponse = bind(serverClusterColorControl).get();
@@ -112,6 +95,8 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
                     endpoint.getEndpointId());
             return false;
         }
+
+        determineMinMaxTemperature(clusterColorControl);
 
         clusterColorControl.addAttributeListener(this);
         return true;
@@ -267,6 +252,27 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             return null;
         }
         return kelvinToPercent(miredToKelvin(temperatureInMired));
+    }
+
+    private void determineMinMaxTemperature(ZclColorControlCluster serverClusterColorControl) {
+        Integer minTemperatureInMired = serverClusterColorControl.getColorTemperatureMin(Long.MAX_VALUE);
+        Integer maxTemperatureInMired = serverClusterColorControl.getColorTemperatureMax(Long.MAX_VALUE);
+
+        // High Mired values correspond to low Kelvin values, hence the max Mired value yields the min Kelvin value
+        if (maxTemperatureInMired == null) {
+            kelvinMin = DEFAULT_MIN_TEMPERATURE_IN_KELVIN;
+        } else {
+            kelvinMin = miredToKelvin(maxTemperatureInMired);
+        }
+
+        // Low Mired values correspond to high Kelvin values, hence the min Mired value yields the max Kelvin value
+        if (minTemperatureInMired == null) {
+            kelvinMax = DEFAULT_MAX_TEMPERATURE_IN_KELVIN;
+        } else {
+            kelvinMax = miredToKelvin(minTemperatureInMired);
+        }
+
+        kelvinRange = kelvinMax - kelvinMin;
     }
 
 }
