@@ -107,31 +107,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             return false;
         }
 
-        // Discover whether the device supports HUE/SAT or XY color set of commands
-        try {
-            if (!serverClusterColorControl.discoverAttributes(false).get()) {
-                logger.warn("{}: Cannot determine whether device supports RGB color. Assuming it supports HUE/SAT",
-                        endpoint.getIeeeAddress());
-                supportsHue = true;
-            } else if (serverClusterColorControl.getSupportedAttributes()
-                    .contains(ZclColorControlCluster.ATTR_CURRENTHUE)) {
-                logger.debug("{}: Device supports Hue/Saturation color set of commands", endpoint.getIeeeAddress());
-                supportsHue = true;
-            } else if (serverClusterColorControl.getSupportedAttributes()
-                    .contains(ZclColorControlCluster.ATTR_CURRENTX)) {
-                logger.debug("{}: Device supports XY color set of commands", endpoint.getIeeeAddress());
-                supportsHue = false;
-                delayedColorChange = true; // For now, only for XY lights till this is configurable
-            } else {
-                logger.warn("{}: Device supports neither RGB color nor XY color", endpoint.getIeeeAddress());
-                pollingPeriod = POLLING_PERIOD_HIGH;
-                return false;
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.warn(
-                    "{}: Exception checking whether device endpoint supports RGB color. Assuming it supports HUE/SAT",
-                    endpoint.getIeeeAddress(), e);
-            supportsHue = true;
+        if (!discoverSupportedColorCommands(serverClusterColorControl)) {
+            return false;
         }
 
         // Bind to attribute reports, add listeners, then request the status
@@ -167,7 +144,6 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             logger.debug("{}: Exception configuring color reporting", endpoint.getIeeeAddress(), e);
         }
 
-        serverClusterLevelControl.addAttributeListener(this);
         try {
             CommandResult bindResponse = bind(serverClusterLevelControl).get();
             if (!bindResponse.isSuccess()) {
@@ -180,7 +156,6 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             logger.debug("{}: Exception configuring level reporting", endpoint.getIeeeAddress(), e);
         }
 
-        serverClusterOnOff.addAttributeListener(this);
         try {
             CommandResult bindResponse = bind(serverClusterOnOff).get();
             if (!bindResponse.isSuccess()) {
@@ -226,10 +201,18 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             logger.debug("{}: Device does not support on/off control", endpoint.getIeeeAddress());
         }
 
+        if (!discoverSupportedColorCommands(clusterColorControl)) {
+            return false;
+        }
+
         // Create a configuration handler and get the available options
         configLevelControl = new ZclLevelControlConfig();
         configLevelControl.initialize(clusterLevelControl);
         configOptions = configLevelControl.getConfiguration();
+
+        clusterColorControl.addAttributeListener(this);
+        clusterLevelControl.addAttributeListener(this);
+        clusterOnOff.addAttributeListener(this);
 
         return true;
     }
@@ -583,4 +566,36 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             }
         }
     }
+
+    private boolean discoverSupportedColorCommands(ZclColorControlCluster serverClusterColorControl) {
+        // Discover whether the device supports HUE/SAT or XY color set of commands
+        try {
+            if (!serverClusterColorControl.discoverAttributes(false).get()) {
+                logger.warn("{}: Cannot determine whether device supports RGB color. Assuming it supports HUE/SAT",
+                        endpoint.getIeeeAddress());
+                supportsHue = true;
+            } else if (serverClusterColorControl.getSupportedAttributes()
+                    .contains(ZclColorControlCluster.ATTR_CURRENTHUE)) {
+                logger.debug("{}: Device supports Hue/Saturation color set of commands", endpoint.getIeeeAddress());
+                supportsHue = true;
+            } else if (serverClusterColorControl.getSupportedAttributes()
+                    .contains(ZclColorControlCluster.ATTR_CURRENTX)) {
+                logger.debug("{}: Device supports XY color set of commands", endpoint.getIeeeAddress());
+                supportsHue = false;
+                delayedColorChange = true; // For now, only for XY lights till this is configurable
+            } else {
+                logger.warn("{}: Device supports neither RGB color nor XY color", endpoint.getIeeeAddress());
+                pollingPeriod = POLLING_PERIOD_HIGH;
+                return false;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.warn(
+                    "{}: Exception checking whether device endpoint supports RGB color. Assuming it supports HUE/SAT",
+                    endpoint.getIeeeAddress(), e);
+            supportsHue = true;
+        }
+
+        return true;
+    }
+
 }

@@ -61,12 +61,7 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
         }
 
         // Check if the enhanced attributes are supported
-        if (serverCluster.getScaledValue(Long.MAX_VALUE) != null) {
-            enhancedScale = serverCluster.getScale(Long.MAX_VALUE);
-            if (enhancedScale != null) {
-                enhancedScale *= -1;
-            }
-        }
+        determineEnhancedScale(serverCluster);
 
         try {
             CommandResult bindResponse = bind(serverCluster).get();
@@ -103,6 +98,9 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
             logger.error("{}: Error opening device pressure measurement cluster", endpoint.getIeeeAddress());
             return false;
         }
+
+        // Check if the enhanced attributes are supported
+        determineEnhancedScale(cluster);
 
         // Add a listener
         cluster.addAttributeListener(this);
@@ -171,4 +169,14 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
             return;
         }
     }
+
+    private void determineEnhancedScale(ZclPressureMeasurementCluster cluster) {
+        if (cluster.getScaledValue(Long.MAX_VALUE) != null) {
+            enhancedScale = cluster.getScale(Long.MAX_VALUE);
+            if (enhancedScale != null) {
+                enhancedScale *= -1;
+            }
+        }
+    }
+
 }
