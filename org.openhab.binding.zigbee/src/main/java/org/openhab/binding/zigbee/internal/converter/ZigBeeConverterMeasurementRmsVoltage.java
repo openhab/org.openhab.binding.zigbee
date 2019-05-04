@@ -72,13 +72,6 @@ public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConve
             return false;
         }
 
-        divisor = serverClusterMeasurement.getAcVoltageDivisor(Long.MAX_VALUE);
-        multiplier = serverClusterMeasurement.getAcVoltageMultiplier(Long.MAX_VALUE);
-        if (divisor == null || multiplier == null) {
-            divisor = 1;
-            multiplier = 1;
-        }
-
         return true;
     }
 
@@ -90,6 +83,8 @@ public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConve
             logger.error("{}: Error opening electrical measurement cluster", endpoint.getIeeeAddress());
             return false;
         }
+
+        determineDivisorAndMultiplier(clusterMeasurement);
 
         // Add a listener
         clusterMeasurement.addAttributeListener(this);
@@ -153,4 +148,14 @@ public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConve
             }
         }
     }
+
+    private void determineDivisorAndMultiplier(ZclElectricalMeasurementCluster serverClusterMeasurement) {
+        divisor = serverClusterMeasurement.getAcPowerDivisor(Long.MAX_VALUE);
+        multiplier = serverClusterMeasurement.getAcPowerMultiplier(Long.MAX_VALUE);
+        if (divisor == null || multiplier == null) {
+            divisor = 1;
+            multiplier = 1;
+        }
+    }
+
 }
