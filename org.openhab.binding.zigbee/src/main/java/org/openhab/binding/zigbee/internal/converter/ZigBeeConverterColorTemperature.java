@@ -62,8 +62,6 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             return false;
         }
 
-        determineMinMaxTemperature(serverClusterColorControl);
-
         try {
             CommandResult bindResponse = bind(serverClusterColorControl).get();
             if (bindResponse.isSuccess()) {

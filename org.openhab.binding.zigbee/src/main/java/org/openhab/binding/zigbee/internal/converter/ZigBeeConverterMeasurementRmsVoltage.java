@@ -72,8 +72,6 @@ public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConve
             return false;
         }
 
-        determineDivisorAndMultiplier(serverClusterMeasurement);
-
         return true;
     }
 

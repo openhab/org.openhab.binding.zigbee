@@ -71,8 +71,6 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
             return false;
         }
 
-        determineDivisorAndMultiplier(serverClusterMeasurement);
-
         return true;
     }
 

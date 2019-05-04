@@ -72,8 +72,6 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
             return false;
         }
 
-        determineDivisorAndMultiplier(serverClusterMeasurement);
-
         return true;
     }
 
