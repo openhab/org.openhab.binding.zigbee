@@ -60,6 +60,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
      * Default search time
      */
     private final static int SEARCH_TIME = 60;
+    private volatile boolean scanStarted = false;
 
     private final Set<ZigBeeCoordinatorHandler> coordinatorHandlers = new CopyOnWriteArraySet<>();
 
@@ -90,7 +91,9 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
         ZigBeeNetworkNodeListener listener = new ZigBeeNetworkNodeListener() {
             @Override
             public void nodeAdded(ZigBeeNode node) {
-                ZigBeeDiscoveryService.this.nodeDiscovered(coordinatorHandler, node);
+                if (scanStarted) {
+                    ZigBeeDiscoveryService.this.nodeDiscovered(coordinatorHandler, node);
+                }
             }
 
             @Override
@@ -121,6 +124,8 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
 
     @Override
     public void startScan() {
+        scanStarted = true;
+
         for (ZigBeeCoordinatorHandler coordinator : coordinatorHandlers) {
             for (ZigBeeNode node : coordinator.getNodes()) {
                 if (node.getNetworkAddress() == 0) {
@@ -132,9 +137,11 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
             }
 
             logger.debug("Starting ZigBee scan for {}", coordinator.getUID());
-            coordinator.scanStart();
+            coordinator.scanStart(SEARCH_TIME);
         }
 
+        Runnable searchFinishedIndicator = () -> scanStarted = false;
+        scheduler.schedule(searchFinishedIndicator, SEARCH_TIME, TimeUnit.SECONDS);
     }
 
     /**

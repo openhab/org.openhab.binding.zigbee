@@ -1029,14 +1029,16 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     /**
      * Starts an active scan on the ZigBee coordinator.
+     *
+     * @param joinAllowedPeriod the time in seconds for which a network join is allowed
      */
-    public void scanStart() {
+    public void scanStart(int joinAllowedPeriod) {
         if (getThing().getStatus() != ThingStatus.ONLINE) {
             logger.debug("ZigBee coordinator is offline - aborted scan for {}", getThing().getUID());
             return;
         }
 
-        networkManager.permitJoin(60);
+        networkManager.permitJoin(joinAllowedPeriod);
     }
 
     /**
