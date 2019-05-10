@@ -31,7 +31,9 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.UID;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
@@ -60,6 +62,9 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
      * Default search time
      */
     private final static int SEARCH_TIME = 60;
+    private final static String CONFIG_PROPERTY_CREATE_RESULTS_ONLY_DURING_ACTIVE_SCANS = "createResultsOnlyDuringActiveScans";
+
+    private boolean createResultsOnlyDuringActiveScans = false;
     private volatile boolean scanStarted = false;
 
     private final Set<ZigBeeCoordinatorHandler> coordinatorHandlers = new CopyOnWriteArraySet<>();
@@ -82,7 +87,17 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
     }
 
     @Override
-    public void deactivate() {
+    @Activate
+    public void activate(Map<String, Object> properties) {
+        super.activate(properties);
+        parseAndSetCreateResultsOnlyDuringActiveScansConfigProperty(properties);
+    }
+
+    @Override
+    @Modified
+    public void modified(Map<String, Object> properties) {
+        super.modified(properties);
+        parseAndSetCreateResultsOnlyDuringActiveScansConfigProperty(properties);
     }
 
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
@@ -91,7 +106,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
         ZigBeeNetworkNodeListener listener = new ZigBeeNetworkNodeListener() {
             @Override
             public void nodeAdded(ZigBeeNode node) {
-                if (scanStarted) {
+                if (!createResultsOnlyDuringActiveScans || createResultsOnlyDuringActiveScans && scanStarted) {
                     ZigBeeDiscoveryService.this.nodeDiscovered(coordinatorHandler, node);
                 }
             }
@@ -237,5 +252,21 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
         };
 
         scheduler.schedule(pollingRunnable, 10, TimeUnit.MILLISECONDS);
+    }
+
+    private void parseAndSetCreateResultsOnlyDuringActiveScansConfigProperty(Map<String, Object> properties) {
+        if (properties != null) {
+            Object property = properties.get(CONFIG_PROPERTY_CREATE_RESULTS_ONLY_DURING_ACTIVE_SCANS);
+            if (property != null) {
+                if (property instanceof Boolean) {
+                    createResultsOnlyDuringActiveScans = (Boolean) property;
+                } else if (property instanceof String) {
+                    createResultsOnlyDuringActiveScans = Boolean.parseBoolean((String) property);
+                }
+            }
+        } else {
+            // properties have been removed: reset the flag
+            createResultsOnlyDuringActiveScans = false;
+        }
     }
 }
