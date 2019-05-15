@@ -85,8 +85,6 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
     @Override
     public boolean initializeDevice() {
-        colorUpdateScheduler = Executors.newSingleThreadScheduledExecutor();
-
         ZclColorControlCluster serverClusterColorControl = (ZclColorControlCluster) endpoint
                 .getInputCluster(ZclColorControlCluster.CLUSTER_ID);
         if (serverClusterColorControl == null) {
@@ -185,6 +183,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
     @Override
     public boolean initializeConverter() {
+        colorUpdateScheduler = Executors.newSingleThreadScheduledExecutor();
+
         clusterColorControl = (ZclColorControlCluster) endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID);
         if (clusterColorControl == null) {
             logger.error("{}: Error opening device color controls", endpoint.getIeeeAddress());
