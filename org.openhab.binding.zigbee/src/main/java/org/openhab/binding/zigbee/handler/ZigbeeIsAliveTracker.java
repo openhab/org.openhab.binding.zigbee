@@ -58,7 +58,7 @@ public class ZigbeeIsAliveTracker {
 
     private void scheduleTask(ZigBeeThingHandler handler) {
         ScheduledFuture<?> existingTask = scheduledTasks.get(handler);
-        if (existingTask == null) {
+        if (existingTask == null && handlerIntervalMapping.containsKey(handler)) {
             int interval = handlerIntervalMapping.get(handler);
             logger.debug("Scheduling timeout task for thingUID={} in {} seconds",
                     handler.getThing().getUID().getAsString(), interval);
