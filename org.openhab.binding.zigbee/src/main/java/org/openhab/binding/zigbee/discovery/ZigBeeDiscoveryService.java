@@ -90,14 +90,14 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
     @Activate
     public void activate(Map<String, Object> properties) {
         super.activate(properties);
-        parseAndSetCreateResultsOnlyDuringActiveScansConfigProperty(properties);
+        setResultsOnlyDuringActiveScansProperty(properties);
     }
 
     @Override
     @Modified
     public void modified(Map<String, Object> properties) {
         super.modified(properties);
-        parseAndSetCreateResultsOnlyDuringActiveScansConfigProperty(properties);
+        setResultsOnlyDuringActiveScansProperty(properties);
     }
 
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
@@ -254,7 +254,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
         scheduler.schedule(pollingRunnable, 10, TimeUnit.MILLISECONDS);
     }
 
-    private void parseAndSetCreateResultsOnlyDuringActiveScansConfigProperty(Map<String, Object> properties) {
+    private void setResultsOnlyDuringActiveScansProperty(Map<String, Object> properties) {
         if (properties != null) {
             Object property = properties.get(CONFIG_PROPERTY_CREATE_RESULTS_ONLY_DURING_ACTIVE_SCANS);
             if (property != null) {
