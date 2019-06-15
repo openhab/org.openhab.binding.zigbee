@@ -130,8 +130,8 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute, Object val) {
-        ButtonPressType buttonPressType = getButtonPressType(attribute);
+    public void attributeUpdated(ZclAttribute attribute, Object value) {
+        ButtonPressType buttonPressType = getButtonPressType(attribute, value);
         if (buttonPressType != null) {
             logger.debug("{}: Matching ZigBee attribute for press type {} received: {}", endpoint.getIeeeAddress(),
                     buttonPressType, attribute);
@@ -153,8 +153,8 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter
         }
     }
 
-    private ButtonPressType getButtonPressType(ZclAttribute attribute) {
-        return getButtonPressType(cs -> cs.matches(attribute));
+    private ButtonPressType getButtonPressType(ZclAttribute attribute, Object value) {
+        return getButtonPressType(cs -> cs.matches(attribute, value));
     }
 
     private ButtonPressType getButtonPressType(ZclCommand command) {
@@ -299,7 +299,7 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter
 
         abstract boolean matches(ZclCommand command);
 
-        abstract boolean matches(ZclAttribute attribute);
+        abstract boolean matches(ZclAttribute attribute, Object value);
 
         abstract boolean bindCluster();
 
@@ -350,12 +350,12 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter
         }
 
         @Override
-        boolean matches(ZclAttribute attribute) {
+        boolean matches(ZclAttribute attribute, Object value) {
             if (attributeId == null) {
                 return false;
             }
             boolean attributeIdMatches = attribute.getId() == attributeId;
-            boolean attributeValueMatches = Objects.equals(Objects.toString(attribute.getLastValue()), attributeValue);
+            boolean attributeValueMatches = Objects.equals(Objects.toString(value), attributeValue);
             return attributeIdMatches && attributeValueMatches;
         }
 
@@ -405,7 +405,7 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter
         }
 
         @Override
-        boolean matches(ZclAttribute attribute) {
+        boolean matches(ZclAttribute attribute, Object value) {
             return false;
         }
 
