@@ -135,9 +135,7 @@ public class ZigBeeConverterThermostatUnoccupiedHeating extends ZigBeeBaseChanne
         if (attribute.getCluster() == ZclClusterType.THERMOSTAT
                 && attribute.getId() == ZclThermostatCluster.ATTR_UNOCCUPIEDHEATINGSETPOINT) {
             Integer value = (Integer) val;
-            if (value != null) {
-                updateChannelState(new QuantityType<>(BigDecimal.valueOf(value, 2), SIUnits.CELSIUS));
-            }
+            updateChannelState(new QuantityType<>(BigDecimal.valueOf(value, 2), SIUnits.CELSIUS));
         }
     }
 }

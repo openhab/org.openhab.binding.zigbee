@@ -112,9 +112,7 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
         if (attribute.getCluster() == ZclClusterType.RELATIVE_HUMIDITY_MEASUREMENT
                 && attribute.getId() == ZclRelativeHumidityMeasurementCluster.ATTR_MEASUREDVALUE) {
             Integer value = (Integer) val;
-            if (value != null) {
-                updateChannelState(new DecimalType(BigDecimal.valueOf(value, 2)));
-            }
+            updateChannelState(new DecimalType(BigDecimal.valueOf(value, 2)));
         }
     }
 }
