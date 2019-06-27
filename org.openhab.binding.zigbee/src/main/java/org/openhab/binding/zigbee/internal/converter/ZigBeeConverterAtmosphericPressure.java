@@ -158,20 +158,16 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
         }
 
         if (attribute.getId() == ZclPressureMeasurementCluster.ATTR_SCALEDVALUE && enhancedScale != null) {
-            if (value instanceof Integer) {
-                updateChannelState(new QuantityType<Pressure>(BigDecimal.valueOf((Integer) value, enhancedScale),
-                        HECTO(SIUnits.PASCAL)));
-            }
+            updateChannelState(new QuantityType<Pressure>(BigDecimal.valueOf((Integer) value, enhancedScale),
+                    HECTO(SIUnits.PASCAL)));
             return;
         }
 
         if (attribute.getId() == ZclPressureMeasurementCluster.ATTR_MEASUREDVALUE && enhancedScale == null) {
-            if (value instanceof Integer) {
-                updateChannelState(
-                        new QuantityType<Pressure>(BigDecimal.valueOf((Integer) value, 0), HECTO(SIUnits.PASCAL)));
-            }
-            return;
+            updateChannelState(
+                    new QuantityType<Pressure>(BigDecimal.valueOf((Integer) value, 0), HECTO(SIUnits.PASCAL)));
         }
+        return;
     }
 
     private void determineEnhancedScale(ZclPressureMeasurementCluster cluster) {

@@ -164,9 +164,6 @@ public class ZigBeeConverterBatteryAlarm extends ZigBeeBaseChannelConverter impl
 
             logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
 
-            if (!(val instanceof Integer)) {
-                return;
-            }
             // The value is a 32-bit bitmap, represented by an Integer
             Integer value = (Integer) val;
 

@@ -146,10 +146,8 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
         if (attribute.getCluster() == ZclClusterType.ELECTRICAL_MEASUREMENT
                 && attribute.getId() == ZclElectricalMeasurementCluster.ATTR_RMSCURRENT) {
             Integer value = (Integer) val;
-            if (value != null) {
-                BigDecimal valueInAmpere = BigDecimal.valueOf(value * multiplier / divisor);
-                updateChannelState(new QuantityType<ElectricCurrent>(valueInAmpere, SmartHomeUnits.AMPERE));
-            }
+            BigDecimal valueInAmpere = BigDecimal.valueOf(value * multiplier / divisor);
+            updateChannelState(new QuantityType<ElectricCurrent>(valueInAmpere, SmartHomeUnits.AMPERE));
         }
     }
 

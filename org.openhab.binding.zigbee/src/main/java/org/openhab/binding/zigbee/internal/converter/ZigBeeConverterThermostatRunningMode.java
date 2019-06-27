@@ -158,9 +158,7 @@ public class ZigBeeConverterThermostatRunningMode extends ZigBeeBaseChannelConve
         if (attribute.getCluster() == ZclClusterType.THERMOSTAT
                 && attribute.getId() == ZclThermostatCluster.ATTR_THERMOSTATRUNNINGMODE) {
             Integer value = (Integer) val;
-            if (value != null) {
-                updateChannelState(new DecimalType(value));
-            }
+            updateChannelState(new DecimalType(value));
         }
     }
 }
