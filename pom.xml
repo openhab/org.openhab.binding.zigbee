@@ -20,6 +20,7 @@
   <packaging>pom</packaging>
 
   <modules>
+    <module>bom</module>
     <module>org.openhab.binding.zigbee</module>
     <module>org.openhab.binding.zigbee.cc2531</module>
     <module>org.openhab.binding.zigbee.ember</module>
