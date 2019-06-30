@@ -48,7 +48,7 @@ public class ZigBeeNodePropertyDiscoverer {
      * Sets initial properties
      *
      * @param property
-     * @param value If set to null the property will be removed
+     * @param value    If set to null the property will be removed
      */
     public void setProperty(@NonNull String property, @Nullable String value) {
         if (value == null) {

@@ -41,7 +41,7 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BaseBridgeHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.internal.ZigBeeNetworkStateSerializerImpl;
+import org.openhab.binding.zigbee.internal.ZigBeeDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,7 +104,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     private Class<?> serializerClass;
     private Class<?> deserializerClass;
 
-    private ZigBeeNetworkStateSerializerImpl networkStateSerializer;
+    private ZigBeeDataStore networkDataStore;
 
     protected ZigBeeKey linkKey;
     protected ZigBeeKey networkKey;
@@ -331,8 +331,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             networkManager.shutdown();
         }
 
-        if (networkStateSerializer != null && bridgeRemoved) {
-            networkStateSerializer.delete();
+        if (networkDataStore != null && bridgeRemoved) {
+            networkDataStore.delete();
         }
 
         logger.debug("ZigBee network [{}] closed.", thing.getUID());
@@ -389,10 +389,10 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         String networkId = getThing().getUID().toString().replaceAll(":", "_");
 
         networkManager = new ZigBeeNetworkManager(zigbeeTransport);
-        networkStateSerializer = new ZigBeeNetworkStateSerializerImpl(networkId, networkManager);
+        networkDataStore = new ZigBeeDataStore(networkId);
 
         // Configure the network manager
-        networkManager.setNetworkDataStore(networkStateSerializer);
+        networkManager.setNetworkDataStore(networkDataStore);
         networkManager.setSerializer(serializerClass, deserializerClass);
         networkManager.addNetworkStateListener(this);
         networkManager.addNetworkNodeListener(this);
@@ -1016,10 +1016,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     /**
      * Serialize the network state
+     *
+     * @param nodeAddress the {@link IeeeAddress} of the node to serialize
      */
-    public void serializeNetwork() {
-        if (networkStateSerializer != null) {
-            networkStateSerializer.serialize(networkManager.getNodes());
+    public void serializeNetwork(IeeeAddress nodeAddress) {
+        if (networkManager != null) {
+            networkManager.serializeNetworkDataStore(nodeAddress);
         }
     }
 

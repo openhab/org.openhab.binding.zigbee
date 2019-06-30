@@ -225,7 +225,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
                         thingDiscovered(updatedDiscoveryResult);
                     }
                 }
-                coordinator.serializeNetwork();
+                coordinator.serializeNetwork(node.getIeeeAddress());
             }
         };
 
