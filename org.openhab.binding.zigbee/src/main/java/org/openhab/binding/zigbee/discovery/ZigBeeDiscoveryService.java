@@ -132,7 +132,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
             }
 
             logger.debug("Starting ZigBee scan for {}", coordinator.getUID());
-            coordinator.scanStart();
+            coordinator.scanStart(SEARCH_TIME);
         }
 
     }

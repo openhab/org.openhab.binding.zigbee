@@ -167,10 +167,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     /**
      * Creates a ZigBee thing.
      *
-     * @param zigbeeDevice         the {@link Thing}
-     * @param channelFactory       the {@link ZigBeeChannelConverterFactory} to be used to create the channels
+     * @param zigbeeDevice the {@link Thing}
+     * @param channelFactory the {@link ZigBeeChannelConverterFactory} to be used to create the channels
      * @param zigbeeIsAliveTracker the tracker which sets the {@link Thing} to OFFLINE after a period without
-     *                                 communication
+     *            communication
      */
     public ZigBeeThingHandler(Thing zigbeeDevice, ZigBeeChannelConverterFactory channelFactory,
             ZigbeeIsAliveTracker zigbeeIsAliveTracker) {
@@ -504,7 +504,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * Process a static cluster list and add it to the existing list
      *
      * @param initialClusters a collection of existing clusters
-     * @param newClusters     a string containing a comma separated list of clusters
+     * @param newClusters a string containing a comma separated list of clusters
      * @return a list of clusters if the list is updated, or an empty list if it has not changed
      */
     private List<Integer> processClusterList(Collection<Integer> initialClusters, String newClusters) {
@@ -739,7 +739,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * changes.
      *
      * @param channel the {@link ChannelUID} to be updated
-     * @param state   the new {link State}
+     * @param state the new {link State}
      */
     public void setChannelState(ChannelUID channel, State state) {
         if (firmwareUpdateInProgress) {
@@ -758,7 +758,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * received.
      *
      * @param channel the {@link ChannelUID} to be triggered
-     * @param event   the event to be emitted
+     * @param event the event to be emitted
      */
     @Override
     public void triggerChannel(ChannelUID channel, String event) {
@@ -780,7 +780,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     @Override
     public void nodeUpdated(ZigBeeNode node) {
-        // Make sure it's our node that's updated
+        // Make sure it's this node that's updated
         if (!node.getIeeeAddress().equals(nodeIeeeAddress)) {
             return;
         }

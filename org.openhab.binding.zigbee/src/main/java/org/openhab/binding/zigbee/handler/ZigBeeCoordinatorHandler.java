@@ -359,9 +359,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      * Common initialisation point for all ZigBee coordinators.
      * Called by bridge implementations after they have initialised their interfaces.
      *
-     * @param zigbeeTransport   a {@link ZigBeeTransportTransmit} interface instance
-     * @param transportConfig   any binding specific configuration that needs to be sent
-     * @param serializerClass   a {@link ZigBeeSerializer} Class
+     * @param zigbeeTransport a {@link ZigBeeTransportTransmit} interface instance
+     * @param transportConfig any binding specific configuration that needs to be sent
+     * @param serializerClass a {@link ZigBeeSerializer} Class
      * @param deserializerClass a {@link ZigBeeDeserializer} Class
      */
     protected void startZigBee(ZigBeeTransportTransmit zigbeeTransport, TransportConfig transportConfig,
@@ -645,7 +645,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     /**
      * Process the adding of an install code
      *
-     * @param installCode     the string representation of the install code
+     * @param installCode the string representation of the install code
      * @param transportConfig the {@link TransportConfig} to populate with the configuration
      */
     private void addInstallCode(String installCode) {
@@ -736,16 +736,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             return;
         }
         networkManager.removeAnnounceListener(listener);
-    }
-
-    @Override
-    public void nodeAdded(ZigBeeNode node) {
-        nodeUpdated(node);
-    }
-
-    @Override
-    public void nodeRemoved(ZigBeeNode node) {
-        // Nothing to do here...
     }
 
     @Override
@@ -960,7 +950,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     /**
      * Permit joining only for the specified node
      *
-     * @param address  the 16 bit network address of the node to enable joining
+     * @param address the 16 bit network address of the node to enable joining
      * @param duration the duration of the join
      */
     public boolean permitJoin(IeeeAddress address, int duration) {
@@ -1025,20 +1015,27 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         }
     }
 
+    /**
+     * Gets the {@link ZigBeeNetworkManager} for the network
+     * 
+     * @return the {@link ZigBeeNetworkManager}
+     */
     public ZigBeeNetworkManager getNetworkManager() {
         return this.networkManager;
     }
 
     /**
      * Starts an active scan on the ZigBee coordinator.
+     *
+     * @param joinTime the time to enable join - must be between 1 and 254 seconds.
      */
-    public void scanStart() {
+    public void scanStart(int joinTime) {
         if (getThing().getStatus() != ThingStatus.ONLINE) {
             logger.debug("ZigBee coordinator is offline - aborted scan for {}", getThing().getUID());
             return;
         }
 
-        networkManager.permitJoin(60);
+        networkManager.permitJoin(joinTime);
     }
 
     /**

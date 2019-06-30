@@ -56,8 +56,8 @@ public class ZigBeeDataStore implements ZigBeeNetworkDataStore {
     private final String networkStateFilePath;
 
     public ZigBeeDataStore(String networkId) {
-        networkStateFilePath = ConfigConstants.getUserDataFolder() + "/" + ZigBeeBindingConstants.BINDING_ID + "/"
-                + networkId;
+        networkStateFilePath = ConfigConstants.getUserDataFolder() + File.separator + ZigBeeBindingConstants.BINDING_ID
+                + File.separator + networkId + File.separator;
 
         final File folder = new File(networkStateFilePath);
         // Create the path for serialization.
@@ -71,6 +71,8 @@ public class ZigBeeDataStore implements ZigBeeNetworkDataStore {
 
     private XStream openStream() {
         XStream stream = new XStream(new StaxDriver());
+        stream.setClassLoader(this.getClass().getClassLoader());
+
         stream.alias("ZigBeeNode", ZigBeeNodeDao.class);
         stream.alias("ZigBeeEndpoint", ZigBeeEndpointDao.class);
         stream.alias("ZclCluster", ZclClusterDao.class);

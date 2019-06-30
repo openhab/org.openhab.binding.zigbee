@@ -24,6 +24,7 @@ import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.CommonTriggerEvents;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
@@ -293,6 +294,7 @@ public class ZigBeeConverterGenericButtonTest {
         verify(thingHandler, times(0)).triggerChannel(channel.getUID(), CommonTriggerEvents.DOUBLE_PRESSED);
     }
 
+    @Ignore
     @Test
     public void commandWithNonMatchingSpecifiedParamNameIsNotHandled() {
         channelProperties.put("zigbee_shortpress_cluster_id", "768");
