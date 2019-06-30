@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.openhab.addons.bundles</groupId>
+    <artifactId>org.openhab.addons.zigbee.reactor</artifactId>
+    <version>2.5.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>org.openhab.binding.zigbee.bom</artifactId>
+  <packaging>pom</packaging>
+
+  <name>openHAB ZigBee :: BOM :: openHAB ZigBee Binding</name>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.openhab.addons.bundles</groupId>
+        <artifactId>org.openhab.binding.zigbee</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.openhab.addons.bundles</groupId>
+        <artifactId>org.openhab.binding.zigbee.cc2531</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.openhab.addons.bundles</groupId>
+        <artifactId>org.openhab.binding.zigbee.console</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.openhab.addons.bundles</groupId>
+        <artifactId>org.openhab.binding.zigbee.console.ember</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.openhab.addons.bundles</groupId>
+        <artifactId>org.openhab.binding.zigbee.console.telegesis</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.openhab.addons.bundles</groupId>
+        <artifactId>org.openhab.binding.zigbee.ember</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.openhab.addons.bundles</groupId>
+        <artifactId>org.openhab.binding.zigbee.telegesis</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.openhab.addons.bundles</groupId>
+        <artifactId>org.openhab.binding.zigbee.xbee</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>
