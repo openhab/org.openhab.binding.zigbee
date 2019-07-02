@@ -9,7 +9,8 @@
     <version>2.5.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>org.openhab.binding.zigbee.bom</artifactId>
+  <groupId>org.openhab.addons.bom</groupId>
+  <artifactId>org.openhab.addons.bom.zigbee</artifactId>
   <packaging>pom</packaging>
 
   <name>openHAB ZigBee :: BOM :: openHAB ZigBee Binding</name>
