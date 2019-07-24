@@ -39,7 +39,7 @@ import org.osgi.service.component.annotations.Component;
  *
  * @author Chris Jackson - Initial contribution
  */
-@Component(service = ThingHandlerFactory.class, immediate = true, configurationPid = "org.openhab.binding.zigbee.xbee")
+@Component(service = ThingHandlerFactory.class, configurationPid = "org.openhab.binding.zigbee.xbee")
 @NonNullByDefault
 public class XBeeHandlerFactory extends BaseThingHandlerFactory {
     private Map<ThingUID, ServiceRegistration> coordinatorHandlerRegs = new HashMap<>();
