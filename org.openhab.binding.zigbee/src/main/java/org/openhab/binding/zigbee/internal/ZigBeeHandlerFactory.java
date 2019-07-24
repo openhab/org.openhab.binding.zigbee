@@ -36,7 +36,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Kai Kreuzer - Refactored to use DS annotations
  * @author Thomas Höfer - Injected zigbeeChannelConverterFactory via DS
  */
-@Component(immediate = true, service = { ThingHandlerFactory.class })
+@Component(service = ThingHandlerFactory.class)
 public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
 
     private final ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
