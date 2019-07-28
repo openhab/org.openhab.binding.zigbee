@@ -12,14 +12,12 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
-import java.math.BigDecimal;
 import java.util.concurrent.ExecutionException;
 
-import org.eclipse.smarthome.core.library.types.QuantityType;
-import org.eclipse.smarthome.core.library.unit.SIUnits;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
+import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.slf4j.Logger;
@@ -43,6 +41,7 @@ public class ZigBeeConverterThermostatUnoccupiedHeating extends ZigBeeBaseChanne
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterThermostatUnoccupiedHeating.class);
 
     private ZclThermostatCluster cluster;
+    private ZclAttribute attribute;
 
     @Override
     public boolean initializeDevice() {
@@ -59,8 +58,8 @@ public class ZigBeeConverterThermostatUnoccupiedHeating extends ZigBeeBaseChanne
                 // Configure reporting
                 ZclAttribute attribute = serverCluster
                         .getAttribute(ZclThermostatCluster.ATTR_UNOCCUPIEDHEATINGSETPOINT);
-                CommandResult reportingResponse = serverCluster
-                        .setReporting(attribute, REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
+                CommandResult reportingResponse = attribute
+                        .setReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 logger.debug("{}: Failed to bind thermostat cluster", endpoint.getIeeeAddress());
@@ -81,6 +80,13 @@ public class ZigBeeConverterThermostatUnoccupiedHeating extends ZigBeeBaseChanne
             return false;
         }
 
+        attribute = cluster.getAttribute(ZclThermostatCluster.ATTR_UNOCCUPIEDHEATINGSETPOINT);
+        if (attribute == null) {
+            logger.error("{}: Error opening device thermostat unoccupied heating setpoint attribute",
+                    endpoint.getIeeeAddress());
+            return false;
+        }
+
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
         return true;
@@ -92,8 +98,21 @@ public class ZigBeeConverterThermostatUnoccupiedHeating extends ZigBeeBaseChanne
     }
 
     @Override
+    public void handleCommand(final Command command) {
+        Integer value = temperatureToValue(command);
+
+        if (value == null) {
+            logger.warn("{}: Thermostat unoccupied heating setpoint {} [{}] was not processed",
+                    endpoint.getIeeeAddress(), command, command.getClass().getSimpleName());
+            return;
+        }
+
+        attribute.writeValue(value);
+    }
+
+    @Override
     public void handleRefresh() {
-        cluster.getUnoccupiedHeatingSetpoint(0);
+        attribute.readValue(0);
     }
 
     @Override
@@ -134,8 +153,7 @@ public class ZigBeeConverterThermostatUnoccupiedHeating extends ZigBeeBaseChanne
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.THERMOSTAT
                 && attribute.getId() == ZclThermostatCluster.ATTR_UNOCCUPIEDHEATINGSETPOINT) {
-            Integer value = (Integer) val;
-            updateChannelState(new QuantityType<>(BigDecimal.valueOf(value, 2), SIUnits.CELSIUS));
+            updateChannelState(valueToTemperature((Integer) val));
         }
     }
 }

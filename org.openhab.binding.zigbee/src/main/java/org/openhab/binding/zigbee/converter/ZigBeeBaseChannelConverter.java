@@ -12,6 +12,8 @@
  */
 package org.openhab.binding.zigbee.converter;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,9 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
 import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.library.types.PercentType;
+import org.eclipse.smarthome.core.library.types.QuantityType;
+import org.eclipse.smarthome.core.library.unit.ImperialUnits;
+import org.eclipse.smarthome.core.library.unit.SIUnits;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
@@ -90,6 +95,8 @@ public abstract class ZigBeeBaseChannelConverter {
      * Our logger
      */
     private final Logger logger = LoggerFactory.getLogger(ZigBeeBaseChannelConverter.class);
+
+    private final static BigDecimal TEMPERATURE_MULTIPLIER = new BigDecimal(100);
 
     /**
      * Default minimum reporting period. Should be short to ensure we get dynamic state changes in a reasonable time
@@ -172,11 +179,11 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * Creates the converter handler.
      *
-     * @param thing       the {@link ZigBeeThingHandler} the channel is part of
-     * @param channel     the {@link Channel} for the channel
+     * @param thing the {@link ZigBeeThingHandler} the channel is part of
+     * @param channel the {@link Channel} for the channel
      * @param coordinator the {@link ZigBeeCoordinatorHandler} this endpoint is part of
-     * @param address     the {@link IeeeAddress} of the node
-     * @param endpointId  the endpoint this channel is linked to
+     * @param address the {@link IeeeAddress} of the node
+     * @param endpointId the endpoint this channel is linked to
      */
     public void initialize(ZigBeeThingHandler thing, Channel channel, ZigBeeCoordinatorHandler coordinator,
             IeeeAddress address, int endpointId) {
@@ -330,11 +337,11 @@ public abstract class ZigBeeBaseChannelConverter {
      * Sets the {@code pollingPeriod} and {@code maxReportingPeriod} depending on the success or failure of the given
      * reporting response.
      *
-     * @param reportResponse                    a {@link CommandResult} representing the response to a reporting request
-     * @param reportingFailedPollingInterval    the polling interval to be used in case configuring reporting has
-     *                                              failed
+     * @param reportResponse a {@link CommandResult} representing the response to a reporting request
+     * @param reportingFailedPollingInterval the polling interval to be used in case configuring reporting has
+     *            failed
      * @param reportingSuccessMaxReportInterval the maximum reporting interval in case reporting is successfully
-     *                                              configured
+     *            configured
      */
     protected void handleReportingResponse(CommandResult reportResponse, int reportingFailedPollingInterval,
             int reportingSuccessMaxReportInterval) {
@@ -350,8 +357,8 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * Creates a standard channel UID given the {@link ZigBeeEndpoint}
      *
-     * @param thingUID    the {@link ThingUID}
-     * @param endpoint    the {@link ZigBeeEndpoint}
+     * @param thingUID the {@link ThingUID}
+     * @param endpoint the {@link ZigBeeEndpoint}
      * @param channelName the name of the channel
      * @return
      */
@@ -394,6 +401,45 @@ public abstract class ZigBeeBaseChannelConverter {
     }
 
     /**
+     * Converts an integer value into a {@link QuantityType}. The temperature as an integer is assumed to be multiplied
+     * by 100 as per the ZigBee standard format.
+     *
+     * @param value the integer value to convert
+     * @return the {@link QuantityType}
+     */
+    protected QuantityType valueToTemperature(int value) {
+        return new QuantityType<>(BigDecimal.valueOf(value, 2), SIUnits.CELSIUS);
+    }
+
+    /**
+     * Converts a {@link Command} to a ZigBee temperature integer
+     *
+     * @param command the {@link Command} to convert
+     * @return the {@link Command} or null if the conversion was not possible
+     */
+    protected Integer temperatureToValue(Command command) {
+        BigDecimal value = null;
+        if (command instanceof QuantityType) {
+            QuantityType<?> quantity = (QuantityType<?>) command;
+            if (quantity.getUnit() == SIUnits.CELSIUS) {
+                value = quantity.toBigDecimal();
+            } else if (quantity.getUnit() == ImperialUnits.FAHRENHEIT) {
+                QuantityType<?> celsius = quantity.toUnit(SIUnits.CELSIUS);
+                if (celsius == null) {
+                    return null;
+                }
+                value = celsius.toBigDecimal();
+            } else {
+                return null;
+            }
+        } else if (command instanceof Number) {
+            // No scale, so assumed to be Celsius
+            value = BigDecimal.valueOf(((Number) command).doubleValue());
+        }
+        return value.setScale(2, RoundingMode.CEILING).multiply(TEMPERATURE_MULTIPLIER).intValue();
+    }
+
+    /**
      * Processes the updated configuration. As required, the method shall process each known configuration parameter and
      * set a local variable for local parameters, and update the remote device for remote parameters.
      * The currentConfiguration shall be updated.
@@ -401,7 +447,7 @@ public abstract class ZigBeeBaseChannelConverter {
      * This must not be called before the {@link #initializeConverter()} method has been called.
      *
      * @param currentConfiguration the current {@link Configuration}
-     * @param updatedParameters    a map containing the updated configuration parameters to be set
+     * @param updatedParameters a map containing the updated configuration parameters to be set
      */
     public void updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> updatedParameters) {
