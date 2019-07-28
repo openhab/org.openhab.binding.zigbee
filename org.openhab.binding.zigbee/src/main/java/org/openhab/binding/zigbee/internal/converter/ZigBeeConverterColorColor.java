@@ -12,6 +12,8 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import static com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster.*;
+
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -121,11 +123,15 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                 CommandResult reportingResponse;
                 if (supportsHue) {
                     reportingResponse = serverClusterColorControl
-                            .setCurrentHueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                            .setReporting(serverClusterColorControl.getAttribute(ATTR_CURRENTHUE), 1,
+                                    REPORTING_PERIOD_DEFAULT_MAX, 1)
+                            .get();
                     handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
 
                     reportingResponse = serverClusterColorControl
-                            .setCurrentSaturationReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                            .setReporting(serverClusterColorControl.getAttribute(ATTR_CURRENTSATURATION), 1,
+                                    REPORTING_PERIOD_DEFAULT_MAX, 1)
+                            .get();
                     handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
                 } else {
                     reportingResponse = serverClusterColorControl
@@ -414,7 +420,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         boolean on = onOff == OnOffType.ON;
         currentOnOffState.set(on);
 
-        if (lastColorMode != ColorModeEnum.COLORTEMPERATURE) {
+        if (lastColorMode != ColorModeEnum.COLOR_TEMPERATURE) {
             // Extra temp variable to avoid thread sync concurrency issues on lastHSB
             HSBType oldHSB = lastHSB;
             HSBType newHSB = on ? lastHSB : new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), PercentType.ZERO);
@@ -430,7 +436,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         HSBType oldHSB = lastHSB;
         HSBType newHSB = new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), brightness);
         lastHSB = newHSB;
-        if (currentOnOffState.get() && lastColorMode != ColorModeEnum.COLORTEMPERATURE) {
+        if (currentOnOffState.get() && lastColorMode != ColorModeEnum.COLOR_TEMPERATURE) {
             updateChannelState(newHSB);
         }
     }
@@ -440,7 +446,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         HSBType oldHSB = lastHSB;
         HSBType newHSB = new HSBType(hue, saturation, oldHSB.getBrightness());
         lastHSB = newHSB;
-        if (currentOnOffState.get() && lastColorMode != ColorModeEnum.COLORTEMPERATURE) {
+        if (currentOnOffState.get() && lastColorMode != ColorModeEnum.COLOR_TEMPERATURE) {
             updateChannelState(newHSB);
         }
     }
@@ -479,51 +485,51 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
 
         synchronized (colorUpdateSync) {
             try {
                 if (attribute.getCluster().getId() == ZclOnOffCluster.CLUSTER_ID) {
                     if (attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
-                        Boolean value = (Boolean) attribute.getLastValue();
+                        Boolean value = (Boolean) val;
                         OnOffType onoff = value ? OnOffType.ON : OnOffType.OFF;
                         updateOnOff(onoff);
                     }
                 } else if (attribute.getCluster().getId() == ZclLevelControlCluster.CLUSTER_ID) {
                     if (attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
-                        PercentType brightness = levelToPercent((Integer) attribute.getLastValue());
+                        PercentType brightness = levelToPercent((Integer) val);
                         updateBrightness(brightness);
                     }
                 } else if (attribute.getCluster().getId() == ZclColorControlCluster.CLUSTER_ID) {
                     if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTHUE) {
-                        int hue = ((Integer) attribute.getLastValue()).intValue();
+                        int hue = (Integer) val;
                         if (hue != lastHue) {
                             lastHue = hue;
                             hueChanged = true;
                         }
                     } else if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTSATURATION) {
-                        int saturation = ((Integer) attribute.getLastValue()).intValue();
+                        int saturation = (Integer) val;
                         if (saturation != lastSaturation) {
                             lastSaturation = saturation;
                             saturationChanged = true;
                         }
                     } else if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTX) {
-                        int x = ((Integer) attribute.getLastValue()).intValue();
+                        int x = (Integer) val;
                         if (x != lastX) {
                             lastX = x;
                             xChanged = true;
                         }
                     } else if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTY) {
-                        int y = ((Integer) attribute.getLastValue()).intValue();
+                        int y = (Integer) val;
                         if (y != lastY) {
                             lastY = y;
                             yChanged = true;
                         }
                     } else if (attribute.getId() == ZclColorControlCluster.ATTR_COLORMODE) {
-                        Integer colorMode = (Integer) attribute.getLastValue();
+                        Integer colorMode = (Integer) val;
                         lastColorMode = ColorModeEnum.getByValue(colorMode);
-                        if (lastColorMode == ColorModeEnum.COLORTEMPERATURE) {
+                        if (lastColorMode == ColorModeEnum.COLOR_TEMPERATURE) {
                             updateChannelState(UnDefType.UNDEF);
                         } else if (currentOnOffState.get()) {
                             updateChannelState(lastHSB);

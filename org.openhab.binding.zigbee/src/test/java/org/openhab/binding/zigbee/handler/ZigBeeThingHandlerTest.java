@@ -45,6 +45,7 @@ import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeNode;
+import com.zsmartsystems.zigbee.ZigBeeStatus;
 
 /**
  * Test of the ZigBeeThingHandler
@@ -232,8 +233,8 @@ public class ZigBeeThingHandlerTest {
             throws InterruptedException, ExecutionException {
 
         ZigBeeEndpoint zigbeeEndpoint = mock(ZigBeeEndpoint.class);
-        Future<Boolean> updateBindingTableFuture = mock(Future.class);
-        when(updateBindingTableFuture.get()).thenReturn(Boolean.TRUE);
+        Future<ZigBeeStatus> updateBindingTableFuture = mock(Future.class);
+        when(updateBindingTableFuture.get()).thenReturn(ZigBeeStatus.SUCCESS);
 
         ZigBeeNode zigBeeNode = mock(ZigBeeNode.class);
         when(zigBeeNode.isDiscovered()).thenReturn(true);

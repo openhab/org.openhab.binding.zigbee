@@ -108,11 +108,11 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.OCCUPANCY_SENSING
                 && attribute.getId() == ZclOccupancySensingCluster.ATTR_OCCUPANCY) {
-            Integer value = (Integer) attribute.getLastValue();
+            Integer value = (Integer) val;
             if (value != null && value == 1) {
                 updateChannelState(OnOffType.ON);
             } else {

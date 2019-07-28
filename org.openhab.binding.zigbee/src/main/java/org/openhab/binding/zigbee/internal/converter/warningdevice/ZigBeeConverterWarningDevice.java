@@ -156,7 +156,7 @@ public class ZigBeeConverterWarningDevice extends ZigBeeBaseChannelConverter {
     }
 
     private void squawk(SquawkType squawkType) {
-        iasWdCluster.squawkCommand(
+        iasWdCluster.squawk(
                 makeSquawkHeader(squawkType.getSquawkMode(), squawkType.isUseStrobe(), squawkType.getSquawkLevel()));
     }
 

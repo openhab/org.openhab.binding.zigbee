@@ -41,7 +41,7 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BaseBridgeHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.internal.ZigBeeNetworkStateSerializerImpl;
+import org.openhab.binding.zigbee.internal.ZigBeeDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +53,7 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeEndpointAddress;
 import com.zsmartsystems.zigbee.ZigBeeNetworkManager;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
+import com.zsmartsystems.zigbee.ZigBeeNetworkState;
 import com.zsmartsystems.zigbee.ZigBeeNetworkStateListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.ZigBeeProfileType;
@@ -70,7 +71,6 @@ import com.zsmartsystems.zigbee.transport.TransportConfig;
 import com.zsmartsystems.zigbee.transport.TransportConfigOption;
 import com.zsmartsystems.zigbee.transport.TrustCentreJoinMode;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareUpdate;
-import com.zsmartsystems.zigbee.transport.ZigBeeTransportState;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclIasZoneCluster;
 import com.zsmartsystems.zigbee.zdo.field.NeighborTable;
@@ -104,7 +104,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     private Class<?> serializerClass;
     private Class<?> deserializerClass;
 
-    private ZigBeeNetworkStateSerializerImpl networkStateSerializer;
+    private ZigBeeDataStore networkDataStore;
 
     protected ZigBeeKey linkKey;
     protected ZigBeeKey networkKey;
@@ -331,8 +331,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             networkManager.shutdown();
         }
 
-        if (networkStateSerializer != null && bridgeRemoved) {
-            networkStateSerializer.delete();
+        if (networkDataStore != null && bridgeRemoved) {
+            networkDataStore.delete();
         }
 
         logger.debug("ZigBee network [{}] closed.", thing.getUID());
@@ -387,11 +387,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         logger.debug("Initialising ZigBee coordinator");
 
         String networkId = getThing().getUID().toString().replaceAll(":", "_");
-        networkStateSerializer = new ZigBeeNetworkStateSerializerImpl(networkId);
+
+        networkManager = new ZigBeeNetworkManager(zigbeeTransport);
+        networkDataStore = new ZigBeeDataStore(networkId);
 
         // Configure the network manager
-        networkManager = new ZigBeeNetworkManager(zigbeeTransport);
-        networkManager.setNetworkStateSerializer(networkStateSerializer);
+        networkManager.setNetworkDataStore(networkDataStore);
         networkManager.setSerializer(serializerClass, deserializerClass);
         networkManager.addNetworkStateListener(this);
         networkManager.addNetworkNodeListener(this);
@@ -516,8 +517,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         reconnectPollingTimer = reconnectPollingScheduler.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                ZigBeeTransportState state = networkManager.getNetworkState();
-                if (state == ZigBeeTransportState.ONLINE || state == ZigBeeTransportState.INITIALISING) {
+                ZigBeeNetworkState state = networkManager.getNetworkState();
+                if (state == ZigBeeNetworkState.ONLINE || state == ZigBeeNetworkState.INITIALISING) {
                     return;
                 }
 
@@ -738,16 +739,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     }
 
     @Override
-    public void nodeAdded(ZigBeeNode node) {
-        nodeUpdated(node);
-    }
-
-    @Override
-    public void nodeRemoved(ZigBeeNode node) {
-        // Nothing to do here...
-    }
-
-    @Override
     public void nodeUpdated(ZigBeeNode node) {
         // We're only interested in the coordinator here.
         if (node.getNetworkAddress() != 0) {
@@ -862,7 +853,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     }
 
     @Override
-    public void networkStateUpdated(final ZigBeeTransportState state) {
+    public void networkStateUpdated(final ZigBeeNetworkState state) {
         logger.debug("{}: networkStateUpdated called with state={}", nodeIeeeAddress, state);
         switch (state) {
             case UNINITIALISED:
@@ -884,8 +875,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                         && bridge.getStatusInfo().getStatusDetail() == ThingStatusDetail.FIRMWARE_UPDATING) {
                     break;
                 }
-                
-                
+
                 // - Do not set the status to OFFLINE when the bridge is in one of these statuses. According to the
                 // documentation https://www.eclipse.org/smarthome/documentation/concepts/things.html#status-transitions
                 // the thing must not change from these statuses to OFFLINE
@@ -894,7 +884,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                         .contains(bridge.getStatus())) {
                     break;
                 }
-                
+
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
                 startReconnectJobIfNotRunning();
 
@@ -903,7 +893,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 break;
         }
 
-        if (state != ZigBeeTransportState.INITIALISING && state != ZigBeeTransportState.UNINITIALISED) {
+        if (state != ZigBeeNetworkState.INITIALISING && state != ZigBeeNetworkState.UNINITIALISED) {
             notifyReconnectJobAboutFinishedInitialization();
         }
     }
@@ -1016,27 +1006,36 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     /**
      * Serialize the network state
+     *
+     * @param nodeAddress the {@link IeeeAddress} of the node to serialize
      */
-    public void serializeNetwork() {
-        if (networkStateSerializer != null) {
-            networkStateSerializer.serialize(networkManager);
+    public void serializeNetwork(IeeeAddress nodeAddress) {
+        if (networkManager != null) {
+            networkManager.serializeNetworkDataStore(nodeAddress);
         }
     }
 
+    /**
+     * Gets the {@link ZigBeeNetworkManager} for the network
+     * 
+     * @return the {@link ZigBeeNetworkManager}
+     */
     public ZigBeeNetworkManager getNetworkManager() {
         return this.networkManager;
     }
 
     /**
      * Starts an active scan on the ZigBee coordinator.
+     *
+     * @param joinTime the time to enable join - must be between 1 and 254 seconds.
      */
-    public void scanStart() {
+    public void scanStart(int joinTime) {
         if (getThing().getStatus() != ThingStatus.ONLINE) {
             logger.debug("ZigBee coordinator is offline - aborted scan for {}", getThing().getUID());
             return;
         }
 
-        networkManager.permitJoin(60);
+        networkManager.permitJoin(joinTime);
     }
 
     /**

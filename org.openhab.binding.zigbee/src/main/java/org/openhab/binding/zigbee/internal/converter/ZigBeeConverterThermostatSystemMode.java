@@ -127,14 +127,12 @@ public class ZigBeeConverterThermostatSystemMode extends ZigBeeBaseChannelConver
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.THERMOSTAT
                 && attribute.getId() == ZclThermostatCluster.ATTR_SYSTEMMODE) {
-            Integer value = (Integer) attribute.getLastValue();
-            if (value != null) {
-                updateChannelState(new DecimalType(value));
-            }
+            Integer value = (Integer) val;
+            updateChannelState(new DecimalType(value));
         }
     }
 }
