@@ -12,9 +12,17 @@
  */
 package org.openhab.binding.zigbee.discovery;
 
-import java.util.Collection;
+import static com.zsmartsystems.zigbee.zcl.clusters.ZclBasicCluster.*;
+import static org.eclipse.smarthome.core.thing.Thing.*;
+import static org.openhab.binding.zigbee.ZigBeeBindingConstants.*;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -23,7 +31,6 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclBasicCluster;
@@ -31,24 +38,37 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclOtaUpgradeCluster;
 import com.zsmartsystems.zigbee.zdo.field.PowerDescriptor;
 
 /**
- * Implements a reusable method to return a set of properties about the device
+ * Implements a reusable method to return a set of properties about the device.
  *
- * @author Chris Jackson
- *
+ * @author Chris Jackson - initial contribution
+ * @author Henning Sudbrock - read multiple attributes from basic cluster with a single command to speedup discovery
  */
 public class ZigBeeNodePropertyDiscoverer {
-    private Logger logger = LoggerFactory.getLogger(ZigBeeNodePropertyDiscoverer.class);
+
+    private final Logger logger = LoggerFactory.getLogger(ZigBeeNodePropertyDiscoverer.class);
+
+    private static final Map<String, Integer> BASIC_CLUSTER_ATTRIBUTES_FOR_THING_PROPERTY;
+    static {
+        Map<String, Integer> map = new HashMap<String, Integer>();
+        map.put(PROPERTY_VENDOR, ATTR_MANUFACTURERNAME);
+        map.put(PROPERTY_MODEL_ID, ATTR_MODELIDENTIFIER);
+        map.put(PROPERTY_HARDWARE_VERSION, ATTR_HWVERSION);
+        map.put(THING_PROPERTY_APPLICATIONVERSION, ATTR_APPLICATIONVERSION);
+        map.put(THING_PROPERTY_STKVERSION, ATTR_STACKVERSION);
+        map.put(THING_PROPERTY_ZCLVERSION, ATTR_ZCLVERSION);
+        map.put(THING_PROPERTY_DATECODE, ATTR_DATECODE);
+        BASIC_CLUSTER_ATTRIBUTES_FOR_THING_PROPERTY = Collections.unmodifiableMap(map);
+    }
 
     private Map<String, String> properties = new HashMap<String, String>();
 
-    private int maxRetries = 3;
     private boolean alwaysUpdate = false;
 
     /**
      * Sets initial properties
      *
-     * @param property
-     * @param value    If set to null the property will be removed
+     * @param property The name of the property
+     * @param value The value of the property; if set to null the property will be removed
      */
     public void setProperty(@NonNull String property, @Nullable String value) {
         if (value == null) {
@@ -61,7 +81,7 @@ public class ZigBeeNodePropertyDiscoverer {
     /**
      * Sets the initial properties to be updated
      *
-     * @param properties
+     * @param properties The properties to be updated
      */
     public void setProperties(@NonNull Map<@NonNull String, @NonNull String> properties) {
         this.properties.putAll(properties);
@@ -83,57 +103,82 @@ public class ZigBeeNodePropertyDiscoverer {
      * @return a {@link Map} of properties or an empty map if there was an error
      */
     public Map<String, String> getProperties(final ZigBeeNode node) {
-
         logger.debug("{}: ZigBee node property discovery start", node.getIeeeAddress());
 
-        // Create a list of endpoints for the discovery service to work with
-        Collection<ZigBeeEndpoint> endpoints = node.getEndpoints();
+        addPropertiesFromNodeDescriptors(node);
+        addPropertiesFromBasicCluster(node);
+        addPropertiesFromOtaCluster(node);
 
-        // Make sure the device has some endpoints!
-        if (endpoints.size() == 0) {
-            logger.debug("{}: Node has no endpoints", node.getIeeeAddress());
-            return properties;
+        logger.debug("{}: ZigBee node property discovery complete: {}", node.getIeeeAddress(), properties);
+
+        return properties;
+    }
+
+    private void addPropertiesFromNodeDescriptors(ZigBeeNode node) {
+        if (node.getLogicalType() != null) {
+            properties.put(THING_PROPERTY_LOGICALTYPE, node.getLogicalType().toString());
         }
 
-        // Find an endpoint that supports the BASIC cluster and get device information
-        ZclBasicCluster basicCluster = null;
+        properties.put(THING_PROPERTY_NETWORKADDRESS, node.getNetworkAddress().toString());
 
-        for (ZigBeeEndpoint device : endpoints) {
-            basicCluster = (ZclBasicCluster) device.getInputCluster(ZclBasicCluster.CLUSTER_ID);
-            if (basicCluster != null) {
-                break;
-            }
+        PowerDescriptor powerDescriptor = node.getPowerDescriptor();
+        if (powerDescriptor != null) {
+            properties.put(THING_PROPERTY_AVAILABLEPOWERSOURCES, powerDescriptor.getAvailablePowerSources().toString());
+            properties.put(THING_PROPERTY_POWERSOURCE, powerDescriptor.getCurrentPowerSource().toString());
+            properties.put(THING_PROPERTY_POWERMODE, powerDescriptor.getCurrentPowerMode().toString());
+            properties.put(THING_PROPERTY_POWERLEVEL, powerDescriptor.getPowerLevel().toString());
         }
+
+        if (node.getNodeDescriptor() != null) {
+            properties.put(THING_PROPERTY_MANUFACTURERCODE,
+                    String.format("0x%04x", node.getNodeDescriptor().getManufacturerCode()));
+        }
+    }
+
+    private void addPropertiesFromBasicCluster(ZigBeeNode node) {
+        ZclBasicCluster basicCluster = (ZclBasicCluster) node.getEndpoints().stream()
+                .map(ep -> ep.getInputCluster(ZclBasicCluster.CLUSTER_ID)).filter(Objects::nonNull).findFirst()
+                .orElse(null);
 
         if (basicCluster == null) {
             logger.debug("{}: Node doesn't support basic cluster", node.getIeeeAddress());
-            return properties;
+            return;
         }
 
-        logger.debug("{}: ZigBee node property discovery using {}", node.getIeeeAddress(),
+        logger.debug("{}: ZigBee node property discovery using basic cluster on endpoint {}", node.getIeeeAddress(),
                 basicCluster.getZigBeeAddress());
 
+        // Attempt to read all properties with a single command.
+        // If successful, this updates the cache with the property values.
+        try {
+            Map<String, Integer> propertiesToRead = getPropertiesToRead(basicCluster);
+            List<Integer> attributes = new ArrayList<>(propertiesToRead.values());
+            if (!attributes.isEmpty()) {
+                basicCluster.readAttributes(attributes).get();
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.info("{}: There was an error when trying to read all properties with a single command.",
+                    node.getIeeeAddress(), e);
+        }
+
+        // Now, get each single property via the basic cluster. If the above multi-attribute read was successful,
+        // this will get each property from the cache. Otherwise, it will try to get the property from the device again.
+
         if (alwaysUpdate || properties.get(Thing.PROPERTY_VENDOR) == null) {
-            for (int retry = 0; retry < maxRetries; retry++) {
-                String manufacturer = basicCluster.getManufacturerName(Long.MAX_VALUE);
-                if (manufacturer != null) {
-                    properties.put(Thing.PROPERTY_VENDOR, manufacturer.trim());
-                    break;
-                } else {
-                    logger.debug("{}: Manufacturer request failed (retry {})", node.getIeeeAddress(), retry);
-                }
+            String manufacturer = basicCluster.getManufacturerName(Long.MAX_VALUE);
+            if (manufacturer != null) {
+                properties.put(Thing.PROPERTY_VENDOR, manufacturer.trim());
+            } else {
+                logger.debug("{}: Manufacturer request failed", node.getIeeeAddress());
             }
         }
 
         if (alwaysUpdate || properties.get(Thing.PROPERTY_MODEL_ID) == null) {
-            for (int retry = 0; retry < maxRetries; retry++) {
-                String model = basicCluster.getModelIdentifier(Long.MAX_VALUE);
-                if (model != null) {
-                    properties.put(Thing.PROPERTY_MODEL_ID, model.trim());
-                    break;
-                } else {
-                    logger.debug("{}: Model request failed (retry {})", node.getIeeeAddress(), retry);
-                }
+            String model = basicCluster.getModelIdentifier(Long.MAX_VALUE);
+            if (model != null) {
+                properties.put(Thing.PROPERTY_MODEL_ID, model.trim());
+            } else {
+                logger.debug("{}: Model request failed", node.getIeeeAddress());
             }
         }
 
@@ -182,19 +227,23 @@ public class ZigBeeNodePropertyDiscoverer {
             }
         }
 
-        if (node.getLogicalType() != null) {
-            properties.put(ZigBeeBindingConstants.THING_PROPERTY_LOGICALTYPE, node.getLogicalType().toString());
-        }
-        properties.put(ZigBeeBindingConstants.THING_PROPERTY_NETWORKADDRESS, node.getNetworkAddress().toString());
+    }
 
-        // Find an OTA client if the device supports OTA upgrades
-        ZclOtaUpgradeCluster otaCluster = null;
-        for (ZigBeeEndpoint endpoint : node.getEndpoints()) {
-            otaCluster = (ZclOtaUpgradeCluster) endpoint.getOutputCluster(ZclOtaUpgradeCluster.CLUSTER_ID);
-            if (otaCluster != null) {
-                break;
+    private Map<String, Integer> getPropertiesToRead(ZclBasicCluster basicCluster) {
+        Map<String, Integer> result = new HashMap<>();
+        for (Map.Entry<String, Integer> entry : BASIC_CLUSTER_ATTRIBUTES_FOR_THING_PROPERTY.entrySet()) {
+            if (alwaysUpdate || properties.get(entry.getKey()) == null
+                    || !basicCluster.getAttribute(entry.getValue()).isLastValueCurrent(Long.MAX_VALUE)) {
+                result.put(entry.getKey(), entry.getValue());
             }
         }
+        return result;
+    }
+
+    private void addPropertiesFromOtaCluster(ZigBeeNode node) {
+        ZclOtaUpgradeCluster otaCluster = (ZclOtaUpgradeCluster) node.getEndpoints().stream()
+                .map(ep -> ep.getOutputCluster(ZclOtaUpgradeCluster.CLUSTER_ID)).filter(Objects::nonNull).findFirst()
+                .orElse(null);
 
         if (otaCluster != null) {
             logger.debug("{}: ZigBee node property discovery using OTA cluster on endpoint {}", node.getIeeeAddress(),
@@ -202,30 +251,14 @@ public class ZigBeeNodePropertyDiscoverer {
 
             ZclAttribute attribute = otaCluster.getAttribute(ZclOtaUpgradeCluster.ATTR_CURRENTFILEVERSION);
             Object fileVersion = attribute.readValue(Long.MAX_VALUE);
-
             if (fileVersion != null) {
-                properties.put(Thing.PROPERTY_FIRMWARE_VERSION,
-                        String.format("%s%08X", ZigBeeBindingConstants.FIRMWARE_VERSION_HEX_PREFIX, fileVersion));
+                properties.put(PROPERTY_FIRMWARE_VERSION, String.format("0x%08X", fileVersion));
             } else {
-                logger.debug("{}: OTA firmware failed", node.getIeeeAddress());
+                logger.debug("{}: Could not get OTA firmware version from device", node.getIeeeAddress());
             }
+        } else {
+            logger.debug("{}: Node doesn't support OTA cluster", node.getIeeeAddress());
         }
-
-        PowerDescriptor powerDescriptor = node.getPowerDescriptor();
-        if (powerDescriptor != null) {
-            properties.put(ZigBeeBindingConstants.THING_PROPERTY_AVAILABLEPOWERSOURCES,
-                    powerDescriptor.getAvailablePowerSources().toString());
-            properties.put(ZigBeeBindingConstants.THING_PROPERTY_POWERSOURCE,
-                    powerDescriptor.getCurrentPowerSource().toString());
-            properties.put(ZigBeeBindingConstants.THING_PROPERTY_POWERMODE,
-                    powerDescriptor.getCurrentPowerMode().toString());
-            properties.put(ZigBeeBindingConstants.THING_PROPERTY_POWERLEVEL,
-                    powerDescriptor.getPowerLevel().toString());
-        }
-
-        logger.debug("{}: ZigBee node property discovery complete: {}", node.getIeeeAddress(), properties);
-
-        return properties;
     }
 
 }
