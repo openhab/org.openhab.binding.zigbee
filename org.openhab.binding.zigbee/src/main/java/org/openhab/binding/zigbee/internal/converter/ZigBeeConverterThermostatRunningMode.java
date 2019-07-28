@@ -1,10 +1,14 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.zigbee.internal.converter;
 
@@ -43,6 +47,34 @@ public class ZigBeeConverterThermostatRunningMode extends ZigBeeBaseChannelConve
     private ZclThermostatCluster cluster;
 
     @Override
+    public boolean initializeDevice() {
+        ZclThermostatCluster serverCluster = (ZclThermostatCluster) endpoint
+                .getInputCluster(ZclThermostatCluster.CLUSTER_ID);
+        if (serverCluster == null) {
+            logger.error("{}: Error opening device thermostat cluster", endpoint.getIeeeAddress());
+            pollingPeriod = POLLING_PERIOD_HIGH;
+            return false;
+        }
+
+        try {
+            CommandResult bindResponse = bind(serverCluster).get();
+            if (bindResponse.isSuccess()) {
+                // Configure reporting
+                ZclAttribute attribute = serverCluster.getAttribute(ZclThermostatCluster.ATTR_THERMOSTATRUNNINGMODE);
+                CommandResult reportingResponse = serverCluster
+                        .setReporting(attribute, REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+            } else {
+                logger.debug("{}: Failed to bind thermostat cluster", endpoint.getIeeeAddress());
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+        }
+
+        return true;
+    }
+
+    @Override
     public boolean initializeConverter() {
         cluster = (ZclThermostatCluster) endpoint.getInputCluster(ZclThermostatCluster.CLUSTER_ID);
         if (cluster == null) {
@@ -50,23 +82,8 @@ public class ZigBeeConverterThermostatRunningMode extends ZigBeeBaseChannelConve
             return false;
         }
 
-        CommandResult bindResponse;
-        try {
-            bindResponse = bind(cluster).get();
-            if (!bindResponse.isSuccess()) {
-                logger.debug("{}: Failed to bind thermostat cluster", endpoint.getIeeeAddress());
-            } else {
-                // Configure reporting
-                ZclAttribute attribute = cluster.getAttribute(ZclThermostatCluster.ATTR_THERMOSTATRUNNINGMODE);
-                cluster.setReporting(attribute, REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX);
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
-        }
-
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
-
         return true;
     }
 
@@ -136,14 +153,12 @@ public class ZigBeeConverterThermostatRunningMode extends ZigBeeBaseChannelConve
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.THERMOSTAT
                 && attribute.getId() == ZclThermostatCluster.ATTR_THERMOSTATRUNNINGMODE) {
-            Integer value = (Integer) attribute.getLastValue();
-            if (value != null) {
-                updateChannelState(new DecimalType(value));
-            }
+            Integer value = (Integer) val;
+            updateChannelState(new DecimalType(value));
         }
     }
 }

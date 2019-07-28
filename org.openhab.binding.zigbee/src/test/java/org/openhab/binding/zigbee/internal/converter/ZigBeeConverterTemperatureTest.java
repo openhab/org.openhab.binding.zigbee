@@ -1,10 +1,14 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.zigbee.internal.converter;
 
@@ -56,9 +60,8 @@ public class ZigBeeConverterTemperatureTest {
         ZclAttribute attribute = Mockito.mock(ZclAttribute.class);
         Mockito.when(attribute.getCluster()).thenReturn(ZclClusterType.TEMPERATURE_MEASUREMENT);
         Mockito.when(attribute.getId()).thenReturn(ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE);
-        Mockito.when(attribute.getLastValue()).thenReturn(Integer.valueOf(2345));
 
-        converter.attributeUpdated(attribute);
+        converter.attributeUpdated(attribute, Integer.valueOf(2345));
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
 

@@ -1,11 +1,23 @@
+/**
+ * Copyright (c) 2010-2019 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package org.openhab.binding.zigbee.internal.converter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
@@ -15,14 +27,16 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 
+import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
+import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclIasZoneCluster;
 
 /**
  * Unit tests for the {@link ZigBeeConverterIasTamper}.
- * 
+ *
  * @author Tommaso Travaglino - initial contribution
  */
 public class ZigBeeConverterIasTamperTest {
@@ -34,8 +48,9 @@ public class ZigBeeConverterIasTamperTest {
     private ZigBeeEndpoint endpoint;
     private ThingUID thingUID;
 
+    @SuppressWarnings("deprecation")
     @Before
-    public void setup() {
+    public void setup() throws InterruptedException, ExecutionException {
         IeeeAddress ieeeAddress = new IeeeAddress();
         int endpointId = 1;
 
@@ -47,6 +62,13 @@ public class ZigBeeConverterIasTamperTest {
         when(endpoint.getEndpointId()).thenReturn(endpointId);
         when(endpoint.getIeeeAddress()).thenReturn(ieeeAddress);
         when(endpoint.getInputCluster(ZclIasZoneCluster.CLUSTER_ID)).thenReturn(zclCluster);
+
+        @SuppressWarnings("unchecked")
+        Future<CommandResult> reportingFuture = mock(Future.class);
+        when(zclCluster.setReporting(isNull(ZclAttribute.class), anyInt(), anyInt())).thenReturn(reportingFuture);
+
+        CommandResult reportingResult = new CommandResult();
+        when(reportingFuture.get()).thenReturn(reportingResult);
 
         channel = mock(Channel.class);
         thingHandler = mock(ZigBeeThingHandler.class);
@@ -82,6 +104,5 @@ public class ZigBeeConverterIasTamperTest {
         Channel channel = converter.getChannel(thingUID, endpoint);
         assertNull(channel);
     }
-
 
 }

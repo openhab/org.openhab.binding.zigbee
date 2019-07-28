@@ -1,10 +1,14 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.zigbee.internal.converter;
 
@@ -67,9 +71,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
                     // Configure reporting
                     CommandResult reportingResponse = serverCluster
                             .setOnOffReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX).get();
-                    if (reportingResponse.isError()) {
-                        pollingPeriod = POLLING_PERIOD_HIGH;
-                    }
+                    handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
                 } else {
                     logger.debug("{}: Error 0x{} setting server binding", endpoint.getIeeeAddress(),
                             Integer.toHexString(bindResponse.getStatusCode()));
@@ -193,10 +195,10 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.ON_OFF && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
-            Boolean value = (Boolean) attribute.getLastValue();
+            Boolean value = (Boolean) val;
             if (value != null && value) {
                 updateChannelState(OnOffType.ON);
             } else {

@@ -1,14 +1,19 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.zigbee.internal.converter;
 
 import java.math.BigDecimal;
+import java.util.concurrent.ExecutionException;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.thing.Channel;
@@ -19,6 +24,7 @@ import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
@@ -37,6 +43,31 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
     private ZclRelativeHumidityMeasurementCluster cluster;
 
     @Override
+    public boolean initializeDevice() {
+        ZclRelativeHumidityMeasurementCluster serverCluster = (ZclRelativeHumidityMeasurementCluster) endpoint
+                .getInputCluster(ZclRelativeHumidityMeasurementCluster.CLUSTER_ID);
+        if (serverCluster == null) {
+            logger.error("{}: Error opening device relative humidity measurement cluster", endpoint.getIeeeAddress());
+            return false;
+        }
+
+        try {
+            CommandResult bindResponse = bind(serverCluster).get();
+            if (bindResponse.isSuccess()) {
+                // Configure reporting - no faster than once per second - no slower than 2 hours.
+                CommandResult response = serverCluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1)
+                        .get();
+                handleReportingResponse(response, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            pollingPeriod = POLLING_PERIOD_HIGH;
+            return false;
+        }
+        return true;
+    }
+
+    @Override
     public boolean initializeConverter() {
         cluster = (ZclRelativeHumidityMeasurementCluster) endpoint
                 .getInputCluster(ZclRelativeHumidityMeasurementCluster.CLUSTER_ID);
@@ -45,13 +76,8 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
             return false;
         }
 
-        bind(cluster);
-
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
-
-        // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        cluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1);
         return true;
     }
 
@@ -81,14 +107,12 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.RELATIVE_HUMIDITY_MEASUREMENT
                 && attribute.getId() == ZclRelativeHumidityMeasurementCluster.ATTR_MEASUREDVALUE) {
-            Integer value = (Integer) attribute.getLastValue();
-            if (value != null) {
-                updateChannelState(new DecimalType(BigDecimal.valueOf(value, 2)));
-            }
+            Integer value = (Integer) val;
+            updateChannelState(new DecimalType(BigDecimal.valueOf(value, 2)));
         }
     }
 }

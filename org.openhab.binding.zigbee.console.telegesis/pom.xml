@@ -1,15 +1,36 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.openhab.binding</groupId>
-		<artifactId>org.openhab.binding.zigbee.pom</artifactId>
-		<version>2.5.0-SNAPSHOT</version>
-	</parent>
+  <modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.openhab.binding</groupId>
-	<artifactId>org.openhab.binding.zigbee.console.telegesis</artifactId>
+  <parent>
+    <groupId>org.openhab.addons.bundles</groupId>
+    <artifactId>org.openhab.addons.zigbee.reactor</artifactId>
+    <version>2.5.0-SNAPSHOT</version>
+  </parent>
 
-	<name>ZigBee Binding Console Telegesis</name>
-	<packaging>eclipse-plugin</packaging>
+  <artifactId>org.openhab.binding.zigbee.console.telegesis</artifactId>
+
+  <name>openHAB Add-ons :: Bundles :: ZigBee Console Telegesis</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.openhab.addons.bundles</groupId>
+      <artifactId>org.openhab.binding.zigbee.telegesis</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.openhab.addons.bundles</groupId>
+      <artifactId>org.openhab.binding.zigbee.console</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.zsmartsystems.zigbee</groupId>
+      <artifactId>com.zsmartsystems.zigbee.console.telegesis</artifactId>
+      <version>${zsmartsystems.version}</version>
+    </dependency>
+  </dependencies>
+
 </project>

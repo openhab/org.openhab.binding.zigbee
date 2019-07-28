@@ -1,10 +1,14 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.zigbee.internal.converter;
 
@@ -65,36 +69,48 @@ public class ZigBeeConverterBatteryAlarm extends ZigBeeBaseChannelConverter impl
     private ZclPowerConfigurationCluster cluster;
 
     @Override
-    public boolean initializeConverter() {
+    public boolean initializeDevice() {
         logger.debug("{}: Initialising device battery alarm converter", endpoint.getIeeeAddress());
 
+        ZclPowerConfigurationCluster serverCluster = (ZclPowerConfigurationCluster) endpoint
+                .getInputCluster(ZclPowerConfigurationCluster.CLUSTER_ID);
+        if (serverCluster == null) {
+            logger.error("{}: Error opening power configuration cluster", endpoint.getIeeeAddress());
+            return false;
+        }
+
+        try {
+            CommandResult bindResponse = bind(serverCluster).get();
+            if (bindResponse.isSuccess()) {
+                CommandResult reportingResponse = serverCluster
+                        .setReporting(serverCluster.getAttribute(ATTR_BATTERYALARMSTATE),
+                                ALARMSTATE_MIN_REPORTING_INTERVAL, ALARMSTATE_MAX_REPORTING_INTERVAL)
+                        .get();
+                handleReportingResponse(reportingResponse, BATTERY_ALARM_POLLING_PERIOD,
+                        ALARMSTATE_MAX_REPORTING_INTERVAL);
+            } else {
+                pollingPeriod = BATTERY_ALARM_POLLING_PERIOD;
+                logger.debug(
+                        "Could not bind to the power configuration cluster; polling battery alarm state every {} seconds",
+                        BATTERY_ALARM_POLLING_PERIOD);
+                return false;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting reporting of battery alarm state ", endpoint.getIeeeAddress(), e);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean initializeConverter() {
         cluster = (ZclPowerConfigurationCluster) endpoint.getInputCluster(ZclPowerConfigurationCluster.CLUSTER_ID);
         if (cluster == null) {
             logger.error("{}: Error opening power configuration cluster", endpoint.getIeeeAddress());
             return false;
         }
 
-        try {
-            CommandResult bindResponse = bind(cluster).get();
-            if (bindResponse.isSuccess()) {
-                CommandResult reportingResponse = cluster.setReporting(cluster.getAttribute(ATTR_BATTERYALARMSTATE),
-                        ALARMSTATE_MIN_REPORTING_INTERVAL, ALARMSTATE_MAX_REPORTING_INTERVAL).get();
-                if (reportingResponse.isError()) {
-                    logger.debug("Could not configure reporting for the battery alarm state; polling every {} seconds",
-                            BATTERY_ALARM_POLLING_PERIOD);
-                    pollingPeriod = BATTERY_ALARM_POLLING_PERIOD;
-                }
-            } else {
-                pollingPeriod = BATTERY_ALARM_POLLING_PERIOD;
-                logger.debug(
-                        "Could not bind to the power configuration cluster; polling battery alarm state every {} seconds",
-                        BATTERY_ALARM_POLLING_PERIOD);
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception setting reporting of battery alarm state ", endpoint.getIeeeAddress(), e);
-            return false;
-        }
-
+        // Add a listener
         cluster.addAttributeListener(this);
         return true;
     }
@@ -142,17 +158,14 @@ public class ZigBeeConverterBatteryAlarm extends ZigBeeBaseChannelConverter impl
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         if (attribute.getCluster() == ZclClusterType.POWER_CONFIGURATION
                 && attribute.getId() == ZclPowerConfigurationCluster.ATTR_BATTERYALARMSTATE) {
 
             logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
 
             // The value is a 32-bit bitmap, represented by an Integer
-            Integer value = (Integer) attribute.getLastValue();
-            if (value == null) {
-                return;
-            }
+            Integer value = (Integer) val;
 
             if ((value & MIN_THRESHOLD_BITMASK) != 0) {
                 updateChannelState(new StringType(STATE_OPTION_BATTERY_MIN_THRESHOLD));

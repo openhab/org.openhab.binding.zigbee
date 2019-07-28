@@ -1,10 +1,14 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.zigbee.internal.converter;
 
@@ -45,9 +49,38 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
     private Integer multiplier;
 
     @Override
-    public boolean initializeConverter() {
+    public boolean initializeDevice() {
         logger.debug("{}: Initialising electrical measurement cluster", endpoint.getIeeeAddress());
 
+        ZclElectricalMeasurementCluster serverClusterMeasurement = (ZclElectricalMeasurementCluster) endpoint
+                .getInputCluster(ZclElectricalMeasurementCluster.CLUSTER_ID);
+        if (serverClusterMeasurement == null) {
+            logger.error("{}: Error opening electrical measurement cluster", endpoint.getIeeeAddress());
+            return false;
+        }
+
+        try {
+            CommandResult bindResponse = bind(serverClusterMeasurement).get();
+            if (bindResponse.isSuccess()) {
+                ZclAttribute attribute = serverClusterMeasurement
+                        .getAttribute(ZclElectricalMeasurementCluster.ATTR_RMSCURRENT);
+                // Configure reporting - no faster than once per second - no slower than 2 hours.
+                CommandResult reportingResponse = serverClusterMeasurement
+                        .setReporting(attribute, 3, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+            } else {
+                pollingPeriod = POLLING_PERIOD_HIGH;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean initializeConverter() {
         clusterMeasurement = (ZclElectricalMeasurementCluster) endpoint
                 .getInputCluster(ZclElectricalMeasurementCluster.CLUSTER_ID);
         if (clusterMeasurement == null) {
@@ -55,34 +88,10 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
             return false;
         }
 
-        try {
-            CommandResult bindResponse = bind(clusterMeasurement).get();
-            if (bindResponse.isSuccess()) {
-                ZclAttribute attribute = clusterMeasurement
-                        .getAttribute(ZclElectricalMeasurementCluster.ATTR_RMSCURRENT);
-                // Configure reporting - no faster than once per second - no slower than 10 minutes.
-                CommandResult reportingResponse = clusterMeasurement
-                        .setReporting(attribute, 3, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-                if (reportingResponse.isError()) {
-                    pollingPeriod = POLLING_PERIOD_HIGH;
-                }
-            } else {
-                pollingPeriod = POLLING_PERIOD_HIGH;
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
-        }
-
-        divisor = clusterMeasurement.getAcCurrentDivisor(Long.MAX_VALUE);
-        multiplier = clusterMeasurement.getAcCurrentMultiplier(Long.MAX_VALUE);
-        if (divisor == null || multiplier == null) {
-            divisor = 1;
-            multiplier = 1;
-        }
+        determineDivisorAndMultiplier(clusterMeasurement);
 
         // Add a listener
         clusterMeasurement.addAttributeListener(this);
-
         return true;
     }
 
@@ -132,15 +141,22 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.ELECTRICAL_MEASUREMENT
                 && attribute.getId() == ZclElectricalMeasurementCluster.ATTR_RMSCURRENT) {
-            Integer value = (Integer) attribute.getLastValue();
-            if (value != null) {
-                BigDecimal valueInAmpere = BigDecimal.valueOf(value * multiplier / divisor);
-                updateChannelState(new QuantityType<ElectricCurrent>(valueInAmpere, SmartHomeUnits.AMPERE));
-            }
+            Integer value = (Integer) val;
+            BigDecimal valueInAmpere = BigDecimal.valueOf(value * multiplier / divisor);
+            updateChannelState(new QuantityType<ElectricCurrent>(valueInAmpere, SmartHomeUnits.AMPERE));
+        }
+    }
+
+    private void determineDivisorAndMultiplier(ZclElectricalMeasurementCluster serverClusterMeasurement) {
+        divisor = serverClusterMeasurement.getAcPowerDivisor(Long.MAX_VALUE);
+        multiplier = serverClusterMeasurement.getAcPowerMultiplier(Long.MAX_VALUE);
+        if (divisor == null || multiplier == null) {
+            divisor = 1;
+            multiplier = 1;
         }
     }
 }

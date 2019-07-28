@@ -1,10 +1,14 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.zigbee.internal.converter;
 
@@ -42,29 +46,42 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
     private ZclPowerConfigurationCluster cluster;
 
     @Override
-    public boolean initializeConverter() {
+    public boolean initializeDevice() {
         logger.debug("{}: Initialising device battery voltage converter", endpoint.getIeeeAddress());
 
+        ZclPowerConfigurationCluster serverCluster = (ZclPowerConfigurationCluster) endpoint
+                .getInputCluster(ZclPowerConfigurationCluster.CLUSTER_ID);
+        if (serverCluster == null) {
+            logger.error("{}: Error opening power configuration cluster", endpoint.getIeeeAddress());
+            return false;
+        }
+
+        try {
+            CommandResult bindResponse = bind(serverCluster).get();
+            if (bindResponse.isSuccess()) {
+                ZclAttribute attribute = serverCluster.getAttribute(ZclPowerConfigurationCluster.ATTR_BATTERYVOLTAGE);
+                // Configure reporting - no faster than once per ten minutes - no slower than every 2 hours.
+                CommandResult reportingResponse = serverCluster
+                        .setReporting(attribute, 600, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean initializeConverter() {
         cluster = (ZclPowerConfigurationCluster) endpoint.getInputCluster(ZclPowerConfigurationCluster.CLUSTER_ID);
         if (cluster == null) {
             logger.error("{}: Error opening power configuration cluster", endpoint.getIeeeAddress());
             return false;
         }
 
-        try {
-            CommandResult bindResponse = bind(cluster).get();
-            if (bindResponse.isSuccess()) {
-                ZclAttribute attribute = cluster.getAttribute(ZclPowerConfigurationCluster.ATTR_BATTERYVOLTAGE);
-                // Configure reporting - no faster than once per ten minutes - no slower than every 2 hours.
-                cluster.setReporting(attribute, 600, 7200, 1).get();
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
-        }
-
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
-
         return true;
     }
 
@@ -116,12 +133,12 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.POWER_CONFIGURATION
                 && attribute.getId() == ZclPowerConfigurationCluster.ATTR_BATTERYVOLTAGE) {
-            Integer value = (Integer) attribute.getLastValue();
-            if (value == null || value == 0xFF) {
+            Integer value = (Integer) val;
+            if (value == 0xFF) {
                 // The value 0xFF indicates an invalid or unknown reading.
                 return;
             }

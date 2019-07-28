@@ -1,10 +1,14 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.zigbee.internal.converter;
 
@@ -43,6 +47,34 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
     private ZclThermostatCluster cluster;
 
     @Override
+    public boolean initializeDevice() {
+        ZclThermostatCluster serverCluster = (ZclThermostatCluster) endpoint
+                .getInputCluster(ZclThermostatCluster.CLUSTER_ID);
+        if (serverCluster == null) {
+            logger.error("{}: Error opening device thermostat cluster", endpoint.getIeeeAddress());
+            return false;
+        }
+
+        try {
+            CommandResult bindResponse = bind(serverCluster).get();
+            if (bindResponse.isSuccess()) {
+                // Configure reporting
+                CommandResult reportingResponse = serverCluster
+                        .setLocalTemperatureReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 0.1)
+                        .get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+            } else {
+                logger.debug("{}: Failed to bind thermostat cluster", endpoint.getIeeeAddress());
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
     public boolean initializeConverter() {
         cluster = (ZclThermostatCluster) endpoint.getInputCluster(ZclThermostatCluster.CLUSTER_ID);
         if (cluster == null) {
@@ -50,22 +82,8 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
             return false;
         }
 
-        CommandResult bindResponse;
-        try {
-            bindResponse = bind(cluster).get();
-            if (!bindResponse.isSuccess()) {
-                logger.debug("{}: Failed to bind thermostat cluster", endpoint.getIeeeAddress());
-            } else {
-                // Configure reporting
-                cluster.setLocalTemperatureReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 0.1);
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
-        }
-
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
-
         return true;
     }
 
@@ -113,11 +131,11 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.THERMOSTAT
                 && attribute.getId() == ZclThermostatCluster.ATTR_LOCALTEMPERATURE) {
-            Integer value = (Integer) attribute.getLastValue();
+            Integer value = (Integer) val;
             if (value != null && value != INVALID_TEMPERATURE) {
                 updateChannelState(new QuantityType<>(BigDecimal.valueOf(value, 2), SIUnits.CELSIUS));
             }

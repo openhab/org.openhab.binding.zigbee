@@ -1,10 +1,14 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.zigbee.internal.converter;
 
@@ -40,26 +44,36 @@ public class ZigBeeConverterDoorLock extends ZigBeeBaseChannelConverter implemen
     private ZclDoorLockCluster cluster;
 
     @Override
-    public boolean initializeConverter() {
-        cluster = (ZclDoorLockCluster) endpoint.getInputCluster(ZclDoorLockCluster.CLUSTER_ID);
-        if (cluster == null) {
+    public boolean initializeDevice() {
+        ZclDoorLockCluster serverCluster = (ZclDoorLockCluster) endpoint.getInputCluster(ZclDoorLockCluster.CLUSTER_ID);
+        if (serverCluster == null) {
             logger.error("{}: Error opening device door lock controls", endpoint.getIeeeAddress());
             return false;
         }
 
         try {
-            CommandResult bindResponse = bind(cluster).get();
+            CommandResult bindResponse = bind(serverCluster).get();
             if (bindResponse.isSuccess()) {
-                // Configure reporting - no faster than once per second - no slower than 10 minutes.
-                CommandResult reportingResponse = cluster.setDoorStateReporting(1, REPORTING_PERIOD_DEFAULT_MAX).get();
-                if (reportingResponse.isError()) {
-                    pollingPeriod = POLLING_PERIOD_HIGH;
-                }
+                // Configure reporting - no faster than once per second - no slower than 2 hours.
+                CommandResult reportingResponse = serverCluster.setDoorStateReporting(1, REPORTING_PERIOD_DEFAULT_MAX)
+                        .get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 pollingPeriod = POLLING_PERIOD_HIGH;
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean initializeConverter() {
+        cluster = (ZclDoorLockCluster) endpoint.getInputCluster(ZclDoorLockCluster.CLUSTER_ID);
+        if (cluster == null) {
+            logger.error("{}: Error opening device door lock controls", endpoint.getIeeeAddress());
+            return false;
         }
 
         // Add the listener
@@ -105,11 +119,11 @@ public class ZigBeeConverterDoorLock extends ZigBeeBaseChannelConverter implemen
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.DOOR_LOCK
                 && attribute.getId() == ZclDoorLockCluster.ATTR_LOCKSTATE) {
-            Integer value = (Integer) attribute.getLastValue();
+            Integer value = (Integer) val;
             if (value != null && value == 1) {
                 updateChannelState(OnOffType.ON);
             } else {

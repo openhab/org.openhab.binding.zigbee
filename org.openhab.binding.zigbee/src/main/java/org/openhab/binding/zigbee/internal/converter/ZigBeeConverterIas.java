@@ -1,12 +1,18 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.zigbee.internal.converter;
+
+import java.util.concurrent.ExecutionException;
 
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.OpenClosedType;
@@ -14,6 +20,7 @@ import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
@@ -53,6 +60,34 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter
     protected static final int CIE_BATTERYDEFECT = 0x0200;
 
     @Override
+    public boolean initializeDevice() {
+        logger.debug("{}: Initialising device IAS Zone cluster for {}", endpoint.getIeeeAddress(),
+                channel.getChannelTypeUID());
+
+        ZclIasZoneCluster serverClusterIasZone = (ZclIasZoneCluster) endpoint
+                .getInputCluster(ZclIasZoneCluster.CLUSTER_ID);
+        if (serverClusterIasZone == null) {
+            logger.error("{}: Error opening IAS zone cluster", endpoint.getIeeeAddress());
+            return false;
+        }
+
+        try {
+            CommandResult bindResponse = bind(serverClusterIasZone).get();
+            if (bindResponse.isSuccess()) {
+                // Configure reporting - no faster than once per second - no slower than 2 hours.
+                ZclAttribute attribute = serverClusterIasZone.getAttribute(ZclIasZoneCluster.ATTR_ZONESTATUS);
+                CommandResult reportingResponse = serverClusterIasZone
+                        .setReporting(attribute, 3, REPORTING_PERIOD_DEFAULT_MAX).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.debug("{}: Exception configuring ias zone status reporting", endpoint.getIeeeAddress(), e);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
     public boolean initializeConverter() {
         logger.debug("{}: Initialising device IAS Zone cluster for {}", endpoint.getIeeeAddress(),
                 channel.getChannelTypeUID());
@@ -62,16 +97,10 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter
             logger.error("{}: Error opening IAS zone cluster", endpoint.getIeeeAddress());
             return false;
         }
-
-        bind(clusterIasZone);
-
         // Add a listener, then request the status
         clusterIasZone.addCommandListener(this);
         clusterIasZone.addAttributeListener(this);
 
-        // Configure reporting - no faster than once per second - no slower than 10 minutes.
-        ZclAttribute attribute = clusterIasZone.getAttribute(ZclIasZoneCluster.ATTR_ZONESTATUS);
-        clusterIasZone.setReporting(attribute, 3, REPORTING_PERIOD_DEFAULT_MAX);
         return true;
     }
 
@@ -129,11 +158,11 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.IAS_ZONE
                 && attribute.getId() == ZclIasZoneCluster.ATTR_ZONESTATUS) {
-            updateChannelState((Integer) attribute.getLastValue());
+            updateChannelState((Integer) val);
         }
     }
 

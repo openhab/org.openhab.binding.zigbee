@@ -1,10 +1,14 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.zigbee.converter;
 
@@ -152,6 +156,12 @@ public abstract class ZigBeeBaseChannelConverter {
     protected int pollingPeriod = POLLING_PERIOD_DEFAULT;
 
     /**
+     * The smallest of all maximum reporting periods configured for the attributes used by the converter. By default it
+     * is set to {@code Integer.MAX_VALUE}, because we assume that not every converter implements reporting.
+     */
+    protected int minimalReportingPeriod = Integer.MAX_VALUE;
+
+    /**
      * Constructor. Creates a new instance of the {@link ZigBeeBaseChannelConverter} class.
      *
      */
@@ -162,11 +172,11 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * Creates the converter handler.
      *
-     * @param thing the {@link ZigBeeThingHandler} the channel is part of
-     * @param channel the {@link Channel} for the channel
+     * @param thing       the {@link ZigBeeThingHandler} the channel is part of
+     * @param channel     the {@link Channel} for the channel
      * @param coordinator the {@link ZigBeeCoordinatorHandler} this endpoint is part of
-     * @param address the {@link IeeeAddress} of the node
-     * @param endpointId the endpoint this channel is linked to
+     * @param address     the {@link IeeeAddress} of the node
+     * @param endpointId  the endpoint this channel is linked to
      */
     public void initialize(ZigBeeThingHandler thing, Channel channel, ZigBeeCoordinatorHandler coordinator,
             IeeeAddress address, int endpointId) {
@@ -184,11 +194,11 @@ public abstract class ZigBeeBaseChannelConverter {
      * Configures the device. This method should perform the one off device configuration such as performing the bind
      * and reporting configuration.
      * <p>
-     * The binding should initialise reporting using one of the {@link ZclCluster#setReporting} commands. If this fails,
+     * The binding should initialize reporting using one of the {@link ZclCluster#setReporting} commands. If this fails,
      * the {@link #pollingPeriod} variable should be set to {@link #POLLING_PERIOD_HIGH}.
      * <p>
-     * Note that this method should be self contained, and may not make any assumptions about the initialisation of any
-     * internal fields of the converter other than those initialised in the {@link #initialize} method.
+     * Note that this method should be self contained, and may not make any assumptions about the initialization of any
+     * internal fields of the converter other than those initialized in the {@link #initialize} method.
      *
      * @return true if the device was configured correctly
      */
@@ -307,10 +317,41 @@ public abstract class ZigBeeBaseChannelConverter {
     }
 
     /**
+     * Gets the minimum of all maximum reporting periods used in attribute reports. If no attribute reports are
+     * configured, the default {@code Integer.MAX_VALUE} will be returned.
+     *
+     * @return minimum of all maximum reporting periods in seconds
+     */
+    public int getMinimalReportingPeriod() {
+        return minimalReportingPeriod;
+    }
+
+    /**
+     * Sets the {@code pollingPeriod} and {@code maxReportingPeriod} depending on the success or failure of the given
+     * reporting response.
+     *
+     * @param reportResponse                    a {@link CommandResult} representing the response to a reporting request
+     * @param reportingFailedPollingInterval    the polling interval to be used in case configuring reporting has
+     *                                              failed
+     * @param reportingSuccessMaxReportInterval the maximum reporting interval in case reporting is successfully
+     *                                              configured
+     */
+    protected void handleReportingResponse(CommandResult reportResponse, int reportingFailedPollingInterval,
+            int reportingSuccessMaxReportInterval) {
+        if (!reportResponse.isSuccess()) {
+            // we want the minimum of all pollingPeriods
+            pollingPeriod = Math.min(pollingPeriod, reportingFailedPollingInterval);
+        } else {
+            // we want to know the minimum of all maximum reporting periods to be used as a timeout value
+            minimalReportingPeriod = Math.min(minimalReportingPeriod, reportingSuccessMaxReportInterval);
+        }
+    }
+
+    /**
      * Creates a standard channel UID given the {@link ZigBeeEndpoint}
      *
-     * @param thingUID the {@link ThingUID}
-     * @param endpoint the {@link ZigBeeEndpoint}
+     * @param thingUID    the {@link ThingUID}
+     * @param endpoint    the {@link ZigBeeEndpoint}
      * @param channelName the name of the channel
      * @return
      */
@@ -356,9 +397,11 @@ public abstract class ZigBeeBaseChannelConverter {
      * Processes the updated configuration. As required, the method shall process each known configuration parameter and
      * set a local variable for local parameters, and update the remote device for remote parameters.
      * The currentConfiguration shall be updated.
+     * <p>
+     * This must not be called before the {@link #initializeConverter()} method has been called.
      *
      * @param currentConfiguration the current {@link Configuration}
-     * @param updatedParameters a map containing the updated configuration parameters to be set
+     * @param updatedParameters    a map containing the updated configuration parameters to be set
      */
     public void updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> updatedParameters) {

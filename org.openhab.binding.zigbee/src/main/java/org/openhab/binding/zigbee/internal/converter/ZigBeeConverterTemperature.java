@@ -1,10 +1,14 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.zigbee.internal.converter;
 
@@ -40,6 +44,33 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
     private ZclTemperatureMeasurementCluster cluster;
 
     @Override
+    public boolean initializeDevice() {
+        ZclTemperatureMeasurementCluster serverCluster = (ZclTemperatureMeasurementCluster) endpoint
+                .getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID);
+        if (serverCluster == null) {
+            logger.error("{}: Error opening device temperature measurement cluster", endpoint.getIeeeAddress());
+            return false;
+        }
+
+        try {
+            CommandResult bindResponse = bind(serverCluster).get();
+            if (bindResponse.isSuccess()) {
+                // Configure reporting
+                CommandResult reportingResponse = serverCluster
+                        .setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+            } else {
+                logger.debug("{}: Failed to bind temperature measurement cluster", endpoint.getIeeeAddress());
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
     public boolean initializeConverter() {
         cluster = (ZclTemperatureMeasurementCluster) endpoint
                 .getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID);
@@ -48,22 +79,8 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
             return false;
         }
 
-        CommandResult bindResponse;
-        try {
-            bindResponse = bind(cluster).get();
-            if (!bindResponse.isSuccess()) {
-                logger.debug("{}: Failed to bind temperature measurement cluster", endpoint.getIeeeAddress());
-            } else {
-                // Configure reporting
-                cluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1);
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
-        }
-
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
-
         return true;
     }
 
@@ -93,14 +110,12 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
     }
 
     @Override
-    public void attributeUpdated(ZclAttribute attribute) {
+    public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.TEMPERATURE_MEASUREMENT
                 && attribute.getId() == ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE) {
-            Integer value = (Integer) attribute.getLastValue();
-            if (value != null) {
-                updateChannelState(new QuantityType<>(BigDecimal.valueOf(value, 2), SIUnits.CELSIUS));
-            }
+            Integer value = (Integer) val;
+            updateChannelState(new QuantityType<>(BigDecimal.valueOf(value, 2), SIUnits.CELSIUS));
         }
     }
 }

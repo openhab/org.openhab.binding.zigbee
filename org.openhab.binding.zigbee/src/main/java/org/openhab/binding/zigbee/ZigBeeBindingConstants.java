@@ -1,10 +1,14 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.zigbee;
 
@@ -109,6 +113,14 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_NAME_IAS_WATERSENSOR = "water";
     public static final String CHANNEL_LABEL_IAS_WATERSENSOR = "Water Alarm";
     public static final ChannelTypeUID CHANNEL_IAS_WATERSENSOR = new ChannelTypeUID("zigbee:ias_water");
+
+    public static final String CHANNEL_NAME_IAS_MOVEMENTSENSOR = "movement";
+    public static final String CHANNEL_LABEL_IAS_MOVEMENTSENSOR = "Movement Alarm";
+    public static final ChannelTypeUID CHANNEL_IAS_MOVEMENTSENSOR = new ChannelTypeUID("zigbee:ias_movement");
+
+    public static final String CHANNEL_NAME_IAS_VIBRATIONSENSOR = "vibration";
+    public static final String CHANNEL_LABEL_IAS_VIBRATIONSENSOR = "Vibration Alarm";
+    public static final ChannelTypeUID CHANNEL_IAS_VIBRATIONSENSOR = new ChannelTypeUID("zigbee:ias_vibration");
 
     public static final String CHANNEL_NAME_IAS_LOWBATTERY = "iaslowbattery";
     public static final String CHANNEL_LABEL_IAS_LOWBATTERY = "Low Battery";
@@ -220,6 +232,7 @@ public class ZigBeeBindingConstants {
     public static final String THING_PROPERTY_INSTALLCODE = "zigbee_installcode";
     public static final String THING_PROPERTY_STACKCOMPLIANCE = "zigbee_stkcompliance";
     public static final String THING_PROPERTY_MANUFACTURERCODE = "zigbee_manufacturercode";
+    public static final String THING_PROPERTY_DEVICE_INITIALIZED = "zigbee_device_initialised";
 
     // List of all configuration parameters
     public static final String CONFIGURATION_PANID = "zigbee_panid";
@@ -232,6 +245,7 @@ public class ZigBeeBindingConstants {
     public static final String CONFIGURATION_LINKKEY = "zigbee_linkkey";
     public static final String CONFIGURATION_PASSWORD = "zigbee_password";
     public static final String CONFIGURATION_INITIALIZE = "zigbee_initialise";
+    public static final String CONFIGURATION_INITIALIZE_DEVICE = "zigbee_initialise_device";
     public static final String CONFIGURATION_TRUSTCENTREMODE = "zigbee_trustcentremode";
     public static final String CONFIGURATION_POWERMODE = "zigbee_powermode";
     public static final String CONFIGURATION_TXPOWER = "zigbee_txpower";

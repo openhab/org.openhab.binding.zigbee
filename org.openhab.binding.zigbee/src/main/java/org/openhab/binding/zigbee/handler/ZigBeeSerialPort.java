@@ -1,10 +1,14 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.zigbee.handler;
 
@@ -12,7 +16,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
+import java.util.Set;
 import java.util.TooManyListenersException;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,6 +100,8 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
      */
     private final Object bufferSynchronisationObject = new Object();
 
+    private Set<String> portOpenRuntimeExcepionMessages = ConcurrentHashMap.newKeySet();
+
     /**
      * Constructor setting port name and baud rate.
      *
@@ -157,6 +165,7 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
                 serialPort.notifyOnDataAvailable(true);
 
                 logger.debug("Serial port [{}] is initialized.", portName);
+                portOpenRuntimeExcepionMessages.clear();
             } catch (NoSuchPortException e) {
                 logger.error("Serial Error: Port {} does not exist.", portName);
                 return false;
@@ -168,6 +177,12 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
                 return false;
             } catch (TooManyListenersException e) {
                 logger.error("Serial Error: Too many listeners on Port {}.", portName);
+                return false;
+            } catch (RuntimeException e) {
+                if (!portOpenRuntimeExcepionMessages.contains(e.getMessage())) {
+                    portOpenRuntimeExcepionMessages.add(e.getMessage());
+                    logger.error("Serial Error: Device cannot be opened on Port {}. Caused by {}", portName, e.getMessage());
+                }
                 return false;
             }
 

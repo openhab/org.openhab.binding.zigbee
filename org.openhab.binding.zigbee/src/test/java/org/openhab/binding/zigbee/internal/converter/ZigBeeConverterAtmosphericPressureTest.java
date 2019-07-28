@@ -1,10 +1,14 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.zigbee.internal.converter;
 
@@ -57,17 +61,14 @@ public class ZigBeeConverterAtmosphericPressureTest {
         ZclAttribute attributeMeasuredVal = Mockito.mock(ZclAttribute.class);
         Mockito.when(attributeMeasuredVal.getCluster()).thenReturn(ZclClusterType.PRESSURE_MEASUREMENT);
         Mockito.when(attributeMeasuredVal.getId()).thenReturn(ZclPressureMeasurementCluster.ATTR_MEASUREDVALUE);
-        Mockito.when(attributeMeasuredVal.getLastValue()).thenReturn(Integer.valueOf(1234));
 
         ZclAttribute attributeScaledVal = Mockito.mock(ZclAttribute.class);
         Mockito.when(attributeScaledVal.getCluster()).thenReturn(ZclClusterType.PRESSURE_MEASUREMENT);
         Mockito.when(attributeScaledVal.getId()).thenReturn(ZclPressureMeasurementCluster.ATTR_SCALEDVALUE);
-        Mockito.when(attributeScaledVal.getLastValue()).thenReturn(Integer.valueOf(12456));
 
         ZclAttribute attributeScaledVal2 = Mockito.mock(ZclAttribute.class);
         Mockito.when(attributeScaledVal2.getCluster()).thenReturn(ZclClusterType.PRESSURE_MEASUREMENT);
         Mockito.when(attributeScaledVal2.getId()).thenReturn(ZclPressureMeasurementCluster.ATTR_SCALEDVALUE);
-        Mockito.when(attributeScaledVal2.getLastValue()).thenReturn(Integer.valueOf(12556));
 
         ZclAttribute attributeScale = Mockito.mock(ZclAttribute.class);
         Mockito.when(attributeScale.getCluster()).thenReturn(ZclClusterType.PRESSURE_MEASUREMENT);
@@ -75,7 +76,7 @@ public class ZigBeeConverterAtmosphericPressureTest {
         Mockito.when(attributeScale.getLastValue()).thenReturn(Integer.valueOf(-1));
 
         // Unscaled value, so it's updated
-        converter.attributeUpdated(attributeMeasuredVal);
+        converter.attributeUpdated(attributeMeasuredVal, Integer.valueOf(1234));
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
         assertEquals(new ChannelUID("a:b:c:d"), channelCapture.getValue());
@@ -85,13 +86,13 @@ public class ZigBeeConverterAtmosphericPressureTest {
         assertEquals(1234, value.doubleValue(), 0.01);
 
         // Scaled value, but no scale yet, so no update
-        converter.attributeUpdated(attributeScaledVal);
+        converter.attributeUpdated(attributeScaledVal, Integer.valueOf(12456));
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
 
         // Scaled value, with scale, so updated
-        converter.attributeUpdated(attributeScale);
-        converter.attributeUpdated(attributeScaledVal);
+        converter.attributeUpdated(attributeScale, Integer.valueOf(-1));
+        converter.attributeUpdated(attributeScaledVal, Integer.valueOf(12456));
         Mockito.verify(thingHandler, Mockito.times(2)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
         assertEquals(new ChannelUID("a:b:c:d"), channelCapture.getValue());
@@ -101,13 +102,13 @@ public class ZigBeeConverterAtmosphericPressureTest {
         assertEquals(1245.6, value.doubleValue(), 0.01);
 
         // Measured value, but after we received the scale, so no update
-        converter.attributeUpdated(attributeMeasuredVal);
+        converter.attributeUpdated(attributeMeasuredVal, Integer.valueOf(1234));
         Mockito.verify(thingHandler, Mockito.times(2)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
 
         // Scaled value, with scale, so updated
-        converter.attributeUpdated(attributeScale);
-        converter.attributeUpdated(attributeScaledVal);
+        converter.attributeUpdated(attributeScale, Integer.valueOf(-1));
+        converter.attributeUpdated(attributeScaledVal, Integer.valueOf(12456));
         Mockito.verify(thingHandler, Mockito.times(3)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
         assertEquals(new ChannelUID("a:b:c:d"), channelCapture.getValue());
@@ -117,18 +118,18 @@ public class ZigBeeConverterAtmosphericPressureTest {
         assertEquals(1245.6, value.doubleValue(), 0.01);
 
         //
-        converter.attributeUpdated(attributeScale);
-        converter.attributeUpdated(attributeMeasuredVal);
-        converter.attributeUpdated(attributeScaledVal2);
+        converter.attributeUpdated(attributeScale, Integer.valueOf(-1));
+        converter.attributeUpdated(attributeMeasuredVal, Integer.valueOf(1234));
+        converter.attributeUpdated(attributeScaledVal2, Integer.valueOf(12556));
         Mockito.verify(thingHandler, Mockito.times(4)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
         value = (QuantityType<Pressure>) stateCapture.getValue();
         assertEquals(1255.6, value.doubleValue(), 0.01);
 
         //
-        converter.attributeUpdated(attributeMeasuredVal);
-        converter.attributeUpdated(attributeScaledVal);
-        converter.attributeUpdated(attributeScale);
+        converter.attributeUpdated(attributeMeasuredVal, Integer.valueOf(1234));
+        converter.attributeUpdated(attributeScaledVal, Integer.valueOf(12456));
+        converter.attributeUpdated(attributeScale, Integer.valueOf(-1));
         Mockito.verify(thingHandler, Mockito.times(5)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
         value = (QuantityType<Pressure>) stateCapture.getValue();

@@ -1,10 +1,14 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.zigbee.internal;
 
@@ -20,6 +24,7 @@ import org.eclipse.smarthome.core.thing.type.DynamicStateDescriptionProvider;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.binding.zigbee.handler.ZigbeeIsAliveTracker;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -31,12 +36,13 @@ import org.osgi.service.component.annotations.Reference;
  * @author Kai Kreuzer - Refactored to use DS annotations
  * @author Thomas Höfer - Injected zigbeeChannelConverterFactory via DS
  */
-@Component(immediate = true, service = { ThingHandlerFactory.class })
+@Component(service = ThingHandlerFactory.class)
 public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
 
     private final ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
 
     private ZigBeeChannelConverterFactory zigbeeChannelConverterFactory;
+    private ZigbeeIsAliveTracker zigbeeIsAliveTracker;
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -54,7 +60,7 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
             return null;
         }
 
-        ZigBeeThingHandler handler = new ZigBeeThingHandler(thing, zigbeeChannelConverterFactory);
+        ZigBeeThingHandler handler = new ZigBeeThingHandler(thing, zigbeeChannelConverterFactory, zigbeeIsAliveTracker);
         bundleContext.registerService(ConfigDescriptionProvider.class.getName(), handler,
                 new Hashtable<String, Object>());
         bundleContext.registerService(DynamicStateDescriptionProvider.class.getName(), handler,
@@ -72,4 +78,12 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
         this.zigbeeChannelConverterFactory = null;
     }
 
+    @Reference
+    protected void setZigbeeIsAliveTracker(ZigbeeIsAliveTracker zigbeeIsAliveTracker) {
+        this.zigbeeIsAliveTracker = zigbeeIsAliveTracker;
+    }
+
+    protected void unsetZigbeeIsAliveTracker(ZigbeeIsAliveTracker zigbeeIsAliveTracker) {
+        this.zigbeeIsAliveTracker = null;
+    }
 }
