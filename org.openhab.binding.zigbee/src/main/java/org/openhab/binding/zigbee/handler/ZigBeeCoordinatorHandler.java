@@ -476,7 +476,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         currentChannel = networkManager.getZigBeeChannel();
         currentPanId = networkManager.getZigBeePanId();
         currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
-        logger.debug("ZigBee Initialise done. channel={}, PanId={}  EPanId={}", currentChannel, currentPanId,
+        logger.debug("ZigBee initialise done. channel={}, PanId={}  EPanId={}", currentChannel, currentPanId,
                 currentExtendedPanId);
 
         try {
@@ -522,11 +522,10 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     return;
                 }
 
-                // close everything that has been started prior to initializing the serial port
+                // Close everything that has been started prior to initializing the serial port
                 if (restartJob != null) {
                     restartJob.cancel(true);
                 }
-                // especially shutdown the port
                 networkManager.shutdown();
 
                 synchronized (reconnectLock) {
@@ -1017,7 +1016,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     /**
      * Gets the {@link ZigBeeNetworkManager} for the network
-     * 
+     *
      * @return the {@link ZigBeeNetworkManager}
      */
     public ZigBeeNetworkManager getNetworkManager() {

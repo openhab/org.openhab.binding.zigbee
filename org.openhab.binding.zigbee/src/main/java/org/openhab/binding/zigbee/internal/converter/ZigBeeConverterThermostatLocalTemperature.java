@@ -12,11 +12,8 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
-import java.math.BigDecimal;
 import java.util.concurrent.ExecutionException;
 
-import org.eclipse.smarthome.core.library.types.QuantityType;
-import org.eclipse.smarthome.core.library.unit.SIUnits;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
@@ -137,7 +134,7 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
                 && attribute.getId() == ZclThermostatCluster.ATTR_LOCALTEMPERATURE) {
             Integer value = (Integer) val;
             if (value != null && value != INVALID_TEMPERATURE) {
-                updateChannelState(new QuantityType<>(BigDecimal.valueOf(value, 2), SIUnits.CELSIUS));
+                updateChannelState(valueToTemperature(value));
             }
         }
     }

@@ -193,7 +193,7 @@ public class ZigBeeBindingConstants {
             "zigbee:thermostat_systemmode");
 
     public static final String CHANNEL_NAME_THERMOSTAT_RUNNINGMODE = "thermostatrunningmode";
-    public static final String CHANNEL_LABEL_THERMOSTAT_RUNNINGMODE = "RUNNING Mode";
+    public static final String CHANNEL_LABEL_THERMOSTAT_RUNNINGMODE = "Running Mode";
     public static final ChannelTypeUID CHANNEL_THERMOSTAT_RUNNINGMODE = new ChannelTypeUID(
             "zigbee:thermostat_runningmode");
 
