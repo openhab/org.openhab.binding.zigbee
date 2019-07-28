@@ -12,17 +12,12 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
-import org.eclipse.smarthome.core.types.StateDescription;
-import org.eclipse.smarthome.core.types.StateOption;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.slf4j.Logger;
@@ -36,7 +31,13 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclThermostatCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
- * Converter for the thermostat running mode channel
+ * Converter for the thermostat running mode channel. This is a read-only channel the presents the current state of the
+ * thermostat.
+ * <p>
+ * ThermostatRunningMode represents the running mode of the thermostat. The thermostat running mode can
+ * only be Off, Cool or Heat. This attribute is intended to provide additional information when the thermostat’s
+ * system mode is in auto mode. The attribute value is maintained to have the same value as the SystemMode
+ * attribute.
  *
  * @author Chris Jackson - Initial Contribution
  *
@@ -61,8 +62,8 @@ public class ZigBeeConverterThermostatRunningMode extends ZigBeeBaseChannelConve
             if (bindResponse.isSuccess()) {
                 // Configure reporting
                 ZclAttribute attribute = serverCluster.getAttribute(ZclThermostatCluster.ATTR_THERMOSTATRUNNINGMODE);
-                CommandResult reportingResponse = serverCluster
-                        .setReporting(attribute, REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX).get();
+                CommandResult reportingResponse = attribute
+                        .setReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX).get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 logger.debug("{}: Failed to bind thermostat cluster", endpoint.getIeeeAddress());
@@ -108,7 +109,7 @@ public class ZigBeeConverterThermostatRunningMode extends ZigBeeBaseChannelConve
         try {
             if (!cluster.discoverAttributes(false).get()) {
                 // Device is not supporting attribute reporting - instead, just read the attributes
-                Integer capabilities = cluster.getSystemMode(Long.MAX_VALUE);
+                Integer capabilities = cluster.getThermostatRunningMode(Long.MAX_VALUE);
                 if (capabilities == null) {
                     logger.trace("{}: Thermostat running mode returned null", endpoint.getIeeeAddress());
                     return null;
@@ -120,28 +121,6 @@ public class ZigBeeConverterThermostatRunningMode extends ZigBeeBaseChannelConve
         } catch (InterruptedException | ExecutionException e) {
             logger.warn("{}: Exception discovering attributes in thermostat cluster", endpoint.getIeeeAddress(), e);
         }
-
-        // Sequence of operation defines the allowable modes
-        Integer states = cluster.getControlSequenceOfOperation(Long.MAX_VALUE);
-
-        // Define the allowable states
-        List<StateOption> options = new ArrayList<>();
-        options.add(new StateOption("0", "Off"));
-        options.add(new StateOption("1", "Auto"));
-        if (states != null && states != 0 && states != 1) {
-            options.add(new StateOption("4", "Heat"));
-            options.add(new StateOption("5", "Emergency Heating"));
-        }
-        if (states != null && states != 3 && states != 6) {
-            options.add(new StateOption("3", "Cool"));
-            options.add(new StateOption("6", "Precooling"));
-        }
-        options.add(new StateOption("7", "Fan Only"));
-        options.add(new StateOption("8", "Dry"));
-        options.add(new StateOption("9", "Sleep"));
-
-        StateDescription description = new StateDescription(BigDecimal.ZERO, BigDecimal.valueOf(9),
-                BigDecimal.valueOf(1), "", true, options);
 
         return ChannelBuilder
                 .create(createChannelUID(thingUID, endpoint,

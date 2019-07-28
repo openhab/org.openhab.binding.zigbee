@@ -14,7 +14,11 @@ package org.openhab.binding.zigbee.converter;
 
 import static org.junit.Assert.assertEquals;
 
+import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.PercentType;
+import org.eclipse.smarthome.core.library.types.QuantityType;
+import org.eclipse.smarthome.core.library.unit.ImperialUnits;
+import org.eclipse.smarthome.core.library.unit.SIUnits;
 import org.junit.Test;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeConverterSwitchLevel;
 
@@ -41,4 +45,23 @@ public class ZigBeeBaseChannelConverterTest {
         assertEquals(PercentType.ZERO, converter.levelToPercent(0));
         assertEquals(PercentType.HUNDRED, converter.levelToPercent(254));
     }
+
+    @Test
+    public void valueToTemperature() {
+        ZigBeeBaseChannelConverter converter = new ZigBeeConverterSwitchLevel();
+
+        assertEquals(new QuantityType(12.34, SIUnits.CELSIUS), converter.valueToTemperature(1234));
+    }
+
+    @Test
+    public void temperatureToValue() {
+        ZigBeeBaseChannelConverter converter = new ZigBeeConverterSwitchLevel();
+
+        assertEquals(Integer.valueOf(1234), converter.temperatureToValue(new DecimalType(12.34)));
+        assertEquals(Integer.valueOf(1234), converter.temperatureToValue(new QuantityType(12.34, SIUnits.CELSIUS)));
+        assertEquals(Integer.valueOf(1235), converter.temperatureToValue(new QuantityType(12.345, SIUnits.CELSIUS)));
+        assertEquals(Integer.valueOf(889),
+                converter.temperatureToValue(new QuantityType(48.0, ImperialUnits.FAHRENHEIT)));
+    }
+
 }

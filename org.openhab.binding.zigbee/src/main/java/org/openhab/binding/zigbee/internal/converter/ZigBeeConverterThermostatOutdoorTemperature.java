@@ -12,11 +12,8 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
-import java.math.BigDecimal;
 import java.util.concurrent.ExecutionException;
 
-import org.eclipse.smarthome.core.library.types.QuantityType;
-import org.eclipse.smarthome.core.library.unit.SIUnits;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
@@ -43,6 +40,7 @@ public class ZigBeeConverterThermostatOutdoorTemperature extends ZigBeeBaseChann
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterThermostatOutdoorTemperature.class);
 
     private ZclThermostatCluster cluster;
+    private ZclAttribute attribute;
 
     @Override
     public boolean initializeDevice() {
@@ -58,8 +56,8 @@ public class ZigBeeConverterThermostatOutdoorTemperature extends ZigBeeBaseChann
             if (bindResponse.isSuccess()) {
                 // Configure reporting
                 ZclAttribute attribute = serverCluster.getAttribute(ZclThermostatCluster.ATTR_OUTDOORTEMPERATURE);
-                CommandResult reportingResponse = serverCluster
-                        .setReporting(attribute, REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
+                CommandResult reportingResponse = attribute
+                        .setReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 logger.debug("{}: Failed to bind thermostat cluster", endpoint.getIeeeAddress());
@@ -79,6 +77,13 @@ public class ZigBeeConverterThermostatOutdoorTemperature extends ZigBeeBaseChann
             return false;
         }
 
+        attribute = cluster.getAttribute(ZclThermostatCluster.ATTR_OUTDOORTEMPERATURE);
+        if (attribute == null) {
+            logger.error("{}: Error opening device thermostat outdoor temperature attribute",
+                    endpoint.getIeeeAddress());
+            return false;
+        }
+
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
         return true;
@@ -91,7 +96,7 @@ public class ZigBeeConverterThermostatOutdoorTemperature extends ZigBeeBaseChann
 
     @Override
     public void handleRefresh() {
-        cluster.getOutdoorTemperature(0);
+        attribute.readValue(0);
     }
 
     @Override
@@ -132,8 +137,7 @@ public class ZigBeeConverterThermostatOutdoorTemperature extends ZigBeeBaseChann
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.THERMOSTAT
                 && attribute.getId() == ZclThermostatCluster.ATTR_OUTDOORTEMPERATURE) {
-            Integer value = (Integer) val;
-            updateChannelState(new QuantityType<>(BigDecimal.valueOf(value, 2), SIUnits.CELSIUS));
+            updateChannelState(valueToTemperature((Integer) val));
         }
     }
 }
