@@ -60,9 +60,8 @@ public class ZigBeeConverterTemperatureTest {
         ZclAttribute attribute = Mockito.mock(ZclAttribute.class);
         Mockito.when(attribute.getCluster()).thenReturn(ZclClusterType.TEMPERATURE_MEASUREMENT);
         Mockito.when(attribute.getId()).thenReturn(ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE);
-        Mockito.when(attribute.getLastValue()).thenReturn(Integer.valueOf(2345));
 
-        converter.attributeUpdated(attribute);
+        converter.attributeUpdated(attribute, Integer.valueOf(2345));
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
 

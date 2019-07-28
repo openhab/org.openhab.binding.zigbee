@@ -39,7 +39,7 @@ import org.osgi.service.component.annotations.Component;
  *
  * @author Chris Jackson - Initial contribution
  */
-@Component(service = ThingHandlerFactory.class, immediate = true, configurationPid = "org.openhab.binding.zigbee.telegesis")
+@Component(service = ThingHandlerFactory.class, configurationPid = "org.openhab.binding.zigbee.telegesis")
 @NonNullByDefault
 public class TelegesisHandlerFactory extends BaseThingHandlerFactory {
     private Map<ThingUID, ServiceRegistration> coordinatorHandlerRegs = new HashMap<>();

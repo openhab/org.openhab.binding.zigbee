@@ -77,6 +77,7 @@ import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.ZigBeeNodeStatus;
 import com.zsmartsystems.zigbee.ZigBeeProfileType;
+import com.zsmartsystems.zigbee.ZigBeeStatus;
 import com.zsmartsystems.zigbee.app.otaserver.ZclOtaUpgradeServer;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaFile;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaServerStatus;
@@ -166,10 +167,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     /**
      * Creates a ZigBee thing.
      *
-     * @param zigbeeDevice         the {@link Thing}
-     * @param channelFactory       the {@link ZigBeeChannelConverterFactory} to be used to create the channels
+     * @param zigbeeDevice the {@link Thing}
+     * @param channelFactory the {@link ZigBeeChannelConverterFactory} to be used to create the channels
      * @param zigbeeIsAliveTracker the tracker which sets the {@link Thing} to OFFLINE after a period without
-     *                                 communication
+     *            communication
      */
     public ZigBeeThingHandler(Thing zigbeeDevice, ZigBeeChannelConverterFactory channelFactory,
             ZigbeeIsAliveTracker zigbeeIsAliveTracker) {
@@ -432,7 +433,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         // Update the binding table.
         // We're not doing anything with the information here, but we want it up to date so it's ready for use later.
         try {
-            if (node.updateBindingTable().get() == false) {
+            if (node.updateBindingTable().get() != ZigBeeStatus.SUCCESS) {
                 logger.debug("{}: Error getting binding table", nodeIeeeAddress);
             }
         } catch (InterruptedException | ExecutionException e) {
@@ -448,7 +449,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         logger.debug("{}: Done initialising ZigBee Thing handler", nodeIeeeAddress);
 
         // Save the network state
-        coordinatorHandler.serializeNetwork();
+        coordinatorHandler.serializeNetwork(node.getIeeeAddress());
     }
 
     private int getExpectedUpdatePeriod(Map<ChannelUID, ZigBeeBaseChannelConverter> channels) {
@@ -503,7 +504,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * Process a static cluster list and add it to the existing list
      *
      * @param initialClusters a collection of existing clusters
-     * @param newClusters     a string containing a comma separated list of clusters
+     * @param newClusters a string containing a comma separated list of clusters
      * @return a list of clusters if the list is updated, or an empty list if it has not changed
      */
     private List<Integer> processClusterList(Collection<Integer> initialClusters, String newClusters) {
@@ -738,7 +739,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * changes.
      *
      * @param channel the {@link ChannelUID} to be updated
-     * @param state   the new {link State}
+     * @param state the new {link State}
      */
     public void setChannelState(ChannelUID channel, State state) {
         if (firmwareUpdateInProgress) {
@@ -757,7 +758,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * received.
      *
      * @param channel the {@link ChannelUID} to be triggered
-     * @param event   the event to be emitted
+     * @param event the event to be emitted
      */
     @Override
     public void triggerChannel(ChannelUID channel, String event) {
@@ -779,7 +780,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     @Override
     public void nodeUpdated(ZigBeeNode node) {
-        // Make sure it's our node that's updated
+        // Make sure it's this node that's updated
         if (!node.getIeeeAddress().equals(nodeIeeeAddress)) {
             return;
         }
