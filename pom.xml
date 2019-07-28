@@ -33,6 +33,7 @@
 
   <properties>
     <report.fail.on.error>false</report.fail.on.error>
+    <zsmartsystems.version>1.2.1</zsmartsystems.version>
   </properties>
 
   <scm>
@@ -84,6 +85,7 @@
           <executions>
             <execution>
               <id>sat-all</id>
+              <phase>none</phase>
               <configuration>
                 <checkstyleProperties>tools/static-code-analysis/checkstyle/ruleset.properties</checkstyleProperties>
                 <checkstyleFilter>tools/static-code-analysis/checkstyle/suppressions.xml</checkstyleFilter>
@@ -183,6 +185,18 @@
       </releases>
       <snapshots>
         <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>snapshots-zsmartsystems-com.zsmartsystems</id>
+      <name>zsmartsystems-com.zsmartsystems</name>
+      <url>https://oss.jfrog.org/artifactory/oss-snapshot-local/</url>
+      <releases>
+          <enabled>false</enabled>
+          <updatePolicy>never</updatePolicy>
+      </releases>
+      <snapshots>
+          <enabled>true</enabled>
       </snapshots>
     </repository>
   </repositories>

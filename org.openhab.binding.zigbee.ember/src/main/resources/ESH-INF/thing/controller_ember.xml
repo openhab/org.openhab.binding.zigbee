@@ -215,6 +215,19 @@
                     <option value="1">High RAM</option>
 			    </options>
 			</parameter>
+			
+			<parameter name="zigbee_trustcentremode" type="text" groupName="network">
+                <label>Trust Centre Join Mode</label>
+                <description>Sets the Trust Centre join/rejoin mode</description>
+                <options>
+                    <option value="TC_JOIN_DENY">Deny all joins</option>
+                    <option value="TC_JOIN_SECURE">Allow only secure joining</option>
+                    <option value="TC_JOIN_INSECURE">Allow all joins</option>
+                </options>
+                <default>TC_JOIN_SECURE</default>
+                <advanced>true</advanced>
+            </parameter>
+			
 		</config-description>
 	</bridge-type>
 

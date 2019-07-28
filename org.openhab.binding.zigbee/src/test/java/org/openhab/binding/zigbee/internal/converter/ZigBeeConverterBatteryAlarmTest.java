@@ -13,7 +13,6 @@
 package org.openhab.binding.zigbee.internal.converter;
 
 import static com.zsmartsystems.zigbee.zcl.clusters.ZclPowerConfigurationCluster.*;
-import static com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.*;
@@ -30,6 +29,8 @@ import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclFanControlCluster;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclPowerConfigurationCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclDataType;
 
 /**
@@ -65,66 +66,68 @@ public class ZigBeeConverterBatteryAlarmTest {
     @Test
     public void testAttributeUpdateForMinThreshold() {
         // Bit 0 indicates BatteryMinThreshold
-        converter.attributeUpdated(makeAlarmState(0b0001));
-        verify(thingHandler).setChannelState(channel.getUID(),
-                new StringType(STATE_OPTION_BATTERY_MIN_THRESHOLD));
+        ZclAttribute attribute = makeAlarmState(0b0001);
+        converter.attributeUpdated(attribute, attribute.getLastValue());
+        verify(thingHandler).setChannelState(channel.getUID(), new StringType(STATE_OPTION_BATTERY_MIN_THRESHOLD));
     }
 
     @Test
     public void testAttributeUpdateForThreshold1() {
         // Bit 1 indicates threshold 1
-        converter.attributeUpdated(makeAlarmState(0b0010));
-        verify(thingHandler).setChannelState(channel.getUID(),
-                new StringType(STATE_OPTION_BATTERY_THRESHOLD_1));
+        ZclAttribute attribute = makeAlarmState(0b0010);
+        converter.attributeUpdated(attribute, attribute.getLastValue());
+        verify(thingHandler).setChannelState(channel.getUID(), new StringType(STATE_OPTION_BATTERY_THRESHOLD_1));
     }
 
     @Test
     public void testAttributeUpdateForThreshold2() {
         // Bit 2 indicates threshold 2
-        converter.attributeUpdated(makeAlarmState(0b0100));
-        verify(thingHandler).setChannelState(channel.getUID(),
-                new StringType(STATE_OPTION_BATTERY_THRESHOLD_2));
+        ZclAttribute attribute = makeAlarmState(0b0100);
+        converter.attributeUpdated(attribute, attribute.getLastValue());
+        verify(thingHandler).setChannelState(channel.getUID(), new StringType(STATE_OPTION_BATTERY_THRESHOLD_2));
     }
 
     @Test
     public void testAttributeUpdateForThreshold3() {
         // Bit 3 indicates threshold 3
-        converter.attributeUpdated(makeAlarmState(0b1000));
-        verify(thingHandler).setChannelState(channel.getUID(),
-                new StringType(STATE_OPTION_BATTERY_THRESHOLD_3));
+        ZclAttribute attribute = makeAlarmState(0b1000);
+        converter.attributeUpdated(attribute, attribute.getLastValue());
+        verify(thingHandler).setChannelState(channel.getUID(), new StringType(STATE_OPTION_BATTERY_THRESHOLD_3));
     }
 
     @Test
     public void testAttributeUpdateForNoThreshold() {
-        converter.attributeUpdated(makeAlarmState(0b0000));
-        verify(thingHandler).setChannelState(channel.getUID(),
-                new StringType(STATE_OPTION_BATTERY_NO_THRESHOLD));
+        ZclAttribute attribute = makeAlarmState(0b0000);
+        converter.attributeUpdated(attribute, attribute.getLastValue());
+        verify(thingHandler).setChannelState(channel.getUID(), new StringType(STATE_OPTION_BATTERY_NO_THRESHOLD));
     }
 
     @Test
     public void testAttributeUpdateMultipleThresholds() {
-        converter.attributeUpdated(makeAlarmState(0b1110));
-        verify(thingHandler).setChannelState(channel.getUID(),
-                new StringType(STATE_OPTION_BATTERY_THRESHOLD_1));
+        ZclAttribute attribute = makeAlarmState(0b1110);
+        converter.attributeUpdated(attribute, attribute.getLastValue());
+        verify(thingHandler).setChannelState(channel.getUID(), new StringType(STATE_OPTION_BATTERY_THRESHOLD_1));
     }
 
     @Test
     public void testAttributeUpdateUnsuitableAttribute() {
-        converter.attributeUpdated(new ZclAttribute(POWER_CONFIGURATION, ATTR_BATTERYALARMMASK, "alarm_mask",
-                ZclDataType.BITMAP_32_BIT, false, true, false, true));
+        ZclAttribute attribute = new ZclAttribute(new ZclPowerConfigurationCluster(endpoint), ATTR_BATTERYALARMMASK,
+                "alarm_mask", ZclDataType.BITMAP_32_BIT, false, true, false, true);
+        converter.attributeUpdated(attribute, attribute.getLastValue());
         verify(thingHandler, never()).setChannelState(any(ChannelUID.class), any(State.class));
     }
 
     @Test
     public void testAttributeUpdateUnsuitableCluster() {
-        converter.attributeUpdated(new ZclAttribute(FAN_CONTROL, ATTR_BATTERYALARMMASK, "bla",
-                ZclDataType.BITMAP_32_BIT, false, true, false, true));
+        ZclAttribute attribute = new ZclAttribute(new ZclFanControlCluster(endpoint), ATTR_BATTERYALARMMASK, "bla",
+                ZclDataType.BITMAP_32_BIT, false, true, false, true);
+        converter.attributeUpdated(attribute, attribute.getLastValue());
         verify(thingHandler, never()).setChannelState(any(ChannelUID.class), any(State.class));
     }
 
     private ZclAttribute makeAlarmState(int bitmask) {
-        ZclAttribute attribute = new ZclAttribute(POWER_CONFIGURATION, ATTR_BATTERYALARMSTATE, "alarm_state",
-                ZclDataType.BITMAP_32_BIT, false, true, false, true);
+        ZclAttribute attribute = new ZclAttribute(new ZclPowerConfigurationCluster(endpoint), ATTR_BATTERYALARMSTATE,
+                "alarm_state", ZclDataType.BITMAP_32_BIT, false, true, false, true);
         attribute.updateValue(Integer.valueOf(bitmask));
         return attribute;
     }
