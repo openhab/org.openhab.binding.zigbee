@@ -135,7 +135,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
         currentOnOffState.set(true);
 
         // Create a configuration handler and get the available options
-        configReporting = new ZclReportingConfig();
+        configReporting = new ZclReportingConfig(channel);
         configLevelControl = new ZclLevelControlConfig();
         configLevelControl.initialize(clusterLevelControl);
 

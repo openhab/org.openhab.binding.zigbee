@@ -24,6 +24,7 @@ import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameter.Type;
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameterBuilder;
 import org.eclipse.smarthome.config.core.Configuration;
+import org.eclipse.smarthome.core.thing.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,6 +67,22 @@ public class ZclReportingConfig implements ZclClusterConfigHandler {
     private BigDecimal minimumChange;
     private BigDecimal maximumChange;
 
+    public ZclReportingConfig(Channel channel) {
+        Configuration configuration = channel.getConfiguration();
+        if (configuration.containsKey(CONFIG_REPORTINGMIN)) {
+            reportingTimeMin = Integer.parseInt((String) configuration.get(CONFIG_REPORTINGMIN));
+        }
+        if (configuration.containsKey(CONFIG_REPORTINGMIN)) {
+            reportingTimeMin = Integer.parseInt((String) configuration.get(CONFIG_REPORTINGMAX));
+        }
+        if (configuration.containsKey(CONFIG_REPORTINGMIN)) {
+            reportingTimeMin = Integer.parseInt((String) configuration.get(CONFIG_REPORTINGCHANGE));
+        }
+        if (configuration.containsKey(CONFIG_POLLING)) {
+            pollingPeriod = Integer.parseInt((String) configuration.get(CONFIG_POLLING));
+        }
+    }
+
     @Override
     public boolean initialize(ZclCluster cluster) {
         return true;
@@ -73,7 +90,7 @@ public class ZclReportingConfig implements ZclClusterConfigHandler {
 
     /**
      * Sets the analogue reporting values
-     * 
+     *
      * @param defaultChange the default value
      * @param minimumChange the minimum reporting value
      * @param maximumChange the maximum reporting value

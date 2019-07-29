@@ -13,14 +13,19 @@
 package org.openhab.binding.zigbee.internal.converter;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +45,14 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterIlluminance.class);
 
+    private static BigDecimal CHANGE_DEFAULT = new BigDecimal(5000);
+    private static BigDecimal CHANGE_MIN = new BigDecimal(10);
+    private static BigDecimal CHANGE_MAX = new BigDecimal(20000);
+
     private ZclIlluminanceMeasurementCluster cluster;
+    private ZclAttribute attribute;
+
+    private ZclReportingConfig configReporting;
 
     @Override
     public boolean initializeDevice() {
@@ -51,16 +63,20 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
             return false;
         }
 
+        ZclReportingConfig reporting = new ZclReportingConfig(channel);
+
         try {
             CommandResult bindResponse = bind(serverCluster).get();
             if (bindResponse.isSuccess()) {
                 // Configure reporting - no faster than once per second - no slower than 2 hours.
-                CommandResult reportingResponse = serverCluster
-                        .setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+                ZclAttribute attribute = serverCluster
+                        .getAttribute(ZclIlluminanceMeasurementCluster.ATTR_MEASUREDVALUE);
+                CommandResult reportingResponse = attribute.setReporting(reporting.getReportingTimeMin(),
+                        reporting.getReportingTimeMax(), reporting.getReportingChange()).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, reporting.getPollingPeriod());
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.debug("{}: Exception configuring meassured value reporting", endpoint.getIeeeAddress(), e);
+            logger.debug("{}: Exception configuring measured value reporting", endpoint.getIeeeAddress(), e);
             return false;
         }
         return true;
@@ -75,8 +91,21 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
             return false;
         }
 
+        attribute = cluster.getAttribute(ZclIlluminanceMeasurementCluster.ATTR_MEASUREDVALUE);
+        if (attribute == null) {
+            logger.error("{}: Error opening device illuminance measurement attribute", endpoint.getIeeeAddress());
+            return false;
+        }
+
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
+
+        // Create a configuration handler and get the available options
+        configReporting = new ZclReportingConfig(channel);
+        configReporting.setAnalogue(CHANGE_DEFAULT, CHANGE_MIN, CHANGE_MAX);
+        configOptions = new ArrayList<>();
+        configOptions.addAll(configReporting.getConfiguration());
+
         return true;
     }
 
@@ -86,8 +115,19 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
     }
 
     @Override
+    public int getPollingPeriod() {
+        return configReporting.getPollingPeriod();
+    }
+
+    @Override
     public void handleRefresh() {
-        cluster.getMeasuredValue(0);
+        attribute.readValue(0);
+    }
+
+    @Override
+    public void updateConfiguration(@NonNull Configuration currentConfiguration,
+            Map<String, Object> updatedParameters) {
+        configReporting.updateConfiguration(currentConfiguration, updatedParameters);
     }
 
     @Override
@@ -110,7 +150,8 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
         if (attribute.getCluster() == ZclClusterType.ILLUMINANCE_MEASUREMENT
                 && attribute.getId() == ZclIlluminanceMeasurementCluster.ATTR_MEASUREDVALUE) {
             Integer value = (Integer) val;
-            updateChannelState(new DecimalType(BigDecimal.valueOf(value, 2)));
+            double illuminance = Math.pow(10.0, value / 10000.0) - 1;
+            updateChannelState(new DecimalType(illuminance));
         }
     }
 }
