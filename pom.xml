@@ -46,11 +46,11 @@
   <distributionManagement>
     <repository>
       <id>bintray</id>
-      <url>https://api.bintray.com/maven/openhab/mvn/org.openhab.binding.zigbee/;publish=1</url>
+      <url>${oh.repo.distBaseUrl}/org.openhab.binding.zigbee/;publish=1</url>
     </repository>
     <snapshotRepository>
       <id>jfrog</id>
-      <url>https://openhab.jfrog.io/openhab/libs-snapshot-local</url>
+      <url>${oh.repo.snapshotBaseUrl}/libs-snapshot-local</url>
     </snapshotRepository>
   </distributionManagement>
 
@@ -149,67 +149,5 @@
       </plugin>
     </plugins>
   </build>
-
-  <repositories>
-    <repository>
-      <id>jcenter</id>
-      <name>JCenter Repository</name>
-      <url>https://jcenter.bintray.com</url>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>never</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>openhab-artifactory-release</id>
-      <name>JFrog Artifactory Repository</name>
-      <url>https://openhab.jfrog.io/openhab/libs-release</url>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>never</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>openhab-snapshots-release</id>
-      <name>JFrog Artifactory Repository</name>
-      <url>https://openhab.jfrog.io/openhab/libs-snapshot-local</url>
-      <releases>
-        <enabled>false</enabled>
-        <updatePolicy>never</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>snapshots-zsmartsystems-com.zsmartsystems</id>
-      <name>zsmartsystems-com.zsmartsystems</name>
-      <url>https://oss.jfrog.org/artifactory/oss-snapshot-local/</url>
-      <releases>
-          <enabled>false</enabled>
-          <updatePolicy>never</updatePolicy>
-      </releases>
-      <snapshots>
-          <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>jcenter</id>
-      <url>https://jcenter.bintray.com</url>
-    </pluginRepository>
-    <pluginRepository>
-      <id>openhab-artifactory-release</id>
-      <url>https://openhab.jfrog.io/openhab/libs-release</url>
-    </pluginRepository>
-  </pluginRepositories>
 
 </project>
