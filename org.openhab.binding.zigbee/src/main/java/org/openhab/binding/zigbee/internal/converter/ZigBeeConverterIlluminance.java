@@ -127,7 +127,18 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
     @Override
     public void updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> updatedParameters) {
-        configReporting.updateConfiguration(currentConfiguration, updatedParameters);
+        if (configReporting.updateConfiguration(currentConfiguration, updatedParameters)) {
+            try {
+                ZclAttribute attribute = cluster.getAttribute(ZclIlluminanceMeasurementCluster.ATTR_MEASUREDVALUE);
+                CommandResult reportingResponse;
+                reportingResponse = attribute.setReporting(configReporting.getReportingTimeMin(),
+                        configReporting.getReportingTimeMax(), configReporting.getReportingChange()).get();
+                handleReportingResponse(reportingResponse, configReporting.getPollingPeriod(),
+                        configReporting.getReportingTimeMax());
+            } catch (InterruptedException | ExecutionException e) {
+                logger.debug("{}: Illuminance measurement exception setting reporting", endpoint.getIeeeAddress(), e);
+            }
+        }
     }
 
     @Override

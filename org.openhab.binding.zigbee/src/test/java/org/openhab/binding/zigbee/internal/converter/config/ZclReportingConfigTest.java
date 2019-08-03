@@ -79,9 +79,9 @@ public class ZclReportingConfigTest {
         Channel channel = Mockito.mock(Channel.class);
         Configuration configuration = new Configuration();
         Map<String, Object> properties = new HashMap<>();
-        properties.put("zigbee_reporting_min", "12");
-        properties.put("zigbee_reporting_max", "34");
-        properties.put("zigbee_reporting_change", "56");
+        properties.put("zigbee_reporting_min", BigDecimal.valueOf(12));
+        properties.put("zigbee_reporting_max", BigDecimal.valueOf(34));
+        properties.put("zigbee_reporting_change", BigDecimal.valueOf(56));
         configuration.setProperties(properties);
         Mockito.when(channel.getConfiguration()).thenReturn(configuration);
         ZclReportingConfig config = new ZclReportingConfig(channel);

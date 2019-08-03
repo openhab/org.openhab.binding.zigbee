@@ -70,16 +70,16 @@ public class ZclReportingConfig implements ZclClusterConfigHandler {
     public ZclReportingConfig(Channel channel) {
         Configuration configuration = channel.getConfiguration();
         if (configuration.containsKey(CONFIG_REPORTINGMIN)) {
-            reportingTimeMin = Integer.parseInt((String) configuration.get(CONFIG_REPORTINGMIN));
+            reportingTimeMin = ((BigDecimal) configuration.get(CONFIG_REPORTINGMIN)).intValue();
         }
         if (configuration.containsKey(CONFIG_REPORTINGMIN)) {
-            reportingTimeMin = Integer.parseInt((String) configuration.get(CONFIG_REPORTINGMAX));
+            reportingTimeMin = ((BigDecimal) configuration.get(CONFIG_REPORTINGMAX)).intValue();
         }
         if (configuration.containsKey(CONFIG_REPORTINGMIN)) {
-            reportingTimeMin = Integer.parseInt((String) configuration.get(CONFIG_REPORTINGCHANGE));
+            reportingTimeMin = ((BigDecimal) configuration.get(CONFIG_REPORTINGCHANGE)).intValue();
         }
         if (configuration.containsKey(CONFIG_POLLING)) {
-            pollingPeriod = Integer.parseInt((String) configuration.get(CONFIG_POLLING));
+            pollingPeriod = ((BigDecimal) configuration.get(CONFIG_POLLING)).intValue();
         }
     }
 
@@ -137,9 +137,10 @@ public class ZclReportingConfig implements ZclClusterConfigHandler {
     }
 
     @Override
-    public void updateConfiguration(@NonNull Configuration currentConfiguration,
+    public boolean updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> configurationParameters) {
 
+        boolean updated = false;
         for (Entry<String, Object> configurationParameter : configurationParameters.entrySet()) {
             if (!configurationParameter.getKey().startsWith(CONFIG_ID)) {
                 continue;
@@ -154,21 +155,27 @@ public class ZclReportingConfig implements ZclClusterConfigHandler {
             switch (configurationParameter.getKey()) {
                 case CONFIG_REPORTINGMIN:
                     reportingTimeMin = ((BigDecimal) (configurationParameter.getValue())).intValue();
+                    updated = true;
                     break;
                 case CONFIG_REPORTINGMAX:
                     reportingTimeMax = ((BigDecimal) (configurationParameter.getValue())).intValue();
+                    updated = true;
                     break;
                 case CONFIG_REPORTINGCHANGE:
                     reportingChange = ((BigDecimal) (configurationParameter.getValue())).intValue();
+                    updated = true;
                     break;
                 case CONFIG_POLLING:
                     pollingPeriod = ((BigDecimal) (configurationParameter.getValue())).intValue();
+                    updated = true;
                     break;
                 default:
                     logger.warn("Unhandled configuration property {}", configurationParameter.getKey());
                     break;
             }
         }
+
+        return updated;
     }
 
     /**

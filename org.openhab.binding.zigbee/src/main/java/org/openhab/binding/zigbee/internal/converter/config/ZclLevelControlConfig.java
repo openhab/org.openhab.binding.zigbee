@@ -129,9 +129,10 @@ public class ZclLevelControlConfig implements ZclClusterConfigHandler {
     }
 
     @Override
-    public void updateConfiguration(@NonNull Configuration currentConfiguration,
+    public boolean updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> configurationParameters) {
 
+        boolean updated = false;
         for (Entry<String, Object> configurationParameter : configurationParameters.entrySet()) {
             if (!configurationParameter.getKey().startsWith(CONFIG_ID)) {
                 continue;
@@ -183,8 +184,11 @@ public class ZclLevelControlConfig implements ZclClusterConfigHandler {
 
             if (response != null) {
                 currentConfiguration.put(configurationParameter.getKey(), BigInteger.valueOf(response));
+                updated = true;
             }
         }
+
+        return updated;
     }
 
     /**

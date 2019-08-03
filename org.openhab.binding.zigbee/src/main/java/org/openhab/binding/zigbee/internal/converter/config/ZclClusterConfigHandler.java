@@ -56,6 +56,7 @@ public interface ZclClusterConfigHandler {
      *
      * @param currentConfiguration the current {@link Configuration}
      * @param updatedParameters a map containing the updated configuration parameters to be set
+     * @return true if the configuration was updated
      */
-    void updateConfiguration(@NonNull Configuration currentConfiguration, Map<String, Object> updatedParameters);
+    boolean updateConfiguration(@NonNull Configuration currentConfiguration, Map<String, Object> updatedParameters);
 }
