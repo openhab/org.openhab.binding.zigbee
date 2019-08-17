@@ -161,8 +161,7 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
         if (attribute.getCluster() == ZclClusterType.ILLUMINANCE_MEASUREMENT
                 && attribute.getId() == ZclIlluminanceMeasurementCluster.ATTR_MEASUREDVALUE) {
             Integer value = (Integer) val;
-            double illuminance = Math.pow(10.0, value / 10000.0) - 1;
-            updateChannelState(new DecimalType(illuminance));
+            updateChannelState(new DecimalType(BigDecimal.valueOf(value, 2)));
         }
     }
 }
