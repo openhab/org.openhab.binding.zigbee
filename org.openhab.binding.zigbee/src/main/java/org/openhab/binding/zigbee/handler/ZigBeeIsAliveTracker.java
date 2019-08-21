@@ -26,23 +26,24 @@ import org.slf4j.LoggerFactory;
 /**
  * Service which starts timeout tasks to set a Thing to OFFLINE if it doesn't reset the timer before it runs out
  */
-@Component(immediate = true, service = ZigbeeIsAliveTracker.class)
-public class ZigbeeIsAliveTracker {
+@Component(immediate = true, service = ZigBeeIsAliveTracker.class)
+public class ZigBeeIsAliveTracker {
 
-    private final Logger logger = LoggerFactory.getLogger(ZigbeeIsAliveTracker.class);
+    private final Logger logger = LoggerFactory.getLogger(ZigBeeIsAliveTracker.class);
 
     private Map<ZigBeeThingHandler, Integer> handlerIntervalMapping = new ConcurrentHashMap<>();
     private Map<ZigBeeThingHandler, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
 
-    protected final ScheduledExecutorService scheduler = ThreadPoolManager.getScheduledPool("ZigbeeIsAliveTracker");
+    protected final ScheduledExecutorService scheduler = ThreadPoolManager.getScheduledPool("ZigBeeIsAliveTracker");
 
     /**
      * Adds a mapping from {@link ZigBeeThingHandler} to the interval in which it should have communicated
      *
-     * @param zigBeeThingHandler      the {@link ZigBeeThingHandler}
+     * @param zigBeeThingHandler the {@link ZigBeeThingHandler}
      * @param expectedUpdateInterval the interval in which the device should have communicated with us
      */
     public void addHandler(ZigBeeThingHandler zigBeeThingHandler, int expectedUpdateInterval) {
+        logger.debug("Add IsAlive Tracker for thingUID={}", zigBeeThingHandler.getThing().getUID());
         handlerIntervalMapping.put(zigBeeThingHandler, expectedUpdateInterval);
         resetTimer(zigBeeThingHandler);
     }
@@ -53,6 +54,7 @@ public class ZigbeeIsAliveTracker {
      * @param zigBeeThingHandler the {@link ZigBeeThingHandler}
      */
     public void removeHandler(ZigBeeThingHandler zigBeeThingHandler) {
+        logger.debug("Remove IsAlive Tracker for thingUID={}", zigBeeThingHandler.getThing().getUID());
         cancelTask(zigBeeThingHandler);
         handlerIntervalMapping.remove(zigBeeThingHandler);
     }
@@ -62,7 +64,7 @@ public class ZigbeeIsAliveTracker {
      *
      * @param zigBeeThingHandler the {@link ZigBeeThingHandler}
      */
-    public void resetTimer(ZigBeeThingHandler zigBeeThingHandler) {
+    public synchronized void resetTimer(ZigBeeThingHandler zigBeeThingHandler) {
         logger.debug("Reset timeout for handler with thingUID={}", zigBeeThingHandler.getThing().getUID());
         cancelTask(zigBeeThingHandler);
         scheduleTask(zigBeeThingHandler);

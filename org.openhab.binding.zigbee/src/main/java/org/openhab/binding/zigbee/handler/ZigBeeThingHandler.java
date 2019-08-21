@@ -162,7 +162,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     /**
      * The service with timers to see if the device is still alive (ONLINE)
      */
-    private final ZigbeeIsAliveTracker isAliveTracker;
+    private final ZigBeeIsAliveTracker isAliveTracker;
 
     /**
      * Creates a ZigBee thing.
@@ -173,7 +173,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      *            communication
      */
     public ZigBeeThingHandler(Thing zigbeeDevice, ZigBeeChannelConverterFactory channelFactory,
-            ZigbeeIsAliveTracker zigbeeIsAliveTracker) {
+            ZigBeeIsAliveTracker zigbeeIsAliveTracker) {
         super(zigbeeDevice);
         this.channelFactory = channelFactory;
         this.isAliveTracker = zigbeeIsAliveTracker;
@@ -462,7 +462,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     }
 
     /**
-     * Whenever the {@link ZigbeeIsAliveTracker} determines that a handler has not reset its timeout timer within its
+     * Whenever the {@link ZigBeeIsAliveTracker} determines that a handler has not reset its timeout timer within its
      * reporting or polling interval, this callback method will be called to set the Thing to OFFLINE.
      */
     public void aliveTimeoutReached() {
@@ -526,8 +526,6 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         stopPolling();
 
-        isAliveTracker.removeHandler(this);
-
         if (nodeIeeeAddress != null) {
             if (coordinatorHandler != null) {
                 coordinatorHandler.removeNetworkNodeListener(this);
@@ -540,6 +538,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             channel.disposeConverter();
         }
         channels.clear();
+
+        isAliveTracker.removeHandler(this);
 
         nodeInitialised = false;
     }

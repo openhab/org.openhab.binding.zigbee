@@ -154,7 +154,7 @@ public class ZigBeeThingHandlerTest {
         ZigBeeChannelConverterFactory zigBeeChannelConverterFactory = mockZigBeeChannelConverterFactory(
                 zigBeeChannelConverter);
 
-        ZigbeeIsAliveTracker zigBeeIsAliveTracker = mock(ZigbeeIsAliveTracker.class);
+        ZigBeeIsAliveTracker zigBeeIsAliveTracker = mock(ZigBeeIsAliveTracker.class);
 
         ZigBeeThingHandler zigBeeThingHandler = new ZigBeeThingHandler(thing, zigBeeChannelConverterFactory,
                 zigBeeIsAliveTracker);
