@@ -24,6 +24,7 @@ import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameter.Type;
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameterBuilder;
 import org.eclipse.smarthome.config.core.Configuration;
+import org.eclipse.smarthome.core.thing.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,6 +67,22 @@ public class ZclReportingConfig implements ZclClusterConfigHandler {
     private BigDecimal minimumChange;
     private BigDecimal maximumChange;
 
+    public ZclReportingConfig(Channel channel) {
+        Configuration configuration = channel.getConfiguration();
+        if (configuration.containsKey(CONFIG_REPORTINGMIN)) {
+            reportingTimeMin = ((BigDecimal) configuration.get(CONFIG_REPORTINGMIN)).intValue();
+        }
+        if (configuration.containsKey(CONFIG_REPORTINGMAX)) {
+            reportingTimeMin = ((BigDecimal) configuration.get(CONFIG_REPORTINGMAX)).intValue();
+        }
+        if (configuration.containsKey(CONFIG_REPORTINGCHANGE)) {
+            reportingTimeMin = ((BigDecimal) configuration.get(CONFIG_REPORTINGCHANGE)).intValue();
+        }
+        if (configuration.containsKey(CONFIG_POLLING)) {
+            pollingPeriod = ((BigDecimal) configuration.get(CONFIG_POLLING)).intValue();
+        }
+    }
+
     @Override
     public boolean initialize(ZclCluster cluster) {
         return true;
@@ -73,7 +90,7 @@ public class ZclReportingConfig implements ZclClusterConfigHandler {
 
     /**
      * Sets the analogue reporting values
-     * 
+     *
      * @param defaultChange the default value
      * @param minimumChange the minimum reporting value
      * @param maximumChange the maximum reporting value
@@ -120,9 +137,10 @@ public class ZclReportingConfig implements ZclClusterConfigHandler {
     }
 
     @Override
-    public void updateConfiguration(@NonNull Configuration currentConfiguration,
+    public boolean updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> configurationParameters) {
 
+        boolean updated = false;
         for (Entry<String, Object> configurationParameter : configurationParameters.entrySet()) {
             if (!configurationParameter.getKey().startsWith(CONFIG_ID)) {
                 continue;
@@ -137,21 +155,27 @@ public class ZclReportingConfig implements ZclClusterConfigHandler {
             switch (configurationParameter.getKey()) {
                 case CONFIG_REPORTINGMIN:
                     reportingTimeMin = ((BigDecimal) (configurationParameter.getValue())).intValue();
+                    updated = true;
                     break;
                 case CONFIG_REPORTINGMAX:
                     reportingTimeMax = ((BigDecimal) (configurationParameter.getValue())).intValue();
+                    updated = true;
                     break;
                 case CONFIG_REPORTINGCHANGE:
                     reportingChange = ((BigDecimal) (configurationParameter.getValue())).intValue();
+                    updated = true;
                     break;
                 case CONFIG_POLLING:
                     pollingPeriod = ((BigDecimal) (configurationParameter.getValue())).intValue();
+                    updated = true;
                     break;
                 default:
                     logger.warn("Unhandled configuration property {}", configurationParameter.getKey());
                     break;
             }
         }
+
+        return updated;
     }
 
     /**

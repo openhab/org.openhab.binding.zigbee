@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
 import org.eclipse.smarthome.config.core.Configuration;
+import org.eclipse.smarthome.core.thing.Channel;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -40,7 +41,9 @@ public class ZclReportingConfigTest {
     public void getConfiguration() {
         ZclLevelControlCluster cluster = Mockito.mock(ZclLevelControlCluster.class);
 
-        ZclReportingConfig config = new ZclReportingConfig();
+        Channel channel = Mockito.mock(Channel.class);
+        Mockito.when(channel.getConfiguration()).thenReturn(Mockito.mock(Configuration.class));
+        ZclReportingConfig config = new ZclReportingConfig(channel);
         config.initialize(cluster);
         List<ConfigDescriptionParameter> configuration = config.getConfiguration();
 
@@ -53,7 +56,9 @@ public class ZclReportingConfigTest {
     public void getConfigurationAnalogue() {
         ZclLevelControlCluster cluster = Mockito.mock(ZclLevelControlCluster.class);
 
-        ZclReportingConfig config = new ZclReportingConfig();
+        Channel channel = Mockito.mock(Channel.class);
+        Mockito.when(channel.getConfiguration()).thenReturn(Mockito.mock(Configuration.class));
+        ZclReportingConfig config = new ZclReportingConfig(channel);
         config.initialize(cluster);
 
         config.setAnalogue(BigDecimal.valueOf(1), BigDecimal.valueOf(2), BigDecimal.valueOf(3));
@@ -71,12 +76,19 @@ public class ZclReportingConfigTest {
     public void setReportingTime() {
         ZclLevelControlCluster cluster = Mockito.mock(ZclLevelControlCluster.class);
 
-        ZclReportingConfig config = new ZclReportingConfig();
+        Channel channel = Mockito.mock(Channel.class);
+        Configuration configuration = new Configuration();
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("zigbee_reporting_min", BigDecimal.valueOf(12));
+        properties.put("zigbee_reporting_max", BigDecimal.valueOf(34));
+        properties.put("zigbee_reporting_change", BigDecimal.valueOf(56));
+        configuration.setProperties(properties);
+        Mockito.when(channel.getConfiguration()).thenReturn(configuration);
+        ZclReportingConfig config = new ZclReportingConfig(channel);
         config.initialize(cluster);
         config.getConfiguration();
 
-        Configuration configuration = new Configuration();
-
+        configuration = new Configuration();
         Map<String, Object> parameters = new HashMap<>();
         parameters.put(CONFIG_REPORTINGMIN, new BigDecimal(45));
         parameters.put(CONFIG_REPORTINGMAX, new BigDecimal(95));

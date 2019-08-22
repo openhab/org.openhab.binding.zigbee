@@ -116,7 +116,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
             clusterOnOffClient.addCommandListener(this);
         }
 
-        configReporting = new ZclReportingConfig();
+        configReporting = new ZclReportingConfig(channel);
 
         configOptions = new ArrayList<>();
         configOptions.addAll(configReporting.getConfiguration());
