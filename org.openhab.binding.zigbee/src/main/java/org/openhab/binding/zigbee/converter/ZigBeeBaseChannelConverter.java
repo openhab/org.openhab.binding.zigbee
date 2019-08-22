@@ -312,10 +312,8 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * Gets the polling period for this channel in seconds. Normally this should be left at the default
      * ({@link ZigBeeBaseChannelConverter#POLLING_PERIOD_DEFAULT}), however if the channel does not support reporting,
-     * it can be set to a higher
-     * period such as {@link ZigBeeBaseChannelConverter#POLLING_PERIOD_HIGH} during the converter initialisation. Any
-     * period may be used, however
-     * it is recommended to use these standard settings.
+     * it can be set to a higher period such as {@link ZigBeeBaseChannelConverter#POLLING_PERIOD_HIGH} during the
+     * converter initialisation. Any period may be used, however it is recommended to use these standard settings.
      *
      * @return the polling period for this channel in seconds
      */

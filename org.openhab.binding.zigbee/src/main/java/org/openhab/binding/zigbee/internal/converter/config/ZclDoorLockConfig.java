@@ -103,8 +103,9 @@ public class ZclDoorLockConfig implements ZclClusterConfigHandler {
     }
 
     @Override
-    public void updateConfiguration(@NonNull Configuration currentConfiguration,
+    public boolean updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> updatedParameters) {
+        boolean updated = false;
         for (Entry<String, Object> configurationParameter : updatedParameters.entrySet()) {
             if (!configurationParameter.getKey().startsWith(CONFIG_ID)) {
                 continue;
@@ -148,7 +149,10 @@ public class ZclDoorLockConfig implements ZclClusterConfigHandler {
 
             if (response != null) {
                 currentConfiguration.put(configurationParameter.getKey(), response);
+                updated = true;
             }
         }
+
+        return updated;
     }
 }
