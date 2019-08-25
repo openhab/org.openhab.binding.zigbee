@@ -181,7 +181,8 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
             } catch (RuntimeException e) {
                 if (!portOpenRuntimeExcepionMessages.contains(e.getMessage())) {
                     portOpenRuntimeExcepionMessages.add(e.getMessage());
-                    logger.error("Serial Error: Device cannot be opened on Port {}. Caused by {}", portName, e.getMessage());
+                    logger.error("Serial Error: Device cannot be opened on Port {}. Caused by {}", portName,
+                            e.getMessage());
                 }
                 return false;
             }
@@ -269,7 +270,6 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
             }
             return -1;
         } catch (InterruptedException e) {
-            logger.error("Error reading from serial port ", e);
         }
         return -1;
     }
