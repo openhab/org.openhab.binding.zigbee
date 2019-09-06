@@ -32,7 +32,6 @@ import com.zsmartsystems.zigbee.transport.ZigBeePort.FlowControl;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclIasZoneCluster;
 
-
 /**
  * The {@link CC2531Handler} is responsible for handling commands, which are
  * sent to one of the channels.
@@ -55,14 +54,25 @@ public class CC2531Handler extends ZigBeeCoordinatorHandler {
         super.initialize();
 
         CC2531Configuration config = getConfigAs(CC2531Configuration.class);
+        ZigBeeTransportTransmit dongle = createDongle(config);
+        TransportConfig transportConfig = createTransportConfig(config);
 
+        startZigBee(dongle, transportConfig, DefaultSerializer.class, DefaultDeserializer.class);
+    }
+
+    private ZigBeeTransportTransmit createDongle(CC2531Configuration config) {
         ZigBeePort serialPort = new ZigBeeSerialPort(config.zigbee_port, config.zigbee_baud,
                 FlowControl.FLOWCONTROL_OUT_RTSCTS);
-        final ZigBeeTransportTransmit dongle = new ZigBeeDongleTiCc2531(serialPort);
+
+        ZigBeeTransportTransmit dongle = new ZigBeeDongleTiCc2531(serialPort);
 
         logger.debug("ZigBee CC2531 Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
                 Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
 
+        return dongle;
+    }
+
+    private TransportConfig createTransportConfig(CC2531Configuration config) {
         TransportConfig transportConfig = new TransportConfig();
 
         // The CC2531EMK dongle doesn't pass the MatchDescriptor commands to the stack, so we can't manage our services
@@ -71,7 +81,15 @@ public class CC2531Handler extends ZigBeeCoordinatorHandler {
         clusters.add(ZclIasZoneCluster.CLUSTER_ID);
         transportConfig.addOption(TransportConfigOption.SUPPORTED_OUTPUT_CLUSTERS, clusters);
 
-        startZigBee(dongle, transportConfig, DefaultSerializer.class, DefaultDeserializer.class);
+        return transportConfig;
     }
 
+    @Override
+    protected void reinitialiseZigBee() {
+        CC2531Configuration config = getConfigAs(CC2531Configuration.class);
+        ZigBeeTransportTransmit dongle = createDongle(config);
+        TransportConfig transportConfig = createTransportConfig(config);
+
+        startZigBee(dongle, transportConfig, DefaultSerializer.class, DefaultDeserializer.class);
+    }
 }

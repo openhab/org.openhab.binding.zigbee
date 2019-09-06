@@ -50,25 +50,39 @@ public class XBeeHandler extends ZigBeeCoordinatorHandler {
         super.initialize();
 
         XBeeConfiguration config = getConfigAs(XBeeConfiguration.class);
-
-        FlowControl flowControl;
-        if (ZigBeeBindingConstants.FLOWCONTROL_CONFIG_HARDWARE_CTSRTS.equals(config.zigbee_flowcontrol)) {
-        	flowControl = FlowControl.FLOWCONTROL_OUT_RTSCTS;
-        } else if (ZigBeeBindingConstants.FLOWCONTROL_CONFIG_SOFTWARE_XONXOFF.equals(config.zigbee_flowcontrol)) {
-        	flowControl = FlowControl.FLOWCONTROL_OUT_XONOFF;
-        } else {
-        	flowControl = FlowControl.FLOWCONTROL_OUT_NONE;
-        }
-
-        ZigBeePort serialPort = new ZigBeeSerialPort(config.zigbee_port, config.zigbee_baud, flowControl);
-        final ZigBeeTransportTransmit dongle = new ZigBeeDongleXBee(serialPort);
-
-        logger.debug("ZigBee XBee Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
-                Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
-
+        ZigBeeTransportTransmit dongle = createDongle(config);
         TransportConfig transportConfig = new TransportConfig();
 
         startZigBee(dongle, transportConfig, DefaultSerializer.class, DefaultDeserializer.class);
     }
 
+    private ZigBeeTransportTransmit createDongle(XBeeConfiguration config) {
+        FlowControl flowControl = createFlowControl(config);
+        ZigBeePort serialPort = new ZigBeeSerialPort(config.zigbee_port, config.zigbee_baud, flowControl);
+        ZigBeeTransportTransmit dongle = new ZigBeeDongleXBee(serialPort);
+
+        logger.debug("ZigBee XBee Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
+                Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
+
+        return dongle;
+    }
+
+    private FlowControl createFlowControl(XBeeConfiguration config) {
+        FlowControl flowControl;
+        if (ZigBeeBindingConstants.FLOWCONTROL_CONFIG_HARDWARE_CTSRTS.equals(config.zigbee_flowcontrol)) {
+            flowControl = FlowControl.FLOWCONTROL_OUT_RTSCTS;
+        } else if (ZigBeeBindingConstants.FLOWCONTROL_CONFIG_SOFTWARE_XONXOFF.equals(config.zigbee_flowcontrol)) {
+            flowControl = FlowControl.FLOWCONTROL_OUT_XONOFF;
+        } else {
+            flowControl = FlowControl.FLOWCONTROL_OUT_NONE;
+        }
+
+        return flowControl;
+    }
+
+    @Override
+    protected void reinitialiseZigBee() {
+        // TODO Auto-generated method stub
+
+    }
 }

@@ -500,6 +500,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         networkManager.addSupportedCluster(ZclIasZoneCluster.CLUSTER_ID);
     }
 
+    protected abstract void reinitialiseZigBee();
+
     private void startZigBeeNetwork() {
         logger.debug("Scheduling ZigBee start");
         restartJob = scheduler.schedule(() -> {
@@ -533,7 +535,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 }
 
                 // Initialize the network again
-                initialiseZigBee();
+                reinitialiseZigBee();
 
                 waitForReconnectAttemptToFinish();
             }
