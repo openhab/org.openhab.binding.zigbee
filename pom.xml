@@ -33,7 +33,7 @@
 
   <properties>
     <report.fail.on.error>false</report.fail.on.error>
-    <zsmartsystems.version>1.2.1</zsmartsystems.version>
+    <zsmartsystems.version>1.2.3</zsmartsystems.version>
   </properties>
 
   <scm>

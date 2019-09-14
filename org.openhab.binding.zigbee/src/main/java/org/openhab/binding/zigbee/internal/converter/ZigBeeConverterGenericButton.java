@@ -120,13 +120,17 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter
     }
 
     @Override
-    public void commandReceived(ZclCommand command) {
+    public boolean commandReceived(ZclCommand command) {
         ButtonPressType buttonPressType = getButtonPressType(command);
         if (buttonPressType != null) {
             logger.debug("{}: Matching ZigBee command for press type {} received: {}", endpoint.getIeeeAddress(),
                     buttonPressType, command);
             thing.triggerChannel(channel.getUID(), getEvent(buttonPressType));
+
+            return true;
         }
+
+        return false;
     }
 
     @Override
