@@ -33,7 +33,7 @@
 
   <properties>
     <report.fail.on.error>false</report.fail.on.error>
-    <zsmartsystems.version>1.2.1</zsmartsystems.version>
+    <zsmartsystems.version>1.2.3</zsmartsystems.version>
   </properties>
 
   <scm>
@@ -44,10 +44,6 @@
   </scm>
 
   <distributionManagement>
-    <repository>
-      <id>bintray</id>
-      <url>https://api.bintray.com/maven/openhab/mvn/org.openhab.binding.zigbee/;publish=1</url>
-    </repository>
     <snapshotRepository>
       <id>jfrog</id>
       <url>https://openhab.jfrog.io/openhab/libs-snapshot-local</url>

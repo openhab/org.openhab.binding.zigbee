@@ -26,6 +26,7 @@ import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.ZclCommand;
 import com.zsmartsystems.zigbee.zcl.ZclCommandListener;
+import com.zsmartsystems.zigbee.zcl.ZclStatus;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclIasZoneCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.iaszone.ZoneStatusChangeNotificationCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.iaszone.ZoneTypeEnum;
@@ -149,12 +150,17 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter
     }
 
     @Override
-    public void commandReceived(ZclCommand command) {
+    public boolean commandReceived(ZclCommand command) {
         logger.debug("{}: ZigBee command report {}", endpoint.getIeeeAddress(), command);
         if (command instanceof ZoneStatusChangeNotificationCommand) {
             ZoneStatusChangeNotificationCommand zoneStatus = (ZoneStatusChangeNotificationCommand) command;
             updateChannelState(zoneStatus.getZoneStatus());
+
+            clusterIasZone.sendDefaultResponse(command, ZclStatus.SUCCESS);
+            return true;
         }
+
+        return false;
     }
 
     @Override
