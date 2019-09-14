@@ -33,6 +33,7 @@ import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.ZclCommand;
 import com.zsmartsystems.zigbee.zcl.ZclCommandListener;
+import com.zsmartsystems.zigbee.zcl.ZclStatus;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OffCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OffWithEffectCommand;
@@ -208,13 +209,19 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
     }
 
     @Override
-    public void commandReceived(ZclCommand command) {
-        logger.debug("{}: ZigBee command receiveds {}", endpoint.getIeeeAddress(), command);
+    public boolean commandReceived(ZclCommand command) {
+        logger.debug("{}: ZigBee command received {}", endpoint.getIeeeAddress(), command);
         if (command instanceof OnCommand) {
             updateChannelState(OnOffType.ON);
+            clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
+            return true;
         }
         if (command instanceof OffCommand || command instanceof OffWithEffectCommand) {
             updateChannelState(OnOffType.OFF);
+            clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
+            return true;
         }
+
+        return false;
     }
 }
