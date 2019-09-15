@@ -36,7 +36,6 @@ import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
-import com.zsmartsystems.zigbee.zcl.clusters.ZclIlluminanceMeasurementCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclLevelControlCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
@@ -241,14 +240,14 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
                 ZclAttribute attribute;
                 CommandResult reportingResponse;
 
-                attribute = clusterOnOff.getAttribute(ZclIlluminanceMeasurementCluster.ATTR_MEASUREDVALUE);
+                attribute = clusterOnOff.getAttribute(ZclOnOffCluster.ATTR_ONOFF);
                 reportingResponse = attribute
                         .setReporting(configReporting.getReportingTimeMin(), configReporting.getReportingTimeMax())
                         .get();
                 handleReportingResponse(reportingResponse, configReporting.getPollingPeriod(),
                         configReporting.getReportingTimeMax());
 
-                attribute = clusterLevelControl.getAttribute(ZclIlluminanceMeasurementCluster.ATTR_MEASUREDVALUE);
+                attribute = clusterLevelControl.getAttribute(ZclLevelControlCluster.ATTR_CURRENTLEVEL);
                 reportingResponse = attribute.setReporting(configReporting.getReportingTimeMin(),
                         configReporting.getReportingTimeMax(), configReporting.getReportingChange()).get();
                 handleReportingResponse(reportingResponse, configReporting.getPollingPeriod(),
