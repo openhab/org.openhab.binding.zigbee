@@ -14,6 +14,10 @@ package org.openhab.binding.zigbee.internal.converter;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
@@ -38,6 +42,7 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OffCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OffWithEffectCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OnCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.onoff.OnWithTimedOffCommand;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
@@ -56,6 +61,9 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
 
     private ZclReportingConfig configReporting;
 
+    private ScheduledExecutorService updateScheduler;
+    private ScheduledFuture<?> updateTimer = null;
+
     @Override
     public boolean initializeDevice() {
         ZclOnOffCluster clientCluster = (ZclOnOffCluster) endpoint.getOutputCluster(ZclOnOffCluster.CLUSTER_ID);
@@ -70,9 +78,11 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
                 CommandResult bindResponse = bind(serverCluster).get();
                 if (bindResponse.isSuccess()) {
                     // Configure reporting
-                    CommandResult reportingResponse = serverCluster
-                            .setOnOffReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX).get();
-                    handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+                    ZclAttribute attribute = serverCluster.getAttribute(ZclOnOffCluster.ATTR_ONOFF);
+                    CommandResult reportingResponse = attribute
+                            .setReporting(configReporting.getReportingTimeMin(), configReporting.getReportingTimeMax())
+                            .get();
+                    handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, configReporting.getPollingPeriod());
                 } else {
                     logger.debug("{}: Error 0x{} setting server binding", endpoint.getIeeeAddress(),
                             Integer.toHexString(bindResponse.getStatusCode()));
@@ -100,6 +110,8 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
 
     @Override
     public boolean initializeConverter() {
+        updateScheduler = Executors.newSingleThreadScheduledExecutor();
+
         clusterOnOffClient = (ZclOnOffCluster) endpoint.getOutputCluster(ZclOnOffCluster.CLUSTER_ID);
         clusterOnOffServer = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
         if (clusterOnOffClient == null && clusterOnOffServer == null) {
@@ -135,6 +147,8 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
         if (clusterOnOffServer != null) {
             clusterOnOffServer.removeAttributeListener(this);
         }
+
+        updateScheduler.shutdownNow();
     }
 
     @Override
@@ -216,6 +230,13 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
             clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
             return true;
         }
+        if (command instanceof OnWithTimedOffCommand) {
+            OnWithTimedOffCommand timedCommand = (OnWithTimedOffCommand) command;
+            updateChannelState(OnOffType.ON);
+            clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
+            startOffTimer(timedCommand.getOnTime() * 100);
+            return true;
+        }
         if (command instanceof OffCommand || command instanceof OffWithEffectCommand) {
             updateChannelState(OnOffType.OFF);
             clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
@@ -223,5 +244,21 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
         }
 
         return false;
+    }
+
+    private void startOffTimer(int delay) {
+        if (updateTimer != null) {
+            updateTimer.cancel(true);
+            updateTimer = null;
+        }
+
+        updateTimer = updateScheduler.schedule(new Runnable() {
+            @Override
+            public void run() {
+                logger.debug("{}: OnOff auto OFF timer expired", endpoint.getIeeeAddress());
+                updateChannelState(OnOffType.OFF);
+                updateTimer = null;
+            }
+        }, delay, TimeUnit.MILLISECONDS);
     }
 }
