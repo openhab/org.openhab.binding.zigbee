@@ -54,6 +54,9 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
     private ZclOnOffCluster clusterOnOff;
     private ZclLevelControlCluster clusterLevelControl;
 
+    private ZclAttribute attributeOnOffServer;
+    private ZclAttribute attributeLevelServer;
+
     private ZclReportingConfig configReporting;
     private ZclLevelControlConfig configLevelControl;
 
@@ -80,9 +83,12 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
             CommandResult bindResponse = bind(serverClusterLevelControl).get();
             if (bindResponse.isSuccess()) {
                 // Configure reporting
-                CommandResult reportingResponse = serverClusterLevelControl
-                        .setCurrentLevelReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+                ZclAttribute attribute = serverClusterLevelControl
+                        .getAttribute(ZclLevelControlCluster.ATTR_CURRENTLEVEL);
+                CommandResult reportingResponse = attribute
+                        .setReporting(configReporting.getReportingTimeMin(), configReporting.getReportingTimeMax(), 1)
+                        .get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, configReporting.getPollingPeriod());
             } else {
                 pollingPeriod = POLLING_PERIOD_HIGH;
                 logger.debug("{}: Failed to bind level control cluster", endpoint.getIeeeAddress());
@@ -96,9 +102,11 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
             CommandResult bindResponse = bind(serverClusterOnOff).get();
             if (bindResponse.isSuccess()) {
                 // Configure reporting
-                CommandResult reportingResponse = serverClusterOnOff.setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX)
+                ZclAttribute attribute = serverClusterOnOff.getAttribute(ZclOnOffCluster.ATTR_ONOFF);
+                CommandResult reportingResponse = attribute
+                        .setReporting(configReporting.getReportingTimeMin(), configReporting.getReportingTimeMax())
                         .get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, configReporting.getPollingPeriod());
             } else {
                 pollingPeriod = POLLING_PERIOD_HIGH;
                 logger.debug("{}: Failed to bind on off control cluster", endpoint.getIeeeAddress());
@@ -125,6 +133,9 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
             logger.error("{}: Error opening device level controls", endpoint.getIeeeAddress());
             return false;
         }
+
+        attributeOnOffServer = clusterOnOff.getAttribute(ZclOnOffCluster.ATTR_ONOFF);
+        attributeLevelServer = clusterLevelControl.getAttribute(ZclLevelControlCluster.ATTR_CURRENTLEVEL);
 
         // Add a listeners
         clusterOnOff.addAttributeListener(this);
@@ -161,10 +172,12 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
 
     @Override
     public void handleRefresh() {
-        if (clusterOnOff != null) {
-            clusterOnOff.getOnOff(0);
+        if (attributeOnOffServer != null) {
+            attributeOnOffServer.readValue(0);
         }
-        clusterLevelControl.getCurrentLevel(0);
+        if (attributeLevelServer != null) {
+            attributeLevelServer.readValue(0);
+        }
     }
 
     @Override
