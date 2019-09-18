@@ -18,6 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
@@ -43,6 +44,7 @@ import com.zsmartsystems.zigbee.zcl.clusters.onoff.OffCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OffWithEffectCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OnCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OnWithTimedOffCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.onoff.ToggleCommand;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
@@ -59,7 +61,12 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
     private ZclOnOffCluster clusterOnOffClient;
     private ZclOnOffCluster clusterOnOffServer;
 
+    private ZclAttribute attributeClient;
+    private ZclAttribute attributeServer;
+
     private ZclReportingConfig configReporting;
+
+    private final AtomicBoolean currentOnOffState = new AtomicBoolean(true);
 
     private ScheduledExecutorService updateScheduler;
     private ScheduledFuture<?> updateTimer = null;
@@ -119,14 +126,16 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
             return false;
         }
 
-        if (clusterOnOffServer != null) {
-            // Add the listener
-            clusterOnOffServer.addAttributeListener(this);
-        }
-
         if (clusterOnOffClient != null) {
             // Add the command listener
             clusterOnOffClient.addCommandListener(this);
+            attributeServer = clusterOnOffClient.getAttribute(ZclOnOffCluster.ATTR_ONOFF);
+        }
+
+        if (clusterOnOffServer != null) {
+            // Add the listener
+            clusterOnOffServer.addAttributeListener(this);
+            attributeServer = clusterOnOffServer.getAttribute(ZclOnOffCluster.ATTR_ONOFF);
         }
 
         configReporting = new ZclReportingConfig(channel);
@@ -158,8 +167,11 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
 
     @Override
     public void handleRefresh() {
-        if (clusterOnOffServer != null) {
-            clusterOnOffServer.getOnOff(0);
+        if (attributeClient != null) {
+            attributeClient.readValue(0);
+        }
+        if (attributeServer != null) {
+            attributeServer.readValue(0);
         }
     }
 
@@ -226,19 +238,28 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
     public boolean commandReceived(ZclCommand command) {
         logger.debug("{}: ZigBee command received {}", endpoint.getIeeeAddress(), command);
         if (command instanceof OnCommand) {
+            currentOnOffState.set(true);
             updateChannelState(OnOffType.ON);
             clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
             return true;
         }
         if (command instanceof OnWithTimedOffCommand) {
-            OnWithTimedOffCommand timedCommand = (OnWithTimedOffCommand) command;
+            currentOnOffState.set(true);
             updateChannelState(OnOffType.ON);
+            OnWithTimedOffCommand timedCommand = (OnWithTimedOffCommand) command;
             clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
             startOffTimer(timedCommand.getOnTime() * 100);
             return true;
         }
         if (command instanceof OffCommand || command instanceof OffWithEffectCommand) {
+            currentOnOffState.set(false);
             updateChannelState(OnOffType.OFF);
+            clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
+            return true;
+        }
+        if (command instanceof ToggleCommand) {
+            currentOnOffState.set(!currentOnOffState.get());
+            updateChannelState(currentOnOffState.get() ? OnOffType.ON : OnOffType.OFF);
             clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
             return true;
         }
