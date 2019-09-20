@@ -66,6 +66,8 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
 
     @Override
     public boolean initializeDevice() {
+        ZclReportingConfig reporting = new ZclReportingConfig(channel);
+
         ZclLevelControlCluster serverClusterLevelControl = (ZclLevelControlCluster) endpoint
                 .getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
         if (serverClusterLevelControl == null) {
@@ -86,9 +88,8 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
                 ZclAttribute attribute = serverClusterLevelControl
                         .getAttribute(ZclLevelControlCluster.ATTR_CURRENTLEVEL);
                 CommandResult reportingResponse = attribute
-                        .setReporting(configReporting.getReportingTimeMin(), configReporting.getReportingTimeMax(), 1)
-                        .get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, configReporting.getPollingPeriod());
+                        .setReporting(reporting.getReportingTimeMin(), reporting.getReportingTimeMax(), 1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, reporting.getPollingPeriod());
             } else {
                 pollingPeriod = POLLING_PERIOD_HIGH;
                 logger.debug("{}: Failed to bind level control cluster", endpoint.getIeeeAddress());
@@ -104,9 +105,8 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter imple
                 // Configure reporting
                 ZclAttribute attribute = serverClusterOnOff.getAttribute(ZclOnOffCluster.ATTR_ONOFF);
                 CommandResult reportingResponse = attribute
-                        .setReporting(configReporting.getReportingTimeMin(), configReporting.getReportingTimeMax())
-                        .get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, configReporting.getPollingPeriod());
+                        .setReporting(reporting.getReportingTimeMin(), reporting.getReportingTimeMax()).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, reporting.getPollingPeriod());
             } else {
                 pollingPeriod = POLLING_PERIOD_HIGH;
                 logger.debug("{}: Failed to bind on off control cluster", endpoint.getIeeeAddress());
