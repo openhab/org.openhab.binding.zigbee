@@ -80,6 +80,8 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
             return false;
         }
 
+        ZclReportingConfig reporting = new ZclReportingConfig(channel);
+
         if (serverCluster != null) {
             try {
                 CommandResult bindResponse = bind(serverCluster).get();
@@ -87,9 +89,8 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
                     // Configure reporting
                     ZclAttribute attribute = serverCluster.getAttribute(ZclOnOffCluster.ATTR_ONOFF);
                     CommandResult reportingResponse = attribute
-                            .setReporting(configReporting.getReportingTimeMin(), configReporting.getReportingTimeMax())
-                            .get();
-                    handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, configReporting.getPollingPeriod());
+                            .setReporting(reporting.getReportingTimeMin(), reporting.getReportingTimeMax()).get();
+                    handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, reporting.getPollingPeriod());
                 } else {
                     logger.debug("{}: Error 0x{} setting server binding", endpoint.getIeeeAddress(),
                             Integer.toHexString(bindResponse.getStatusCode()));
