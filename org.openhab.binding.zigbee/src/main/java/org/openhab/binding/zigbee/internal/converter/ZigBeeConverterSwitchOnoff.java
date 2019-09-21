@@ -264,6 +264,12 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
             clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
             return true;
         }
+        if (command instanceof OffWithEffectCommand) {
+            currentOnOffState.set(false);
+            updateChannelState(OnOffType.OFF);
+            clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
+            return true;
+        }
 
         return false;
     }
