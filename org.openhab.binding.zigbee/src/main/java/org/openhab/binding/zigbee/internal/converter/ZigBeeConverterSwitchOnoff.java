@@ -158,12 +158,16 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
             clusterOnOffServer.removeAttributeListener(this);
         }
 
+        stopOffTimer();
         updateScheduler.shutdownNow();
     }
 
     @Override
     public int getPollingPeriod() {
-        return configReporting.getPollingPeriod();
+        if (configReporting != null) {
+            return configReporting.getPollingPeriod();
+        }
+        return Integer.MAX_VALUE;
     }
 
     @Override
@@ -268,11 +272,15 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
         return false;
     }
 
-    private void startOffTimer(int delay) {
+    private void stopOffTimer() {
         if (updateTimer != null) {
             updateTimer.cancel(true);
             updateTimer = null;
         }
+    }
+
+    private void startOffTimer(int delay) {
+        stopOffTimer();
 
         updateTimer = updateScheduler.schedule(new Runnable() {
             @Override
