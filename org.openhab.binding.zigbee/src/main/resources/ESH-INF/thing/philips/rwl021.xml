@@ -6,6 +6,14 @@
    <thing-type id="philips_rwl021" listed="false">
       <label>Hue Dimmer Switch</label>
       <channels>
+         <channel id="switch_level" typeId="switch_level">
+            <label>Level Control</label>
+            <description></description>
+            <properties>
+               <property name="zigbee_endpoint">1</property>
+            </properties>
+         </channel>
+
          <channel id="buttonI" typeId="system.button">
             <label>Button I</label>
             <description>Top Button 'I'</description>
