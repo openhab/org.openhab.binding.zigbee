@@ -622,7 +622,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
                     updateTimer = null;
                 }
             }
-        }, STATE_UPDATE_RATE, STATE_UPDATE_RATE, TimeUnit.MILLISECONDS);
+        }, 0, STATE_UPDATE_RATE, TimeUnit.MILLISECONDS);
     }
 
     /**
