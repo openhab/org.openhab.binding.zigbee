@@ -29,7 +29,6 @@ import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
-import com.zsmartsystems.zigbee.zcl.clusters.ZclDoorLockCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclFanControlCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
@@ -54,7 +53,8 @@ public class ZigBeeConverterFanControl extends ZigBeeBaseChannelConverter implem
 
     @Override
     public boolean initializeDevice() {
-        ZclDoorLockCluster serverCluster = (ZclDoorLockCluster) endpoint.getInputCluster(ZclDoorLockCluster.CLUSTER_ID);
+        ZclFanControlCluster serverCluster = (ZclFanControlCluster) endpoint
+                .getInputCluster(ZclFanControlCluster.CLUSTER_ID);
         if (serverCluster == null) {
             logger.error("{}: Error opening device fan controls", endpoint.getIeeeAddress());
             return false;
@@ -133,7 +133,7 @@ public class ZigBeeConverterFanControl extends ZigBeeBaseChannelConverter implem
 
         return ChannelBuilder
                 .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_FANCONTROL),
-                        ZigBeeBindingConstants.ITEM_TYPE_SWITCH)
+                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER)
                 .withType(ZigBeeBindingConstants.CHANNEL_FANCONTROL)
                 .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_FANCONTROL).withProperties(createProperties(endpoint))
                 .build();
