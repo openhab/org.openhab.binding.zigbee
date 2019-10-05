@@ -41,6 +41,7 @@
 				<context>serial-port</context>
 				<default></default>
 				<description>Serial Port</description>
+                <limitToOptions>false</limitToOptions>
 			</parameter>
 
 			<parameter name="zigbee_flowcontrol" type="integer" required="true" groupName="port">
