@@ -629,8 +629,10 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
         logger.debug("{}: Level transition move to {} in {}ms", endpoint.getIeeeAddress(), finalState, transitionTime);
         final int steps = transitionTime / STATE_UPDATE_RATE;
         if (steps == 0) {
-            logger.debug("{}: Level transition timer has 0 steps", endpoint.getIeeeAddress());
+            logger.debug("{}: Level transition timer has 0 steps. Setting to {}.", endpoint.getIeeeAddress(),
+                    finalState);
             lastLevel = new PercentType((int) finalState);
+            currentOnOffState.set(finalState != 0);
             updateChannelState(lastLevel);
             return;
         }
@@ -652,6 +654,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
                 lastLevel = new PercentType((int) state);
                 logger.debug("{}: Level transition timer {}/{} updating to {}", endpoint.getIeeeAddress(), count, steps,
                         lastLevel);
+                currentOnOffState.set(state != 0);
                 updateChannelState(lastLevel);
 
                 if (state == 0.0 || state == 100.0 || ++count == steps) {
@@ -676,6 +679,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
             public void run() {
                 logger.debug("{}: OnOff auto OFF timer expired", endpoint.getIeeeAddress());
                 lastLevel = PercentType.ZERO;
+                currentOnOffState.set(false);
                 updateChannelState(OnOffType.OFF);
                 updateTimer = null;
             }
