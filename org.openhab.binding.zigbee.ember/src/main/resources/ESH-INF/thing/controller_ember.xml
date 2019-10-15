@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <thing:thing-descriptions bindingId="zigbee"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
-	xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 org.eclipse.smarthome.thing-description.xsd">
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 org.eclipse.smarthome.thing-description.xsd">
 
 	<bridge-type id="coordinator_ember">
 		<label>Ember EM35x Coordinator</label>
@@ -41,6 +41,7 @@
 				<context>serial-port</context>
 				<default></default>
 				<description>Serial Port</description>
+                <limitToOptions>false</limitToOptions>
 			</parameter>
 
 			<parameter name="zigbee_flowcontrol" type="integer" required="true" groupName="port">

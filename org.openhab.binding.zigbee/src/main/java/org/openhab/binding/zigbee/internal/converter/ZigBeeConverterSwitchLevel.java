@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.config.core.Configuration;
+import org.eclipse.smarthome.core.library.types.IncreaseDecreaseType;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.thing.Channel;
@@ -76,6 +77,9 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
     // The number of milliseconds between state updates into OH when handling level control changes at a rate
     private static final int STATE_UPDATE_RATE = 50;
 
+    // The number of milliseconds after the last IncreaseDecreaseType is received before sending the Stop command
+    private static final int INCREASEDECREASE_TIMEOUT = 200;
+
     private ZclOnOffCluster clusterOnOffClient;
     private ZclLevelControlCluster clusterLevelControlClient;
 
@@ -91,6 +95,8 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
     private final AtomicBoolean currentOnOffState = new AtomicBoolean(true);
 
     private PercentType lastLevel = PercentType.HUNDRED;
+
+    private Command lastCommand;
 
     private ScheduledExecutorService updateScheduler;
     private ScheduledFuture<?> updateTimer = null;
@@ -330,10 +336,15 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
             handleOnOffCommand((OnOffType) command);
         } else if (command instanceof PercentType) {
             handlePercentCommand((PercentType) command);
+        } else if (command instanceof IncreaseDecreaseType) {
+            handleIncreaseDecreaseCommand((IncreaseDecreaseType) command);
         } else {
-            logger.warn("{}: Level converter only accepts PercentType and OnOffType - not {}",
+            logger.warn("{}: Level converter only accepts PercentType, IncreaseDecreaseType and OnOffType - not {}",
                     endpoint.getIeeeAddress(), command.getClass().getSimpleName());
         }
+
+        // Some functionality (eg IncreaseDecrease) requires that we know the last command received
+        lastCommand = command;
     }
 
     /**
@@ -372,6 +383,33 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
             clusterLevelControlServer.moveToLevelCommand(percentToLevel(percent),
                     configLevelControl.getDefaultTransitionTime());
         }
+    }
+
+    /**
+     * The IncreaseDecreaseType in openHAB is defined as a STEP command. however we want to use this for the Move/Stop
+     * command which is not available in openHAB.
+     * When the first IncreaseDecreaseType is received, we send the Move command and start a timer to send the Stop
+     * command when no further IncreaseDecreaseType commands are received.
+     * We use the lastCommand to check if the current command is the same IncreaseDecreaseType, and if so we just
+     * restart the timer.
+     * When the timer times out and sends the Stop command, it also sets lastCommand to null.
+     *
+     * @param cmdIncreaseDecrease the command received
+     */
+    private void handleIncreaseDecreaseCommand(IncreaseDecreaseType cmdIncreaseDecrease) {
+        if (!cmdIncreaseDecrease.equals(lastCommand)) {
+            switch (cmdIncreaseDecrease) {
+                case INCREASE:
+                    clusterLevelControlServer.moveWithOnOffCommand(0, 50);
+                    break;
+                case DECREASE:
+                    clusterLevelControlServer.moveWithOnOffCommand(1, 50);
+                    break;
+                default:
+                    break;
+            }
+        }
+        startStopTimer(INCREASEDECREASE_TIMEOUT);
     }
 
     @Override
@@ -591,8 +629,10 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
         logger.debug("{}: Level transition move to {} in {}ms", endpoint.getIeeeAddress(), finalState, transitionTime);
         final int steps = transitionTime / STATE_UPDATE_RATE;
         if (steps == 0) {
-            logger.debug("{}: Level transition timer has 0 steps", endpoint.getIeeeAddress());
+            logger.debug("{}: Level transition timer has 0 steps. Setting to {}.", endpoint.getIeeeAddress(),
+                    finalState);
             lastLevel = new PercentType((int) finalState);
+            currentOnOffState.set(finalState != 0);
             updateChannelState(lastLevel);
             return;
         }
@@ -614,6 +654,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
                 lastLevel = new PercentType((int) state);
                 logger.debug("{}: Level transition timer {}/{} updating to {}", endpoint.getIeeeAddress(), count, steps,
                         lastLevel);
+                currentOnOffState.set(state != 0);
                 updateChannelState(lastLevel);
 
                 if (state == 0.0 || state == 100.0 || ++count == steps) {
@@ -631,16 +672,14 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
      * @param delay the number of milliseconds to wait before setting the value to OFF
      */
     private void startOffTimer(int delay) {
-        if (updateTimer != null) {
-            updateTimer.cancel(true);
-            updateTimer = null;
-        }
+        stopTransitionTimer();
 
         updateTimer = updateScheduler.schedule(new Runnable() {
             @Override
             public void run() {
                 logger.debug("{}: OnOff auto OFF timer expired", endpoint.getIeeeAddress());
                 lastLevel = PercentType.ZERO;
+                currentOnOffState.set(false);
                 updateChannelState(OnOffType.OFF);
                 updateTimer = null;
             }
@@ -654,10 +693,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
      * @param effectVariant the effect variant
      */
     private void startOffEffect(int effectId, int effectVariant) {
-        if (updateTimer != null) {
-            updateTimer.cancel(true);
-            updateTimer = null;
-        }
+        stopTransitionTimer();
 
         int effect = effectId << 8 + effectVariant;
 
@@ -681,4 +717,24 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
                 break;
         }
     }
+
+    /**
+     * Starts a timer after which the Stop command will be sent
+     *
+     * @param delay the number of milliseconds to wait before setting the value to OFF
+     */
+    private void startStopTimer(int delay) {
+        stopTransitionTimer();
+
+        updateTimer = updateScheduler.schedule(new Runnable() {
+            @Override
+            public void run() {
+                logger.debug("{}: IncreaseDecrease Stop timer expired", endpoint.getIeeeAddress());
+                clusterLevelControlServer.stop2Command();
+                lastCommand = null;
+                updateTimer = null;
+            }
+        }, delay, TimeUnit.MILLISECONDS);
+    }
+
 }
