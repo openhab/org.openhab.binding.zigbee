@@ -280,7 +280,7 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
                 synchronized (bufferSynchronisationObject) {
                     int available = inputStream.available();
                     logger.trace("Processing DATA_AVAILABLE event: have {} bytes available", available);
-                    byte[] buf = new byte[available];
+                    byte buf[] = new byte[available];
                     int offset = 0;
                     while (offset != available) {
                         if (logger.isTraceEnabled()) {
@@ -293,11 +293,11 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
                                     available - offset, offset);
                         }
                         if (n <= 0) {
-                            logger.error("Processing DATA_AVAILABLE event: Expected to be able to read " + available
-                                    + " bytes, but saw error after " + offset);
-                            throw new IOException(
+                            final String message =
                                     "Expected to be able to read " + available + " bytes, but saw error after "
-                                            + offset);
+                                            + offset;
+                            logger.warn("Processing DATA_AVAILABLE event: {}", message);
+                            throw new IOException(message);
                         }
                         offset += n;
                     }
