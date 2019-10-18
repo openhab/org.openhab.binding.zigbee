@@ -293,11 +293,9 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
                                     available - offset, offset);
                         }
                         if (n <= 0) {
-                            final String message =
+                            throw new IOException(
                                     "Expected to be able to read " + available + " bytes, but saw error after "
-                                            + offset;
-                            logger.warn("Processing DATA_AVAILABLE event: {}", message);
-                            throw new IOException(message);
+                                            + offset);
                         }
                         offset += n;
                     }
@@ -316,7 +314,7 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
                     }
                 }
             } catch (IOException e) {
-                logger.debug("Masking IOException in serial port event", e);
+                logger.warn("Processing DATA_AVAILABLE event: received IOException in serial port event", e);
             }
 
             synchronized (this) {
