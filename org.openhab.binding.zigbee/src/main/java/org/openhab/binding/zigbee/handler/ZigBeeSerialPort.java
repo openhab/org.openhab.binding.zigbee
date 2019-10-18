@@ -159,7 +159,6 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
                         break;
                 }
 
-                serialPort.enableReceiveThreshold(1);
                 serialPort.enableReceiveTimeout(100);
                 serialPort.addEventListener(this);
                 serialPort.notifyOnDataAvailable(true);
@@ -279,15 +278,43 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
         if (event.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
             try {
                 synchronized (bufferSynchronisationObject) {
-                    int recv;
-                    while ((recv = inputStream.read()) != -1) {
-                        buffer[end++] = recv;
+                    int available = inputStream.available();
+                    logger.trace("Processing DATA_AVAILABLE event: have {} bytes available", available);
+                    byte buf[] = new byte[available];
+                    int offset = 0;
+                    while (offset != available) {
+                        if (logger.isTraceEnabled()) {
+                            logger.trace("Processing DATA_AVAILABLE event: try read  {} at offset {}",
+                                    available - offset, offset);
+                        }
+                        int n = inputStream.read(buf, offset, available - offset);
+                        if (logger.isTraceEnabled()) {
+                            logger.trace("Processing DATA_AVAILABLE event: did read {} of {} at offset {}", n,
+                                    available - offset, offset);
+                        }
+                        if (n <= 0) {
+                            throw new IOException(
+                                    "Expected to be able to read " + available + " bytes, but saw error after "
+                                            + offset);
+                        }
+                        offset += n;
+                    }
+                    for (int i = 0; i < available; i++) {
+                        buffer[end++] = buf[i] & 0xff;
                         if (end >= RX_BUFFER_LEN) {
                             end = 0;
+                        }
+                        if (end == start) {
+                            logger.warn("Processing DATA_AVAILABLE event: Serial buffer overrun");
+                            if (++start == RX_BUFFER_LEN) {
+                                start = 0;
+                            }
+
                         }
                     }
                 }
             } catch (IOException e) {
+                logger.warn("Processing DATA_AVAILABLE event: received IOException in serial port event", e);
             }
 
             synchronized (this) {
