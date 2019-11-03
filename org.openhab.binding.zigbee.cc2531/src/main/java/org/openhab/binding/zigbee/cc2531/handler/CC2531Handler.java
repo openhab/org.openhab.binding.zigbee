@@ -15,10 +15,13 @@ package org.openhab.binding.zigbee.cc2531.handler;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.smarthome.core.thing.Bridge;
+import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
 import org.openhab.binding.zigbee.cc2531.internal.CC2531Configuration;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeSerialPort;
+import org.osgi.service.component.annotations.Activate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,19 +35,22 @@ import com.zsmartsystems.zigbee.transport.ZigBeePort.FlowControl;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclIasZoneCluster;
 
-
 /**
  * The {@link CC2531Handler} is responsible for handling commands, which are
  * sent to one of the channels.
  *
  * @author Chris Jackson - Initial contribution
  */
-// @NonNullByDefault
+@NonNullByDefault
 public class CC2531Handler extends ZigBeeCoordinatorHandler {
     private final Logger logger = LoggerFactory.getLogger(CC2531Handler.class);
 
-    public CC2531Handler(Bridge coordinator) {
+    private final SerialPortManager serialPortManager;
+
+    @Activate
+    public CC2531Handler(Bridge coordinator, SerialPortManager serialPortManager) {
         super(coordinator);
+        this.serialPortManager = serialPortManager;
     }
 
     @Override
@@ -56,7 +62,7 @@ public class CC2531Handler extends ZigBeeCoordinatorHandler {
 
         CC2531Configuration config = getConfigAs(CC2531Configuration.class);
 
-        ZigBeePort serialPort = new ZigBeeSerialPort(config.zigbee_port, config.zigbee_baud,
+        ZigBeePort serialPort = new ZigBeeSerialPort(serialPortManager, config.zigbee_port, config.zigbee_baud,
                 FlowControl.FLOWCONTROL_OUT_RTSCTS);
         final ZigBeeTransportTransmit dongle = new ZigBeeDongleTiCc2531(serialPort);
 
@@ -67,7 +73,7 @@ public class CC2531Handler extends ZigBeeCoordinatorHandler {
 
         // The CC2531EMK dongle doesn't pass the MatchDescriptor commands to the stack, so we can't manage our services
         // directly. Instead, register any services we want to support so the CC2531EMK can handle the MatchDescriptor.
-        Set<Integer> clusters = new HashSet<Integer>();
+        Set<Integer> clusters = new HashSet<>();
         clusters.add(ZclIasZoneCluster.CLUSTER_ID);
         transportConfig.addOption(TransportConfigOption.SUPPORTED_OUTPUT_CLUSTERS, clusters);
 

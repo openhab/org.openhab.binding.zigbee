@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
@@ -25,6 +26,7 @@ import org.eclipse.smarthome.core.thing.binding.firmware.Firmware;
 import org.eclipse.smarthome.core.thing.binding.firmware.FirmwareUpdateHandler;
 import org.eclipse.smarthome.core.thing.binding.firmware.ProgressCallback;
 import org.eclipse.smarthome.core.thing.binding.firmware.ProgressStep;
+import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.ember.internal.EmberConfiguration;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
@@ -54,26 +56,30 @@ import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareUpdate;
  */
 // @NonNullByDefault
 public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUpdateHandler {
+
+    private static final String ASH_RX_DAT = "ASH_RX_DAT";
+    private static final String ASH_TX_DAT = "ASH_TX_DAT";
+    private static final String ASH_RX_ACK = "ASH_RX_ACK";
+    private static final String ASH_TX_ACK = "ASH_TX_ACK";
+    private static final String ASH_RX_NAK = "ASH_RX_NAK";
+    private static final String ASH_TX_NAK = "ASH_TX_NAK";
+
+    private static final String UID_ASH_RX_DAT = "rx_dat";
+    private static final String UID_ASH_TX_DAT = "tx_dat";
+    private static final String UID_ASH_RX_ACK = "rx_ack";
+    private static final String UID_ASH_TX_ACK = "tx_ack";
+    private static final String UID_ASH_RX_NAK = "rx_nak";
+    private static final String UID_ASH_TX_NAK = "tx_nak";
+
     private final Logger logger = LoggerFactory.getLogger(EmberHandler.class);
 
-    private ScheduledFuture<?> pollingJob;
+    private final SerialPortManager serialPortManager;
 
-    private final String ASH_RX_DAT = "ASH_RX_DAT";
-    private final String ASH_TX_DAT = "ASH_TX_DAT";
-    private final String ASH_RX_ACK = "ASH_RX_ACK";
-    private final String ASH_TX_ACK = "ASH_TX_ACK";
-    private final String ASH_RX_NAK = "ASH_RX_NAK";
-    private final String ASH_TX_NAK = "ASH_TX_NAK";
+    private @Nullable ScheduledFuture<?> pollingJob;
 
-    private final String UID_ASH_RX_DAT = "rx_dat";
-    private final String UID_ASH_TX_DAT = "tx_dat";
-    private final String UID_ASH_RX_ACK = "rx_ack";
-    private final String UID_ASH_TX_ACK = "tx_ack";
-    private final String UID_ASH_RX_NAK = "rx_nak";
-    private final String UID_ASH_TX_NAK = "tx_nak";
-
-    public EmberHandler(Bridge coordinator) {
+    public EmberHandler(Bridge coordinator, SerialPortManager serialPortManager) {
         super(coordinator);
+        this.serialPortManager = serialPortManager;
     }
 
     @Override
@@ -94,7 +100,8 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
             flowControl = FlowControl.FLOWCONTROL_OUT_NONE;
         }
 
-        ZigBeePort serialPort = new ZigBeeSerialPort(config.zigbee_port, config.zigbee_baud, flowControl);
+        ZigBeePort serialPort = new ZigBeeSerialPort(serialPortManager, config.zigbee_port, config.zigbee_baud,
+                flowControl);
         final ZigBeeDongleEzsp dongle = new ZigBeeDongleEzsp(serialPort);
 
         logger.debug("ZigBee Ember Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,

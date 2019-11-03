@@ -27,11 +27,14 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
+import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
 import org.openhab.binding.zigbee.ember.EmberBindingConstants;
 import org.openhab.binding.zigbee.ember.handler.EmberHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * The {@link EmberHandlerFactory} is responsible for creating things and thing
@@ -39,13 +42,21 @@ import org.osgi.service.component.annotations.Component;
  *
  * @author Chris Jackson - Initial contribution
  */
-@Component(service = ThingHandlerFactory.class, configurationPid = "org.openhab.binding.zigbee.ember")
 @NonNullByDefault
+@Component(service = ThingHandlerFactory.class, configurationPid = "org.openhab.binding.zigbee.ember")
 public class EmberHandlerFactory extends BaseThingHandlerFactory {
-    private Map<ThingUID, ServiceRegistration> coordinatorHandlerRegs = new HashMap<>();
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections
             .singleton(EmberBindingConstants.THING_TYPE_EMBER);
+
+    private final Map<ThingUID, ServiceRegistration<?>> coordinatorHandlerRegs = new HashMap<>();
+
+    private final SerialPortManager serialPortManager;
+
+    @Activate
+    public EmberHandlerFactory(final @Reference SerialPortManager serialPortManager) {
+        this.serialPortManager = serialPortManager;
+    }
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -58,12 +69,12 @@ public class EmberHandlerFactory extends BaseThingHandlerFactory {
 
         ZigBeeCoordinatorHandler emberHandler = null;
         if (thingTypeUID.equals(EmberBindingConstants.THING_TYPE_EMBER)) {
-            emberHandler = new EmberHandler((Bridge) thing);
+            emberHandler = new EmberHandler((Bridge) thing, serialPortManager);
         }
 
         if (emberHandler != null) {
-            coordinatorHandlerRegs.put(emberHandler.getThing().getUID(), bundleContext.registerService(
-                    ZigBeeCoordinatorHandler.class.getName(), emberHandler, new Hashtable<String, Object>()));
+            coordinatorHandlerRegs.put(emberHandler.getThing().getUID(), bundleContext
+                    .registerService(ZigBeeCoordinatorHandler.class.getName(), emberHandler, new Hashtable<>()));
 
             return emberHandler;
         }
@@ -74,7 +85,7 @@ public class EmberHandlerFactory extends BaseThingHandlerFactory {
     @Override
     protected synchronized void removeHandler(ThingHandler thingHandler) {
         if (thingHandler instanceof EmberHandler) {
-            ServiceRegistration coordinatorHandlerReg = coordinatorHandlerRegs.get(thingHandler.getThing().getUID());
+            ServiceRegistration<?> coordinatorHandlerReg = coordinatorHandlerRegs.get(thingHandler.getThing().getUID());
             if (coordinatorHandlerReg != null) {
                 coordinatorHandlerReg.unregister();
                 coordinatorHandlerRegs.remove(thingHandler.getThing().getUID());

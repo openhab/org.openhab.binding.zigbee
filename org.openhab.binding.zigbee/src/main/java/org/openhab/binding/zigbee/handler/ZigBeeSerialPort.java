@@ -15,24 +15,22 @@ package org.openhab.binding.zigbee.handler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Enumeration;
 import java.util.Set;
 import java.util.TooManyListenersException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
+import org.eclipse.smarthome.io.transport.serial.PortInUseException;
+import org.eclipse.smarthome.io.transport.serial.SerialPort;
+import org.eclipse.smarthome.io.transport.serial.SerialPortEvent;
+import org.eclipse.smarthome.io.transport.serial.SerialPortEventListener;
+import org.eclipse.smarthome.io.transport.serial.SerialPortIdentifier;
+import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
+import org.eclipse.smarthome.io.transport.serial.UnsupportedCommOperationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.transport.ZigBeePort;
-
-import gnu.io.CommPort;
-import gnu.io.CommPortIdentifier;
-import gnu.io.NoSuchPortException;
-import gnu.io.PortInUseException;
-import gnu.io.SerialPort;
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
-import gnu.io.UnsupportedCommOperationException;
 
 /**
  * The default/reference Java serial port implementation using serial events to provide a non-blocking read call.
@@ -44,6 +42,11 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
      * The logger.
      */
     private final Logger logger = LoggerFactory.getLogger(ZigBeeSerialPort.class);
+
+    /**
+     * The serial port manager.
+     */
+    private SerialPortManager serialPortManager;
 
     /**
      * The portName portName.
@@ -78,7 +81,7 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
     /**
      * The length of the receive buffer
      */
-    private final int RX_BUFFER_LEN = 512;
+    private static final int RX_BUFFER_LEN = 512;
 
     /**
      * The circular fifo queue for receive data
@@ -109,7 +112,9 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
      * @param baudRate the baud rate
      * @param flowControl to use flow control
      */
-    public ZigBeeSerialPort(String portName, int baudRate, FlowControl flowControl) {
+    public ZigBeeSerialPort(SerialPortManager serialPortManager, String portName, int baudRate,
+            FlowControl flowControl) {
+        this.serialPortManager = serialPortManager;
         this.portName = portName;
         this.baudRate = baudRate;
         this.flowControl = flowControl;
@@ -133,41 +138,43 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
 
             // in some rare cases we have to check whether a port really exists, because if it doesn't the call to
             // CommPortIdentifier#open will kill the whole JVM
-            Enumeration<?> portList = CommPortIdentifier.getPortIdentifiers();
-            if (!portList.hasMoreElements()) {
+            Stream<SerialPortIdentifier> serialPortIdentifiers = serialPortManager.getIdentifiers();
+            if (!serialPortIdentifiers.findAny().isPresent()) {
                 logger.debug("No communication ports found, cannot connect to [{}]", portName);
                 return false;
             }
 
+            SerialPortIdentifier portIdentifier = serialPortManager.getIdentifier(portName);
+            if (portIdentifier == null) {
+                logger.error("Serial Error: Port {} does not exist.", portName);
+                return false;
+            }
+
             try {
-                CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
-                CommPort commPort = portIdentifier.open("org.openhab.binding.zigbee", 100);
-                serialPort = (SerialPort) commPort;
-                serialPort.setSerialPortParams(baudRate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1,
+                SerialPort localSerialPort = portIdentifier.open("org.openhab.binding.zigbee", 100);
+                localSerialPort.setSerialPortParams(baudRate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1,
                         SerialPort.PARITY_NONE);
                 switch (flowControl) {
                     case FLOWCONTROL_OUT_NONE:
-                        serialPort.setFlowControlMode(gnu.io.SerialPort.FLOWCONTROL_NONE);
+                        localSerialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
                         break;
                     case FLOWCONTROL_OUT_RTSCTS:
-                        serialPort.setFlowControlMode(gnu.io.SerialPort.FLOWCONTROL_RTSCTS_OUT);
+                        localSerialPort.setFlowControlMode(SerialPort.FLOWCONTROL_RTSCTS_OUT);
                         break;
                     case FLOWCONTROL_OUT_XONOFF:
-                        serialPort.setFlowControlMode(gnu.io.SerialPort.FLOWCONTROL_XONXOFF_OUT);
+                        localSerialPort.setFlowControlMode(SerialPort.FLOWCONTROL_XONXOFF_OUT);
                         break;
                     default:
                         break;
                 }
 
-                serialPort.enableReceiveTimeout(100);
-                serialPort.addEventListener(this);
-                serialPort.notifyOnDataAvailable(true);
+                localSerialPort.enableReceiveTimeout(100);
+                localSerialPort.addEventListener(this);
+                localSerialPort.notifyOnDataAvailable(true);
 
                 logger.debug("Serial port [{}] is initialized.", portName);
+                serialPort = localSerialPort;
                 portOpenRuntimeExcepionMessages.clear();
-            } catch (NoSuchPortException e) {
-                logger.error("Serial Error: Port {} does not exist.", portName);
-                return false;
             } catch (PortInUseException e) {
                 logger.error("Serial Error: Port {} in use.", portName);
                 return false;
@@ -293,9 +300,8 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
                                     available - offset, offset);
                         }
                         if (n <= 0) {
-                            throw new IOException(
-                                    "Expected to be able to read " + available + " bytes, but saw error after "
-                                            + offset);
+                            throw new IOException("Expected to be able to read " + available
+                                    + " bytes, but saw error after " + offset);
                         }
                         offset += n;
                     }

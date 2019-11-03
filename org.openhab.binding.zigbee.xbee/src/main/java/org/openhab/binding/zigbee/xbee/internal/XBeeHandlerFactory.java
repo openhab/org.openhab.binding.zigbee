@@ -27,11 +27,14 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
+import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.xbee.XBeeBindingConstants;
 import org.openhab.binding.zigbee.xbee.handler.XBeeHandler;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * The {@link XBeeHandlerFactory} is responsible for creating things and thing
@@ -39,13 +42,21 @@ import org.osgi.service.component.annotations.Component;
  *
  * @author Chris Jackson - Initial contribution
  */
-@Component(service = ThingHandlerFactory.class, configurationPid = "org.openhab.binding.zigbee.xbee")
 @NonNullByDefault
+@Component(service = ThingHandlerFactory.class, configurationPid = "org.openhab.binding.zigbee.xbee")
 public class XBeeHandlerFactory extends BaseThingHandlerFactory {
-    private Map<ThingUID, ServiceRegistration> coordinatorHandlerRegs = new HashMap<>();
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections
             .singleton(XBeeBindingConstants.THING_TYPE_XBEE);
+
+    private final Map<ThingUID, ServiceRegistration<?>> coordinatorHandlerRegs = new HashMap<>();
+
+    private final SerialPortManager serialPortManager;
+
+    @Activate
+    public XBeeHandlerFactory(final @Reference SerialPortManager serialPortManager) {
+        this.serialPortManager = serialPortManager;
+    }
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -58,12 +69,12 @@ public class XBeeHandlerFactory extends BaseThingHandlerFactory {
 
         ZigBeeCoordinatorHandler coordinator = null;
         if (thingTypeUID.equals(XBeeBindingConstants.THING_TYPE_XBEE)) {
-            coordinator = new XBeeHandler((Bridge) thing);
+            coordinator = new XBeeHandler((Bridge) thing, serialPortManager);
         }
 
         if (coordinator != null) {
-            coordinatorHandlerRegs.put(coordinator.getThing().getUID(), bundleContext.registerService(
-                    ZigBeeCoordinatorHandler.class.getName(), coordinator, new Hashtable<String, Object>()));
+            coordinatorHandlerRegs.put(coordinator.getThing().getUID(), bundleContext
+                    .registerService(ZigBeeCoordinatorHandler.class.getName(), coordinator, new Hashtable<>()));
 
             return coordinator;
         }
@@ -74,7 +85,7 @@ public class XBeeHandlerFactory extends BaseThingHandlerFactory {
     @Override
     protected synchronized void removeHandler(ThingHandler thingHandler) {
         if (thingHandler instanceof XBeeHandler) {
-            ServiceRegistration coordinatorHandlerReg = coordinatorHandlerRegs.get(thingHandler.getThing().getUID());
+            ServiceRegistration<?> coordinatorHandlerReg = coordinatorHandlerRegs.get(thingHandler.getThing().getUID());
             if (coordinatorHandlerReg != null) {
                 coordinatorHandlerReg.unregister();
                 coordinatorHandlerRegs.remove(thingHandler.getThing().getUID());

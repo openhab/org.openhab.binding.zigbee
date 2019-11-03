@@ -13,10 +13,12 @@
 package org.openhab.binding.zigbee.xbee.handler;
 
 import org.eclipse.smarthome.core.thing.Bridge;
+import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeSerialPort;
 import org.openhab.binding.zigbee.xbee.internal.XBeeConfiguration;
+import org.osgi.service.component.annotations.Activate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,8 +40,12 @@ import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
 public class XBeeHandler extends ZigBeeCoordinatorHandler {
     private final Logger logger = LoggerFactory.getLogger(XBeeHandler.class);
 
-    public XBeeHandler(Bridge coordinator) {
+    private final SerialPortManager serialPortManager;
+
+    @Activate
+    public XBeeHandler(Bridge coordinator, SerialPortManager serialPortManager) {
         super(coordinator);
+        this.serialPortManager = serialPortManager;
     }
 
     @Override
@@ -53,14 +59,15 @@ public class XBeeHandler extends ZigBeeCoordinatorHandler {
 
         FlowControl flowControl;
         if (ZigBeeBindingConstants.FLOWCONTROL_CONFIG_HARDWARE_CTSRTS.equals(config.zigbee_flowcontrol)) {
-        	flowControl = FlowControl.FLOWCONTROL_OUT_RTSCTS;
+            flowControl = FlowControl.FLOWCONTROL_OUT_RTSCTS;
         } else if (ZigBeeBindingConstants.FLOWCONTROL_CONFIG_SOFTWARE_XONXOFF.equals(config.zigbee_flowcontrol)) {
-        	flowControl = FlowControl.FLOWCONTROL_OUT_XONOFF;
+            flowControl = FlowControl.FLOWCONTROL_OUT_XONOFF;
         } else {
-        	flowControl = FlowControl.FLOWCONTROL_OUT_NONE;
+            flowControl = FlowControl.FLOWCONTROL_OUT_NONE;
         }
 
-        ZigBeePort serialPort = new ZigBeeSerialPort(config.zigbee_port, config.zigbee_baud, flowControl);
+        ZigBeePort serialPort = new ZigBeeSerialPort(serialPortManager, config.zigbee_port, config.zigbee_baud,
+                flowControl);
         final ZigBeeTransportTransmit dongle = new ZigBeeDongleXBee(serialPort);
 
         logger.debug("ZigBee XBee Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
