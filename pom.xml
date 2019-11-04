@@ -77,11 +77,10 @@
         <plugin>
           <groupId>org.openhab.tools.sat</groupId>
           <artifactId>sat-plugin</artifactId>
-          <version>0.6.1</version>
+          <version>0.8.0</version>
           <executions>
             <execution>
               <id>sat-all</id>
-              <phase>none</phase>
               <configuration>
                 <checkstyleProperties>tools/static-code-analysis/checkstyle/ruleset.properties</checkstyleProperties>
                 <checkstyleFilter>tools/static-code-analysis/checkstyle/suppressions.xml</checkstyleFilter>
