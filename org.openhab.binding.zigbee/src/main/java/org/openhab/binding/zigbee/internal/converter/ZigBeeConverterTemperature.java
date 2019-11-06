@@ -12,106 +12,45 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
-import java.util.concurrent.ExecutionException;
+import java.math.BigDecimal;
 
-import org.eclipse.smarthome.core.thing.Channel;
-import org.eclipse.smarthome.core.thing.ThingUID;
-import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclTemperatureMeasurementCluster;
+import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
+import org.eclipse.smarthome.core.types.State;
+import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CHANNEL_LABEL_TEMPERATURE_VALUE;
+import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CHANNEL_NAME_TEMPERATURE_VALUE;
+import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE;
+import static org.openhab.binding.zigbee.ZigBeeBindingConstants.ITEM_TYPE_NUMBER_TEMPERATURE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.zsmartsystems.zigbee.CommandResult;
-import com.zsmartsystems.zigbee.ZigBeeEndpoint;
-import com.zsmartsystems.zigbee.zcl.ZclAttribute;
-import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
-import com.zsmartsystems.zigbee.zcl.clusters.ZclTemperatureMeasurementCluster;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
  * Converter for the temperature channel
  *
  * @author Chris Jackson - Initial Contribution
- *
  */
-public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
-    private Logger logger = LoggerFactory.getLogger(ZigBeeConverterTemperature.class);
+public class ZigBeeConverterTemperature extends ZigBeeReportableAttributeConverter {
+    private static Logger logger = LoggerFactory.getLogger(ZigBeeConverterTemperature.class);
 
-    private ZclTemperatureMeasurementCluster cluster;
+    private static final boolean IS_ANALOGUE = true;
+    private static final String NAME_FOR_LOGGING = "Temperature measurement";
+    private static final int CLUSTER_ID = ZclTemperatureMeasurementCluster.CLUSTER_ID;
+    private static final int ATTRIBUTE_ID = ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE;
+    private static final String CHANNEL_NAME = CHANNEL_NAME_TEMPERATURE_VALUE;
+    private static final String LABEL = CHANNEL_LABEL_TEMPERATURE_VALUE;
+    private static final String ITEM_TYPE = ITEM_TYPE_NUMBER_TEMPERATURE;
+    private static final ChannelTypeUID CHANNEL_TYPE_UID = CHANNEL_TEMPERATURE_VALUE;
+    protected static BigDecimal CHANGE_DEFAULT = new BigDecimal(50);
+    protected static BigDecimal CHANGE_MIN = new BigDecimal(1);
+    protected static BigDecimal CHANGE_MAX = new BigDecimal(20000);
 
-    @Override
-    public boolean initializeDevice() {
-        ZclTemperatureMeasurementCluster serverCluster = (ZclTemperatureMeasurementCluster) endpoint
-                .getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID);
-        if (serverCluster == null) {
-            logger.error("{}: Error opening device temperature measurement cluster", endpoint.getIeeeAddress());
-            return false;
-        }
-
-        try {
-            CommandResult bindResponse = bind(serverCluster).get();
-            if (bindResponse.isSuccess()) {
-                // Configure reporting
-                CommandResult reportingResponse = serverCluster
-                        .setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
-            } else {
-                logger.debug("{}: Failed to bind temperature measurement cluster", endpoint.getIeeeAddress());
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
-            return false;
-        }
-
-        return true;
+    public ZigBeeConverterTemperature() {
+        super(ATTRIBUTE_ID, CLUSTER_ID, CHANNEL_NAME, LABEL, ITEM_TYPE, CHANNEL_TYPE_UID, IS_ANALOGUE, CHANGE_DEFAULT,
+                CHANGE_MIN, CHANGE_MAX, logger, NAME_FOR_LOGGING);
     }
 
     @Override
-    public boolean initializeConverter() {
-        cluster = (ZclTemperatureMeasurementCluster) endpoint
-                .getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID);
-        if (cluster == null) {
-            logger.error("{}: Error opening device temperature measurement cluster", endpoint.getIeeeAddress());
-            return false;
-        }
-
-        // Add a listener, then request the status
-        cluster.addAttributeListener(this);
-        return true;
-    }
-
-    @Override
-    public void disposeConverter() {
-        cluster.removeAttributeListener(this);
-    }
-
-    @Override
-    public void handleRefresh() {
-        cluster.getMeasuredValue(0);
-    }
-
-    @Override
-    public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
-        if (endpoint.getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID) == null) {
-            logger.trace("{}: Temperature measurement cluster not found", endpoint.getIeeeAddress());
-            return null;
-        }
-
-        return ChannelBuilder
-                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_TEMPERATURE_VALUE),
-                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER_TEMPERATURE)
-                .withType(ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE)
-                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_TEMPERATURE_VALUE)
-                .withProperties(createProperties(endpoint)).build();
-    }
-
-    @Override
-    public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.TEMPERATURE_MEASUREMENT
-                && attribute.getId() == ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE) {
-            updateChannelState(valueToTemperature((Integer) val));
-        }
+    public State convertValueToState(Integer val) {
+        return valueToTemperature(val);
     }
 }
