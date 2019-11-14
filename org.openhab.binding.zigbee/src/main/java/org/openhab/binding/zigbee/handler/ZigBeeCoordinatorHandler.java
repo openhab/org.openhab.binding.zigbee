@@ -41,6 +41,7 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BaseBridgeHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.internal.ZigBeeDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +73,6 @@ import com.zsmartsystems.zigbee.transport.TransportConfigOption;
 import com.zsmartsystems.zigbee.transport.TrustCentreJoinMode;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareUpdate;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
-import com.zsmartsystems.zigbee.zcl.clusters.ZclIasZoneCluster;
 import com.zsmartsystems.zigbee.zdo.field.NeighborTable;
 import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
 
@@ -133,6 +133,11 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     private boolean currentReconnectAttemptFinished = false;
 
     /**
+     * The factory to create the converters for the different channels.
+     */
+    private final ZigBeeChannelConverterFactory channelFactory;
+
+    /**
      * Default ZigBeeAlliance09 link key
      */
     private final static ZigBeeKey KEY_ZIGBEE_ALLIANCE_O9 = new ZigBeeKey(new int[] { 0x5A, 0x69, 0x67, 0x42, 0x65,
@@ -140,8 +145,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     private static final long RECONNECT_RATE = 5;
 
-    public ZigBeeCoordinatorHandler(Bridge coordinator) {
+    public ZigBeeCoordinatorHandler(Bridge coordinator, ZigBeeChannelConverterFactory channelFactory) {
         super(coordinator);
+        this.channelFactory = channelFactory;
     }
 
     @Override
@@ -439,6 +445,13 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 return;
         }
 
+        // Add all the clusters that we are supporting.
+        // If we don't do this, the framework will reject any packets for clusters we have not stated support for.
+        channelFactory.getSupportedClientClusters().stream()
+                .forEach(clusterId -> networkManager.addSupportedClientCluster(clusterId));
+        channelFactory.getSupportedServerClusters().stream()
+                .forEach(clusterId -> networkManager.addSupportedServerCluster(clusterId));
+
         // Show the initial network configuration for debugging
         ZigBeeChannel currentChannel = networkManager.getZigBeeChannel();
         int currentPanId = networkManager.getZigBeePanId();
@@ -495,9 +508,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         }
 
         initializeDongleSpecific();
-
-        // Add the IAS Zone cluster to the network manager so we respond to the MatchDescriptor
-        networkManager.addSupportedCluster(ZclIasZoneCluster.CLUSTER_ID);
     }
 
     private void startZigBeeNetwork() {

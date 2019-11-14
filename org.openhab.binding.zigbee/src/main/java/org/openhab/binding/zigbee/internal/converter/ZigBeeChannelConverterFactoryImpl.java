@@ -18,6 +18,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
@@ -132,4 +134,47 @@ public final class ZigBeeChannelConverterFactoryImpl implements ZigBeeChannelCon
         channelMap.keySet().removeAll(zigBeeChannelConverterProvider.getChannelConverters().keySet());
     }
 
+    /**
+     * Gets the cluster IDs that are supported by the converter
+     *
+     * @return Set of cluster IDs supported by the converter. The Set will be ordered by ascending ID
+     */
+    @Override
+    public Set<Integer> getSupportedClientClusters() {
+        Set<Integer> clusters = new TreeSet<>();
+        try {
+            for (Class<? extends ZigBeeBaseChannelConverter> converter : channelMap.values()) {
+                Constructor<? extends ZigBeeBaseChannelConverter> constructor = converter.getConstructor();
+                ZigBeeBaseChannelConverter instance = constructor.newInstance();
+
+                clusters.addAll(instance.getSupportedClientClusters());
+            }
+        } catch (Exception e) {
+            logger.error("Unable to consolidate client cluster IDs", e);
+        }
+
+        return clusters;
+    }
+
+    /**
+     * Gets the cluster IDs that are supported by the converter
+     *
+     * @return Set of cluster IDs supported by the converter. The Set will be ordered by ascending ID
+     */
+    @Override
+    public Set<Integer> getSupportedServerClusters() {
+        Set<Integer> clusters = new TreeSet<>();
+        try {
+            for (Class<? extends ZigBeeBaseChannelConverter> converter : channelMap.values()) {
+                Constructor<? extends ZigBeeBaseChannelConverter> constructor = converter.getConstructor();
+                ZigBeeBaseChannelConverter instance = constructor.newInstance();
+
+                clusters.addAll(instance.getSupportedServerClusters());
+            }
+        } catch (Exception e) {
+            logger.error("Unable to consolidate server cluster IDs", e);
+        }
+
+        return clusters;
+    }
 }

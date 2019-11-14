@@ -16,7 +16,11 @@ import static com.zsmartsystems.zigbee.zcl.clusters.ZclPressureMeasurementCluste
 import static org.eclipse.smarthome.core.library.unit.MetricPrefix.HECTO;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.measure.quantity.Pressure;
 
@@ -49,6 +53,16 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterAtmosphericPressure.class);
 
     private ZclPressureMeasurementCluster cluster;
+
+    @Override
+    public Set<Integer> getSupportedClientClusters() {
+        return Stream.of(ZclPressureMeasurementCluster.CLUSTER_ID).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Integer> getSupportedServerClusters() {
+        return Collections.emptySet();
+    }
 
     /**
      * If enhancedScale is null, then the binding will use the MeasuredValue report,
