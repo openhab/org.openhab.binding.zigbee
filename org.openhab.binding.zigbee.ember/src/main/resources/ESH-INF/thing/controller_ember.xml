@@ -107,6 +107,18 @@
 				</options>
 			</parameter>
 
+            <parameter name="zigbee_networksize" type="integer" min="10" max="250" groupName="ember">
+                <label>Network Size</label>
+                <description>Sets the number of nodes expected in the network</description>
+                <default>25</default>
+                <options>
+                    <option value="10">Small</option>
+                    <option value="25">Medium</option>
+                    <option value="100">Large</option>
+                    <option value="250">Enormous</option>
+                </options>
+            </parameter>
+
 			<parameter name="zigbee_initialise" type="boolean" groupName="network">
 				<label>Reset Controller</label>
 				<description>Resets the Controller and sets the configuration to the configured values</description>
