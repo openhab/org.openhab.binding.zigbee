@@ -100,6 +100,8 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
         logger.debug("ZigBee Ember Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
                 Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
 
+        dongle.updateDefaultConfiguration(EzspConfigId.EZSP_CONFIG_ADDRESS_TABLE_SIZE, config.zigbee_networksize);
+
         dongle.updateDefaultConfiguration(EzspConfigId.EZSP_CONFIG_TX_POWER_MODE, config.zigbee_powermode);
 
         // Set the child aging timeout.
