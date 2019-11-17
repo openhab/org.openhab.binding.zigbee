@@ -12,7 +12,11 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.thing.Channel;
@@ -40,6 +44,16 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterOccupancy.class);
 
     private ZclOccupancySensingCluster clusterOccupancy;
+
+    @Override
+    public Set<Integer> getImplementedClientClusters() {
+        return Stream.of(ZclOccupancySensingCluster.CLUSTER_ID).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Integer> getImplementedServerClusters() {
+        return Collections.emptySet();
+    }
 
     @Override
     public boolean initializeDevice() {

@@ -12,7 +12,11 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
@@ -39,6 +43,16 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterTemperature.class);
 
     private ZclTemperatureMeasurementCluster cluster;
+
+    @Override
+    public Set<Integer> getImplementedClientClusters() {
+        return Stream.of(ZclTemperatureMeasurementCluster.CLUSTER_ID).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Integer> getImplementedServerClusters() {
+        return Collections.emptySet();
+    }
 
     @Override
     public boolean initializeDevice() {

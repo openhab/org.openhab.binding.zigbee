@@ -13,7 +13,11 @@
 package org.openhab.binding.zigbee.internal.converter;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.measure.quantity.ElectricPotential;
 
@@ -44,6 +48,16 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterBatteryVoltage.class);
 
     private ZclPowerConfigurationCluster cluster;
+
+    @Override
+    public Set<Integer> getImplementedClientClusters() {
+        return Stream.of(ZclPowerConfigurationCluster.CLUSTER_ID).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Integer> getImplementedServerClusters() {
+        return Collections.emptySet();
+    }
 
     @Override
     public boolean initializeDevice() {

@@ -18,7 +18,6 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -43,7 +42,6 @@ import org.osgi.service.component.annotations.Reference;
  *
  * @author Chris Jackson - Initial contribution
  */
-@NonNullByDefault
 @Component(service = ThingHandlerFactory.class, configurationPid = "org.openhab.binding.zigbee.xbee")
 public class XBeeHandlerFactory extends BaseThingHandlerFactory {
 
