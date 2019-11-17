@@ -73,10 +73,10 @@ public class ZclReportingConfig implements ZclClusterConfigHandler {
             reportingTimeMin = ((BigDecimal) configuration.get(CONFIG_REPORTINGMIN)).intValue();
         }
         if (configuration.containsKey(CONFIG_REPORTINGMAX)) {
-            reportingTimeMin = ((BigDecimal) configuration.get(CONFIG_REPORTINGMAX)).intValue();
+            reportingTimeMax = ((BigDecimal) configuration.get(CONFIG_REPORTINGMAX)).intValue();
         }
         if (configuration.containsKey(CONFIG_REPORTINGCHANGE)) {
-            reportingTimeMin = ((BigDecimal) configuration.get(CONFIG_REPORTINGCHANGE)).intValue();
+            reportingChange = ((BigDecimal) configuration.get(CONFIG_REPORTINGCHANGE)).intValue();
         }
         if (configuration.containsKey(CONFIG_POLLING)) {
             pollingPeriod = ((BigDecimal) configuration.get(CONFIG_POLLING)).intValue();
