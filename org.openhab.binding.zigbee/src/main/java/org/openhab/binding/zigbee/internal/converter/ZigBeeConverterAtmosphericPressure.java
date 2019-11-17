@@ -55,12 +55,12 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
     private ZclPressureMeasurementCluster cluster;
 
     @Override
-    public Set<Integer> getSupportedClientClusters() {
+    public Set<Integer> getImplementedClientClusters() {
         return Stream.of(ZclPressureMeasurementCluster.CLUSTER_ID).collect(Collectors.toSet());
     }
 
     @Override
-    public Set<Integer> getSupportedServerClusters() {
+    public Set<Integer> getImplementedServerClusters() {
         return Collections.emptySet();
     }
 

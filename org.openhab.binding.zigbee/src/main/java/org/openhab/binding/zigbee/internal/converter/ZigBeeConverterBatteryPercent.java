@@ -14,7 +14,11 @@ package org.openhab.binding.zigbee.internal.converter;
 
 import static com.zsmartsystems.zigbee.zcl.clusters.ZclPowerConfigurationCluster.ATTR_BATTERYPERCENTAGEREMAINING;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.thing.Channel;
@@ -42,6 +46,16 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterBatteryPercent.class);
 
     private ZclPowerConfigurationCluster cluster;
+
+    @Override
+    public Set<Integer> getImplementedClientClusters() {
+        return Stream.of(ZclPowerConfigurationCluster.CLUSTER_ID).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Integer> getImplementedServerClusters() {
+        return Collections.emptySet();
+    }
 
     @Override
     public boolean initializeDevice() {

@@ -147,7 +147,7 @@ public final class ZigBeeChannelConverterFactoryImpl implements ZigBeeChannelCon
                 Constructor<? extends ZigBeeBaseChannelConverter> constructor = converter.getConstructor();
                 ZigBeeBaseChannelConverter instance = constructor.newInstance();
 
-                clusters.addAll(instance.getSupportedClientClusters());
+                clusters.addAll(instance.getImplementedClientClusters());
             }
         } catch (Exception e) {
             logger.error("Unable to consolidate client cluster IDs", e);
@@ -169,7 +169,7 @@ public final class ZigBeeChannelConverterFactoryImpl implements ZigBeeChannelCon
                 Constructor<? extends ZigBeeBaseChannelConverter> constructor = converter.getConstructor();
                 ZigBeeBaseChannelConverter instance = constructor.newInstance();
 
-                clusters.addAll(instance.getSupportedServerClusters());
+                clusters.addAll(instance.getImplementedServerClusters());
             }
         } catch (Exception e) {
             logger.error("Unable to consolidate server cluster IDs", e);

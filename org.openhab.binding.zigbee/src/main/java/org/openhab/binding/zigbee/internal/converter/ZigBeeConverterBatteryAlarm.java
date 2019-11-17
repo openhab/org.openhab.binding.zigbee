@@ -16,7 +16,11 @@ import static com.zsmartsystems.zigbee.zcl.clusters.ZclPowerConfigurationCluster
 import static java.time.Duration.*;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.*;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.thing.Channel;
@@ -67,6 +71,16 @@ public class ZigBeeConverterBatteryAlarm extends ZigBeeBaseChannelConverter impl
     private static final int BATTERY_ALARM_POLLING_PERIOD = (int) ofMinutes(30).getSeconds();
 
     private ZclPowerConfigurationCluster cluster;
+
+    @Override
+    public Set<Integer> getImplementedClientClusters() {
+        return Stream.of(ZclPowerConfigurationCluster.CLUSTER_ID).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Integer> getImplementedServerClusters() {
+        return Collections.emptySet();
+    }
 
     @Override
     public boolean initializeDevice() {

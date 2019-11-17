@@ -215,18 +215,18 @@ public abstract class ZigBeeBaseChannelConverter {
     }
 
     /**
-     * Gets the cluster IDs that are supported by the converter
-     * 
+     * Gets the cluster IDs that are implemented within the converter on the client side.
+     *
      * @return Set of cluster IDs supported by the converter
      */
-    public abstract Set<Integer> getSupportedClientClusters();
+    public abstract Set<Integer> getImplementedClientClusters();
 
     /**
-     * Gets the cluster IDs that are supported by the converter
-     * 
+     * Gets the cluster IDs that are implemented within the converter on the server side.
+     *
      * @return Set of cluster IDs supported by the converter
      */
-    public abstract Set<Integer> getSupportedServerClusters();
+    public abstract Set<Integer> getImplementedServerClusters();
 
     /**
      * Initialise the converter. This is called by the {@link ZigBeeThingHandler} when the channel is created. The
