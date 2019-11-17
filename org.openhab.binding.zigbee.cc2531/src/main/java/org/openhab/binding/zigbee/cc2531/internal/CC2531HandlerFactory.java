@@ -30,6 +30,7 @@ import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
 import org.openhab.binding.zigbee.cc2531.CC2531BindingConstants;
 import org.openhab.binding.zigbee.cc2531.handler.CC2531Handler;
+import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
@@ -53,9 +54,21 @@ public class CC2531HandlerFactory extends BaseThingHandlerFactory {
 
     private final SerialPortManager serialPortManager;
 
+    @Nullable
+    private ZigBeeChannelConverterFactory zigbeeChannelConverterFactory;
+
     @Activate
     public CC2531HandlerFactory(final @Reference SerialPortManager serialPortManager) {
         this.serialPortManager = serialPortManager;
+    }
+
+    @Reference
+    protected void setZigBeeChannelConverterFactory(ZigBeeChannelConverterFactory zigbeeChannelConverterFactory) {
+        this.zigbeeChannelConverterFactory = zigbeeChannelConverterFactory;
+    }
+
+    protected void unsetZigBeeChannelConverterFactory(ZigBeeChannelConverterFactory zigbeeChannelConverterFactory) {
+        this.zigbeeChannelConverterFactory = null;
     }
 
     @Override
@@ -69,7 +82,7 @@ public class CC2531HandlerFactory extends BaseThingHandlerFactory {
 
         ZigBeeCoordinatorHandler coordinator = null;
         if (thingTypeUID.equals(CC2531BindingConstants.THING_TYPE_CC2531)) {
-            coordinator = new CC2531Handler((Bridge) thing, serialPortManager);
+            coordinator = new CC2531Handler((Bridge) thing, serialPortManager, zigbeeChannelConverterFactory);
         }
 
         if (coordinator != null) {

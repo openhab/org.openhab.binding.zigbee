@@ -28,6 +28,7 @@ import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
+import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.xbee.XBeeBindingConstants;
 import org.openhab.binding.zigbee.xbee.handler.XBeeHandler;
@@ -53,9 +54,21 @@ public class XBeeHandlerFactory extends BaseThingHandlerFactory {
 
     private final SerialPortManager serialPortManager;
 
+    @Nullable
+    private ZigBeeChannelConverterFactory zigbeeChannelConverterFactory;
+
     @Activate
     public XBeeHandlerFactory(final @Reference SerialPortManager serialPortManager) {
         this.serialPortManager = serialPortManager;
+    }
+
+    @Reference
+    protected void setZigBeeChannelConverterFactory(ZigBeeChannelConverterFactory zigbeeChannelConverterFactory) {
+        this.zigbeeChannelConverterFactory = zigbeeChannelConverterFactory;
+    }
+
+    protected void unsetZigBeeChannelConverterFactory(ZigBeeChannelConverterFactory zigbeeChannelConverterFactory) {
+        this.zigbeeChannelConverterFactory = null;
     }
 
     @Override
@@ -69,7 +82,7 @@ public class XBeeHandlerFactory extends BaseThingHandlerFactory {
 
         ZigBeeCoordinatorHandler coordinator = null;
         if (thingTypeUID.equals(XBeeBindingConstants.THING_TYPE_XBEE)) {
-            coordinator = new XBeeHandler((Bridge) thing, serialPortManager);
+            coordinator = new XBeeHandler((Bridge) thing, serialPortManager, zigbeeChannelConverterFactory);
         }
 
         if (coordinator != null) {

@@ -25,6 +25,7 @@ import org.eclipse.smarthome.core.thing.binding.firmware.ProgressCallback;
 import org.eclipse.smarthome.core.thing.binding.firmware.ProgressStep;
 import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeSerialPort;
 import org.openhab.binding.zigbee.telegesis.internal.TelegesisConfiguration;
@@ -50,15 +51,15 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclIasZoneCluster;
  *
  * @author Chris Jackson - Initial contribution
  */
-// @NonNullByDefault
 public class TelegesisHandler extends ZigBeeCoordinatorHandler implements FirmwareUpdateHandler {
     private final Logger logger = LoggerFactory.getLogger(TelegesisHandler.class);
 
     private final SerialPortManager serialPortManager;
 
     @Activate
-    public TelegesisHandler(Bridge coordinator, SerialPortManager serialPortManager) {
-        super(coordinator);
+    public TelegesisHandler(Bridge coordinator, SerialPortManager serialPortManager,
+            ZigBeeChannelConverterFactory channelFactory) {
+        super(coordinator, channelFactory);
         this.serialPortManager = serialPortManager;
     }
 

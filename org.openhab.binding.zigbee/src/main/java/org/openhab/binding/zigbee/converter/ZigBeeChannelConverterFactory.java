@@ -66,12 +66,12 @@ public interface ZigBeeChannelConverterFactory {
      *
      * @return Set of cluster IDs supported by the system
      */
-    Set<Integer> getSupportedClientClusters();
+    Set<Integer> getImplementedClientClusters();
 
     /**
      * Gets the cluster IDs that are supported by all converters known to the system
      *
      * @return Set of cluster IDs supported by the system
      */
-    Set<Integer> getSupportedServerClusters();
+    Set<Integer> getImplementedServerClusters();
 }

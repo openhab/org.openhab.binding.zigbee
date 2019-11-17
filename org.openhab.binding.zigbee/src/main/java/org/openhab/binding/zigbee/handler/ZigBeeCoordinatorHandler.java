@@ -447,9 +447,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         // Add all the clusters that we are supporting.
         // If we don't do this, the framework will reject any packets for clusters we have not stated support for.
-        channelFactory.getSupportedClientClusters().stream()
+        channelFactory.getImplementedClientClusters().stream()
                 .forEach(clusterId -> networkManager.addSupportedClientCluster(clusterId));
-        channelFactory.getSupportedServerClusters().stream()
+        channelFactory.getImplementedServerClusters().stream()
                 .forEach(clusterId -> networkManager.addSupportedServerCluster(clusterId));
 
         // Show the initial network configuration for debugging

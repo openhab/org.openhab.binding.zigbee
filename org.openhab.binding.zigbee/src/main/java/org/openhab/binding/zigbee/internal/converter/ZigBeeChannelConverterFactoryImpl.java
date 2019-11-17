@@ -140,7 +140,7 @@ public final class ZigBeeChannelConverterFactoryImpl implements ZigBeeChannelCon
      * @return Set of cluster IDs supported by the converter. The Set will be ordered by ascending ID
      */
     @Override
-    public Set<Integer> getSupportedClientClusters() {
+    public Set<Integer> getImplementedClientClusters() {
         Set<Integer> clusters = new TreeSet<>();
         try {
             for (Class<? extends ZigBeeBaseChannelConverter> converter : channelMap.values()) {
@@ -162,7 +162,7 @@ public final class ZigBeeChannelConverterFactoryImpl implements ZigBeeChannelCon
      * @return Set of cluster IDs supported by the converter. The Set will be ordered by ascending ID
      */
     @Override
-    public Set<Integer> getSupportedServerClusters() {
+    public Set<Integer> getImplementedServerClusters() {
         Set<Integer> clusters = new TreeSet<>();
         try {
             for (Class<? extends ZigBeeBaseChannelConverter> converter : channelMap.values()) {

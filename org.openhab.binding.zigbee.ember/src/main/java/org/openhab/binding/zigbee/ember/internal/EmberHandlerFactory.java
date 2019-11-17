@@ -28,6 +28,7 @@ import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
+import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.ember.EmberBindingConstants;
 import org.openhab.binding.zigbee.ember.handler.EmberHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
@@ -53,9 +54,21 @@ public class EmberHandlerFactory extends BaseThingHandlerFactory {
 
     private final SerialPortManager serialPortManager;
 
+    @Nullable
+    private ZigBeeChannelConverterFactory zigbeeChannelConverterFactory;
+
     @Activate
     public EmberHandlerFactory(final @Reference SerialPortManager serialPortManager) {
         this.serialPortManager = serialPortManager;
+    }
+
+    @Reference
+    protected void setZigBeeChannelConverterFactory(ZigBeeChannelConverterFactory zigbeeChannelConverterFactory) {
+        this.zigbeeChannelConverterFactory = zigbeeChannelConverterFactory;
+    }
+
+    protected void unsetZigBeeChannelConverterFactory(ZigBeeChannelConverterFactory zigbeeChannelConverterFactory) {
+        this.zigbeeChannelConverterFactory = null;
     }
 
     @Override
@@ -69,7 +82,7 @@ public class EmberHandlerFactory extends BaseThingHandlerFactory {
 
         ZigBeeCoordinatorHandler emberHandler = null;
         if (thingTypeUID.equals(EmberBindingConstants.THING_TYPE_EMBER)) {
-            emberHandler = new EmberHandler((Bridge) thing, serialPortManager);
+            emberHandler = new EmberHandler((Bridge) thing, serialPortManager, zigbeeChannelConverterFactory);
         }
 
         if (emberHandler != null) {
