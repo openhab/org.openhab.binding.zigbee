@@ -13,6 +13,7 @@
 package org.openhab.binding.zigbee.internal.converter;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -20,6 +21,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.thing.Channel;
@@ -28,6 +31,7 @@ import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.internal.converter.config.ZclOnOffSwitchConfig;
 import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +68,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
     private ZclAttribute attributeClient;
     private ZclAttribute attributeServer;
 
+    private ZclOnOffSwitchConfig configOnOff;
     private ZclReportingConfig configReporting;
 
     private final AtomicBoolean currentOnOffState = new AtomicBoolean(true);
@@ -127,6 +132,13 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
             return false;
         }
 
+        if (clusterOnOffServer != null) {
+            // Add the listener
+            clusterOnOffServer.addAttributeListener(this);
+            configOnOff = new ZclOnOffSwitchConfig();
+            configOnOff.initialize(clusterOnOffServer);
+        }
+
         if (clusterOnOffClient != null) {
             // Add the command listener
             clusterOnOffClient.addCommandListener(this);
@@ -142,6 +154,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
         configReporting = new ZclReportingConfig(channel);
 
         configOptions = new ArrayList<>();
+        configOptions.addAll(configOnOff.getConfiguration());
         configOptions.addAll(configReporting.getConfiguration());
 
         return true;
@@ -224,6 +237,28 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
                 .withType(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF)
                 .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_SWITCH_ONOFF).withProperties(createProperties(endpoint))
                 .build();
+    }
+
+    @Override
+    public void updateConfiguration(@NonNull Configuration currentConfiguration,
+            Map<String, Object> updatedParameters) {
+        if (configReporting.updateConfiguration(currentConfiguration, updatedParameters)) {
+            try {
+                ZclAttribute attribute;
+                CommandResult reportingResponse;
+
+                attribute = clusterOnOffServer.getAttribute(ZclOnOffCluster.ATTR_ONOFF);
+                reportingResponse = attribute
+                        .setReporting(configReporting.getReportingTimeMin(), configReporting.getReportingTimeMax())
+                        .get();
+                handleReportingResponse(reportingResponse, configReporting.getPollingPeriod(),
+                        configReporting.getReportingTimeMax());
+            } catch (InterruptedException | ExecutionException e) {
+                logger.debug("{}: OnOff exception setting reporting", endpoint.getIeeeAddress(), e);
+            }
+        }
+
+        configOnOff.updateConfiguration(currentConfiguration, updatedParameters);
     }
 
     @Override

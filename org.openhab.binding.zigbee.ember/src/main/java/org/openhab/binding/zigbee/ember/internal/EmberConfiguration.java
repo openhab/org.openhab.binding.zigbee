@@ -25,4 +25,5 @@ public class EmberConfiguration {
     public Integer zigbee_powermode;
     public Integer zigbee_childtimeout;
     public Integer zigbee_concentrator;
+    public Integer zigbee_networksize;
 }
