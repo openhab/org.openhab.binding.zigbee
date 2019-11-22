@@ -92,6 +92,15 @@
         <state pattern="%.1f %unit%" readOnly="true" />
     </channel-type>
 
+    <!-- Binary input sensor -->
+    <channel-type id="binary_input">
+        <item-type>Switch</item-type>
+        <label>Binary Input Sensor</label>
+        <description>Indicates a binary input sensor state</description>
+        <category></category>
+        <state readOnly="true"></state>
+    </channel-type>
+
     <!-- IAS Contact Channel -->
     <channel-type id="ias_contactportal1">
         <item-type>Switch</item-type>
