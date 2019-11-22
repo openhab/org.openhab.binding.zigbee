@@ -193,7 +193,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
 
         ZclOnOffCluster clusterOnOff = (ZclOnOffCluster) endpoint.getOutputCluster(ZclOnOffCluster.CLUSTER_ID);
         if (clusterOnOff == null) {
-            logger.trace("{}: Error opening device level controls", endpoint.getIeeeAddress());
+            logger.trace("{}: Error opening device on off controls", endpoint.getIeeeAddress());
             return false;
         }
 
@@ -239,7 +239,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
 
         clusterOnOffServer = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
         if (clusterOnOffServer == null) {
-            logger.trace("{}: Error opening device level controls", endpoint.getIeeeAddress());
+            logger.trace("{}: Error opening device on off controls", endpoint.getIeeeAddress());
             return false;
         }
 
@@ -276,7 +276,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
 
         clusterOnOffClient = (ZclOnOffCluster) endpoint.getOutputCluster(ZclOnOffCluster.CLUSTER_ID);
         if (clusterOnOffClient == null) {
-            logger.trace("{}: Error opening device level controls", endpoint.getIeeeAddress());
+            logger.trace("{}: Error opening device on off controls", endpoint.getIeeeAddress());
             return false;
         }
 
