@@ -29,6 +29,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Converter for the binary input sensor.
+ *
+ * @author Witold Sowa
+ *
+ */
 public class ZigBeeConverterBinaryInput extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterBinaryInput.class);
 
@@ -92,10 +98,10 @@ public class ZigBeeConverterBinaryInput extends ZigBeeBaseChannelConverter imple
         }
 
         return ChannelBuilder
-                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_BINARY_INPUT),
+                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_BINARYINPUT),
                         ZigBeeBindingConstants.ITEM_TYPE_SWITCH)
-                .withType(ZigBeeBindingConstants.CHANNEL_BINARY_INPUT)
-                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_BINARY_INPUT)
+                .withType(ZigBeeBindingConstants.CHANNEL_BINARYINPUT)
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_BINARYINPUT)
                 .withProperties(createProperties(endpoint)).build();
     }
 

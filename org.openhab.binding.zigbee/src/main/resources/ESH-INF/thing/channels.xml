@@ -93,7 +93,7 @@
     </channel-type>
 
     <!-- Binary input sensor -->
-    <channel-type id="binary_input">
+    <channel-type id="binaryinput">
         <item-type>Switch</item-type>
         <label>Binary Input Sensor</label>
         <description>Indicates a binary input sensor state</description>
