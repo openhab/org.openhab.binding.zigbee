@@ -221,6 +221,7 @@ The following devices have been tested by openHAB users with the binding. The ab
 | Xiaomi Aqara Temperature and Humidity Sensor   |                                                       |
 | Xiaomi Aqara Human Motion Sensor               |                                                       |
 | Xiaomi Aqara Wireless Mini Switch              |                                                       |
+| Xiaomi Aqara Wired Wall Switch                 |                                                       |
 | Xiaomi Aqara Wireless Remote Switch            | Double Rocker variant                                 |
 | Shenzhen Ksentry Electronics On Off Controller | Relay                                                 |
 
