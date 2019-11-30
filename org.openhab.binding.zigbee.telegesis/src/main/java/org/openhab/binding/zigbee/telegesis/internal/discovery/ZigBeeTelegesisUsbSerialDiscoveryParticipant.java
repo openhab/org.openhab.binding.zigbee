@@ -13,7 +13,6 @@
 package org.openhab.binding.zigbee.telegesis.internal.discovery;
 
 import static java.util.Arrays.asList;
-import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CONFIGURATION_BAUD;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CONFIGURATION_PORT;
 import static org.openhab.binding.zigbee.telegesis.TelegesisBindingConstants.THING_TYPE_TELEGESIS;
 
@@ -74,7 +73,7 @@ public class ZigBeeTelegesisUsbSerialDiscoveryParticipant implements UsbSerialDi
                     .withLabel(createQiviconTelegesisDongleLabel(deviceInformation))
                     .withRepresentationProperty(CONFIGURATION_PORT)
                     .withProperty(CONFIGURATION_PORT, deviceInformation.getSerialPort())
-                    .withProperty(CONFIGURATION_BAUD, QIVICON_DONGLE_BAUD_RATE).build();
+                    .build();
         } else {
             return null;
         }
