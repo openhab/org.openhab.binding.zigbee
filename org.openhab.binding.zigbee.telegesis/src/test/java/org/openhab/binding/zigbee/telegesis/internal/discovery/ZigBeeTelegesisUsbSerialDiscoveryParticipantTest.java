@@ -15,7 +15,6 @@ package org.openhab.binding.zigbee.telegesis.internal.discovery;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CONFIGURATION_BAUD;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CONFIGURATION_PORT;
 import static org.openhab.binding.zigbee.telegesis.TelegesisBindingConstants.THING_TYPE_TELEGESIS;
 import static org.openhab.binding.zigbee.telegesis.internal.discovery.ZigBeeTelegesisUsbSerialDiscoveryParticipant.QIVICON_DONGLE_V1_AND_TELEGESIS_USB_PRODUCT_ID;
@@ -82,7 +81,6 @@ public class ZigBeeTelegesisUsbSerialDiscoveryParticipantTest {
         assertNotNull(discoveryResult.getLabel());
         assertEquals(discoveryResult.getRepresentationProperty(), CONFIGURATION_PORT);
         assertEquals(discoveryResult.getProperties().get(CONFIGURATION_PORT), "/dev/ttyUSB0");
-        assertNotNull(discoveryResult.getProperties().get(CONFIGURATION_BAUD));
     }
     
     /**
@@ -110,7 +108,6 @@ public class ZigBeeTelegesisUsbSerialDiscoveryParticipantTest {
         assertNotNull(discoveryResult.getLabel());
         assertEquals(discoveryResult.getRepresentationProperty(), CONFIGURATION_PORT);
         assertEquals(discoveryResult.getProperties().get(CONFIGURATION_PORT), "/dev/ttyUSB0");
-        assertNotNull(discoveryResult.getProperties().get(CONFIGURATION_BAUD));
     }
     
     private UsbSerialDeviceInformation forUsbDongle(int vendorId, int productId, String serial, String device) {
