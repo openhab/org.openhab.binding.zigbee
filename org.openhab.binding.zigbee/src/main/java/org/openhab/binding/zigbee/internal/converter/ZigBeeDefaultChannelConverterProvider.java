@@ -42,6 +42,7 @@ public final class ZigBeeDefaultChannelConverterProvider implements ZigBeeChanne
         channelMap.put(ZigBeeBindingConstants.CHANNEL_DOORLOCK_STATE, ZigBeeConverterDoorLock.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_ELECTRICAL_ACTIVEPOWER, ZigBeeConverterMeasurementPower.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_HUMIDITY_VALUE, ZigBeeConverterRelativeHumidity.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_BINARYINPUT, ZigBeeConverterBinaryInput.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_CONTACTPORTAL1, ZigBeeConverterIasContactPortal1.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_CODETECTOR, ZigBeeConverterIasCoDetector.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_IAS_FIREINDICATION, ZigBeeConverterIasFireIndicator.class);
