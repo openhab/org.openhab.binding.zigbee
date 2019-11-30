@@ -86,6 +86,10 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_LABEL_FANCONTROL = "Fan Control";
     public static final ChannelTypeUID CHANNEL_FANCONTROL = new ChannelTypeUID("zigbee:fancontrol");
 
+    public static final String CHANNEL_NAME_BINARYINPUT = "binaryinput";
+    public static final String CHANNEL_LABEL_BINARYINPUT = "Binary Input";
+    public static final ChannelTypeUID CHANNEL_BINARYINPUT = new ChannelTypeUID("zigbee:binaryinput");
+
     public static final String CHANNEL_NAME_IAS_CODETECTOR = "cosensor";
     public static final String CHANNEL_LABEL_IAS_CODETECTOR = "Carbon Monoxide Detector";
     public static final ChannelTypeUID CHANNEL_IAS_CODETECTOR = new ChannelTypeUID("zigbee:ias_cosensor");
