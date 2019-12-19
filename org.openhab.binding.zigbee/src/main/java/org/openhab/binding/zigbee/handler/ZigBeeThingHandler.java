@@ -425,6 +425,12 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         }
         logger.debug("{}: Channel initialisation complete", nodeIeeeAddress);
 
+        if (channels.isEmpty()) {
+            logger.warn("{}: No supported clusters found", nodeIeeeAddress);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.HANDLER_INITIALIZING_ERROR, "No supported clusters found");
+            return;
+        }
+
         int expectedUpdatePeriod = getExpectedUpdatePeriod(channels);
         expectedUpdatePeriod = (expectedUpdatePeriod * POLLING_OR_REPORTING_FACTOR) + POLLING_OR_REPORTING_MARGIN;
         logger.debug("Setting ONLINE/OFFLINE timeout interval to: {}", expectedUpdatePeriod);
