@@ -206,6 +206,7 @@ The following devices have been tested by openHAB users with the binding. The ab
 | Innr SP 120                                    | Smart Plug *[<sup>[1]</sup>](#note1)*                 |
 | Lupus Small Zigbee Temperature Sensor 12314    | Lupus-Electronics Temperature and Humidity sensor     |
 | Osram Bulbs                                    |                                                       |
+| Osram Flex 3P Multicolor                       | Osram Smart+ LED Strip                                |
 | Osram Motion Sensor                            | Osram Smart+ Motion Sensor *[<sup>[1]</sup>](#note1)* |
 | Securifi Peanut Plug                           | Metered Plug                                          |
 | SmartThings Plug                               | Metered Plug                                          |
