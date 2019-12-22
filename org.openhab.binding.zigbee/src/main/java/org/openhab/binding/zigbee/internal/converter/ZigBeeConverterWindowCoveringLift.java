@@ -27,6 +27,7 @@ import org.eclipse.smarthome.core.thing.type.AutoUpdatePolicy;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,7 +101,8 @@ public class ZigBeeConverterWindowCoveringLift extends ZigBeeBaseChannelConverte
     }
 
     @Override
-    public boolean initializeConverter() {
+    public boolean initializeConverter(ZigBeeThingHandler thing) {
+        super.initializeConverter(thing);
         clusterServer = (ZclWindowCoveringCluster) endpoint.getInputCluster(ZclWindowCoveringCluster.CLUSTER_ID);
         if (clusterServer == null) {
             logger.error("{}: Error opening device window covering controls", endpoint.getIeeeAddress());

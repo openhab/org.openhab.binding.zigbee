@@ -16,6 +16,7 @@ import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.clusters.iaszone.ZoneTypeEnum;
@@ -28,9 +29,9 @@ import com.zsmartsystems.zigbee.zcl.clusters.iaszone.ZoneTypeEnum;
  */
 public class ZigBeeConverterIasMotionIntrusion extends ZigBeeConverterIas {
     @Override
-    public boolean initializeConverter() {
+    public boolean initializeConverter(ZigBeeThingHandler thing) {
         bitTest = CIE_ALARM1;
-        return super.initializeConverter();
+        return super.initializeConverter(thing);
     }
 
     @Override

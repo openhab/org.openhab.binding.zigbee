@@ -56,7 +56,8 @@ public class ZigBeeConverterAtmosphericPressureTest {
         ArgumentCaptor<State> stateCapture = ArgumentCaptor.forClass(State.class);
         ZigBeeThingHandler thingHandler = Mockito.mock(ZigBeeThingHandler.class);
         Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
-        converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
+        converter.initialize(channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
+        converter.initializeConverter(thingHandler);
 
         ZclAttribute attributeMeasuredVal = Mockito.mock(ZclAttribute.class);
         Mockito.when(attributeMeasuredVal.getCluster()).thenReturn(ZclClusterType.PRESSURE_MEASUREMENT);

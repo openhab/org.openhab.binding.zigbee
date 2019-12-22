@@ -77,7 +77,7 @@ public class ZigBeeConverterGenericButtonTest {
         when(coordinatorHandler.getLocalEndpointId(ArgumentMatchers.any(ZigBeeProfileType.class))).thenReturn(1);
 
         converter = new ZigBeeConverterGenericButton();
-        converter.initialize(thingHandler, channel, coordinatorHandler, ieeeAddress, endpointId);
+        converter.initialize(channel, coordinatorHandler, ieeeAddress, endpointId);
     }
 
     @Test
@@ -87,7 +87,7 @@ public class ZigBeeConverterGenericButtonTest {
 
         ZclCluster cluster = mockCluster(8);
 
-        boolean initResult = converter.initializeConverter();
+        boolean initResult = converter.initializeConverter(thingHandler);
 
         assertTrue(initResult);
         verify(cluster, times(1)).addCommandListener(converter);
@@ -102,7 +102,7 @@ public class ZigBeeConverterGenericButtonTest {
 
         ZclCluster cluster = mockCluster(8);
 
-        boolean initResult = converter.initializeConverter();
+        boolean initResult = converter.initializeConverter(thingHandler);
 
         assertTrue(initResult);
         verify(cluster, times(1)).addAttributeListener(converter);
@@ -123,7 +123,7 @@ public class ZigBeeConverterGenericButtonTest {
         ZclCluster cluster8 = mockCluster(8);
         ZclCluster cluster9 = mockCluster(9);
 
-        boolean initResult = converter.initializeConverter();
+        boolean initResult = converter.initializeConverter(thingHandler);
 
         assertTrue(initResult);
         verify(cluster8, times(1)).addCommandListener(converter);
@@ -133,7 +133,7 @@ public class ZigBeeConverterGenericButtonTest {
     @Test
     public void converterInitializationClusterIdIsMandatory() {
         channelProperties.put("zigbee_shortpress_command_id", "0x0017");
-        boolean initResult = converter.initializeConverter();
+        boolean initResult = converter.initializeConverter(thingHandler);
         assertFalse(initResult);
     }
 
@@ -141,7 +141,7 @@ public class ZigBeeConverterGenericButtonTest {
     public void converterInitializationCommandIdOrAttributeIsMandatory() {
         channelProperties.put("zigbee_shortpress_cluster_id", "0x008");
         mockCluster(8);
-        boolean initResult = converter.initializeConverter();
+        boolean initResult = converter.initializeConverter(thingHandler);
         assertFalse(initResult);
     }
 
@@ -149,7 +149,7 @@ public class ZigBeeConverterGenericButtonTest {
     public void converterCannotInitializeWithUnparseableClusterId() {
         channelProperties.put("zigbee_shortpress_cluster_id", "0xEFGH");
         channelProperties.put("zigbee_shortpress_command_id", "123");
-        boolean initResult = converter.initializeConverter();
+        boolean initResult = converter.initializeConverter(thingHandler);
         assertFalse(initResult);
     }
 
@@ -158,7 +158,7 @@ public class ZigBeeConverterGenericButtonTest {
         channelProperties.put("zigbee_shortpress_cluster_id", "0x8");
         channelProperties.put("zigbee_shortpress_command_id", "abc");
         mockCluster(8);
-        boolean initResult = converter.initializeConverter();
+        boolean initResult = converter.initializeConverter(thingHandler);
         assertFalse(initResult);
     }
 
@@ -168,7 +168,7 @@ public class ZigBeeConverterGenericButtonTest {
         channelProperties.put("zigbee_shortpress_attribute_id", "abc");
         channelProperties.put("zigbee_shortpress_attribute_value", "abc");
         mockCluster(8);
-        boolean initResult = converter.initializeConverter();
+        boolean initResult = converter.initializeConverter(thingHandler);
         assertFalse(initResult);
     }
 
@@ -178,7 +178,7 @@ public class ZigBeeConverterGenericButtonTest {
         channelProperties.put("zigbee_shortpress_command_id", "0xabc");
         channelProperties.put("zigbee_shortpress_parameter_name", "mode");
         mockCluster(8);
-        boolean initResult = converter.initializeConverter();
+        boolean initResult = converter.initializeConverter(thingHandler);
         assertFalse(initResult);
     }
 
@@ -188,7 +188,7 @@ public class ZigBeeConverterGenericButtonTest {
         channelProperties.put("zigbee_shortpress_command_id", "0xabc");
         channelProperties.put("zigbee_shortpress_parameter_value", "1");
         mockCluster(8);
-        boolean initResult = converter.initializeConverter();
+        boolean initResult = converter.initializeConverter(thingHandler);
         assertFalse(initResult);
     }
 
@@ -197,7 +197,7 @@ public class ZigBeeConverterGenericButtonTest {
         channelProperties.put("zigbee_shortpress_cluster_id", "0x8");
         channelProperties.put("zigbee_shortpress_attribute_id", "1");
         mockCluster(8);
-        boolean initResult = converter.initializeConverter();
+        boolean initResult = converter.initializeConverter(thingHandler);
         assertFalse(initResult);
     }
 
@@ -208,7 +208,7 @@ public class ZigBeeConverterGenericButtonTest {
         channelProperties.put("zigbee_shortpress_attribute_id", "1");
         channelProperties.put("zigbee_shortpress_attribute_value", "2");
         mockCluster(8);
-        boolean initResult = converter.initializeConverter();
+        boolean initResult = converter.initializeConverter(thingHandler);
         assertFalse(initResult);
     }
 
@@ -223,7 +223,7 @@ public class ZigBeeConverterGenericButtonTest {
         channelProperties.put("zigbee_shortpress_command_id", "0x0017");
         ZclCluster cluster = mockCluster(8);
 
-        converter.initializeConverter();
+        converter.initializeConverter(thingHandler);
         converter.disposeConverter();
 
         verify(cluster, times(1)).removeCommandListener(converter);
@@ -237,7 +237,7 @@ public class ZigBeeConverterGenericButtonTest {
         channelProperties.put("zigbee_shortpress_attribute_value", "2");
         ZclCluster cluster = mockCluster(8);
 
-        converter.initializeConverter();
+        converter.initializeConverter(thingHandler);
         converter.disposeConverter();
 
         verify(cluster, times(1)).removeAttributeListener(converter);
@@ -249,7 +249,7 @@ public class ZigBeeConverterGenericButtonTest {
         channelProperties.put("zigbee_shortpress_cluster_id", "768");
         channelProperties.put("zigbee_shortpress_command_id", "0x01");
         mockCluster(768);
-        converter.initializeConverter();
+        converter.initializeConverter(thingHandler);
 
         converter.commandReceived(new MoveHueCommand());
 
@@ -265,7 +265,7 @@ public class ZigBeeConverterGenericButtonTest {
         channelProperties.put("zigbee_shortpress_parameter_name", "moveMode");
         channelProperties.put("zigbee_shortpress_parameter_value", "1");
         mockCluster(768);
-        converter.initializeConverter();
+        converter.initializeConverter(thingHandler);
 
         MoveHueCommand moveHueCommand = new MoveHueCommand();
         moveHueCommand.setMoveMode(1);
@@ -282,7 +282,7 @@ public class ZigBeeConverterGenericButtonTest {
         channelProperties.put("zigbee_shortpress_attribute_id", "85");
         channelProperties.put("zigbee_shortpress_attribute_value", "1");
         mockCluster(768);
-        converter.initializeConverter();
+        converter.initializeConverter(thingHandler);
 
         ZclAttribute attribute = new ZclAttribute(new ZclMultistateInputBasicCluster(endpoint), 85, "foo",
                 ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, true, true);
@@ -302,7 +302,7 @@ public class ZigBeeConverterGenericButtonTest {
         channelProperties.put("zigbee_shortpress_parameter_name", "blueMode");
         channelProperties.put("zigbee_shortpress_parameter_value", "1");
         mockCluster(768);
-        converter.initializeConverter();
+        converter.initializeConverter(thingHandler);
 
         MoveHueCommand moveHueCommand = new MoveHueCommand();
         moveHueCommand.setMoveMode(1);
@@ -320,7 +320,7 @@ public class ZigBeeConverterGenericButtonTest {
         channelProperties.put("zigbee_shortpress_parameter_name", "moveMode");
         channelProperties.put("zigbee_shortpress_parameter_value", "1");
         mockCluster(768);
-        converter.initializeConverter();
+        converter.initializeConverter(thingHandler);
 
         MoveHueCommand moveHueCommand = new MoveHueCommand();
         moveHueCommand.setMoveMode(0);
@@ -337,7 +337,7 @@ public class ZigBeeConverterGenericButtonTest {
         channelProperties.put("zigbee_shortpress_attribute_id", "85");
         channelProperties.put("zigbee_shortpress_attribute_value", "1");
         mockCluster(768);
-        converter.initializeConverter();
+        converter.initializeConverter(thingHandler);
 
         ZclAttribute attribute = new ZclAttribute(new ZclMultistateInputBasicCluster(endpoint), 85, "foo",
                 ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, true, true);
@@ -361,7 +361,7 @@ public class ZigBeeConverterGenericButtonTest {
         channelProperties.put("zigbee_doublepress_command_id", "0x0017");
 
         mockCluster(768);
-        converter.initializeConverter();
+        converter.initializeConverter(thingHandler);
 
         converter.commandReceived(new MoveHueCommand());
 
@@ -385,7 +385,7 @@ public class ZigBeeConverterGenericButtonTest {
         channelProperties.put("zigbee_doublepress_attribute_value", "0x03");
 
         mockCluster(768);
-        converter.initializeConverter();
+        converter.initializeConverter(thingHandler);
 
         ZclAttribute attribute = new ZclAttribute(new ZclMultistateInputBasicCluster(endpoint), 0x17, "foo",
                 ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, true, true);

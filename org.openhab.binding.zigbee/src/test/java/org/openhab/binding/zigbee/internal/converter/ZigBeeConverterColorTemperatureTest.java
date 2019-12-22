@@ -133,7 +133,8 @@ public class ZigBeeConverterColorTemperatureTest {
         ArgumentCaptor<State> stateCapture = ArgumentCaptor.forClass(State.class);
         ZigBeeThingHandler thingHandler = Mockito.mock(ZigBeeThingHandler.class);
         Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
-        converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
+        converter.initialize(channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
+        converter.initializeConverter(thingHandler);
 
         ZclAttribute colorModeAttribute = new ZclAttribute(new ZclColorControlCluster(endpoint), 8, "ColorMode",
                 ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, false, false);
@@ -179,7 +180,8 @@ public class ZigBeeConverterColorTemperatureTest {
         ArgumentCaptor<State> stateCapture = ArgumentCaptor.forClass(State.class);
         ZigBeeThingHandler thingHandler = Mockito.mock(ZigBeeThingHandler.class);
         Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
-        converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
+        converter.initialize(channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
+        converter.initializeConverter(thingHandler);
 
         ZclAttribute colorTemperatureAttribute = new ZclAttribute(new ZclColorControlCluster(endpoint), 7,
                 "ColorTemperature", ZclDataType.UNSIGNED_16_BIT_INTEGER, false, false, false, false);
@@ -206,7 +208,8 @@ public class ZigBeeConverterColorTemperatureTest {
         ArgumentCaptor<State> stateCapture = ArgumentCaptor.forClass(State.class);
         ZigBeeThingHandler thingHandler = Mockito.mock(ZigBeeThingHandler.class);
         Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
-        converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
+        converter.initialize(channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
+        converter.initializeConverter(thingHandler);
 
         ZclAttribute colorModeAttribute = new ZclAttribute(new ZclColorControlCluster(endpoint), 8, "ColorMode",
                 ZclDataType.ENUMERATION_8_BIT, false, false, false, false);

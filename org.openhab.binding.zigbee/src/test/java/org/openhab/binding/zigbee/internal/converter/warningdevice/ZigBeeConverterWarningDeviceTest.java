@@ -66,9 +66,9 @@ public class ZigBeeConverterWarningDeviceTest {
         when(endpoint.getInputCluster(ZclIasWdCluster.CLUSTER_ID)).thenReturn(cluster);
 
         converter = new ZigBeeConverterWarningDevice();
-        converter.initialize(thingHandler, channel, coordinatorHandler, ieeeAddress, endpointId);
+        converter.initialize(channel, coordinatorHandler, ieeeAddress, endpointId);
 
-        assertTrue(converter.initializeConverter());
+        assertTrue(converter.initializeConverter(thingHandler));
     }
 
     @Test
