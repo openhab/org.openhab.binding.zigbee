@@ -17,8 +17,6 @@ import static com.zsmartsystems.zigbee.zcl.clusters.ZclPowerConfigurationCluster
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.thing.Channel;
@@ -49,7 +47,7 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
-        return Stream.of(ZclPowerConfigurationCluster.CLUSTER_ID).collect(Collectors.toSet());
+        return Collections.singleton(ZclPowerConfigurationCluster.CLUSTER_ID);
     }
 
     @Override

@@ -19,8 +19,6 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.measure.quantity.Pressure;
 
@@ -56,7 +54,7 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
-        return Stream.of(ZclPressureMeasurementCluster.CLUSTER_ID).collect(Collectors.toSet());
+        return Collections.singleton(ZclPressureMeasurementCluster.CLUSTER_ID);
     }
 
     @Override

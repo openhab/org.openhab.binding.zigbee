@@ -16,8 +16,6 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.measure.quantity.ElectricPotential;
 
@@ -51,7 +49,7 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
-        return Stream.of(ZclPowerConfigurationCluster.CLUSTER_ID).collect(Collectors.toSet());
+        return Collections.singleton(ZclPowerConfigurationCluster.CLUSTER_ID);
     }
 
     @Override

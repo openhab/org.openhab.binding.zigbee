@@ -51,7 +51,7 @@ public class ZigBeeDataStore implements ZigBeeNetworkDataStore {
     /**
      * The logger.
      */
-    private final static Logger logger = LoggerFactory.getLogger(ZigBeeDataStore.class);
+    private final Logger logger = LoggerFactory.getLogger(ZigBeeDataStore.class);
 
     private final String networkStateFilePath;
 

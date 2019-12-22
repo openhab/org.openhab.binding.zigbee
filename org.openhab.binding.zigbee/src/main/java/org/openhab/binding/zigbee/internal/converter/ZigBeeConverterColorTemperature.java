@@ -17,8 +17,6 @@ import static com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster.ATTR_
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
@@ -64,7 +62,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
-        return Stream.of(ZclColorControlCluster.CLUSTER_ID).collect(Collectors.toSet());
+        return Collections.singleton(ZclColorControlCluster.CLUSTER_ID);
     }
 
     @Override

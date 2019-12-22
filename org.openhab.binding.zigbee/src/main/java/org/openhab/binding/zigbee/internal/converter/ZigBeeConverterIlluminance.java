@@ -18,8 +18,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.config.core.Configuration;
@@ -60,7 +58,7 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
-        return Stream.of(ZclIlluminanceMeasurementCluster.CLUSTER_ID).collect(Collectors.toSet());
+        return Collections.singleton(ZclIlluminanceMeasurementCluster.CLUSTER_ID);
     }
 
     @Override

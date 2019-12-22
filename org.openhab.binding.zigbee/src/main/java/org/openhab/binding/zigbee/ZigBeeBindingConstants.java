@@ -238,6 +238,7 @@ public class ZigBeeBindingConstants {
     public static final String THING_PROPERTY_STACKCOMPLIANCE = "zigbee_stkcompliance";
     public static final String THING_PROPERTY_DEVICE_INITIALIZED = "zigbee_device_initialised";
     public static final String THING_PROPERTY_MANUFACTURERCODE = "zigbee_manufacturercode";
+    public static final String THING_PROPERTY_MACADDRESS = "zigbee_macaddress";
 
     // List of all configuration parameters
     public static final String CONFIGURATION_PANID = "zigbee_panid";

@@ -16,8 +16,6 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.measure.quantity.ElectricPotential;
 
@@ -54,7 +52,7 @@ public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConve
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
-        return Stream.of(ZclElectricalMeasurementCluster.CLUSTER_ID).collect(Collectors.toSet());
+        return Collections.singleton(ZclElectricalMeasurementCluster.CLUSTER_ID);
     }
 
     @Override

@@ -73,6 +73,8 @@ import com.zsmartsystems.zigbee.transport.TransportConfigOption;
 import com.zsmartsystems.zigbee.transport.TrustCentreJoinMode;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportFirmwareUpdate;
 import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclBasicCluster;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclOtaUpgradeCluster;
 import com.zsmartsystems.zigbee.zdo.field.NeighborTable;
 import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
 
@@ -113,8 +115,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     private final Set<ZigBeeNetworkNodeListener> nodeListeners = new HashSet<>();
     private final Set<ZigBeeAnnounceListener> announceListeners = new HashSet<>();
-
-    private boolean macAddressSet = false;
 
     private final int MESH_UPDATE_PERIOD = 86400;
 
@@ -403,6 +403,35 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         networkManager.addNetworkStateListener(this);
         networkManager.addNetworkNodeListener(this);
 
+        // Initialise the network
+        ZigBeeStatus initializeResponse = networkManager.initialize();
+
+        // Firmware Version should be available at this point.
+        // Present it to the users even if the initialse was unsuccessful
+        Map<String, String> properties = editProperties();
+        if (zigbeeTransport instanceof ZigBeeTransportFirmwareUpdate) {
+            ZigBeeTransportFirmwareUpdate firmwareTransport = (ZigBeeTransportFirmwareUpdate) zigbeeTransport;
+            properties.put(Thing.PROPERTY_FIRMWARE_VERSION, firmwareTransport.getFirmwareVersion());
+        }
+        properties.put(ZigBeeBindingConstants.THING_PROPERTY_MACADDRESS,
+                networkManager.getLocalIeeeAddress().toString());
+        updateProperties(properties);
+
+        switch (initializeResponse) {
+            case SUCCESS:
+                break;
+            case BAD_RESPONSE:
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE, ZigBeeBindingConstants.OFFLINE_BAD_RESPONSE);
+                return;
+            case COMMUNICATION_ERROR:
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE, ZigBeeBindingConstants.OFFLINE_COMMS_FAIL);
+                return;
+            default:
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE,
+                        ZigBeeBindingConstants.OFFLINE_INITIALIZE_FAIL);
+                return;
+        }
+
         int meshUpdateTime = MESH_UPDATE_PERIOD;
         if (getConfig().get(CONFIGURATION_MESHUPDATEPERIOD) != null) {
             logger.debug("Mesh Update Period {}", getConfig().get(CONFIGURATION_MESHUPDATEPERIOD));
@@ -429,28 +458,16 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             }
         }
 
-        // Initialise the network
-        switch (networkManager.initialize()) {
-            case SUCCESS:
-                break;
-            case BAD_RESPONSE:
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE, ZigBeeBindingConstants.OFFLINE_BAD_RESPONSE);
-                return;
-            case COMMUNICATION_ERROR:
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE, ZigBeeBindingConstants.OFFLINE_COMMS_FAIL);
-                return;
-            default:
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE,
-                        ZigBeeBindingConstants.OFFLINE_INITIALIZE_FAIL);
-                return;
-        }
-
         // Add all the clusters that we are supporting.
         // If we don't do this, the framework will reject any packets for clusters we have not stated support for.
         channelFactory.getImplementedClientClusters().stream()
                 .forEach(clusterId -> networkManager.addSupportedClientCluster(clusterId));
         channelFactory.getImplementedServerClusters().stream()
                 .forEach(clusterId -> networkManager.addSupportedServerCluster(clusterId));
+
+        networkManager.addSupportedClientCluster(ZclBasicCluster.CLUSTER_ID);
+        networkManager.addSupportedClientCluster(ZclOtaUpgradeCluster.CLUSTER_ID);
+        networkManager.addSupportedServerCluster(ZclBasicCluster.CLUSTER_ID);
 
         // Show the initial network configuration for debugging
         ZigBeeChannel currentChannel = networkManager.getZigBeeChannel();
@@ -748,24 +765,15 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     }
 
     @Override
+    public void nodeAdded(ZigBeeNode node) {
+        nodeUpdated(node);
+    }
+
+    @Override
     public void nodeUpdated(ZigBeeNode node) {
         // We're only interested in the coordinator here.
         if (node.getNetworkAddress() != 0) {
             return;
-        }
-
-        if (!macAddressSet) {
-            macAddressSet = true;
-            try {
-                nodeIeeeAddress = node.getIeeeAddress();
-
-                // Reset the initialization flag
-                Configuration configuration = editConfiguration();
-                configuration.put(CONFIGURATION_MACADDRESS, node.getIeeeAddress().toString());
-                updateConfiguration(configuration);
-            } catch (IllegalStateException e) {
-                logger.error("Error updating configuration: Unable to set mac address. ", e);
-            }
         }
 
         Map<String, String> properties = editProperties();

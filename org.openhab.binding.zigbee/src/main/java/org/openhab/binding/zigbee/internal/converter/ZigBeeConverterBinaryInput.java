@@ -12,12 +12,10 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
-import com.zsmartsystems.zigbee.CommandResult;
-import com.zsmartsystems.zigbee.ZigBeeEndpoint;
-import com.zsmartsystems.zigbee.zcl.ZclAttribute;
-import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
-import com.zsmartsystems.zigbee.zcl.clusters.ZclBinaryInputBasicCluster;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
@@ -27,7 +25,12 @@ import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ExecutionException;
+import com.zsmartsystems.zigbee.CommandResult;
+import com.zsmartsystems.zigbee.ZigBeeEndpoint;
+import com.zsmartsystems.zigbee.zcl.ZclAttribute;
+import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclBinaryInputBasicCluster;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
  * Converter for the binary input sensor.
@@ -39,6 +42,16 @@ public class ZigBeeConverterBinaryInput extends ZigBeeBaseChannelConverter imple
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterBinaryInput.class);
 
     private ZclBinaryInputBasicCluster binaryInputCluster;
+
+    @Override
+    public Set<Integer> getImplementedClientClusters() {
+        return Collections.singleton(ZclBinaryInputBasicCluster.CLUSTER_ID);
+    }
+
+    @Override
+    public Set<Integer> getImplementedServerClusters() {
+        return Collections.emptySet();
+    }
 
     @Override
     public boolean initializeDevice() {
@@ -68,7 +81,8 @@ public class ZigBeeConverterBinaryInput extends ZigBeeBaseChannelConverter imple
 
     @Override
     public boolean initializeConverter() {
-        binaryInputCluster = (ZclBinaryInputBasicCluster) endpoint.getInputCluster(ZclBinaryInputBasicCluster.CLUSTER_ID);
+        binaryInputCluster = (ZclBinaryInputBasicCluster) endpoint
+                .getInputCluster(ZclBinaryInputBasicCluster.CLUSTER_ID);
         if (binaryInputCluster == null) {
             logger.error("{}: Error opening binary input cluster", endpoint.getIeeeAddress());
             return false;
@@ -101,8 +115,8 @@ public class ZigBeeConverterBinaryInput extends ZigBeeBaseChannelConverter imple
                 .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_BINARYINPUT),
                         ZigBeeBindingConstants.ITEM_TYPE_SWITCH)
                 .withType(ZigBeeBindingConstants.CHANNEL_BINARYINPUT)
-                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_BINARYINPUT)
-                .withProperties(createProperties(endpoint)).build();
+                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_BINARYINPUT).withProperties(createProperties(endpoint))
+                .build();
     }
 
     @Override
