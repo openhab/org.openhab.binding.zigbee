@@ -27,11 +27,14 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
+import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.telegesis.TelegesisBindingConstants;
 import org.openhab.binding.zigbee.telegesis.handler.TelegesisHandler;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * The {@link TelegesisHandlerFactory} is responsible for creating things and thing
@@ -39,13 +42,21 @@ import org.osgi.service.component.annotations.Component;
  *
  * @author Chris Jackson - Initial contribution
  */
-@Component(service = ThingHandlerFactory.class, configurationPid = "org.openhab.binding.zigbee.telegesis")
 @NonNullByDefault
+@Component(service = ThingHandlerFactory.class, configurationPid = "org.openhab.binding.zigbee.telegesis")
 public class TelegesisHandlerFactory extends BaseThingHandlerFactory {
-    private Map<ThingUID, ServiceRegistration> coordinatorHandlerRegs = new HashMap<>();
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections
             .singleton(TelegesisBindingConstants.THING_TYPE_TELEGESIS);
+
+    private final Map<ThingUID, ServiceRegistration<?>> coordinatorHandlerRegs = new HashMap<>();
+
+    private final SerialPortManager serialPortManager;
+
+    @Activate
+    public TelegesisHandlerFactory(final @Reference SerialPortManager serialPortManager) {
+        this.serialPortManager = serialPortManager;
+    }
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -58,7 +69,7 @@ public class TelegesisHandlerFactory extends BaseThingHandlerFactory {
 
         ZigBeeCoordinatorHandler coordinator = null;
         if (thingTypeUID.equals(TelegesisBindingConstants.THING_TYPE_TELEGESIS)) {
-            coordinator = new TelegesisHandler((Bridge) thing);
+            coordinator = new TelegesisHandler((Bridge) thing, serialPortManager);
         }
 
         if (coordinator != null) {
@@ -74,7 +85,7 @@ public class TelegesisHandlerFactory extends BaseThingHandlerFactory {
     @Override
     protected synchronized void removeHandler(ThingHandler thingHandler) {
         if (thingHandler instanceof TelegesisHandler) {
-            ServiceRegistration coordinatorHandlerReg = coordinatorHandlerRegs.get(thingHandler.getThing().getUID());
+            ServiceRegistration<?> coordinatorHandlerReg = coordinatorHandlerRegs.get(thingHandler.getThing().getUID());
             if (coordinatorHandlerReg != null) {
                 coordinatorHandlerReg.unregister();
                 coordinatorHandlerRegs.remove(thingHandler.getThing().getUID());

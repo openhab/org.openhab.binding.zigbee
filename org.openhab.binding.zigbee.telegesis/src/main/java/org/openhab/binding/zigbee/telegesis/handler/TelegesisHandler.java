@@ -23,10 +23,12 @@ import org.eclipse.smarthome.core.thing.binding.firmware.Firmware;
 import org.eclipse.smarthome.core.thing.binding.firmware.FirmwareUpdateHandler;
 import org.eclipse.smarthome.core.thing.binding.firmware.ProgressCallback;
 import org.eclipse.smarthome.core.thing.binding.firmware.ProgressStep;
+import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeSerialPort;
 import org.openhab.binding.zigbee.telegesis.internal.TelegesisConfiguration;
+import org.osgi.service.component.annotations.Activate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,8 +54,12 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclIasZoneCluster;
 public class TelegesisHandler extends ZigBeeCoordinatorHandler implements FirmwareUpdateHandler {
     private final Logger logger = LoggerFactory.getLogger(TelegesisHandler.class);
 
-    public TelegesisHandler(Bridge coordinator) {
+    private final SerialPortManager serialPortManager;
+
+    @Activate
+    public TelegesisHandler(Bridge coordinator, SerialPortManager serialPortManager) {
         super(coordinator);
+        this.serialPortManager = serialPortManager;
     }
 
     @Override
@@ -65,7 +71,7 @@ public class TelegesisHandler extends ZigBeeCoordinatorHandler implements Firmwa
 
         TelegesisConfiguration config = getConfigAs(TelegesisConfiguration.class);
 
-        ZigBeePort serialPort = new ZigBeeSerialPort(config.zigbee_port, config.zigbee_baud,
+        ZigBeePort serialPort = new ZigBeeSerialPort(serialPortManager, config.zigbee_port, config.zigbee_baud,
                 FlowControl.FLOWCONTROL_OUT_NONE);
         final ZigBeeDongleTelegesis dongle = new ZigBeeDongleTelegesis(serialPort);
 
@@ -78,7 +84,7 @@ public class TelegesisHandler extends ZigBeeCoordinatorHandler implements Firmwa
 
         // The Telegesis dongle doesn't pass the MatchDescriptor commands to the stack, so we can't manage our services
         // directly. Instead, register any services we want to support so the Telegesis can handle the MatchDescriptor.
-        Set<Integer> clusters = new HashSet<Integer>();
+        Set<Integer> clusters = new HashSet<>();
         clusters.add(ZclIasZoneCluster.CLUSTER_ID);
         transportConfig.addOption(TransportConfigOption.SUPPORTED_OUTPUT_CLUSTERS, clusters);
 

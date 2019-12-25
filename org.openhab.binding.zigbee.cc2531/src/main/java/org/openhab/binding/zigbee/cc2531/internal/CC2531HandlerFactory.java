@@ -27,11 +27,14 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
+import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
 import org.openhab.binding.zigbee.cc2531.CC2531BindingConstants;
 import org.openhab.binding.zigbee.cc2531.handler.CC2531Handler;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * The {@link CC2531HandlerFactory} is responsible for creating things and thing
@@ -42,10 +45,18 @@ import org.osgi.service.component.annotations.Component;
 @Component(service = ThingHandlerFactory.class, configurationPid = "org.openhab.binding.zigbee.cc2531")
 @NonNullByDefault
 public class CC2531HandlerFactory extends BaseThingHandlerFactory {
-    private Map<ThingUID, ServiceRegistration> coordinatorHandlerRegs = new HashMap<>();
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections
             .singleton(CC2531BindingConstants.THING_TYPE_CC2531);
+
+    private final Map<ThingUID, ServiceRegistration<?>> coordinatorHandlerRegs = new HashMap<>();
+
+    private final SerialPortManager serialPortManager;
+
+    @Activate
+    public CC2531HandlerFactory(final @Reference SerialPortManager serialPortManager) {
+        this.serialPortManager = serialPortManager;
+    }
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -58,12 +69,12 @@ public class CC2531HandlerFactory extends BaseThingHandlerFactory {
 
         ZigBeeCoordinatorHandler coordinator = null;
         if (thingTypeUID.equals(CC2531BindingConstants.THING_TYPE_CC2531)) {
-            coordinator = new CC2531Handler((Bridge) thing);
+            coordinator = new CC2531Handler((Bridge) thing, serialPortManager);
         }
 
         if (coordinator != null) {
-            coordinatorHandlerRegs.put(coordinator.getThing().getUID(), bundleContext.registerService(
-                    ZigBeeCoordinatorHandler.class.getName(), coordinator, new Hashtable<String, Object>()));
+            coordinatorHandlerRegs.put(coordinator.getThing().getUID(), bundleContext
+                    .registerService(ZigBeeCoordinatorHandler.class.getName(), coordinator, new Hashtable<>()));
 
             return coordinator;
         }
@@ -74,7 +85,7 @@ public class CC2531HandlerFactory extends BaseThingHandlerFactory {
     @Override
     protected synchronized void removeHandler(ThingHandler thingHandler) {
         if (thingHandler instanceof CC2531Handler) {
-            ServiceRegistration coordinatorHandlerReg = coordinatorHandlerRegs.get(thingHandler.getThing().getUID());
+            ServiceRegistration<?> coordinatorHandlerReg = coordinatorHandlerRegs.get(thingHandler.getThing().getUID());
             if (coordinatorHandlerReg != null) {
                 coordinatorHandlerReg.unregister();
                 coordinatorHandlerRegs.remove(thingHandler.getThing().getUID());
