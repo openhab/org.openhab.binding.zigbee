@@ -37,9 +37,6 @@ public class ZigBeeBindingConstants {
     // List of Thing Type UIDs
     public final static ThingTypeUID THING_TYPE_GENERIC_DEVICE = new ThingTypeUID(BINDING_ID, "device");
 
-    // public final static Set<ThingTypeUID> SUPPORTED_THING_TYPES = Collections.unmodifiableSet(
-    // Sets.newHashSet(THING_TYPE_GENERIC_DEVICE, THING_TYPE_PHILIPS_SML001, THING_TYPE_SMARTTHINGS_MOTIONV4));
-
     // List of Channel UIDs
     public static final String CHANNEL_NAME_SWITCH_ONOFF = "switch";
     public static final String CHANNEL_LABEL_SWITCH_ONOFF = "Switch";
