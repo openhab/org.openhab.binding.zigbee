@@ -50,7 +50,7 @@ public class EmberZigBeeConsoleCommandProvider implements ZigBeeConsoleCommandPr
             asList(new EmberConsoleMmoHashCommand(), new EmberConsoleNcpChildrenCommand(),
                     new EmberConsoleNcpConfigurationCommand(), new EmberConsoleNcpCountersCommand(),
                     new EmberConsoleNcpValueCommand(), new EmberConsoleNcpVersionCommand(),
-                    new EmberConsoleNcpStateCommand(), new EmberConsoleNcpScanCommand(),
+                    new EmberConsoleNcpScanCommand(), new EmberConsoleNcpStateCommand(),
                     new EmberConsoleSecurityStateCommand(), new EmberConsoleTransientKeyCommand()));
 
     private Map<String, ZigBeeConsoleCommand> emberCommands = EMBER_COMMANDS.stream()
