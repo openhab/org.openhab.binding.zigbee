@@ -34,6 +34,8 @@ import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.UnDefType;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.ZigBeeCommandParameter;
+import org.openhab.binding.zigbee.ZigBeeCommandParameters;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.internal.converter.config.ZclLevelControlConfig;
 import org.slf4j.Logger;
@@ -274,14 +276,14 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         clusterColorControl.getColorMode(0);
     }
 
-    private void changeOnOff(OnOffType onoff) throws InterruptedException, ExecutionException {
+    private void changeOnOff(OnOffType onoff, int transitionTime) throws InterruptedException, ExecutionException {
         boolean on = onoff == OnOffType.ON;
 
         if (clusterOnOff == null) {
             if (clusterLevelControl == null) {
                 logger.warn("{}: ignoring on/off command", endpoint.getIeeeAddress());
             } else {
-                changeBrightness(on ? PercentType.HUNDRED : PercentType.ZERO);
+                changeBrightness(on ? PercentType.HUNDRED : PercentType.ZERO, transitionTime);
             }
             return;
         }
@@ -293,12 +295,12 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         }
     }
 
-    private void changeBrightness(PercentType brightness) throws InterruptedException, ExecutionException {
+    private void changeBrightness(PercentType brightness, int transitionTime) throws InterruptedException, ExecutionException {
         if (clusterLevelControl == null) {
             if (clusterOnOff == null) {
                 logger.warn("{}: ignoring brightness command", endpoint.getIeeeAddress());
             } else {
-                changeOnOff(brightness.intValue() == 0 ? OnOffType.OFF : OnOffType.ON);
+                changeOnOff(brightness.intValue() == 0 ? OnOffType.OFF : OnOffType.ON, transitionTime);
             }
             return;
         }
@@ -309,23 +311,23 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             if (brightness.equals(PercentType.ZERO)) {
                 clusterOnOff.offCommand();
             } else {
-                clusterLevelControl.moveToLevelWithOnOffCommand(level, configLevelControl.getDefaultTransitionTime())
+                clusterLevelControl.moveToLevelWithOnOffCommand(level, transitionTime)
                         .get();
             }
         } else {
-            clusterLevelControl.moveToLevelCommand(level, configLevelControl.getDefaultTransitionTime()).get();
+            clusterLevelControl.moveToLevelCommand(level, transitionTime).get();
         }
     }
 
-    private void changeColorHueSaturation(HSBType color) throws InterruptedException, ExecutionException {
+    private void changeColorHueSaturation(HSBType color, int transitionTime) throws InterruptedException, ExecutionException {
         int hue = (int) (color.getHue().floatValue() * 254.0f / 360.0f + 0.5f);
         int saturation = percentToLevel(color.getSaturation());
 
         clusterColorControl
-                .moveToHueAndSaturationCommand(hue, saturation, configLevelControl.getDefaultTransitionTime()).get();
+                .moveToHueAndSaturationCommand(hue, saturation, transitionTime).get();
     }
 
-    private void changeColorXY(HSBType color) throws InterruptedException, ExecutionException {
+    private void changeColorXY(HSBType color, int transitionTime) throws InterruptedException, ExecutionException {
         PercentType xy[] = color.toXY();
 
         logger.debug("{}: Change Color HSV ({}, {}, {}) -> XY ({}, {})", endpoint.getIeeeAddress(), color.getHue(),
@@ -333,31 +335,32 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         int x = (int) (xy[0].floatValue() / 100.0f * 65536.0f + 0.5f); // up to 65279
         int y = (int) (xy[1].floatValue() / 100.0f * 65536.0f + 0.5f); // up to 65279
 
-        clusterColorControl.moveToColorCommand(x, y, configLevelControl.getDefaultTransitionTime()).get();
+        clusterColorControl.moveToColorCommand(x, y, transitionTime).get();
     }
 
     @Override
-    public void handleCommand(final Command command) {
+    public void handleCommand(final Command command, final ZigBeeCommandParameters params) {
+        int transitionTime = params.get(ZigBeeCommandParameter.TRANSITION_TIME).orElseGet(configLevelControl::getDefaultTransitionTime);
         try {
             if (command instanceof HSBType) {
                 HSBType color = (HSBType) command;
                 PercentType brightness = color.getBrightness();
 
-                changeBrightness(brightness);
+                changeBrightness(brightness, transitionTime);
 
                 if (delayedColorChange && brightness.intValue() != lastHSB.getBrightness().intValue()) {
                     Thread.sleep(1100);
                 }
 
                 if (supportsHue) {
-                    changeColorHueSaturation(color);
+                    changeColorHueSaturation(color, transitionTime);
                 } else {
-                    changeColorXY(color);
+                    changeColorXY(color, transitionTime);
                 }
             } else if (command instanceof PercentType) {
-                changeBrightness((PercentType) command);
+                changeBrightness((PercentType) command, transitionTime);
             } else if (command instanceof OnOffType) {
-                changeOnOff((OnOffType) command);
+                changeOnOff((OnOffType) command, transitionTime);
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.warn("{}: Exception processing command", endpoint.getIeeeAddress(), e);

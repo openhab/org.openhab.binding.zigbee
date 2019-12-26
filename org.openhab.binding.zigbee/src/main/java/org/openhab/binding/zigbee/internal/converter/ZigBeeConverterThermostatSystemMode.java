@@ -26,6 +26,7 @@ import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.StateDescription;
 import org.eclipse.smarthome.core.types.StateOption;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.ZigBeeCommandParameters;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,7 +108,7 @@ public class ZigBeeConverterThermostatSystemMode extends ZigBeeBaseChannelConver
     }
 
     @Override
-    public void handleCommand(final Command command) {
+    public void handleCommand(final Command command, final ZigBeeCommandParameters params) {
         Integer value = null;
         if (command instanceof OnOffType) {
             // OnOff switches between OFF=OFF and ON=AUTO

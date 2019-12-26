@@ -48,6 +48,7 @@ import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.ThingStatusInfo;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
+import org.eclipse.smarthome.core.thing.binding.ThingHandlerService;
 import org.eclipse.smarthome.core.thing.binding.builder.ThingBuilder;
 import org.eclipse.smarthome.core.thing.binding.firmware.Firmware;
 import org.eclipse.smarthome.core.thing.binding.firmware.FirmwareUpdateHandler;
@@ -59,11 +60,15 @@ import org.eclipse.smarthome.core.types.RefreshType;
 import org.eclipse.smarthome.core.types.State;
 import org.eclipse.smarthome.core.types.StateDescription;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.ZigBeeCommandParameter;
+import org.openhab.binding.zigbee.ZigBeeCommandParameters;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
+import org.openhab.binding.zigbee.internal.ZigBeeCommandParametersImpl;
 import org.openhab.binding.zigbee.internal.ZigBeeConfigDescriptionParameters;
 import org.openhab.binding.zigbee.internal.ZigBeeDeviceConfigHandler;
+import org.openhab.binding.zigbee.ZigBeeThingActions;
 import org.openhab.binding.zigbee.internal.converter.config.ZclClusterConfigFactory;
 import org.openhab.binding.zigbee.internal.converter.config.ZclClusterConfigHandler;
 import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
@@ -694,6 +699,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     @Override
     public void handleCommand(final ChannelUID channelUID, final Command command) {
+        handleCommand(channelUID, command, ZigBeeCommandParameters.empty());
+    }
+
+    public void handleCommand(final ChannelUID channelUID, final Command command, final ZigBeeCommandParameters params) {
         logger.debug("{}: Command for channel {} --> {} [{}]", nodeIeeeAddress, channelUID, command,
                 command.getClass().getSimpleName());
 
@@ -718,7 +727,12 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                     if (command == RefreshType.REFRESH) {
                         handler.handleRefresh();
                     } else {
-                        handler.handleCommand(command);
+                        ZigBeeCommandParametersImpl.UsageTracker parameterTracker = new ZigBeeCommandParametersImpl.UsageTracker(params);
+                        handler.handleCommand(command, parameterTracker);
+                        Set<ZigBeeCommandParameter<?>> unusedParams = parameterTracker.unusedParams();
+                        if (!unusedParams.isEmpty() && logger.isWarnEnabled()) {
+                            logger.warn("Handler {} did not use given parameters {}", handler, unusedParams);
+                        }
                     }
                 } catch (Exception e) {
                     logger.debug("{}: Exception sending command to channel {}", nodeIeeeAddress, channelUID, e);
@@ -1005,5 +1019,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     public boolean isUpdateExecutable() {
         // Always allow the firmware to be updated
         return true;
+    }
+
+    @Override
+    public Collection<Class<? extends ThingHandlerService>> getServices() {
+        return Collections.singleton(ZigBeeThingActions.class);
     }
 }
