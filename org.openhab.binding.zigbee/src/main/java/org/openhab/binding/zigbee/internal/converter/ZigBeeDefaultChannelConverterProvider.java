@@ -15,8 +15,8 @@ package org.openhab.binding.zigbee.internal.converter;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.smarthome.core.thing.DefaultSystemChannelTypeProvider;
-import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
+import org.openhab.core.thing.DefaultSystemChannelTypeProvider;
+import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;

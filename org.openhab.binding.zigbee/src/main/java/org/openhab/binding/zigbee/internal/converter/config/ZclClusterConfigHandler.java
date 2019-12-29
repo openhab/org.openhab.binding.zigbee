@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
-import org.eclipse.smarthome.config.core.Configuration;
+import org.openhab.core.config.core.ConfigDescriptionParameter;
+import org.openhab.core.config.core.Configuration;
 
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
 

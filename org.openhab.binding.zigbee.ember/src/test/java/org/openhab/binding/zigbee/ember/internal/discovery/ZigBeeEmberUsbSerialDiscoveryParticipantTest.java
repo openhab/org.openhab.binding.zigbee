@@ -21,9 +21,9 @@ import static org.openhab.binding.zigbee.ember.EmberBindingConstants.THING_TYPE_
 import static org.openhab.binding.zigbee.ember.internal.discovery.ZigBeeEmberUsbSerialDiscoveryParticipant.BITRON_VIDEO_2010_10_PRODUCT_ID;
 import static org.openhab.binding.zigbee.ember.internal.discovery.ZigBeeEmberUsbSerialDiscoveryParticipant.SILICON_LABS_USB_VENDOR_ID;
 
-import org.eclipse.smarthome.config.discovery.DiscoveryResult;
-import org.eclipse.smarthome.config.discovery.usbserial.UsbSerialDeviceInformation;
-import org.eclipse.smarthome.core.thing.ThingUID;
+import org.openhab.core.config.discovery.DiscoveryResult;
+import org.openhab.core.config.discovery.usbserial.UsbSerialDeviceInformation;
+import org.openhab.core.thing.ThingUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.openhab.binding.zigbee.ember.EmberBindingConstants;

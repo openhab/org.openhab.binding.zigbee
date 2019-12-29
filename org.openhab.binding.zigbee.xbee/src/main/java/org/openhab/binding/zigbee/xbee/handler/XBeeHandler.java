@@ -12,7 +12,7 @@
  */
 package org.openhab.binding.zigbee.xbee.handler;
 
-import org.eclipse.smarthome.core.thing.Bridge;
+import org.openhab.core.thing.Bridge;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeSerialPort;

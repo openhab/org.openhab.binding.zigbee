@@ -15,7 +15,7 @@ package org.openhab.binding.zigbee.cc2531.handler;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.eclipse.smarthome.core.thing.Bridge;
+import org.openhab.core.thing.Bridge;
 import org.openhab.binding.zigbee.cc2531.internal.CC2531Configuration;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeSerialPort;

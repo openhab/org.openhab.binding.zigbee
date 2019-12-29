@@ -18,12 +18,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.eclipse.smarthome.core.library.types.PercentType;
-import org.eclipse.smarthome.core.thing.Channel;
-import org.eclipse.smarthome.core.thing.ChannelUID;
-import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
-import org.eclipse.smarthome.core.types.State;
-import org.eclipse.smarthome.core.types.UnDefType;
+import org.openhab.core.library.types.PercentType;
+import org.openhab.core.thing.Channel;
+import org.openhab.core.thing.ChannelUID;
+import org.openhab.core.thing.binding.builder.ChannelBuilder;
+import org.openhab.core.types.State;
+import org.openhab.core.types.UnDefType;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;

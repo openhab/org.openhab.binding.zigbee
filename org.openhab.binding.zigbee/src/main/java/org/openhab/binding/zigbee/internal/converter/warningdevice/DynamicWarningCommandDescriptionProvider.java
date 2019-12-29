@@ -25,11 +25,11 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.smarthome.core.thing.Channel;
-import org.eclipse.smarthome.core.thing.type.DynamicCommandDescriptionProvider;
-import org.eclipse.smarthome.core.types.CommandDescription;
-import org.eclipse.smarthome.core.types.CommandDescriptionBuilder;
-import org.eclipse.smarthome.core.types.CommandOption;
+import org.openhab.core.thing.Channel;
+import org.openhab.core.thing.type.DynamicCommandDescriptionProvider;
+import org.openhab.core.types.CommandDescription;
+import org.openhab.core.types.CommandDescriptionBuilder;
+import org.openhab.core.types.CommandOption;
 import org.openhab.binding.zigbee.converter.warningdevice.WarningType;
 import org.openhab.binding.zigbee.converter.warningdevice.WarningTypeCommandDescriptionProvider;
 import org.osgi.service.component.annotations.Component;

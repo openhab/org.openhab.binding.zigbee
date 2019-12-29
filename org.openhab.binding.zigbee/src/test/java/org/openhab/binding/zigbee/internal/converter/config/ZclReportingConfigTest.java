@@ -19,9 +19,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
-import org.eclipse.smarthome.config.core.Configuration;
-import org.eclipse.smarthome.core.thing.Channel;
+import org.openhab.core.config.core.ConfigDescriptionParameter;
+import org.openhab.core.config.core.Configuration;
+import org.openhab.core.thing.Channel;
 import org.junit.Test;
 import org.mockito.Mockito;
 

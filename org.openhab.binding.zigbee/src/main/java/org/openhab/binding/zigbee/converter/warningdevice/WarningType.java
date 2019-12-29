@@ -21,7 +21,7 @@ import static org.openhab.binding.zigbee.converter.warningdevice.WarningMode.BUR
 import java.time.Duration;
 import java.util.Map;
 
-import org.eclipse.smarthome.core.library.types.StringType;
+import org.openhab.core.library.types.StringType;
 
 /**
  * A type of warning for a warning device.

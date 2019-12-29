@@ -18,11 +18,11 @@ import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
-import org.eclipse.smarthome.config.core.ConfigDescriptionParameter.Type;
-import org.eclipse.smarthome.config.core.ConfigDescriptionParameterBuilder;
-import org.eclipse.smarthome.config.core.Configuration;
-import org.eclipse.smarthome.config.core.ParameterOption;
+import org.openhab.core.config.core.ConfigDescriptionParameter;
+import org.openhab.core.config.core.ConfigDescriptionParameter.Type;
+import org.openhab.core.config.core.ConfigDescriptionParameterBuilder;
+import org.openhab.core.config.core.Configuration;
+import org.openhab.core.config.core.ParameterOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
