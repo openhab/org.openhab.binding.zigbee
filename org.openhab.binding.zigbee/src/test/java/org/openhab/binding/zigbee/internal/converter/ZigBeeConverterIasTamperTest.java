@@ -19,8 +19,8 @@ import static org.mockito.Mockito.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.eclipse.smarthome.core.thing.Channel;
-import org.eclipse.smarthome.core.thing.ThingUID;
+import org.openhab.core.thing.Channel;
+import org.openhab.core.thing.ThingUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;

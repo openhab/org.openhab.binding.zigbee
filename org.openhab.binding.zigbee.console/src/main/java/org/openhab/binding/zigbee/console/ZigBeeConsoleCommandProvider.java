@@ -14,7 +14,7 @@ package org.openhab.binding.zigbee.console;
 
 import java.util.Collection;
 
-import org.eclipse.smarthome.core.thing.ThingTypeUID;
+import org.openhab.core.thing.ThingTypeUID;
 
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleCommand;
 

@@ -30,16 +30,16 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.smarthome.config.core.Configuration;
-import org.eclipse.smarthome.core.common.registry.Identifiable;
-import org.eclipse.smarthome.core.thing.Bridge;
-import org.eclipse.smarthome.core.thing.ChannelUID;
-import org.eclipse.smarthome.core.thing.Thing;
-import org.eclipse.smarthome.core.thing.ThingStatus;
-import org.eclipse.smarthome.core.thing.ThingStatusDetail;
-import org.eclipse.smarthome.core.thing.ThingUID;
-import org.eclipse.smarthome.core.thing.binding.BaseBridgeHandler;
-import org.eclipse.smarthome.core.types.Command;
+import org.openhab.core.config.core.Configuration;
+import org.openhab.core.common.registry.Identifiable;
+import org.openhab.core.thing.Bridge;
+import org.openhab.core.thing.ChannelUID;
+import org.openhab.core.thing.Thing;
+import org.openhab.core.thing.ThingStatus;
+import org.openhab.core.thing.ThingStatusDetail;
+import org.openhab.core.thing.ThingUID;
+import org.openhab.core.thing.binding.BaseBridgeHandler;
+import org.openhab.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.internal.ZigBeeDataStore;
 import org.slf4j.Logger;
@@ -876,7 +876,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 }
 
                 // - Do not set the status to OFFLINE when the bridge is in one of these statuses. According to the
-                // documentation https://www.eclipse.org/smarthome/documentation/concepts/things.html#status-transitions
+                // documentation https://openhab.org/documentation/concepts/things.html#status-transitions
                 // the thing must not change from these statuses to OFFLINE
                 // - Do not try to reconnect if the bridge is being removed.
                 if (Arrays.asList(ThingStatus.UNINITIALIZED, ThingStatus.REMOVING, ThingStatus.REMOVED)
