@@ -13,7 +13,7 @@
 package org.openhab.binding.zigbee.cc2531;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.smarthome.core.thing.ThingTypeUID;
+import org.openhab.core.thing.ThingTypeUID;
 
 /**
  * The {@link CC2531BindingConstants} class defines common constants, which are

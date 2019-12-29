@@ -15,11 +15,11 @@ package org.openhab.binding.zigbee.discovery.internal;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.smarthome.config.discovery.DiscoveryResult;
-import org.eclipse.smarthome.config.discovery.DiscoveryResultBuilder;
-import org.eclipse.smarthome.core.thing.Thing;
-import org.eclipse.smarthome.core.thing.ThingTypeUID;
-import org.eclipse.smarthome.core.thing.ThingUID;
+import org.openhab.core.config.discovery.DiscoveryResult;
+import org.openhab.core.config.discovery.DiscoveryResultBuilder;
+import org.openhab.core.thing.Thing;
+import org.openhab.core.thing.ThingTypeUID;
+import org.openhab.core.thing.ThingUID;
 import org.openhab.binding.zigbee.discovery.ZigBeeDiscoveryParticipant;
 import org.openhab.binding.zigbee.internal.ZigBeeThingTypeMatcher;
 import org.osgi.service.component.annotations.Component;

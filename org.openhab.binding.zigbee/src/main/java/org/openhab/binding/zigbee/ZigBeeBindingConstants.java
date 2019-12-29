@@ -12,7 +12,7 @@
  */
 package org.openhab.binding.zigbee;
 
-import static org.eclipse.smarthome.core.thing.DefaultSystemChannelTypeProvider.*;
+import static org.openhab.core.thing.DefaultSystemChannelTypeProvider.*;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -20,8 +20,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
 
-import org.eclipse.smarthome.core.thing.ThingTypeUID;
-import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
+import org.openhab.core.thing.ThingTypeUID;
+import org.openhab.core.thing.type.ChannelTypeUID;
 
 /**
  * The {@link ZigBeeBindingConstants} class defines common constants, which are

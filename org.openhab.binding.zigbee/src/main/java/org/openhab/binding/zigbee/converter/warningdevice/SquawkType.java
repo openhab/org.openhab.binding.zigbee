@@ -18,7 +18,7 @@ import static org.openhab.binding.zigbee.converter.warningdevice.SoundLevel.HIGH
 
 import java.util.Map;
 
-import org.eclipse.smarthome.core.library.types.StringType;
+import org.openhab.core.library.types.StringType;
 
 /**
  * A type of squawk for a warning device.
