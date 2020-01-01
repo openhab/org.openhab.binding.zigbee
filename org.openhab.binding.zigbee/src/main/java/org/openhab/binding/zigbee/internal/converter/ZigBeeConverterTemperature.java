@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
+import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.slf4j.Logger;
@@ -41,6 +42,9 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterTemperature.class);
 
     private ZclTemperatureMeasurementCluster cluster;
+    private ZclTemperatureMeasurementCluster clusterClient;
+    private ZclAttribute attribute;
+    private ZclAttribute attributeClient;
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
@@ -65,8 +69,8 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
             CommandResult bindResponse = bind(serverCluster).get();
             if (bindResponse.isSuccess()) {
                 // Configure reporting
-                CommandResult reportingResponse = serverCluster
-                        .setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
+                ZclAttribute attribute = cluster.getAttribute(ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE);
+                CommandResult reportingResponse = attribute.setReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 logger.debug("{}: Failed to bind temperature measurement cluster", endpoint.getIeeeAddress());
@@ -88,6 +92,8 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
             return false;
         }
 
+        attribute = cluster.getAttribute(ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE);
+
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
         return true;
@@ -100,12 +106,26 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
 
     @Override
     public void handleRefresh() {
-        cluster.getMeasuredValue(0);
+        attribute.readValue(0);
+    }
+
+    @Override
+    public void handleCommand(final Command command) {
+        Integer value = temperatureToValue(command);
+
+        if (value == null) {
+            logger.warn("{}: Temperature measurement update {} [{}] was not processed", endpoint.getIeeeAddress(),
+                    command, command.getClass().getSimpleName());
+            return;
+        }
+
+        attributeClient.writeValue(value);
     }
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
-        if (endpoint.getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID) == null) {
+        if (endpoint.getOutputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID) == null
+                && endpoint.getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID) == null) {
             logger.trace("{}: Temperature measurement cluster not found", endpoint.getIeeeAddress());
             return null;
         }
