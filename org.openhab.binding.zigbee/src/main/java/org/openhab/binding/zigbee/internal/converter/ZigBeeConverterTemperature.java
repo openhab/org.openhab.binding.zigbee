@@ -53,11 +53,18 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
 
     @Override
     public Set<Integer> getImplementedServerClusters() {
-        return Collections.emptySet();
+        return Collections.singleton(ZclTemperatureMeasurementCluster.CLUSTER_ID);
     }
 
     @Override
     public boolean initializeDevice() {
+        ZclTemperatureMeasurementCluster clientCluster = (ZclTemperatureMeasurementCluster) endpoint
+                .getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID);
+        if (clientCluster == null) {
+            // Nothing to do, but we still return success
+            return true;
+        }
+
         ZclTemperatureMeasurementCluster serverCluster = (ZclTemperatureMeasurementCluster) endpoint
                 .getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID);
         if (serverCluster == null) {
@@ -87,30 +94,47 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
     public boolean initializeConverter() {
         cluster = (ZclTemperatureMeasurementCluster) endpoint
                 .getInputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID);
-        if (cluster == null) {
+        if (cluster != null) {
+            attribute = cluster.getAttribute(ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE);
+            // Add a listener
+            cluster.addAttributeListener(this);
+        } else {
+            clusterClient = (ZclTemperatureMeasurementCluster) endpoint
+                    .getOutputCluster(ZclTemperatureMeasurementCluster.CLUSTER_ID);
+            attributeClient = clusterClient.getLocalAttribute(ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE);
+            attributeClient.setImplemented(true);
+        }
+
+        if (cluster == null && clusterClient == null) {
             logger.error("{}: Error opening device temperature measurement cluster", endpoint.getIeeeAddress());
             return false;
         }
 
-        attribute = cluster.getAttribute(ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE);
-
-        // Add a listener, then request the status
-        cluster.addAttributeListener(this);
         return true;
     }
 
     @Override
     public void disposeConverter() {
-        cluster.removeAttributeListener(this);
+        if (cluster != null) {
+            cluster.removeAttributeListener(this);
+        }
     }
 
     @Override
     public void handleRefresh() {
-        attribute.readValue(0);
+        if (attribute != null) {
+            attribute.readValue(0);
+        }
     }
 
     @Override
     public void handleCommand(final Command command) {
+        if (attributeClient == null) {
+            logger.warn("{}: Temperature measurement update but remote client not set", endpoint.getIeeeAddress(),
+                    command, command.getClass().getSimpleName());
+            return;
+        }
+
         Integer value = temperatureToValue(command);
 
         if (value == null) {
@@ -119,7 +143,8 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
             return;
         }
 
-        attributeClient.writeValue(value);
+        attributeClient.setValue(value);
+        attributeClient.reportValue(value);
     }
 
     @Override
