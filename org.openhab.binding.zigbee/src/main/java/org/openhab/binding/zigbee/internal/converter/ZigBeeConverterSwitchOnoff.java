@@ -13,7 +13,9 @@
 package org.openhab.binding.zigbee.internal.converter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -75,6 +77,16 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
 
     private ScheduledExecutorService updateScheduler;
     private ScheduledFuture<?> updateTimer = null;
+
+    @Override
+    public Set<Integer> getImplementedClientClusters() {
+        return Collections.singleton(ZclOnOffCluster.CLUSTER_ID);
+    }
+
+    @Override
+    public Set<Integer> getImplementedServerClusters() {
+        return Collections.singleton(ZclOnOffCluster.CLUSTER_ID);
+    }
 
     @Override
     public boolean initializeDevice() {

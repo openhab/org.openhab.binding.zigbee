@@ -15,6 +15,7 @@ package org.openhab.binding.zigbee.xbee.handler;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.io.transport.serial.SerialPortManager;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeSerialPort;
 import org.openhab.binding.zigbee.xbee.internal.XBeeConfiguration;
@@ -36,15 +37,15 @@ import com.zsmartsystems.zigbee.transport.ZigBeeTransportTransmit;
  *
  * @author Chris Jackson - Initial contribution
  */
-// @NonNullByDefault
 public class XBeeHandler extends ZigBeeCoordinatorHandler {
     private final Logger logger = LoggerFactory.getLogger(XBeeHandler.class);
 
     private final SerialPortManager serialPortManager;
 
     @Activate
-    public XBeeHandler(Bridge coordinator, SerialPortManager serialPortManager) {
-        super(coordinator);
+    public XBeeHandler(Bridge coordinator, SerialPortManager serialPortManager,
+            ZigBeeChannelConverterFactory channelFactory) {
+        super(coordinator, channelFactory);
         this.serialPortManager = serialPortManager;
     }
 

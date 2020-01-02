@@ -14,9 +14,13 @@ package org.openhab.binding.zigbee.internal.converter.warningdevice;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.config.core.Configuration;
@@ -48,6 +52,16 @@ public class ZigBeeConverterWarningDevice extends ZigBeeBaseChannelConverter {
     private final Logger logger = LoggerFactory.getLogger(ZigBeeConverterWarningDevice.class);
 
     private ZclIasWdCluster iasWdCluster;
+
+    @Override
+    public Set<Integer> getImplementedClientClusters() {
+        return Stream.of(ZclIasWdCluster.CLUSTER_ID).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Integer> getImplementedServerClusters() {
+        return Collections.emptySet();
+    }
 
     @Override
     public boolean initializeDevice() {

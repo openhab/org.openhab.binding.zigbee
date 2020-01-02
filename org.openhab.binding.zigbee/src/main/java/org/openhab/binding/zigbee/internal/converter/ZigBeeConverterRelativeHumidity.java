@@ -13,6 +13,8 @@
 package org.openhab.binding.zigbee.internal.converter;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
@@ -41,6 +43,16 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterRelativeHumidity.class);
 
     private ZclRelativeHumidityMeasurementCluster cluster;
+
+    @Override
+    public Set<Integer> getImplementedClientClusters() {
+        return Collections.singleton(ZclRelativeHumidityMeasurementCluster.CLUSTER_ID);
+    }
+
+    @Override
+    public Set<Integer> getImplementedServerClusters() {
+        return Collections.emptySet();
+    }
 
     @Override
     public boolean initializeDevice() {
