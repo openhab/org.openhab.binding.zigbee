@@ -31,6 +31,7 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.ZigBeeCommandParameters;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.internal.converter.config.ZclLevelControlConfig;
 import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
@@ -331,7 +332,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
     }
 
     @Override
-    public void handleCommand(final Command command) {
+    public void handleCommand(final Command command, final ZigBeeCommandParameters params) {
         if (command instanceof OnOffType) {
             handleOnOffCommand((OnOffType) command);
         } else if (command instanceof PercentType) {

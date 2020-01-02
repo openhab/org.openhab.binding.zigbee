@@ -12,23 +12,23 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
-import java.util.concurrent.ExecutionException;
-
-import org.eclipse.smarthome.core.thing.Channel;
-import org.eclipse.smarthome.core.thing.ThingUID;
-import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
-import org.eclipse.smarthome.core.types.Command;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclThermostatCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
+import org.eclipse.smarthome.core.thing.Channel;
+import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
+import org.eclipse.smarthome.core.types.Command;
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.ZigBeeCommandParameters;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * Converter for the thermostat occupied cooling setpoint channel. This specifies the cooling mode setpoint when the
@@ -99,7 +99,7 @@ public class ZigBeeConverterThermostatOccupiedCooling extends ZigBeeBaseChannelC
     }
 
     @Override
-    public void handleCommand(final Command command) {
+    public void handleCommand(final Command command, ZigBeeCommandParameters params) {
         Integer value = temperatureToValue(command);
 
         if (value == null) {

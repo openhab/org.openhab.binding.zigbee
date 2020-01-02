@@ -23,6 +23,8 @@ import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.junit.Before;
 import org.junit.Test;
+import org.openhab.binding.zigbee.ZigBeeCommandParameter;
+import org.openhab.binding.zigbee.ZigBeeCommandParameters;
 import org.openhab.binding.zigbee.converter.warningdevice.SoundLevel;
 import org.openhab.binding.zigbee.converter.warningdevice.SquawkMode;
 import org.openhab.binding.zigbee.converter.warningdevice.SquawkType;
@@ -75,7 +77,7 @@ public class ZigBeeConverterWarningDeviceTest {
     public void testHandleCommandBurglarVeryHighStrobe() {
         WarningType warningType = new WarningType(true, WarningMode.BURGLAR.getValue(), SoundLevel.VERY_HIGH.getValue(),
                 Duration.ofSeconds(50));
-        converter.handleCommand(new StringType(warningType.serializeToCommand()));
+        converter.handleCommand(new StringType(warningType.serializeToCommand()), ZigBeeCommandParameters.empty());
 
         // Warning header is composed of: (a) siren level, (b) strobe, (3) warning mode
         // In our case: siren level very_high: 3=0b11; strobe true: 1=0b01; warning mode burglar: 1=0b0001
@@ -86,7 +88,7 @@ public class ZigBeeConverterWarningDeviceTest {
     public void testHandleCommandEmergencyPanicMediumNoStrobe() {
         WarningType warningType = new WarningType(false, WarningMode.EMERGENCY_PANIC.getValue(),
                 SoundLevel.MEDIUM.getValue(), Duration.ofMinutes(2));
-        converter.handleCommand(new StringType(warningType.serializeToCommand()));
+        converter.handleCommand(new StringType(warningType.serializeToCommand()), ZigBeeCommandParameters.empty());
 
         // Warning header is composed of: (a) siren level, (b) strobe, (3) warning mode
         // In our case: siren level medium: 1=0b01; strobe false: 0=0b00; warning mode emergency panic: 6=0b0110
@@ -96,7 +98,7 @@ public class ZigBeeConverterWarningDeviceTest {
     @Test
     public void testHandleSquawk() {
         SquawkType squawkType = new SquawkType(false, SquawkMode.DISARMED.getValue(), SoundLevel.MEDIUM.getValue());
-        converter.handleCommand(new StringType(squawkType.serializeToCommand()));
+        converter.handleCommand(new StringType(squawkType.serializeToCommand()), ZigBeeCommandParameters.empty());
 
         // Squawk header is composed of: (a) squawk level, (b) strobe, (3) warning mode
         // In our case: squawk level medium: 1=0b01; strobe false: 0=0b00; squawk mode disarmed: 6=0b0001
@@ -105,7 +107,7 @@ public class ZigBeeConverterWarningDeviceTest {
 
     @Test
     public void testHandleUnknownCommand() {
-        converter.handleCommand(OnOffType.OFF);
+        converter.handleCommand(OnOffType.OFF, ZigBeeCommandParameters.empty());
         verify(cluster, never()).startWarningCommand(any(Integer.class), any(Integer.class));
     }
 

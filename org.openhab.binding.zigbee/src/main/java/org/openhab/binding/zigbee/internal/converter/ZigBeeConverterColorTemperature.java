@@ -12,22 +12,6 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
-import static com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster.ATTR_COLORTEMPERATURE;
-
-import java.util.concurrent.ExecutionException;
-
-import org.eclipse.smarthome.core.library.types.OnOffType;
-import org.eclipse.smarthome.core.library.types.PercentType;
-import org.eclipse.smarthome.core.thing.Channel;
-import org.eclipse.smarthome.core.thing.ThingUID;
-import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
-import org.eclipse.smarthome.core.types.Command;
-import org.eclipse.smarthome.core.types.UnDefType;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
@@ -36,6 +20,23 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorCapabilitiesEnum;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorModeEnum;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
+import org.eclipse.smarthome.core.library.types.OnOffType;
+import org.eclipse.smarthome.core.library.types.PercentType;
+import org.eclipse.smarthome.core.thing.Channel;
+import org.eclipse.smarthome.core.thing.ThingUID;
+import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
+import org.eclipse.smarthome.core.types.Command;
+import org.eclipse.smarthome.core.types.UnDefType;
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.ZigBeeCommandParameter;
+import org.openhab.binding.zigbee.ZigBeeCommandParameters;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.ExecutionException;
+
+import static com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster.ATTR_COLORTEMPERATURE;
 
 /**
  * Channel converter for color temperature, converting between the color control cluster and a percent-typed channel.
@@ -119,7 +120,8 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
     }
 
     @Override
-    public void handleCommand(final Command command) {
+    public void handleCommand(final Command command, final ZigBeeCommandParameters params) {
+        int transitionTime = params.get(ZigBeeCommandParameter.TRANSITION_TIME).orElse(10);
         PercentType colorTemperaturePercentage = PercentType.ZERO;
         if (command instanceof PercentType) {
             colorTemperaturePercentage = (PercentType) command;
@@ -128,7 +130,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             return;
         }
 
-        clusterColorControl.moveToColorTemperatureCommand(percentToMired(colorTemperaturePercentage), 10);
+        clusterColorControl.moveToColorTemperatureCommand(percentToMired(colorTemperaturePercentage), transitionTime);
     }
 
     @Override

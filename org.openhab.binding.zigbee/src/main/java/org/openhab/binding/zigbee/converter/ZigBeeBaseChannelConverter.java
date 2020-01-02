@@ -14,6 +14,7 @@ package org.openhab.binding.zigbee.converter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.State;
 import org.eclipse.smarthome.core.types.StateDescription;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.ZigBeeCommandParameters;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
@@ -251,7 +253,7 @@ public abstract class ZigBeeBaseChannelConverter {
      *
      * @param command the {@link Command} to send
      */
-    public void handleCommand(final Command command) {
+    public void handleCommand(final Command command, final ZigBeeCommandParameters params) {
         // Overridable if a channel can be commanded
     }
 

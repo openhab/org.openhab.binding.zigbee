@@ -12,6 +12,7 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
@@ -21,6 +22,7 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.ZigBeeCommandParameters;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,7 +108,7 @@ public class ZigBeeConverterFanControl extends ZigBeeBaseChannelConverter implem
     }
 
     @Override
-    public void handleCommand(final Command command) {
+    public void handleCommand(final Command command, final ZigBeeCommandParameters params) {
         int value;
         if (command instanceof OnOffType) {
             value = command == OnOffType.ON ? MODE_ON : MODE_OFF;
