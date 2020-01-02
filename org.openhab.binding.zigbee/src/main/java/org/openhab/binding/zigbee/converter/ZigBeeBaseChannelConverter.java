@@ -17,6 +17,7 @@ import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -212,6 +213,20 @@ public abstract class ZigBeeBaseChannelConverter {
     public boolean initializeDevice() {
         return true;
     }
+
+    /**
+     * Gets the cluster IDs that are implemented within the converter on the client side.
+     *
+     * @return Set of cluster IDs supported by the converter
+     */
+    public abstract Set<Integer> getImplementedClientClusters();
+
+    /**
+     * Gets the cluster IDs that are implemented within the converter on the server side.
+     *
+     * @return Set of cluster IDs supported by the converter
+     */
+    public abstract Set<Integer> getImplementedServerClusters();
 
     /**
      * Initialise the converter. This is called by the {@link ZigBeeThingHandler} when the channel is created. The

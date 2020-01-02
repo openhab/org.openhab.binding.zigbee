@@ -12,7 +12,11 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.OpenClosedType;
@@ -59,6 +63,16 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter
     protected static final int CIE_ACMAINS = 0x0080;
     protected static final int CIE_TEST = 0x0100;
     protected static final int CIE_BATTERYDEFECT = 0x0200;
+
+    @Override
+    public Set<Integer> getImplementedClientClusters() {
+        return Stream.of(ZclIasZoneCluster.CLUSTER_ID).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Integer> getImplementedServerClusters() {
+        return Collections.emptySet();
+    }
 
     @Override
     public boolean initializeDevice() {

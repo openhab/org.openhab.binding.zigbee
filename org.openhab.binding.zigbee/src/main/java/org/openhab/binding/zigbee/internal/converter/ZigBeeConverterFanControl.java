@@ -12,6 +12,8 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
@@ -50,6 +52,16 @@ public class ZigBeeConverterFanControl extends ZigBeeBaseChannelConverter implem
 
     private ZclFanControlCluster cluster;
     private ZclAttribute fanModeAttribute;
+
+    @Override
+    public Set<Integer> getImplementedClientClusters() {
+        return Collections.singleton(ZclFanControlCluster.CLUSTER_ID);
+    }
+
+    @Override
+    public Set<Integer> getImplementedServerClusters() {
+        return Collections.emptySet();
+    }
 
     @Override
     public boolean initializeDevice() {

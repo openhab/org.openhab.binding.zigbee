@@ -12,6 +12,8 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.smarthome.core.thing.Channel;
@@ -42,6 +44,16 @@ public class ZigBeeConverterThermostatUnoccupiedHeating extends ZigBeeBaseChanne
 
     private ZclThermostatCluster cluster;
     private ZclAttribute attribute;
+
+    @Override
+    public Set<Integer> getImplementedClientClusters() {
+        return Collections.singleton(ZclThermostatCluster.CLUSTER_ID);
+    }
+
+    @Override
+    public Set<Integer> getImplementedServerClusters() {
+        return Collections.emptySet();
+    }
 
     @Override
     public boolean initializeDevice() {

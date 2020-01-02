@@ -14,7 +14,9 @@ package org.openhab.binding.zigbee.internal.converter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -53,6 +55,16 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
     private ZclAttribute attribute;
 
     private ZclReportingConfig configReporting;
+
+    @Override
+    public Set<Integer> getImplementedClientClusters() {
+        return Collections.singleton(ZclIlluminanceMeasurementCluster.CLUSTER_ID);
+    }
+
+    @Override
+    public Set<Integer> getImplementedServerClusters() {
+        return Collections.emptySet();
+    }
 
     @Override
     public boolean initializeDevice() {

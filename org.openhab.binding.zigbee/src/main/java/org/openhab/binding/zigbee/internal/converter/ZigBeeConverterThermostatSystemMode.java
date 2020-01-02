@@ -14,7 +14,9 @@ package org.openhab.binding.zigbee.internal.converter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
@@ -54,6 +56,16 @@ public class ZigBeeConverterThermostatSystemMode extends ZigBeeBaseChannelConver
 
     private ZclThermostatCluster cluster;
     private ZclAttribute attribute;
+
+    @Override
+    public Set<Integer> getImplementedClientClusters() {
+        return Collections.singleton(ZclThermostatCluster.CLUSTER_ID);
+    }
+
+    @Override
+    public Set<Integer> getImplementedServerClusters() {
+        return Collections.emptySet();
+    }
 
     @Override
     public boolean initializeDevice() {

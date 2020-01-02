@@ -17,6 +17,7 @@ import static java.lang.Integer.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -69,6 +70,16 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter
     private Map<ButtonPressType, EventSpec> handledEvents = new EnumMap<>(ButtonPressType.class);
     private Set<ZclCluster> clientClusters = new HashSet<>();
     private Set<ZclCluster> serverClusters = new HashSet<>();
+
+    @Override
+    public Set<Integer> getImplementedClientClusters() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Set<Integer> getImplementedServerClusters() {
+        return Collections.emptySet();
+    }
 
     @Override
     public synchronized boolean initializeConverter() {

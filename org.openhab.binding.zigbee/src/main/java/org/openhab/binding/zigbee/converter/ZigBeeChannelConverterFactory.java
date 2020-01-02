@@ -13,6 +13,7 @@
 package org.openhab.binding.zigbee.converter;
 
 import java.util.Collection;
+import java.util.Set;
 
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
@@ -50,13 +51,27 @@ public interface ZigBeeChannelConverterFactory {
     /**
      * Creates a channel converter for the requested {@link ChannelTypeUID}
      *
-     * @param thingHandler       the {@link ZigBeeThingHandler} for this channel
-     * @param channel            the {@link Channel} to create the converter for
+     * @param thingHandler the {@link ZigBeeThingHandler} for this channel
+     * @param channel the {@link Channel} to create the converter for
      * @param coordinatorHandler the {@link ZigBeeCoordinatorHandler}
-     * @param ieeeAddress        the {@link IeeeAddress} of the device
-     * @param endpointId         the endpoint ID for this channel on the device
+     * @param ieeeAddress the {@link IeeeAddress} of the device
+     * @param endpointId the endpoint ID for this channel on the device
      * @return the {@link ZigBeeBaseChannelConverter} or null if the channel is not supported
      */
     ZigBeeBaseChannelConverter createConverter(ZigBeeThingHandler thingHandler, Channel channel,
             ZigBeeCoordinatorHandler coordinatorHandler, IeeeAddress ieeeAddress, int endpointId);
+
+    /**
+     * Gets the cluster IDs that are supported by all converters known to the system
+     *
+     * @return Set of cluster IDs supported by the system
+     */
+    Set<Integer> getImplementedClientClusters();
+
+    /**
+     * Gets the cluster IDs that are supported by all converters known to the system
+     *
+     * @return Set of cluster IDs supported by the system
+     */
+    Set<Integer> getImplementedServerClusters();
 }

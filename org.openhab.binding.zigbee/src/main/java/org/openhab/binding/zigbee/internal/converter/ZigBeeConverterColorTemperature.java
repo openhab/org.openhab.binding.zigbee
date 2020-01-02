@@ -14,6 +14,8 @@ package org.openhab.binding.zigbee.internal.converter;
 
 import static com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster.ATTR_COLORTEMPERATURE;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.smarthome.core.library.types.OnOffType;
@@ -57,6 +59,16 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
     // Default range of 2000K to 6500K
     private final Integer DEFAULT_MIN_TEMPERATURE_IN_KELVIN = 2000;
     private final Integer DEFAULT_MAX_TEMPERATURE_IN_KELVIN = 6500;
+
+    @Override
+    public Set<Integer> getImplementedClientClusters() {
+        return Collections.singleton(ZclColorControlCluster.CLUSTER_ID);
+    }
+
+    @Override
+    public Set<Integer> getImplementedServerClusters() {
+        return Collections.emptySet();
+    }
 
     @Override
     public boolean initializeDevice() {
