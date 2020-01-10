@@ -108,6 +108,27 @@ public class ZigBeeConverterThermostatSystemMode extends ZigBeeBaseChannelConver
             return false;
         }
 
+        // Sequence of operation defines the allowable modes
+        ZclAttribute attribute = cluster.getAttribute(ZclThermostatCluster.ATTR_CONTROLSEQUENCEOFOPERATION);
+        Integer states = (Integer) attribute.readValue(Long.MAX_VALUE);
+        List<StateOption> options = new ArrayList<>();
+        options.add(new StateOption("0", "Off"));
+        options.add(new StateOption("1", "Auto"));
+        if (states != null && states != 0 && states != 1) {
+            options.add(new StateOption("4", "Heat"));
+            options.add(new StateOption("5", "Emergency Heating"));
+        }
+        if (states != null && states != 3 && states != 6) {
+            options.add(new StateOption("3", "Cool"));
+            options.add(new StateOption("6", "Precooling"));
+        }
+        options.add(new StateOption("7", "Fan Only"));
+        options.add(new StateOption("8", "Dry"));
+        options.add(new StateOption("9", "Sleep"));
+
+        stateDescription = new StateDescription(BigDecimal.ZERO, BigDecimal.valueOf(9), BigDecimal.valueOf(1), "", true,
+                options);
+
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
         return true;
@@ -171,27 +192,6 @@ public class ZigBeeConverterThermostatSystemMode extends ZigBeeBaseChannelConver
         } catch (InterruptedException | ExecutionException e) {
             logger.warn("{}: Exception discovering attributes in thermostat cluster", endpoint.getIeeeAddress(), e);
         }
-
-        // Sequence of operation defines the allowable modes
-        Integer states = cluster.getControlSequenceOfOperation(Long.MAX_VALUE);
-
-        List<StateOption> options = new ArrayList<>();
-        options.add(new StateOption("0", "Off"));
-        options.add(new StateOption("1", "Auto"));
-        if (states != null && states != 0 && states != 1) {
-            options.add(new StateOption("4", "Heat"));
-            options.add(new StateOption("5", "Emergency Heating"));
-        }
-        if (states != null && states != 3 && states != 6) {
-            options.add(new StateOption("3", "Cool"));
-            options.add(new StateOption("6", "Precooling"));
-        }
-        options.add(new StateOption("7", "Fan Only"));
-        options.add(new StateOption("8", "Dry"));
-        options.add(new StateOption("9", "Sleep"));
-
-        stateDescription = new StateDescription(BigDecimal.ZERO, BigDecimal.valueOf(9), BigDecimal.valueOf(1), "", true,
-                options);
 
         return ChannelBuilder
                 .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_THERMOSTAT_SYSTEMMODE),
