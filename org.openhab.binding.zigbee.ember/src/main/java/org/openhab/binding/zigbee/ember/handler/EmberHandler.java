@@ -113,6 +113,9 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
 
         dongle.updateDefaultConfiguration(EzspConfigId.EZSP_CONFIG_TX_POWER_MODE, config.zigbee_powermode);
 
+        // We don't need to receive broadcast and multicast messages that we send
+        dongle.passLoopbackMessages(false);
+
         // Set the child aging timeout.
         // Formulae is EZSP_CONFIG_END_DEVICE_POLL_TIMEOUT * 2 ^ EZSP_CONFIG_END_DEVICE_POLL_TIMEOUT_SHIFT
         int pollTimeoutValue;
