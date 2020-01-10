@@ -224,7 +224,7 @@
 		<label>Temperature</label>
 		<description>Indicates the current temperature</description>
 		<category>Temperature</category>
-		<state pattern="%.1f %unit%" readOnly="true" />
+		<state pattern="%.1f %unit%" />
 	</channel-type>
 
 	<!-- Occupancy sensor -->
