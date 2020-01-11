@@ -12,7 +12,10 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -22,6 +25,8 @@ import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.types.Command;
+import org.eclipse.smarthome.core.types.StateDescription;
+import org.eclipse.smarthome.core.types.StateOption;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.slf4j.Logger;
@@ -99,6 +104,44 @@ public class ZigBeeConverterFanControl extends ZigBeeBaseChannelConverter implem
 
         fanModeAttribute = cluster.getAttribute(ZclFanControlCluster.ATTR_FANMODE);
 
+        // TODO: Detect the supported features and provide these as a description
+        ZclAttribute fanSequenceAttribute = cluster.getAttribute(ZclFanControlCluster.ATTR_FANMODESEQUENCE);
+        Integer sequence = (Integer) fanSequenceAttribute.readValue(Long.MAX_VALUE);
+        if (sequence != null) {
+            List<StateOption> options = new ArrayList<>();
+            switch (sequence) {
+                case 0:
+                    options.add(new StateOption("1", "Low"));
+                    options.add(new StateOption("2", "Medium"));
+                    options.add(new StateOption("3", "High"));
+                case 1:
+                    options.add(new StateOption("1", "Low"));
+                    options.add(new StateOption("3", "High"));
+                    break;
+                case 2:
+                    options.add(new StateOption("1", "Low"));
+                    options.add(new StateOption("2", "Medium"));
+                    options.add(new StateOption("3", "High"));
+                    options.add(new StateOption("5", "Auto"));
+                    break;
+                case 3:
+                    options.add(new StateOption("1", "Low"));
+                    options.add(new StateOption("3", "High"));
+                    options.add(new StateOption("5", "Auto"));
+                    break;
+                case 4:
+                    options.add(new StateOption("4", "On"));
+                    options.add(new StateOption("5", "Auto"));
+                    break;
+                default:
+                    logger.error("{}: Unknown fan mode sequence {}", endpoint.getIeeeAddress(), sequence);
+                    break;
+            }
+
+            stateDescription = new StateDescription(BigDecimal.ZERO, BigDecimal.valueOf(9), BigDecimal.valueOf(1), "",
+                    true, options);
+        }
+
         // Add the listener
         cluster.addAttributeListener(this);
 
@@ -139,9 +182,6 @@ public class ZigBeeConverterFanControl extends ZigBeeBaseChannelConverter implem
             logger.trace("{}: Fan control cluster not found", endpoint.getIeeeAddress());
             return null;
         }
-
-        // TODO: Detect the supported features and provide these as a description
-        ZclAttribute attribute = cluster.getAttribute(ZclFanControlCluster.ATTR_FANMODESEQUENCE);
 
         return ChannelBuilder
                 .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_FANCONTROL),
