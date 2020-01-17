@@ -427,7 +427,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         if (channels.isEmpty()) {
             logger.warn("{}: No supported clusters found", nodeIeeeAddress);
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.HANDLER_INITIALIZING_ERROR, "No supported clusters found");
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.HANDLER_INITIALIZING_ERROR,
+                    "No supported clusters found");
             return;
         }
 
@@ -642,7 +643,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     @Override
     public void handleRemoval() {
-        coordinatorHandler.leave(nodeIeeeAddress);
+        coordinatorHandler.leave(nodeIeeeAddress, true);
         updateStatus(ThingStatus.REMOVED);
     }
 
@@ -666,7 +667,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                     coordinatorHandler.permitJoin(nodeIeeeAddress, 60);
                     break;
                 case ZigBeeBindingConstants.CONFIGURATION_LEAVE:
-                    coordinatorHandler.leave(nodeIeeeAddress);
+                    coordinatorHandler.leave(nodeIeeeAddress, false);
                     break;
                 case ZigBeeBindingConstants.CONFIGURATION_INITIALIZE_DEVICE:
                     initializeDevice = true;

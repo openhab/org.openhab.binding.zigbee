@@ -990,9 +990,10 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      * This method will send the ZDO message to the device itself requesting it leave the network
      *
      * @param address the network address to leave
+     * @param forceRemoval true to remove the node from the network, even if the leave request fails
      * @return true if the command is sent
      */
-    public boolean leave(IeeeAddress address) {
+    public boolean leave(IeeeAddress address, boolean forceRemoval) {
         // First we want to make sure that join is disabled
         networkManager.permitJoin(0);
 
@@ -1005,7 +1006,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         logger.debug("{}: ZigBee leave command to {}", address, node.getNetworkAddress());
 
-        networkManager.leave(node.getNetworkAddress(), node.getIeeeAddress());
+        networkManager.leave(node.getNetworkAddress(), node.getIeeeAddress(), forceRemoval);
         return true;
     }
 
