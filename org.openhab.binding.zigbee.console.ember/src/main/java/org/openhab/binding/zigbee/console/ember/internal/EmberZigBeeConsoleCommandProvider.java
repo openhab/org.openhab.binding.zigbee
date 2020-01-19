@@ -31,6 +31,7 @@ import com.zsmartsystems.zigbee.console.ember.EmberConsoleMmoHashCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpChildrenCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpConfigurationCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpCountersCommand;
+import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpPolicyCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpScanCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpStateCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpValueCommand;
@@ -49,9 +50,10 @@ public class EmberZigBeeConsoleCommandProvider implements ZigBeeConsoleCommandPr
     public static final List<ZigBeeConsoleCommand> EMBER_COMMANDS = unmodifiableList(
             asList(new EmberConsoleMmoHashCommand(), new EmberConsoleNcpChildrenCommand(),
                     new EmberConsoleNcpConfigurationCommand(), new EmberConsoleNcpCountersCommand(),
-                    new EmberConsoleNcpValueCommand(), new EmberConsoleNcpVersionCommand(),
-                    new EmberConsoleNcpScanCommand(), new EmberConsoleNcpStateCommand(),
-                    new EmberConsoleSecurityStateCommand(), new EmberConsoleTransientKeyCommand()));
+                    new EmberConsoleNcpPolicyCommand(), new EmberConsoleNcpScanCommand(),
+                    new EmberConsoleSecurityStateCommand(), new EmberConsoleNcpStateCommand(),
+                    new EmberConsoleTransientKeyCommand(), new EmberConsoleNcpValueCommand(),
+                    new EmberConsoleNcpVersionCommand()));
 
     private Map<String, ZigBeeConsoleCommand> emberCommands = EMBER_COMMANDS.stream()
             .collect(toMap(ZigBeeConsoleCommand::getCommand, identity()));
