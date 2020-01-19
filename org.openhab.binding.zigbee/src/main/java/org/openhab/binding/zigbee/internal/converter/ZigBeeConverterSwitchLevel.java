@@ -55,8 +55,8 @@ import com.zsmartsystems.zigbee.zcl.clusters.levelcontrol.MoveToLevelWithOnOffCo
 import com.zsmartsystems.zigbee.zcl.clusters.levelcontrol.MoveWithOnOffCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.levelcontrol.StepCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.levelcontrol.StepWithOnOffCommand;
-import com.zsmartsystems.zigbee.zcl.clusters.levelcontrol.Stop2Command;
 import com.zsmartsystems.zigbee.zcl.clusters.levelcontrol.StopCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.levelcontrol.StopWithOnOffCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OffCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OffWithEffectCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OnCommand;
@@ -613,7 +613,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
             startTransitionTimer(time * 100, value);
             return true;
         }
-        if (command instanceof StopCommand || command instanceof Stop2Command) {
+        if (command instanceof StopCommand || command instanceof StopWithOnOffCommand) {
             clusterLevelControlClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
             stopTransitionTimer();
             return true;
@@ -743,7 +743,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
             @Override
             public void run() {
                 logger.debug("{}: IncreaseDecrease Stop timer expired", endpoint.getIeeeAddress());
-                clusterLevelControlServer.stop2Command();
+                clusterLevelControlServer.stopWithOnOffCommand();
                 lastCommand = null;
                 updateTimer = null;
             }

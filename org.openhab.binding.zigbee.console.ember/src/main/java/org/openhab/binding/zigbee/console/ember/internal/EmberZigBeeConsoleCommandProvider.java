@@ -49,9 +49,10 @@ public class EmberZigBeeConsoleCommandProvider implements ZigBeeConsoleCommandPr
     public static final List<ZigBeeConsoleCommand> EMBER_COMMANDS = unmodifiableList(
             asList(new EmberConsoleMmoHashCommand(), new EmberConsoleNcpChildrenCommand(),
                     new EmberConsoleNcpConfigurationCommand(), new EmberConsoleNcpCountersCommand(),
-                    new EmberConsoleNcpValueCommand(), new EmberConsoleNcpVersionCommand(),
-                    new EmberConsoleNcpScanCommand(), new EmberConsoleNcpStateCommand(),
-                    new EmberConsoleSecurityStateCommand(), new EmberConsoleTransientKeyCommand()));
+                    new EmberConsoleNcpPolicyCommand(), new EmberConsoleNcpScanCommand(),
+                    new EmberConsoleSecurityStateCommand(), new EmberConsoleNcpStateCommand(),
+                    new EmberConsoleTransientKeyCommand(), new EmberConsoleNcpValueCommand(),
+                    new EmberConsoleNcpVersionCommand()));
 
     private Map<String, ZigBeeConsoleCommand> emberCommands = EMBER_COMMANDS.stream()
             .collect(toMap(ZigBeeConsoleCommand::getCommand, identity()));
