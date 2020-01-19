@@ -31,6 +31,7 @@ import com.zsmartsystems.zigbee.console.ember.EmberConsoleMmoHashCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpChildrenCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpConfigurationCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpCountersCommand;
+import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpPolicyCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpScanCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpStateCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpValueCommand;
