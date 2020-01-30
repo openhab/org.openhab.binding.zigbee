@@ -82,7 +82,7 @@ public class ZclOnOffSwitchConfig implements ZclClusterConfigHandler {
                     .withDefault("65535").withMinimum(new BigDecimal(0)).withMaximum(new BigDecimal(60000)).build());
         }
         if (onoffCluster.isAttributeSupported(ZclOnOffCluster.ATTR_STARTUPONOFF)) {
-            options = new ArrayList<ParameterOption>();
+            options = new ArrayList<>();
             options.add(new ParameterOption("0", "OFF"));
             options.add(new ParameterOption("1", "ON"));
             parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_STARTUPONOFF, Type.INTEGER)
