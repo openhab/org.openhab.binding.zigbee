@@ -43,6 +43,7 @@ import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
 import com.zsmartsystems.zigbee.zcl.ZclCommand;
 import com.zsmartsystems.zigbee.zcl.ZclCommandListener;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclScenesCluster;
 
 /**
  * Generic converter for buttons (e.g., from remote controls).
@@ -78,7 +79,7 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter
 
     @Override
     public Set<Integer> getImplementedServerClusters() {
-        return Collections.emptySet();
+        return Collections.singleton(ZclScenesCluster.CLUSTER_ID);
     }
 
     @Override
