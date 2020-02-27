@@ -67,7 +67,6 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
     private ZclOnOffCluster clusterOnOffClient;
     private ZclOnOffCluster clusterOnOffServer;
 
-    private ZclAttribute attributeClient;
     private ZclAttribute attributeServer;
 
     private ZclOnOffSwitchConfig configOnOff;
@@ -144,17 +143,22 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
             return false;
         }
 
+
         if (clusterOnOffServer != null) {
             // Add the listener
             clusterOnOffServer.addAttributeListener(this);
             configOnOff = new ZclOnOffSwitchConfig();
             configOnOff.initialize(clusterOnOffServer);
+            configReporting = new ZclReportingConfig(channel);
+
+            configOptions = new ArrayList<>();
+            configOptions.addAll(configOnOff.getConfiguration());
+            configOptions.addAll(configReporting.getConfiguration());
         }
 
         if (clusterOnOffClient != null) {
             // Add the command listener
             clusterOnOffClient.addCommandListener(this);
-            attributeServer = clusterOnOffClient.getAttribute(ZclOnOffCluster.ATTR_ONOFF);
         }
 
         if (clusterOnOffServer != null) {
@@ -162,12 +166,6 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
             clusterOnOffServer.addAttributeListener(this);
             attributeServer = clusterOnOffServer.getAttribute(ZclOnOffCluster.ATTR_ONOFF);
         }
-
-        configReporting = new ZclReportingConfig(channel);
-
-        configOptions = new ArrayList<>();
-        configOptions.addAll(configOnOff.getConfiguration());
-        configOptions.addAll(configReporting.getConfiguration());
 
         return true;
     }
@@ -197,9 +195,6 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
 
     @Override
     public void handleRefresh() {
-        if (attributeClient != null) {
-            attributeClient.readValue(0);
-        }
         if (attributeServer != null) {
             attributeServer.readValue(0);
         }
@@ -254,6 +249,9 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
     @Override
     public void updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> updatedParameters) {
+        if (clusterOnOffServer == null) {
+            return;
+        }
         if (configReporting.updateConfiguration(currentConfiguration, updatedParameters)) {
             try {
                 ZclAttribute attribute;
