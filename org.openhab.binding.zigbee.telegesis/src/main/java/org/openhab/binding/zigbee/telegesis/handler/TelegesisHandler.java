@@ -64,30 +64,12 @@ public class TelegesisHandler extends ZigBeeCoordinatorHandler implements Firmwa
     }
 
     @Override
-    public void initialize() {
+    protected void initializeDongle() {
         logger.debug("Initializing ZigBee Telegesis serial bridge handler.");
 
-        // Call the parent to finish any global initialisation
-        super.initialize();
-
         TelegesisConfiguration config = getConfigAs(TelegesisConfiguration.class);
-
-        ZigBeePort serialPort = new ZigBeeSerialPort(serialPortManager, config.zigbee_port, config.zigbee_baud,
-                FlowControl.FLOWCONTROL_OUT_NONE);
-        final ZigBeeDongleTelegesis dongle = new ZigBeeDongleTelegesis(serialPort);
-
-        logger.debug("ZigBee Telegesis Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
-                Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
-
-        dongle.setTelegesisPassword(config.zigbee_password);
-
-        TransportConfig transportConfig = new TransportConfig();
-
-        // The Telegesis dongle doesn't pass the MatchDescriptor commands to the stack, so we can't manage our services
-        // directly. Instead, register any services we want to support so the Telegesis can handle the MatchDescriptor.
-        Set<Integer> clusters = new HashSet<>();
-        clusters.add(ZclIasZoneCluster.CLUSTER_ID);
-        transportConfig.addOption(TransportConfigOption.SUPPORTED_OUTPUT_CLUSTERS, clusters);
+        ZigBeeDongleTelegesis dongle = createDongle(config);
+        TransportConfig transportConfig = createTransportConfig();
 
         startZigBee(dongle, transportConfig, DefaultSerializer.class, DefaultDeserializer.class);
     }
@@ -161,4 +143,28 @@ public class TelegesisHandler extends ZigBeeCoordinatorHandler implements Firmwa
         // firmware.
         return true;
     }
+
+    private ZigBeeDongleTelegesis createDongle(TelegesisConfiguration config) {
+        ZigBeePort serialPort = new ZigBeeSerialPort(serialPortManager, config.zigbee_port, config.zigbee_baud,
+                FlowControl.FLOWCONTROL_OUT_NONE);
+        final ZigBeeDongleTelegesis dongle = new ZigBeeDongleTelegesis(serialPort);
+
+        logger.debug("ZigBee Telegesis Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
+                Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
+
+        dongle.setTelegesisPassword(config.zigbee_password);
+        return dongle;
+    }
+
+    private TransportConfig createTransportConfig() {
+        TransportConfig transportConfig = new TransportConfig();
+
+        // The Telegesis dongle doesn't pass the MatchDescriptor commands to the stack, so we can't manage our services
+        // directly. Instead, register any services we want to support so the Telegesis can handle the MatchDescriptor.
+        Set<Integer> clusters = new HashSet<Integer>();
+        clusters.add(ZclIasZoneCluster.CLUSTER_ID);
+        transportConfig.addOption(TransportConfigOption.SUPPORTED_OUTPUT_CLUSTERS, clusters);
+        return transportConfig;
+    }
+
 }
