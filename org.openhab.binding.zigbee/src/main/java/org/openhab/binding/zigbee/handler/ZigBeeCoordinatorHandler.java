@@ -150,6 +150,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         this.channelFactory = channelFactory;
     }
 
+    /**
+     * Method called to initialise the dongle. Note that this may be called multiple times if the dongle is
+     * reinitialised
+     */
+    protected abstract void initializeDongle();
+
     @Override
     public void initialize() {
         logger.debug("Initializing ZigBee network [{}].", thing.getUID());
@@ -293,6 +299,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         }
 
         logger.debug("Link key final array {}", linkKey);
+
+        initializeDongle();
 
         reconnectPollingScheduler = Executors.newSingleThreadScheduledExecutor();
     }
@@ -549,6 +557,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     return;
                 }
 
+                logger.info("ZigBee dongle inactivity timer. Reinitializing ZigBee");
+
                 // Close everything that has been started prior to initializing the serial port
                 if (restartJob != null) {
                     restartJob.cancel(true);
@@ -560,7 +570,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 }
 
                 // Initialize the network again
-                initialiseZigBee();
+                initializeDongle();
 
                 waitForReconnectAttemptToFinish();
             }
@@ -887,24 +897,26 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             case OFFLINE:
                 Bridge bridge = getThing();
 
-                // do not try to reconnect if there is a firmware update in progress
+                // Do not try to reconnect if there is a firmware update in progress
                 if (bridge.getStatus() == ThingStatus.OFFLINE
                         && bridge.getStatusInfo().getStatusDetail() == ThingStatusDetail.FIRMWARE_UPDATING) {
+                    logger.debug("{}: Ignoring OFFLINE status: Thing is {}/{}", bridge.getStatus(),
+                            bridge.getStatusInfo().getStatusDetail());
                     break;
                 }
 
-                // - Do not set the status to OFFLINE when the bridge is in one of these statuses. According to the
+                // - Do not set the status to OFFLINE when the bridge is in one of these states. According to the
                 // documentation https://www.eclipse.org/smarthome/documentation/concepts/things.html#status-transitions
                 // the thing must not change from these statuses to OFFLINE
                 // - Do not try to reconnect if the bridge is being removed.
                 if (Arrays.asList(ThingStatus.UNINITIALIZED, ThingStatus.REMOVING, ThingStatus.REMOVED)
                         .contains(bridge.getStatus())) {
+                    logger.debug("{}: Ignoring OFFLINE status: Thing is {}", bridge.getStatus());
                     break;
                 }
 
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
                 startReconnectJobIfNotRunning();
-
                 break;
             default:
                 break;
