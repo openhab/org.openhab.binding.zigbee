@@ -30,8 +30,10 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.openhab.core.config.core.Configuration;
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.internal.ZigBeeDataStore;
 import org.openhab.core.common.registry.Identifiable;
+import org.openhab.core.config.core.Configuration;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
@@ -40,8 +42,6 @@ import org.openhab.core.thing.ThingStatusDetail;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.BaseBridgeHandler;
 import org.openhab.core.types.Command;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.internal.ZigBeeDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +89,7 @@ import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
  * @author Chris Jackson - Initial contribution
  */
 public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
-        implements Identifiable<ThingUID>, ZigBeeNetworkStateListener, ZigBeeNetworkNodeListener {
+        implements Identifiable<@NonNull ThingUID>, ZigBeeNetworkStateListener, ZigBeeNetworkNodeListener {
     private final Logger logger = LoggerFactory.getLogger(ZigBeeCoordinatorHandler.class);
 
     protected Integer panId;
@@ -1045,7 +1045,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     }
 
     @Override
-    public @NonNull ThingUID getUID() {
+    public ThingUID getUID() {
         return getThing().getUID();
     }
 }
