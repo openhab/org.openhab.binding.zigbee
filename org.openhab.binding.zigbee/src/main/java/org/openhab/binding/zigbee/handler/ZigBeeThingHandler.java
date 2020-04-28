@@ -375,9 +375,9 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 updateThing(thingBuilder.build());
             }
 
-            boolean initializeDevice = !Boolean
+            boolean doInitializeDevice = !Boolean
                     .parseBoolean(thing.getProperties().get(ZigBeeBindingConstants.THING_PROPERTY_DEVICE_INITIALIZED));
-            if (initializeDevice) {
+            if (doInitializeDevice) {
                 initializeDevice();
             } else {
                 logger.debug("{}: Device initialization will be skipped as the device is already initialized",
@@ -651,7 +651,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     public void handleConfigurationUpdate(Map<String, Object> configurationParameters) {
         logger.debug("{}: Configuration received: {}", nodeIeeeAddress, configurationParameters);
 
-        boolean initializeDevice = false;
+        boolean doInitializeDevice = false;
 
         Configuration configuration = editConfiguration();
         for (Entry<String, Object> configurationParameter : configurationParameters.entrySet()) {
@@ -670,7 +670,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                     coordinatorHandler.leave(nodeIeeeAddress, false);
                     break;
                 case ZigBeeBindingConstants.CONFIGURATION_INITIALIZE_DEVICE:
-                    initializeDevice = true;
+                    doInitializeDevice = true;
                     break;
                 default:
                     break;
@@ -688,7 +688,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         // Persist changes
         updateConfiguration(configuration);
 
-        if (initializeDevice) {
+        if (doInitializeDevice) {
+            logger.debug("{}: Configuration updated: Reinitialise device", nodeIeeeAddress);
             initializeDevice();
         }
     }

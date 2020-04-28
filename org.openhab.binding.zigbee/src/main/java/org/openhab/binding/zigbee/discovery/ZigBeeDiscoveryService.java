@@ -110,16 +110,6 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
                     ZigBeeDiscoveryService.this.nodeDiscovered(coordinatorHandler, node);
                 }
             }
-
-            @Override
-            public void nodeRemoved(ZigBeeNode node) {
-                // Nothing to do
-            }
-
-            @Override
-            public void nodeUpdated(ZigBeeNode node) {
-                // Nothing to do
-            }
         };
 
         coordinatorHandler.addNetworkNodeListener(listener);
