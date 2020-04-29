@@ -133,7 +133,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
 
         for (ZigBeeCoordinatorHandler coordinator : coordinatorHandlers) {
             for (ZigBeeNode node : coordinator.getNodes()) {
-                if (node.getNetworkAddress() == 0) {
+                if (node.getNetworkAddress() == 0 || node.isDiscovered()) {
                     continue;
                 }
 
