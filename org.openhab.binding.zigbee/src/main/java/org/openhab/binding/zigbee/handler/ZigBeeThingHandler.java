@@ -670,7 +670,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                     coordinatorHandler.leave(nodeIeeeAddress, false);
                     break;
                 case ZigBeeBindingConstants.CONFIGURATION_INITIALIZE_DEVICE:
-                    doInitializeDevice = true;
+                    doInitializeDevice |= (Boolean) configurationParameter.getValue();
                     break;
                 default:
                     break;
