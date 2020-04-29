@@ -220,7 +220,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         coordinatorHandler = (ZigBeeCoordinatorHandler) getBridge().getHandler();
         coordinatorHandler.addNetworkNodeListener(this);
         coordinatorHandler.addAnnounceListener(this);
-        coordinatorHandler.rediscoverNode(nodeIeeeAddress);
+        ZigBeeNode node = coordinatorHandler.getNode(nodeIeeeAddress);
+        if (!node.isDiscovered()) {
+            coordinatorHandler.rediscoverNode(nodeIeeeAddress);
+        }
 
         initialiseZigBeeNode();
     }
