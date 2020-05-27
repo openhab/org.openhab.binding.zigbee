@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.config.core.ConfigDescription;
+import org.eclipse.smarthome.config.core.ConfigDescriptionBuilder;
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
 import org.eclipse.smarthome.config.core.ConfigDescriptionProvider;
 import org.eclipse.smarthome.config.core.Configuration;
@@ -298,7 +299,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         }
 
         try {
-            configDescription = new ConfigDescription(new URI("thing:" + getThing().getUID()), parameters);
+            configDescription = ConfigDescriptionBuilder.create(new URI("thing:" + getThing().getUID()))
+                    .withParameters(parameters).build();
         } catch (IllegalArgumentException | URISyntaxException e) {
             logger.debug("Error creating URI for thing description:", e);
         }
@@ -895,7 +897,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         ZigBeeBaseChannelConverter converter = channels.get(channelUID);
 
-        return new ConfigDescription(uri, converter.getConfigDescription());
+        return ConfigDescriptionBuilder.create(uri).withParameters(converter.getConfigDescription()).build();
     }
 
     @Override
