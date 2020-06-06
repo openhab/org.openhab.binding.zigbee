@@ -629,10 +629,19 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     @Override
     public void channelLinked(ChannelUID channelUID) {
+        ZigBeeBaseChannelConverter channel = channels.get(channelUID);
+        if (channel == null) {
+            logger.debug("{}: Channel {} linked - no channel found.", nodeIeeeAddress, channelUID);
+            return;
+        }
+
         logger.debug("{}: Channel {} linked - polling started.", nodeIeeeAddress, channelUID);
 
         // We keep track of what channels are used and only poll channels that the framework is using
         thingChannelsPoll.add(channelUID);
+
+        // Refresh the value
+        channel.handleRefresh();
     }
 
     @Override
