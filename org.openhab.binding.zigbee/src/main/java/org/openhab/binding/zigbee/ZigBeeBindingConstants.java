@@ -206,6 +206,10 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_LABEL_DOORLOCK_STATE = "Door Lock State";
     public static final ChannelTypeUID CHANNEL_DOORLOCK_STATE = new ChannelTypeUID("zigbee:door_state");
 
+    public static final String CHANNEL_NAME_WINDOWCOVERING_LIFT = "windowcoveringlift";
+    public static final String CHANNEL_LABEL_WINDOWCOVERING_LIFT = "Window Covering Lift";
+    public static final ChannelTypeUID CHANNEL_WINDOWCOVERING_LIFT = new ChannelTypeUID("zigbee:windowcovering_lift");
+
     public static final String CHANNEL_PROPERTY_ENDPOINT = "zigbee_endpoint";
     public static final String CHANNEL_PROPERTY_PROFILEID = "zigbee_profileid";
     public static final String CHANNEL_PROPERTY_INPUTCLUSTERS = "zigbee_inputclusters";
@@ -217,6 +221,7 @@ public class ZigBeeBindingConstants {
     public static final String ITEM_TYPE_NUMBER = "Number";
     public static final String ITEM_TYPE_NUMBER_PRESSURE = "Number:Pressure";
     public static final String ITEM_TYPE_NUMBER_TEMPERATURE = "Number:Temperature";
+    public static final String ITEM_TYPE_ROLLERSHUTTER = "Rollershutter";
     public static final String ITEM_TYPE_SWITCH = "Switch";
     public static final String ITEM_TYPE_STRING = "String";
 

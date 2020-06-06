@@ -383,4 +383,14 @@
 		</config-description>
 	</channel-type>
 
+    <!-- Window Covering Lift Channel -->
+    <channel-type id="windowcovering_lift">
+        <item-type>Rollershutter</item-type>
+        <label>Window Covering Lift</label>
+        <description>Sets the window covering level - supporting open/close and up/down type commands
+        </description>
+        <category>Blinds</category>
+    </channel-type>
+
+
 </thing:thing-descriptions>
