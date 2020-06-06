@@ -167,7 +167,7 @@ public class ZigBeeConverterWindowCoveringLift extends ZigBeeBaseChannelConverte
                     break;
             }
         } else if (command instanceof PercentType) {
-            zclCommand = new WindowCoveringGoToLiftPercentage(percentToLevel((PercentType) command));
+            zclCommand = new WindowCoveringGoToLiftPercentage(((PercentType) command).intValue());
         }
 
         if (command == null) {
