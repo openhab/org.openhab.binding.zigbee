@@ -472,6 +472,18 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     /**
      * Whenever the {@link ZigBeeIsAliveTracker} determines that a handler has not reset its timeout timer within its
+     * reporting or polling interval, this callback method will be called to notify the handler that it is about to be
+     * marked OFFLINE.
+     *
+     * Here we do a last poll to try and get the device to respond.
+     */
+    public void aliveTimeoutLastChance() {
+        // We restart polling to give the device an immediate kick before it gets marked OFFLINE
+        startPolling();
+    }
+
+    /**
+     * Whenever the {@link ZigBeeIsAliveTracker} determines that a handler has not reset its timeout timer within its
      * reporting or polling interval, this callback method will be called to set the Thing to OFFLINE.
      */
     public void aliveTimeoutReached() {
@@ -911,6 +923,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     @Override
     public void updateFirmware(Firmware firmware, ProgressCallback progressCallback) {
+        if (nodeIeeeAddress == null) {
+            logger.debug("Unable to update firmware as node address is unknown", nodeIeeeAddress);
+            return;
+        }
         logger.debug("{}: Update firmware with {}", nodeIeeeAddress, firmware.getVersion());
 
         // Find an OTA client if the device supports OTA upgrades
