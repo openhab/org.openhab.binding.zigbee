@@ -12,7 +12,9 @@
  */
 package org.openhab.binding.zigbee.handler;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -24,15 +26,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Service which starts timeout tasks to set a Thing to OFFLINE if it doesn't reset the timer before it runs out
+ * Service which starts timeout tasks to set a Thing to OFFLINE if it doesn't reset the timer before it runs out.
+ * <p>
+ * This is a two stage tracker - when the initial timer times out we call aliveTimeoutLastChance to notify the handler
+ * the thing is about to be set OFFLINE. Shortly after (eg 30 seconds) if there has still not been an update,
+ * aliveTimeoutReached is called to set the thing OFFLINE.
+ *
+ * @author Stefan Triller - Initial contribution
+ * @author Chris Jackson - Added last chance timer
  */
 @Component(immediate = true, service = ZigBeeIsAliveTracker.class)
 public class ZigBeeIsAliveTracker {
+    private static final int LAST_CHANCE_TIMER = 30000;
 
     private final Logger logger = LoggerFactory.getLogger(ZigBeeIsAliveTracker.class);
 
     private Map<ZigBeeThingHandler, Integer> handlerIntervalMapping = new ConcurrentHashMap<>();
     private Map<ZigBeeThingHandler, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
+    private Set<ZigBeeThingHandler> lastChance = new HashSet<>();
 
     protected final ScheduledExecutorService scheduler = ThreadPoolManager.getScheduledPool("ZigBeeIsAliveTracker");
 
@@ -43,7 +54,7 @@ public class ZigBeeIsAliveTracker {
      * @param expectedUpdateInterval the interval in which the device should have communicated with us
      */
     public void addHandler(ZigBeeThingHandler zigBeeThingHandler, int expectedUpdateInterval) {
-        logger.debug("Add IsAlive Tracker for thingUID={}", zigBeeThingHandler.getThing().getUID());
+        logger.debug("IsAlive Tracker added for thingUID={}", zigBeeThingHandler.getThing().getUID());
         handlerIntervalMapping.put(zigBeeThingHandler, expectedUpdateInterval);
         resetTimer(zigBeeThingHandler);
     }
@@ -54,8 +65,9 @@ public class ZigBeeIsAliveTracker {
      * @param zigBeeThingHandler the {@link ZigBeeThingHandler}
      */
     public void removeHandler(ZigBeeThingHandler zigBeeThingHandler) {
-        logger.debug("Remove IsAlive Tracker for thingUID={}", zigBeeThingHandler.getThing().getUID());
+        logger.debug("IsAlive Tracker removed for thingUID={}", zigBeeThingHandler.getThing().getUID());
         cancelTask(zigBeeThingHandler);
+        lastChance.remove(zigBeeThingHandler);
         handlerIntervalMapping.remove(zigBeeThingHandler);
     }
 
@@ -65,31 +77,48 @@ public class ZigBeeIsAliveTracker {
      * @param zigBeeThingHandler the {@link ZigBeeThingHandler}
      */
     public synchronized void resetTimer(ZigBeeThingHandler zigBeeThingHandler) {
-        logger.debug("Reset timeout for handler with thingUID={}", zigBeeThingHandler.getThing().getUID());
+        logger.debug("IsAlive Tracker reset for handler with thingUID={}", zigBeeThingHandler.getThing().getUID());
         cancelTask(zigBeeThingHandler);
-        scheduleTask(zigBeeThingHandler);
-    }
-
-    private void scheduleTask(ZigBeeThingHandler handler) {
-        ScheduledFuture<?> existingTask = scheduledTasks.get(handler);
-        if (existingTask == null && handlerIntervalMapping.containsKey(handler)) {
-            int interval = handlerIntervalMapping.get(handler);
-            logger.debug("Scheduling timeout task for thingUID={} in {} seconds",
-                    handler.getThing().getUID().getAsString(), interval);
-            ScheduledFuture<?> task = scheduler.schedule(() -> {
-                logger.debug("Timeout has been reached for thingUID={}", handler.getThing().getUID().getAsString());
-                handler.aliveTimeoutReached();
-                scheduledTasks.remove(handler);
-            }, interval, TimeUnit.SECONDS);
-
-            scheduledTasks.put(handler, task);
+        ScheduledFuture<?> existingTask = scheduledTasks.get(zigBeeThingHandler);
+        if (existingTask == null && handlerIntervalMapping.containsKey(zigBeeThingHandler)) {
+            int interval = handlerIntervalMapping.get(zigBeeThingHandler);
+            logger.debug("IsAlive Tracker scheduled task for thingUID={} in {} seconds",
+                    zigBeeThingHandler.getThing().getUID().getAsString(), interval);
+            scheduleTask(zigBeeThingHandler, interval);
         }
     }
 
+    private void scheduleTask(ZigBeeThingHandler handler, int interval) {
+        ScheduledFuture<?> task = scheduler.schedule(() -> {
+            synchronized (lastChance) {
+                scheduledTasks.remove(handler);
+                if (!lastChance.contains(handler)) {
+                    logger.debug("IsAlive Tracker LastChance Timeout has been reached for thingUID={}",
+                            handler.getThing().getUID().getAsString());
+
+                    // Notify the thing handler this is its last chance before it's marked OFFLINE
+                    lastChance.add(handler);
+                    handler.aliveTimeoutLastChance();
+
+                    scheduleTask(handler, LAST_CHANCE_TIMER);
+                } else {
+                    logger.debug("IsAlive Tracker Timeout has been reached for thingUID={}",
+                            handler.getThing().getUID().getAsString());
+
+                    lastChance.remove(handler);
+                    handler.aliveTimeoutReached();
+                }
+            }
+        }, interval, TimeUnit.SECONDS);
+
+        scheduledTasks.put(handler, task);
+    }
+
     private void cancelTask(ZigBeeThingHandler handler) {
+        lastChance.remove(handler);
         ScheduledFuture<?> task = scheduledTasks.get(handler);
         if (task != null) {
-            logger.debug("Canceling timeout task for thingUID={}", handler.getThing().getUID().getAsString());
+            logger.debug("IsAlive Tracker cancelled task for thingUID={}", handler.getThing().getUID().getAsString());
             task.cancel(true);
             scheduledTasks.remove(handler);
         }
