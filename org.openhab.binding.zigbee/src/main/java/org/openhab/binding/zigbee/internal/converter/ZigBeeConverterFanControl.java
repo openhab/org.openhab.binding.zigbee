@@ -139,7 +139,7 @@ public class ZigBeeConverterFanControl extends ZigBeeBaseChannelConverter implem
             }
 
             stateDescription = new StateDescription(BigDecimal.ZERO, BigDecimal.valueOf(9), BigDecimal.valueOf(1), "",
-                    true, options);
+                    false, options);
         }
 
         // Add the listener
