@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -476,5 +477,22 @@ public abstract class ZigBeeBaseChannelConverter {
     protected Future<CommandResult> bind(ZclCluster cluster) {
         return cluster.bind(coordinator.getLocalIeeeAddress(),
                 coordinator.getLocalEndpointId(ZigBeeProfileType.ZIGBEE_HOME_AUTOMATION));
+    }
+
+    /**
+     * Monitors the command response. If the command fails, then we set the thing OFFLINE.
+     * <p>
+     * Note that this is called from a separate thread created in the ThingHandler, so we can safely block here.
+     *
+     * @param futureResponse the response from the sendCommand method when sending a command
+     */
+    protected void monitorCommandResponse(final Future<CommandResult> futureResponse) {
+        try {
+            CommandResult response = futureResponse.get();
+            if (response.isTimeout()) {
+                thing.aliveTimeoutReached();
+            }
+        } catch (InterruptedException | ExecutionException e) {
+        }
     }
 }
