@@ -52,6 +52,7 @@ import com.zsmartsystems.zigbee.zcl.clusters.onoff.OffWithEffectCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OnCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OnWithTimedOffCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.ToggleCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.onoff.ZclOnOffCommand;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
@@ -145,7 +146,6 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
             return false;
         }
 
-
         if (clusterOnOffServer != null) {
             // Add the listener
             clusterOnOffServer.addAttributeListener(this);
@@ -225,11 +225,13 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
             return;
         }
 
+        ZclOnOffCommand onOffCommand;
         if (cmdOnOff == OnOffType.ON) {
-            clusterOnOffServer.onCommand();
+            onOffCommand = new OnCommand();
         } else {
-            clusterOnOffServer.offCommand();
+            onOffCommand = new OffCommand();
         }
+        monitorCommandResponse(clusterOnOffServer.sendCommand(onOffCommand));
     }
 
     @Override
