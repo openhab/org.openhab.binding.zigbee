@@ -434,9 +434,15 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             return;
         }
 
+        // If this is an RFD then we reduce polling to the max to avoid wasting battery
+        if (node.isReducedFuntionDevice()) {
+            pollingPeriod = POLLING_PERIOD_DEFAULT;
+            logger.debug("{}: Thing is RFD, using long poll period of {}sec", nodeIeeeAddress, pollingPeriod);
+        }
+
         int expectedUpdatePeriod = getExpectedUpdatePeriod(channels);
         expectedUpdatePeriod = (expectedUpdatePeriod * POLLING_OR_REPORTING_FACTOR) + POLLING_OR_REPORTING_MARGIN;
-        logger.debug("Setting ONLINE/OFFLINE timeout interval to: {}", expectedUpdatePeriod);
+        logger.debug("{}: Setting ONLINE/OFFLINE timeout interval to: {}", nodeIeeeAddress, expectedUpdatePeriod);
         isAliveTracker.addHandler(this, expectedUpdatePeriod);
 
         // Update the binding table.
