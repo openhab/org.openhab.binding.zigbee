@@ -672,8 +672,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     @Override
     public void handleRemoval() {
+        // Tell the coordinator to remove the device from the network.
+        // If the device doesn't respond, then it is forceably removed.
+        // The state will be updated to REMOVED once we get notification from the ZigBeeNetworkManager
         coordinatorHandler.leave(nodeIeeeAddress, true);
-        updateStatus(ThingStatus.REMOVED);
     }
 
     @Override
@@ -882,6 +884,14 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             return;
         }
 
+        // The framework indicates that a node was removed from the network...
+        // We need to keep in mind that this might be temporary - a node might be removed, and then rejoin - for example
+        // if it is changing parents. We don't want to inadvertently remove the node persistence file, or a full
+        // rediscovery will be required, and for battery devices (for which this is most likely), that may not be
+        // possible, and will result in the device being non-functional.
+        // To balance this risk, we check if a thing with this address is present - if it's not, or if it's being
+        // removed, then we remove the persistence file from the data store.
+
         // Clear some properties
         Map<String, String> properties = editProperties();
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_LASTUPDATE, "");
@@ -892,6 +902,11 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         if (getThing().getStatus() != ThingStatus.REMOVING) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.GONE);
+        } else {
+            // If the user has asked to remove the Thing from the network,
+            // then update the state and remove the data store.
+            coordinatorHandler.deleteNode(nodeIeeeAddress);
+            updateStatus(ThingStatus.REMOVED);
         }
     }
 

@@ -977,6 +977,18 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     }
 
     /**
+     * Removes a node from the network manager and deletes the data store files. This does not cause the network manager
+     * to tell the node to leave the network, and should only be used if the device has already left the network, or we
+     * are permanently deleting it.
+     *
+     * @param nodeIeeeAddress the {@link IeeeAddress} of the node to delete
+     */
+    public void deleteNode(IeeeAddress nodeIeeeAddress) {
+        removeNode(nodeIeeeAddress);
+        networkDataStore.removeNode(nodeIeeeAddress);
+    }
+
+    /**
      * Permit joining only for the specified node
      *
      * @param address the 16 bit network address of the node to enable joining
