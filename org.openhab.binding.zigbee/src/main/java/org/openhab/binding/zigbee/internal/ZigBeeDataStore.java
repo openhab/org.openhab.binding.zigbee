@@ -130,6 +130,7 @@ public class ZigBeeDataStore implements ZigBeeNetworkDataStore {
         ZigBeeNodeDao node = null;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"))) {
             node = (ZigBeeNodeDao) stream.fromXML(reader);
+            reader.close();
             logger.debug("{}: ZigBee reading network state complete.", address);
         } catch (Exception e) {
             logger.error("{}: Error reading network state: ", address, e);
@@ -145,6 +146,7 @@ public class ZigBeeDataStore implements ZigBeeNetworkDataStore {
 
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"))) {
             stream.marshal(node, new PrettyPrintWriter(writer));
+            writer.close();
             logger.debug("{}: ZigBee saving network state complete.", node.getIeeeAddress());
         } catch (Exception e) {
             logger.error("{}: Error writing network state: ", node.getIeeeAddress(), e);
@@ -154,7 +156,9 @@ public class ZigBeeDataStore implements ZigBeeNetworkDataStore {
     @Override
     public void removeNode(IeeeAddress address) {
         File file = getFile(address);
-        if (!file.delete()) {
+        if (file.delete()) {
+            logger.error("{}: ZigBee removing network state complete", address);
+        } else {
             logger.error("{}: Error removing network state", address);
         }
     }
