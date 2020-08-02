@@ -153,7 +153,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * A set of channels that have been linked to items. This is used to ensure we only poll channels that are linked to
      * keep network activity to a minimum.
      */
-    private final Set<ChannelUID> thingChannelsPoll = new HashSet<>();
+    private final Set<ChannelUID> thingChannelsLinked = new HashSet<>();
 
     /**
      * The factory to create the converters for the different channels.
@@ -589,10 +589,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             @Override
             public void run() {
                 try {
-                    logger.debug("{}: Polling...", nodeIeeeAddress);
+                    logger.debug("{}: Polling {} channels...", nodeIeeeAddress, channels.keySet());
 
                     for (ChannelUID channelUid : channels.keySet()) {
-                        if (!thingChannelsPoll.contains(channelUid)) {
+                        if (!thingChannelsLinked.contains(channelUid)) {
                             // Don't poll if this channel isn't linked
                             continue;
                         }
@@ -647,18 +647,17 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     @Override
     public void channelLinked(ChannelUID channelUID) {
+        logger.debug("{}: Channel {} linked - polling started.", nodeIeeeAddress, channelUID);
+
+        // We keep track of what channels are used and only poll channels that the framework is using
+        thingChannelsLinked.add(channelUID);
+
+        // Refresh the value
         ZigBeeBaseChannelConverter channel = channels.get(channelUID);
         if (channel == null) {
             logger.debug("{}: Channel {} linked - no channel found.", nodeIeeeAddress, channelUID);
             return;
         }
-
-        logger.debug("{}: Channel {} linked - polling started.", nodeIeeeAddress, channelUID);
-
-        // We keep track of what channels are used and only poll channels that the framework is using
-        thingChannelsPoll.add(channelUID);
-
-        // Refresh the value
         channel.handleRefresh();
     }
 
@@ -667,7 +666,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         logger.debug("{}: Channel {} unlinked - polling stopped.", nodeIeeeAddress, channelUID);
 
         // We keep track of what channels are used and only poll channels that the framework is using
-        thingChannelsPoll.remove(channelUID);
+        thingChannelsLinked.remove(channelUID);
     }
 
     @Override
