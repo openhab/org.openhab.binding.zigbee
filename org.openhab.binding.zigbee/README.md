@@ -89,7 +89,15 @@ Note that this value should be given as a number in the configuration file, with
 
 The Concentrator is used to improve routing within a ZigBee network, and is especially useful in a network where much of the traffic is sent to or from a central coordinator. If the coordinator has sufficient memory, it can store routing information, thus reducing network traffic.
 
-If supported, the High RAM concentrator should be used.
+If supported, the High RAM concentrator should be used. However, this depends on the used hardware and which ZigBee stack is running on it, making it hard to figure out which setting is the right one.
+
+The High RAM concentrator has been tested with the following devices/firmwares:
+
+| Hardware       | Firmware |
+| -------------- | -------- |
+| Elelabs ELR023 | ELELabs v8 (6.7.0.0) |
+| Elelabs ELU013 | ELELabs v8 (6.7.0.0) |
+
 
 **Values:**
 
@@ -121,6 +129,13 @@ Please note that, technically, you are not bound to using the values from the ta
 
 Some coordinators may need to allocate memory to handle each node in the network. This is an integer setting, and should be set to the maximum number of nodes expected to be added to the network. It should be noted that this will consume memory on the coordinator which may impact on other services such as packet buffers, so it is not advised to simply set this to the maximum value.
 
+**Values:**
+| Value      | Number of nodes |
+| ---------- | --------------- |
+| _Small_    | 10              |
+| _Medium_   | 25              |
+| _Large_    | 100             |
+| _Enormous_ | 250             |
 ##### Trust Centre Join Mode
 
 Sets the Trust Centre join/rejoin mode.
@@ -130,6 +145,7 @@ Sets the Trust Centre join/rejoin mode.
 * TC_JOIN_INSECURE: Allow all joins.
 * TC_JOIN_INSTALLCODE: Only join with install code. Devices attempting to join with the TC Link Key will be rejected.
 
+=======
 
 #### Supported Coordinators
 
@@ -139,6 +155,7 @@ The following coordinators are known to be supported.
 |----------------------------|-------------|-------------------------------|
 |[Texas Instruments CC2531EMK](http://www.ti.com/tool/cc2531emk)|[CC2531](#cc2531-coordinator)|Needs extra hardware and correct firmware (might be hard to find) for flashing.<br>There are also cheap copies of the CC2531 Stick available on eBay, Aliexpress, etc. like [this](https://de.aliexpress.com/item/Drahtlose-Zigbee-CC2531-Sniffer-software-protokoll-analyse-Bareboard-Paket-Protokoll-Analyzer-Modul-Usb-schnittstelle-Dongle-Erfassen/32852226435.html) and a module to flash the firmware like [this](https://de.aliexpress.com/item/SmartRF04EB-CC1110-CC2530-ZigBee-Module-USB-Downloader-Emulator-MCU-M100/32673666126.html) including a [connector board](https://de.aliexpress.com/item/CC2531-CC2540-Zigbee-Sniffer-software-protokoll-analyse-Wireless-Board-Bluetooth-BLE-4-0-Dongle-Capture-Modul/32869263224.html)<br>Also CC2530, CC2538 or CC2650 may work with the correct firmware but are not suggested|
 |[Bitron Video ZigBee USB Funkstick](http://www.bitronvideo.eu/index.php/produkte/smart-home-produkte/zb-funkstick/)|[Ember](#ember-ezsp-ncp-coordinator)| |
+|[Elelabs ELU013/ELR023](https://elelabs.com/shop/)|[Ember](#ember-ezsp-ncp-coordinator)| Both the stick and the hat can be upgraded without additional hardware, firmware available [here](https://github.com/Elelabs/elelabs-zigbee-ezsp-utility). Use baud rate 115200 and hardware flow control. |
 |[Cortet EM358 USB Stick](https://www.cortet.com/iot-hardware/cortet-usb-sticks/em358-usb-stick)|[Ember](#ember-ezsp-ncp-coordinator)| Use baud rate 57600 and software flow control. |
 |[Nortek Security & Control HUSBZB-1](https://nortekcontrol.com/products/2gig/husbzb-1-gocontrol-quickstick-combo/)|[Ember](#ember-ezsp-ncp-coordinator)|Stick contains both Z-Wave and ZigBee. Use baud rate 57600 and software flow control. |
 |[Telegesis ETRX357USB ZigBee® USB Stick](https://www.silabs.com/products/wireless/mesh-networking/telegesis-modules-gateways/etrx3-zigbee-usb-sticks)|[Telegesis](#telegesis-etrx3)| |
@@ -156,10 +173,11 @@ The file can be downloaded from TI website archives (http://www.ti.com/tool/z-st
 of the `Z-STACK-HOME v.1.2.2a` package.
 The file name is `CC2531ZNP-Pro-Secure_Standard.hex` and its sha256 is `3cc5dc571ef0f49e3f42c6c2ca076d6f8fef33a945c71e6f951b839ba0599d3c`.
 
+The custom firmware from [Zigbee2MQTT](https://github.com/Koenkk/Z-Stack-firmware/tree/master/coordinator/Z-Stack_Home_1.2/bin) can also be used, and has been reported working by some users.
+
 ##### Flashing on Linux
 
 It's possible to flash the dongle using Linux, using `cc-tool` (https://github.com/dashesy/cc-tool.git).
-The software has been tested and confirmed working on Ubuntu 16.10 and 17.04.
 The required dependencies can be installed with `sudo apt install build-essential libusb-1.0-0-dev libboost-all-dev`, and the binary compiled with `./configure && make`. Do not forget to install the `udev` rules, as described at https://github.com/dashesy/cc-tool/blob/master/README , or the software might not be able to access the USB programmer.
 
 The firmware can be flashed with `./cc-tool -e -w CC2531ZNP-Pro-Secure_Standard.hex -v r`. Change the path to the firmware accordingly.
@@ -171,9 +189,10 @@ Extract and install the TI Flash Programmer, connect the CC-Debugger trough USB,
 
 #### Ember EZSP NCP Coordinator
 
-The Ember EZSP NCP (Network Co-Processor) supports the Silabs EM358 or MightyGecko dongles with the standard NCP firmware. The thing type is ```coordinator_ember```.
+The Ember EZSP NCP (Network Co-Processor) supports the Silabs EM358 and EFR32 (MightyGecko) dongles with the standard NCP firmware. The thing type is ```coordinator_ember```.
 
-Note that there are generally two versions of the Ember NCP firmware in use. One operates at a baud rate of 115200 with RTS/CTS flow control (i.e. hardware flow control), the other operates at a baud rate of 57600, and XON/XOFF flow control (i.e. software flow control). If you are programming your own stick (e.g. the CEL stick) then it should be advisable to use the hardware flow control version - many commercial sticks seem to use the lower speed and software flow control (e.g. Bitron and Nortek HUSBZB-1).
+Note that there are generally two versions of the Ember NCP firmware in use. One operates at a baud rate of 115200 with RTS/CTS flow control (i.e. hardware flow control), the other operates at a baud rate of 57600, and XON/XOFF flow control (i.e. software flow control).
+Many commercial sticks seem to use the lower speed and software flow control (e.g. Bitron and Nortek HUSBZB-1), while others use the higher speed and hardware flow control (e.g. Elelabs ELU013/ELR023). If you are programming your own stick (e.g. the CEL stick) then it should be advisable to use the hardware flow control version.
 
 If the usb dongle is not recognized, it might be necessary to make the dongle's device id known to the CP240x driver by Silicon Labs:
 
@@ -217,7 +236,7 @@ The following devices have been tested by openHAB users with the binding. The ab
 | Innr Bulbs                                     | *[<sup>[1]</sup>](#note1)*                            |
 | Innr SP 120                                    | Smart Plug *[<sup>[1]</sup>](#note1)*                 |
 | Lupus Small Zigbee Temperature Sensor 12314    | Lupus-Electronics Temperature and Humidity sensor     |
-| Osram Bulbs                                    |                                                       |
+| LEDVANCE/Osram Bulbs                           |                                                       |
 | Osram Flex 3P Multicolor                       | Osram Smart+ LED Strip                                |
 | Osram Motion Sensor                            | Osram Smart+ Motion Sensor *[<sup>[1]</sup>](#note1)* |
 | Securifi Peanut Plug                           | Metered Plug                                          |
@@ -232,12 +251,12 @@ The following devices have been tested by openHAB users with the binding. The ab
 | Tradfri Repeater                               |                                                       |
 | Trust Bulbs                                    | *[<sup>[1]</sup> ](#note1)*                           |
 | Ubisys modules                                 | D1 Dimmer, S1/S2 Switch modules                       |
-| Xiaomi Aqara Door and Window Sensor            |                                                       |
-| Xiaomi Aqara Temperature and Humidity Sensor   |                                                       |
-| Xiaomi Aqara Human Motion Sensor               | *[<sup>[3]</sup>](#note3)*                            |
-| Xiaomi Aqara Wireless Mini Switch              |                                                       |
-| Xiaomi Aqara Wired Wall Switch                 |                                                       |
-| Xiaomi Aqara Wireless Remote Switch            | Double Rocker variant                                 |
+| Xiaomi Aqara Door and Window Sensor            | *[<sup>[4]</sup> ](#note4)*                           |
+| Xiaomi Aqara Temperature and Humidity Sensor   | *[<sup>[4]</sup> ](#note4)*                           |
+| Xiaomi Aqara Human Motion Sensor               | *[<sup>[3]</sup>](#note3)* *[<sup>[4]</sup> ](#note4)*|
+| Xiaomi Aqara Wireless Mini Switch              | *[<sup>[4]</sup> ](#note4)*                           |
+| Xiaomi Aqara Wired Wall Switch                 | *[<sup>[4]</sup> ](#note4)*                           |
+| Xiaomi Aqara Wireless Remote Switch            | Double Rocker variant *[<sup>[4]</sup> ](#note4)*     |
 | Shenzhen Ksentry Electronics On Off Controller | Relay                                                 |
 
 <a name="note1"></a> *Note 1: Some devices may not work with the Telegesis dongle.*
@@ -245,6 +264,8 @@ The following devices have been tested by openHAB users with the binding. The ab
 <a name="note2"></a> *Note 2: The Hue Dimmer can be integrated but needs additional rule-configuration to work properly. See below for example.*
 
 <a name="note3"></a> *Note 3: The illuminance channel value is being reported incorrectly. Transform by 10000\*log10(measuredValue+1) to get the correct illuminance in lux.*
+
+<a name="note4"></a> *Note 4: Xiaomi devices are not fully ZigBee compliant, and don't play well with some routers. Please refer to [this}(https://community.hubitat.com/t/xiaomi-aqara-devices-pairing-keeping-them-connected/623) thread for more information.*
 
 ## Discovery
 
