@@ -89,15 +89,7 @@ Note that this value should be given as a number in the configuration file, with
 
 The Concentrator is used to improve routing within a ZigBee network, and is especially useful in a network where much of the traffic is sent to or from a central coordinator. If the coordinator has sufficient memory, it can store routing information, thus reducing network traffic.
 
-If supported, the High RAM concentrator should be used. However, this depends on the used hardware and which ZigBee stack is running on it, making it hard to figure out which setting is the right one.
-
-The High RAM concentrator has been tested with the following devices/firmwares:
-
-| Hardware       | Firmware |
-| -------------- | -------- |
-| Elelabs ELR023 | ELELabs v8 (6.7.0.0) |
-| Elelabs ELU013 | ELELabs v8 (6.7.0.0) |
-
+If supported, the High RAM concentrator should be used.
 
 **Values:**
 
@@ -129,14 +121,6 @@ Please note that, technically, you are not bound to using the values from the ta
 
 Some coordinators may need to allocate memory to handle each node in the network. This is an integer setting, and should be set to the maximum number of nodes expected to be added to the network. It should be noted that this will consume memory on the coordinator which may impact on other services such as packet buffers, so it is not advised to simply set this to the maximum value.
 
-<<<<<<< HEAD
-**Values:**
-| Value      | Number of nodes |
-| ---------- | --------------- |
-| _Small_    | 10              |
-| _Medium_   | 25              |
-| _Large_    | 100             |
-| _Enormous_ | 250             |
 ##### Trust Centre Join Mode
 
 Sets the Trust Centre join/rejoin mode.
@@ -150,16 +134,16 @@ Sets the Trust Centre join/rejoin mode.
 
 The following coordinators are known to be supported.
 
-| Name and Link              | Coordinator | Comment                       |
-|----------------------------|-------------|-------------------------------|
-|[Texas Instruments CC2531EMK](http://www.ti.com/tool/cc2531emk)|[CC2531](#cc2531-coordinator)|Needs extra hardware and correct firmware (might be hard to find) for flashing.<br>There are also cheap copies of the CC2531 Stick available on eBay, Aliexpress, etc. like [this](https://de.aliexpress.com/item/Drahtlose-Zigbee-CC2531-Sniffer-software-protokoll-analyse-Bareboard-Paket-Protokoll-Analyzer-Modul-Usb-schnittstelle-Dongle-Erfassen/32852226435.html) and a module to flash the firmware like [this](https://de.aliexpress.com/item/SmartRF04EB-CC1110-CC2530-ZigBee-Module-USB-Downloader-Emulator-MCU-M100/32673666126.html) including a [connector board](https://de.aliexpress.com/item/CC2531-CC2540-Zigbee-Sniffer-software-protokoll-analyse-Wireless-Board-Bluetooth-BLE-4-0-Dongle-Capture-Modul/32869263224.html)<br>Also CC2530, CC2538 or CC2650 may work with the correct firmware but are not suggested|
-|[Bitron Video ZigBee USB Funkstick](http://www.bitronvideo.eu/index.php/produkte/smart-home-produkte/zb-funkstick/)|[Ember](#ember-ezsp-ncp-coordinator)| |
-|[Elelabs ELU013/ELR023](https://elelabs.com/shop/)|[Ember](#ember-ezsp-ncp-coordinator)| Both the stick and the hat can be upgraded without additional hardware, firmware available [here](https://github.com/Elelabs/elelabs-zigbee-ezsp-utility). Use baud rate 115200 and hardware flow control. |
-|[Cortet EM358 USB Stick](https://www.cortet.com/iot-hardware/cortet-usb-sticks/em358-usb-stick)|[Ember](#ember-ezsp-ncp-coordinator)| Use baud rate 57600 and software flow control. |
-|[Nortek Security & Control HUSBZB-1](https://nortekcontrol.com/products/2gig/husbzb-1-gocontrol-quickstick-combo/)|[Ember](#ember-ezsp-ncp-coordinator)|Stick contains both Z-Wave and ZigBee. Use baud rate 57600 and software flow control. |
-|[Telegesis ETRX357USB ZigBee® USB Stick](https://www.silabs.com/products/wireless/mesh-networking/telegesis-modules-gateways/etrx3-zigbee-usb-sticks)|[Telegesis](#telegesis-etrx3)| |
-|[QIVICON ZigBee-Funkstick](https://www.qivicon.com/de/produkte/produktinformationen/zigbee-funkstick/)|[Telegesis](#telegesis-etrx3)|Only working on Linux devices|
-|[Digi XStick](https://www.digi.com/products/xbee-rf-solutions/boxed-rf-modems-adapters/xstick)|[XBee](#digi-xbee-x-stick)| |
+| Name and Link              | Coordinator | Configuration | Comment |
+|----------------------------|-------------|---------------|---------|
+|[Texas Instruments CC2531EMK](http://www.ti.com/tool/cc2531emk)|[CC2531](#cc2531-coordinator)||Needs extra hardware and correct firmware (might be hard to find) for flashing.<br>There are also cheap copies of the CC2531 Stick available on eBay, Aliexpress, etc. like [this](https://de.aliexpress.com/item/Drahtlose-Zigbee-CC2531-Sniffer-software-protokoll-analyse-Bareboard-Paket-Protokoll-Analyzer-Modul-Usb-schnittstelle-Dongle-Erfassen/32852226435.html) and a module to flash the firmware like [this](https://de.aliexpress.com/item/SmartRF04EB-CC1110-CC2530-ZigBee-Module-USB-Downloader-Emulator-MCU-M100/32673666126.html) including a [connector board](https://de.aliexpress.com/item/CC2531-CC2540-Zigbee-Sniffer-software-protokoll-analyse-Wireless-Board-Bluetooth-BLE-4-0-Dongle-Capture-Modul/32869263224.html)<br>Also CC2530, CC2538 or CC2650 may work with the correct firmware but are not suggested|
+|[Bitron Video ZigBee USB Funkstick](http://www.bitronvideo.eu/index.php/produkte/smart-home-produkte/zb-funkstick/)|[Ember](#ember-ezsp-ncp-coordinator)|115200bps<br>Hardware flow control<br>High RAM||
+|[Elelabs ELU013/ELR023](https://elelabs.com/shop/)|[Ember](#ember-ezsp-ncp-coordinator)|115200bps<br>Hardware flow control<br>High RAM| Both the stick and the hat can be upgraded without additional hardware, firmware available [here](https://github.com/Elelabs/elelabs-zigbee-ezsp-utility).|
+|[Cortet EM358 USB Stick](https://www.cortet.com/iot-hardware/cortet-usb-sticks/em358-usb-stick)|[Ember](#ember-ezsp-ncp-coordinator)|57600bps<br>Software flow control<br>High RAM| |
+|[Nortek Security & Control HUSBZB-1](https://nortekcontrol.com/products/2gig/husbzb-1-gocontrol-quickstick-combo/)|[Ember](#ember-ezsp-ncp-coordinator)|57600bps<br>Software flow control<br>High RAM|Stick contains both Z-Wave and ZigBee. |
+|[Telegesis ETRX357USB ZigBee® USB Stick](https://www.silabs.com/products/wireless/mesh-networking/telegesis-modules-gateways/etrx3-zigbee-usb-sticks)|[Telegesis](#telegesis-etrx3)|||
+|[QIVICON ZigBee-Funkstick](https://www.qivicon.com/de/produkte/produktinformationen/zigbee-funkstick/)|[Telegesis](#telegesis-etrx3)||Only working on Linux devices|
+|[Digi XStick](https://www.digi.com/products/xbee-rf-solutions/boxed-rf-modems-adapters/xstick)|[XBee](#digi-xbee-x-stick)|||
 
 #### CC2531 Coordinator
 
@@ -190,8 +174,7 @@ Extract and install the TI Flash Programmer, connect the CC-Debugger trough USB,
 
 The Ember EZSP NCP (Network Co-Processor) supports the Silabs EM358 and EFR32 (MightyGecko) dongles with the standard NCP firmware. The thing type is ```coordinator_ember```.
 
-Note that there are generally two versions of the Ember NCP firmware in use. One operates at a baud rate of 115200 with RTS/CTS flow control (i.e. hardware flow control), the other operates at a baud rate of 57600, and XON/XOFF flow control (i.e. software flow control).
-Many commercial sticks seem to use the lower speed and software flow control (e.g. Bitron and Nortek HUSBZB-1), while others use the higher speed and hardware flow control (e.g. Elelabs ELU013/ELR023). If you are programming your own stick (e.g. the CEL stick) then it should be advisable to use the hardware flow control version.
+Note that there are generally two versions of the Ember NCP firmware in use. One operates at a baud rate of 115200 with RTS/CTS flow control (i.e. hardware flow control), the other operates at a baud rate of 57600, and XON/XOFF flow control (i.e. software flow control). If you are programming your own stick (e.g. the CEL stick) then it should be advisable to use the hardware flow control version - many commercial sticks seem to use the lower speed and software flow control (e.g. Bitron and Nortek HUSBZB-1).
 
 If the usb dongle is not recognized, it might be necessary to make the dongle's device id known to the CP240x driver by Silicon Labs:
 
@@ -219,52 +202,50 @@ The XBee must be run with API mode firmware and not the AT firmware.
 
 The following devices have been tested by openHAB users with the binding. The absence of a device in this list does not mean it will not work - if the device is a standard ZigBee device similar to ones on this list, then it should work.
 
-| Device                                         | Description                                           |
-| ---------------------------------------------- | ----------------------------------------------------- |
-| Busch-Jaeger 6711 U                            | Relay Insert                                          |
-| Busch-Jaeger 6715 U                            | LED-Dimmer Insert                                     |
-| Busch-Jaeger 6735                              | Control Element (1-channel)                           |
-| Busch-Jaeger 6735/01                           | Control Element (1-channel, battery-operated)         |
-| Busch-Jaeger 6736                              | Control Element (2-channel)                           |
-| Eurotronic Spirit Thermostat                   | Radiator Thermostat                                   |
-| GE Bulbs                                       |                                                       |
-| GE Tapt Wall Switch                            | On/Off Switch                                         |
-| Hue Bulbs                                      | Color LED Bulb                                        |
-| Hue Dimmer                                     | Hue Dimmer Switch Remote *[<sup>[2]</sup>](#note2)*   |
-| Hue Motion Sensor                              | Motion and Luminance sensor                           |
-| Innr Bulbs                                     | *[<sup>[1]</sup>](#note1)*                            |
-| Innr SP 120                                    | Smart Plug *[<sup>[1]</sup>](#note1)*                 |
-| Lupus Small Zigbee Temperature Sensor 12314    | Lupus-Electronics Temperature and Humidity sensor     |
-| LEDVANCE/Osram Bulbs                           |                                                       |
-| Osram Flex 3P Multicolor                       | Osram Smart+ LED Strip                                |
-| Osram Motion Sensor                            | Osram Smart+ Motion Sensor *[<sup>[1]</sup>](#note1)* |
-| Securifi Peanut Plug                           | Metered Plug                                          |
-| SmartThings Plug                               | Metered Plug                                          |
-| SmartThings Motion Sensor                      | CentraLite 3325-S Motion and Temperature sensor       |
-| SmartThings Contact Sensor                     | Contact and Temperature sensor                        |
-| Telkonet EcoInsight Thermostat                 | Intelligent HVAC Thermostat                           |
-| Ikea Fyrtur Blinds                             | Roller blinds                                         |
-| Tradfri Bulbs                                  |                                                       |
-| Tradfri Motion Sensor                          |                                                       |
-| Tradfri Outlet                                 |                                                       |
-| Tradfri Repeater                               |                                                       |
-| Trust Bulbs                                    | *[<sup>[1]</sup> ](#note1)*                           |
-| Ubisys modules                                 | D1 Dimmer, S1/S2 Switch modules                       |
-| Xiaomi Aqara Door and Window Sensor            | *[<sup>[4]</sup> ](#note4)*                           |
-| Xiaomi Aqara Temperature and Humidity Sensor   | *[<sup>[4]</sup> ](#note4)*                           |
-| Xiaomi Aqara Human Motion Sensor               | *[<sup>[3]</sup>](#note3)* *[<sup>[4]</sup> ](#note4)*|
-| Xiaomi Aqara Wireless Mini Switch              | *[<sup>[4]</sup> ](#note4)*                           |
-| Xiaomi Aqara Wired Wall Switch                 | *[<sup>[4]</sup> ](#note4)*                           |
-| Xiaomi Aqara Wireless Remote Switch            | Double Rocker variant *[<sup>[4]</sup> ](#note4)*     |
-| Shenzhen Ksentry Electronics On Off Controller | Relay                                                 |
+| Device                                         | Description                                                  |
+| ---------------------------------------------- | -------------------------------------------------------      |
+| Busch-Jaeger 6711 U                            | Relay Insert                                                 |
+| Busch-Jaeger 6715 U                            | LED-Dimmer Insert                                            |
+| Busch-Jaeger 6735                              | Control Element (1-channel)                                  |
+| Busch-Jaeger 6735/01                           | Control Element (1-channel, battery-operated)                |
+| Busch-Jaeger 6736                              | Control Element (2-channel)                                  |
+| Eurotronic Spirit Thermostat                   | Radiator Thermostat                                          |
+| GE Bulbs                                       |                                                              |
+| GE Tapt Wall Switch                            | On/Off Switch                                                |
+| Hue Bulbs                                      | Color LED Bulb                                               |
+| Hue Dimmer                                     | Hue Dimmer Switch Remote *[<sup>[2]</sup>](#note2)*          |
+| Hue Motion Sensor                              | Motion and Luminance sensor                                  |
+| IKEA Fyrtur Blinds                             | Roller blinds                                                |
+| IKEA Tradfri Bulbs                             |                                                              |
+| IKEA Tradfri Motion Sensor                     |                                                              |
+| IKEA Tradfri Outlet                            |                                                              |
+| IKEA Tradfri Repeater                          |                                                              |
+| Innr Bulbs                                     | *[<sup>[1]</sup>](#note1)*                                   |
+| Innr SP 120                                    | Smart Plug *[<sup>[1]</sup>](#note1)*                        |
+| LEDVANCE/Osram Bulbs                           |                                                              |
+| Lupus Small Zigbee Temperature Sensor 12314    | Lupus-Electronics Temperature and Humidity sensor            |
+| Osram Flex 3P Multicolor                       | Osram Smart+ LED Strip                                       |
+| Osram Motion Sensor                            | Osram Smart+ Motion Sensor *[<sup>[1]</sup>](#note1)*        |
+| Securifi Peanut Plug                           | Metered Plug                                                 |
+| Shenzhen Ksentry Electronics On Off Controller | Relay                                                        |
+| SmartThings Plug                               | Metered Plug                                                 |
+| SmartThings Motion Sensor                      | CentraLite 3325-S Motion and Temperature sensor              |
+| SmartThings Contact Sensor                     | Contact and Temperature sensor                               |
+| Telkonet EcoInsight Thermostat                 | Intelligent HVAC Thermostat                                  |
+| Trust Bulbs                                    | *[<sup>[1]</sup> ](#note1)*                                  |
+| Ubisys modules                                 | D1 Dimmer, S1/S2 Switch modules                              |
+| Xiaomi Aqara Door and Window Sensor            | *[Known issues](#xiaomi-devices)*                            |
+| Xiaomi Aqara Temperature and Humidity Sensor   | *[Known issues](#xiaomi-devices)*                            |
+| Xiaomi Aqara Human Motion Sensor               | *[<sup>[3]</sup>](#note3)* *[Known issues](#xiaomi-devices)* |
+| Xiaomi Aqara Wireless Mini Switch              | *[Known issues](#xiaomi-devices)*                            |
+| Xiaomi Aqara Wired Wall Switch                 | *[Known issues](#xiaomi-devices)*                            |
+| Xiaomi Aqara Wireless Remote Switch            | Double Rocker variant *[Known issues](#xiaomi-devices)*      |
 
 <a name="note1"></a> *Note 1: Some devices may not work with the Telegesis dongle.*
 
 <a name="note2"></a> *Note 2: The Hue Dimmer can be integrated but needs additional rule-configuration to work properly. See below for example.*
 
 <a name="note3"></a> *Note 3: The illuminance channel value is being reported incorrectly. Transform by 10000\*log10(measuredValue+1) to get the correct illuminance in lux.*
-
-<a name="note4"></a> *Note 4: Xiaomi devices are not fully ZigBee compliant, and don't play well with some routers. Please refer to [this}(https://community.hubitat.com/t/xiaomi-aqara-devices-pairing-keeping-them-connected/623) thread for more information.*
 
 ## Discovery
 
@@ -424,3 +405,24 @@ log:set info com.zsmartsystems.zigbee.dongle.ember.internal.ash
 This will log data into the standard openhab.log file. There is an [online log viewer](https://www.cd-jackson.com/index.php/openhab/zigbee-log-viewer) available for viewing the logs.
 
 Note that logs can only show what is happening at a high level - it can't show all data exchanges between the device and the coordinator - just what the coordinator sends to the binding. For this reason it can be difficult to debug issues where devices are not joining the network, or other low level issues need resolving. In such cases a network sniffer log is required, which requires additional hardware and software.
+
+## Known issues
+
+### Xiaomi devices
+
+Xiaomi/Aqara devices are not fully ZigBee compliant, and are known to suffer from multiple problems.
+
+#### Pairing
+
+Pairing may require multiple attempts. The following issues have been observed:
+  * When trying to pair, the status LED blinks only once, instead of three times. Try again to reset/pair the device (keep the button pressed for > 5 seconds).
+  * Device attributes and channels are not immediately discovered: be patient. Check again in 1 hour, if nothing is there, delete the device and pair again.
+
+#### Lost connection
+
+These devices have an unusually long, and non-standard, sleep time. Because of this, some routers are not able to properly keep track of them, and the devices lose connection to the network. Router devices from Centralite, General Electrics, Iris, Ledvance/OSRAM/Sylvania, PEQ, Securify, SmartThings are known to not work with Xiaomi/Aqara devices.
+Better results can be achieved by using IKEA, Nue/3A Home, _some_ OSRAM/Sylvania, XBee series 2 and 3, and CC2531 with router firmware.
+
+### External references
+
+[Hubitat forum](https://community.hubitat.com/t/xiaomi-aqara-devices-pairing-keeping-them-connected/623) - Xiaomi/Aqara incompatibilities
