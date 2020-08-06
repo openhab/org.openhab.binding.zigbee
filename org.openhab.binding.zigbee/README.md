@@ -129,6 +129,7 @@ Please note that, technically, you are not bound to using the values from the ta
 
 Some coordinators may need to allocate memory to handle each node in the network. This is an integer setting, and should be set to the maximum number of nodes expected to be added to the network. It should be noted that this will consume memory on the coordinator which may impact on other services such as packet buffers, so it is not advised to simply set this to the maximum value.
 
+<<<<<<< HEAD
 **Values:**
 | Value      | Number of nodes |
 | ---------- | --------------- |
@@ -144,8 +145,6 @@ Sets the Trust Centre join/rejoin mode.
 * TC_JOIN_SECURE: Allow only secure joining. Devices should join with the TC Link Key or a Device Specific Link Key via an install code.
 * TC_JOIN_INSECURE: Allow all joins.
 * TC_JOIN_INSTALLCODE: Only join with install code. Devices attempting to join with the TC Link Key will be rejected.
-
-=======
 
 #### Supported Coordinators
 
