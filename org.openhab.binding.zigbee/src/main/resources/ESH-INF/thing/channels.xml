@@ -197,11 +197,11 @@
 
     <!-- Illuminance Channel -->
     <channel-type id="measurement_illuminance">
-        <item-type>Number</item-type>
+        <item-type>Number:Illuminance</item-type>
         <label>Illuminance</label>
-        <description>Indicates the current illuminance in lux</description>
+        <description>Indicates the current illuminance</description>
         <category></category>
-        <state pattern="%.0f" readOnly="true" />
+        <state pattern="%.0f %unit%" readOnly="true" />
     </channel-type>
     
     <!-- Atmospheric Pressure Channel -->
