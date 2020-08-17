@@ -138,7 +138,7 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
 
         return ChannelBuilder
                 .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_POWER_BATTERYVOLTAGE),
-                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER)
+                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER_ELECTRICPOTENTIAL)
                 .withType(ZigBeeBindingConstants.CHANNEL_POWER_BATTERYVOLTAGE)
                 .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_POWER_BATTERYVOLTAGE)
                 .withProperties(createProperties(endpoint)).build();
