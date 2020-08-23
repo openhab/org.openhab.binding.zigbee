@@ -126,7 +126,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
             return true;
         }
 
-        logger.error("{}: Error opening device level controls", endpoint.getIeeeAddress());
+        logger.error("{}: Error initialising device", endpoint.getIeeeAddress());
         return false;
     }
 
@@ -136,7 +136,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
         ZclLevelControlCluster serverClusterLevelControl = (ZclLevelControlCluster) endpoint
                 .getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
         if (serverClusterLevelControl == null) {
-            logger.trace("{}: Error opening device level controls", endpoint.getIeeeAddress());
+            logger.trace("{}: Error opening server device level controls", endpoint.getIeeeAddress());
             return false;
         }
 
@@ -154,13 +154,15 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
                 logger.debug("{}: Failed to bind level control cluster", endpoint.getIeeeAddress());
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.error(String.format("%s: Exception setting level control reporting ", endpoint.getIeeeAddress()), e);
+            logger.error(
+                    String.format("%s: Exception setting server level control reporting ", endpoint.getIeeeAddress()),
+                    e);
             return false;
         }
 
         ZclOnOffCluster serverClusterOnOff = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
         if (serverClusterOnOff == null) {
-            logger.trace("{}: Error opening device level controls", endpoint.getIeeeAddress());
+            logger.trace("{}: Error opening server device on off controls", endpoint.getIeeeAddress());
             return false;
         }
 
@@ -178,7 +180,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
                 return false;
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.error(String.format("%s: Exception setting on off reporting ", endpoint.getIeeeAddress()), e);
+            logger.error(String.format("%s: Exception setting server on off reporting ", endpoint.getIeeeAddress()), e);
             return false;
         }
 
@@ -189,7 +191,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
         ZclLevelControlCluster clusterLevelControl = (ZclLevelControlCluster) endpoint
                 .getOutputCluster(ZclLevelControlCluster.CLUSTER_ID);
         if (clusterLevelControl == null) {
-            logger.trace("{}: Error opening device level controls", endpoint.getIeeeAddress());
+            logger.trace("{}: Error opening client device level controls", endpoint.getIeeeAddress());
             return false;
         }
 
@@ -200,13 +202,15 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
                         Integer.toHexString(bindResponse.getStatusCode()));
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.error(String.format("%s: Exception setting level control reporting ", endpoint.getIeeeAddress()), e);
+            logger.error(
+                    String.format("%s: Exception setting client level control reporting ", endpoint.getIeeeAddress()),
+                    e);
             return false;
         }
 
         ZclOnOffCluster clusterOnOff = (ZclOnOffCluster) endpoint.getOutputCluster(ZclOnOffCluster.CLUSTER_ID);
         if (clusterOnOff == null) {
-            logger.trace("{}: Error opening device on off controls", endpoint.getIeeeAddress());
+            logger.trace("{}: Error opening client device on off controls", endpoint.getIeeeAddress());
             return false;
         }
 
@@ -217,7 +221,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
                         Integer.toHexString(bindResponse.getStatusCode()));
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.error(String.format("%s: Exception setting on off reporting ", endpoint.getIeeeAddress()), e);
+            logger.error(String.format("%s: Exception setting client on off reporting ", endpoint.getIeeeAddress()), e);
             return false;
         }
 
