@@ -9,5 +9,6 @@ xiaomi_lumiremoteb286acn01,modelId=lumi.remote.b286acn01
 xiaomi_lumisensor86sw2,modelId=lumi.sensor_86sw2
 xiaomi_lumisensor-switchaq2,modelId=lumi.sensor_switch.aq2
 xiaomi_lumisensorwaterleak,modelId=lumi.sensor_wleak.aq1
+xiaomi_lumisensormagnet,modelId=lumi.sensor_magnet
 innr-rc-110,vendor=innr,modelId=RC 110
 osram-switch-4x-eu,vendor=OSRAM,modelId=Switch 4x EU-LIGHTIFY
