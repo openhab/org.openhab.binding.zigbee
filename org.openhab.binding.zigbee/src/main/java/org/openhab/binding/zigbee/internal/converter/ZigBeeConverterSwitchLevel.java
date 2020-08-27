@@ -365,13 +365,12 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
         } else {
             logger.warn("{}: Level converter only accepts PercentType, IncreaseDecreaseType and OnOffType - not {}",
                     endpoint.getIeeeAddress(), command.getClass().getSimpleName());
+            return;
         }
 
         // Some functionality (eg IncreaseDecrease) requires that we know the last command received
         lastCommand = command;
-        if (responseFuture != null) {
-            monitorCommandResponse(responseFuture);
-        }
+        monitorCommandResponse(command, responseFuture);
     }
 
     /**

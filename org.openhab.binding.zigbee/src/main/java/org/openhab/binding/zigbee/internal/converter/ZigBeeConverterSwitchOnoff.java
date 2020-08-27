@@ -231,7 +231,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
         } else {
             onOffCommand = new OffCommand();
         }
-        monitorCommandResponse(clusterOnOffServer.sendCommand(onOffCommand));
+        monitorCommandResponse(command, clusterOnOffServer.sendCommand(onOffCommand));
     }
 
     @Override
