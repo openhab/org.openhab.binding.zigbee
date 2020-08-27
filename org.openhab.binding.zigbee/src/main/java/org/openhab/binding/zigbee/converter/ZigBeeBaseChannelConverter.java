@@ -24,6 +24,7 @@ import java.util.concurrent.Future;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.config.core.ConfigDescriptionParameter;
 import org.eclipse.smarthome.config.core.Configuration;
+import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.eclipse.smarthome.core.library.types.QuantityType;
 import org.eclipse.smarthome.core.library.unit.ImperialUnits;
@@ -304,8 +305,7 @@ public abstract class ZigBeeBaseChannelConverter {
      * <p>
      * Ideally, implementations should use the {@link ZclCluster#discoverAttributes(boolean)} method and the
      * {@link ZclCluster#isAttributeSupported(int)} method to understand exactly what the device supports and only
-     * provide
-     * configuration as necessary.
+     * provide configuration as necessary.
      * <p>
      * This method should not be overridden - the {@link #configOptions} list should be populated during converter
      * initialisation.
@@ -360,10 +360,10 @@ public abstract class ZigBeeBaseChannelConverter {
     protected void handleReportingResponse(CommandResult reportResponse, int reportingFailedPollingInterval,
             int reportingSuccessMaxReportInterval) {
         if (!reportResponse.isSuccess()) {
-            // we want the minimum of all pollingPeriods
+            // We want the minimum of all pollingPeriods
             pollingPeriod = Math.min(pollingPeriod, reportingFailedPollingInterval);
         } else {
-            // we want to know the minimum of all maximum reporting periods to be used as a timeout value
+            // We want to know the minimum of all maximum reporting periods to be used as a timeout value
             minimalReportingPeriod = Math.min(minimalReportingPeriod, reportingSuccessMaxReportInterval);
         }
     }
@@ -480,19 +480,43 @@ public abstract class ZigBeeBaseChannelConverter {
     }
 
     /**
-     * Monitors the command response. If the command fails, then we set the thing OFFLINE.
+     * Monitors the command response.
+     * <ul>
+     * <li>If the command fails (timeout), then we set the thing OFFLINE.
+     * <li>If the command succeeds, we wait for an attribute report to update the state
+     * <li>If there is no attribute report received, then we set the state to the original command (if applicable)
+     * </ul>
      * <p>
      * Note that this is called from a separate thread created in the ThingHandler, so we can safely block here.
      *
+     * @param command the {@link Command} that was sent from the framework
      * @param futureResponse the response from the sendCommand method when sending a command
      */
-    protected void monitorCommandResponse(final Future<CommandResult> futureResponse) {
+    protected void monitorCommandResponse(final Command command, final Future<CommandResult> futureResponse) {
         try {
+            logger.debug("{}: Channel {} waiting for response to {}", endpoint.getIeeeAddress(), channelUID, command);
             CommandResult response = futureResponse.get();
             if (response.isTimeout()) {
+                logger.debug("{}: Channel {} received TIMEOUT in response to {}", endpoint.getIeeeAddress(), channelUID,
+                        command);
                 thing.aliveTimeoutReached();
             }
+            if (response.isError()) {
+                logger.debug("{}: Channel {} received ERROR in response to {}", endpoint.getIeeeAddress(), channelUID,
+                        command);
+            }
+            logger.debug("{}: Channel {} received SUCCESS in response to {}", endpoint.getIeeeAddress(), channelUID,
+                    command);
+            // updateChannelState();
         } catch (InterruptedException | ExecutionException e) {
         }
+    }
+
+    private State parseState(Command command) {
+        if (command instanceof OnOffType || command instanceof PercentType) {
+            return (OnOffType) command;
+        }
+
+        return null;
     }
 }
