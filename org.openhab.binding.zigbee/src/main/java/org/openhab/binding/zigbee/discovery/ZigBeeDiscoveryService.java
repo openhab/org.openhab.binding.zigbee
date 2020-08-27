@@ -40,6 +40,7 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.zdo.field.NodeDescriptor.LogicalType;
@@ -133,7 +134,11 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
 
         for (ZigBeeCoordinatorHandler coordinator : coordinatorHandlers) {
             for (ZigBeeNode node : coordinator.getNodes()) {
-                if (node.getNetworkAddress() == 0) {
+                if (node.getNetworkAddress() == 0 || (coordinator.getThing().getThings().stream()
+                        .anyMatch(thing -> new IeeeAddress(
+                                (String) thing.getConfiguration().get(ZigBeeBindingConstants.CONFIGURATION_MACADDRESS))
+                                        .equals(node.getIeeeAddress())
+                                && node.isDiscovered()))) {
                     continue;
                 }
 
