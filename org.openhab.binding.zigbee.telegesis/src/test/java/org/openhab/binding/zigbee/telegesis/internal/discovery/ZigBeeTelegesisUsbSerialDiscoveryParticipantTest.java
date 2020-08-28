@@ -21,9 +21,9 @@ import static org.openhab.binding.zigbee.telegesis.internal.discovery.ZigBeeTele
 import static org.openhab.binding.zigbee.telegesis.internal.discovery.ZigBeeTelegesisUsbSerialDiscoveryParticipant.QIVICON_DONGLE_V2_USB_PRODUCT_ID;
 import static org.openhab.binding.zigbee.telegesis.internal.discovery.ZigBeeTelegesisUsbSerialDiscoveryParticipant.SILICON_LABS_USB_VENDOR_ID;
 
-import org.eclipse.smarthome.config.discovery.DiscoveryResult;
-import org.eclipse.smarthome.config.discovery.usbserial.UsbSerialDeviceInformation;
-import org.eclipse.smarthome.core.thing.ThingUID;
+import org.openhab.core.config.discovery.DiscoveryResult;
+import org.openhab.core.config.discovery.usbserial.UsbSerialDeviceInformation;
+import org.openhab.core.thing.ThingUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.openhab.binding.zigbee.telegesis.internal.discovery.ZigBeeTelegesisUsbSerialDiscoveryParticipant;

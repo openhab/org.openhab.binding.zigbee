@@ -18,9 +18,9 @@ import static org.mockito.Mockito.*;
 
 import java.time.Duration;
 
-import org.eclipse.smarthome.core.library.types.OnOffType;
-import org.eclipse.smarthome.core.library.types.StringType;
-import org.eclipse.smarthome.core.thing.Channel;
+import org.openhab.core.library.types.OnOffType;
+import org.openhab.core.library.types.StringType;
+import org.openhab.core.thing.Channel;
 import org.junit.Before;
 import org.junit.Test;
 import org.openhab.binding.zigbee.converter.warningdevice.SoundLevel;

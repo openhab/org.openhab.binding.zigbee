@@ -19,12 +19,12 @@ import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CHANNEL_WARNING_
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.smarthome.config.core.Configuration;
-import org.eclipse.smarthome.core.thing.Channel;
-import org.eclipse.smarthome.core.thing.ChannelUID;
-import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
-import org.eclipse.smarthome.core.types.CommandDescription;
-import org.eclipse.smarthome.core.types.CommandOption;
+import org.openhab.core.config.core.Configuration;
+import org.openhab.core.thing.Channel;
+import org.openhab.core.thing.ChannelUID;
+import org.openhab.core.thing.binding.builder.ChannelBuilder;
+import org.openhab.core.types.CommandDescription;
+import org.openhab.core.types.CommandOption;
 import org.junit.Before;
 import org.junit.Test;
 import org.openhab.binding.zigbee.converter.warningdevice.WarningType;
