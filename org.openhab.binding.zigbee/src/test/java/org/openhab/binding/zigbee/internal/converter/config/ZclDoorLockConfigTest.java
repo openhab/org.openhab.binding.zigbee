@@ -12,7 +12,7 @@
  */
 package org.openhab.binding.zigbee.internal.converter.config;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -20,10 +20,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.openhab.core.config.core.ConfigDescriptionParameter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.openhab.core.config.core.ConfigDescriptionParameter;
 
 import com.zsmartsystems.zigbee.zcl.clusters.ZclDoorLockCluster;
 

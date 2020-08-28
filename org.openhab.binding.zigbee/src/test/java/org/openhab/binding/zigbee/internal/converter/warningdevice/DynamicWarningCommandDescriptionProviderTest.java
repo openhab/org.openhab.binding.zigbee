@@ -13,22 +13,22 @@
 package org.openhab.binding.zigbee.internal.converter.warningdevice;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.CHANNEL_WARNING_DEVICE;
 
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.openhab.binding.zigbee.converter.warningdevice.WarningType;
+import org.openhab.binding.zigbee.converter.warningdevice.WarningTypeCommandDescriptionProvider;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.types.CommandDescription;
 import org.openhab.core.types.CommandOption;
-import org.junit.Before;
-import org.junit.Test;
-import org.openhab.binding.zigbee.converter.warningdevice.WarningType;
-import org.openhab.binding.zigbee.converter.warningdevice.WarningTypeCommandDescriptionProvider;
 
 /**
  * Unit tests for the {@link DynamicWarningCommandDescriptionProvider}.
@@ -39,7 +39,7 @@ public class DynamicWarningCommandDescriptionProviderTest {
 
     private DynamicWarningCommandDescriptionProvider provider;
 
-    @Before
+    @BeforeEach
     public void setup() {
         provider = new DynamicWarningCommandDescriptionProvider();
     }

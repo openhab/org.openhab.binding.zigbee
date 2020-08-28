@@ -17,14 +17,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.*;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.types.State;
-import org.junit.Before;
-import org.junit.Test;
-import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
@@ -47,7 +47,7 @@ public class ZigBeeConverterBatteryAlarmTest {
     private ZigBeeCoordinatorHandler coordinatorHandler;
     private ZigBeeEndpoint endpoint;
 
-    @Before
+    @BeforeEach
     public void setup() {
         IeeeAddress ieeeAddress = new IeeeAddress();
         int endpointId = 1;

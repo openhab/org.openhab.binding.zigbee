@@ -30,8 +30,13 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.openhab.core.config.core.Configuration;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
+import org.openhab.binding.zigbee.internal.ZigBeeDataStore;
 import org.openhab.core.common.registry.Identifiable;
+import org.openhab.core.config.core.Configuration;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
@@ -40,9 +45,6 @@ import org.openhab.core.thing.ThingStatusDetail;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.BaseBridgeHandler;
 import org.openhab.core.types.Command;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
-import org.openhab.binding.zigbee.internal.ZigBeeDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,27 +92,40 @@ import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
  *
  * @author Chris Jackson - Initial contribution
  */
+@NonNullByDefault
 public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         implements Identifiable<ThingUID>, ZigBeeNetworkStateListener, ZigBeeNetworkNodeListener {
     private final Logger logger = LoggerFactory.getLogger(ZigBeeCoordinatorHandler.class);
 
+    @Nullable
     protected Integer panId;
+    @Nullable
     protected Integer channelId;
+    @Nullable
     protected ExtendedPanId extendedPanId;
 
-    private IeeeAddress nodeIeeeAddress = null;
+    @Nullable
+    private IeeeAddress nodeIeeeAddress;
 
+    @Nullable
     protected ZigBeeTransportTransmit zigbeeTransport;
+    @Nullable
     private ZigBeeNetworkManager networkManager;
 
+    @Nullable
     private Class<?> serializerClass;
+    @Nullable
     private Class<?> deserializerClass;
 
+    @Nullable
     private ZigBeeDataStore networkDataStore;
 
+    @Nullable
     protected ZigBeeKey linkKey;
+    @Nullable
     protected ZigBeeKey networkKey;
 
+    @Nullable
     private TransportConfig transportConfig;
 
     private final Set<ZigBeeNetworkNodeListener> nodeListeners = new HashSet<>();
@@ -123,11 +138,14 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      */
     private boolean initializeNetwork = false;
 
-    private ScheduledFuture<?> restartJob = null;
+    @Nullable
+    private ScheduledFuture<?> restartJob;
 
     private volatile boolean bridgeRemoved = false;
 
+    @Nullable
     private ScheduledFuture<?> reconnectPollingTimer;
+    @Nullable
     private ScheduledExecutorService reconnectPollingScheduler;
     private final Object reconnectLock = new Object();
     private boolean currentReconnectAttemptFinished = false;
@@ -775,12 +793,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     }
 
     @Override
-    public void nodeAdded(ZigBeeNode node) {
+    public void nodeAdded(@Nullable ZigBeeNode node) {
         nodeUpdated(node);
     }
 
     @Override
-    public void nodeUpdated(ZigBeeNode node) {
+    public void nodeUpdated(@Nullable ZigBeeNode node) {
         // We're only interested in the coordinator here.
         if (node.getNetworkAddress() != 0) {
             return;
@@ -842,6 +860,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         updateProperties(properties);
     }
 
+    @Nullable
     public ZigBeeEndpoint getEndpoint(IeeeAddress address, int endpointId) {
         if (networkManager == null) {
             return null;
@@ -880,7 +899,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     }
 
     @Override
-    public void networkStateUpdated(final ZigBeeNetworkState state) {
+    public void networkStateUpdated(@Nullable final ZigBeeNetworkState state) {
         logger.debug("{}: networkStateUpdated called with state={}", nodeIeeeAddress, state);
         switch (state) {
             case UNINITIALISED:
@@ -940,6 +959,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      * @param nodeIeeeAddress the {@link IeeeAddress} of the device
      * @return the {@link ZigBeeNode} or null if the node is not found
      */
+    @Nullable
     public ZigBeeNode getNode(IeeeAddress nodeIeeeAddress) {
         if (networkManager == null) {
             return null;
@@ -994,7 +1014,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      * @param address the 16 bit network address of the node to enable joining
      * @param duration the duration of the join
      */
-    public boolean permitJoin(IeeeAddress address, int duration) {
+    public boolean permitJoin(@Nullable IeeeAddress address, int duration) {
         logger.debug("{}: ZigBee join command", address);
         ZigBeeNode node = networkManager.getNode(address);
         if (node == null) {
@@ -1062,8 +1082,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      *
      * @return the {@link ZigBeeNetworkManager}
      */
+    @Nullable
     public ZigBeeNetworkManager getNetworkManager() {
-        return this.networkManager;
+        return networkManager;
     }
 
     /**

@@ -12,17 +12,14 @@
  */
 package org.openhab.binding.zigbee.internal.converter.warningdevice;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.time.Duration;
 
-import org.openhab.core.library.types.OnOffType;
-import org.openhab.core.library.types.StringType;
-import org.openhab.core.thing.Channel;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openhab.binding.zigbee.converter.warningdevice.SoundLevel;
 import org.openhab.binding.zigbee.converter.warningdevice.SquawkMode;
 import org.openhab.binding.zigbee.converter.warningdevice.SquawkType;
@@ -30,6 +27,9 @@ import org.openhab.binding.zigbee.converter.warningdevice.WarningMode;
 import org.openhab.binding.zigbee.converter.warningdevice.WarningType;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.core.library.types.OnOffType;
+import org.openhab.core.library.types.StringType;
+import org.openhab.core.thing.Channel;
 
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
@@ -51,7 +51,7 @@ public class ZigBeeConverterWarningDeviceTest {
 
     private ZclIasWdCluster cluster;
 
-    @Before
+    @BeforeEach
     public void setup() {
         IeeeAddress ieeeAddress = new IeeeAddress();
         int endpointId = 1;

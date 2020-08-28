@@ -12,9 +12,9 @@
  */
 package org.openhab.binding.zigbee.internal.converter.warningdevice;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.openhab.binding.zigbee.converter.warningdevice.SoundLevel;
 import org.openhab.binding.zigbee.converter.warningdevice.SquawkMode;
 import org.openhab.binding.zigbee.converter.warningdevice.SquawkType;

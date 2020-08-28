@@ -12,7 +12,7 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -20,15 +20,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import org.openhab.core.thing.Channel;
-import org.openhab.core.thing.CommonTriggerEvents;
-import org.openhab.core.thing.ThingUID;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.core.thing.Channel;
+import org.openhab.core.thing.CommonTriggerEvents;
+import org.openhab.core.thing.ThingUID;
 
 import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.IeeeAddress;
@@ -59,7 +59,7 @@ public class ZigBeeConverterGenericButtonTest {
 
     private Map<String, String> channelProperties;
 
-    @Before
+    @BeforeEach
     public void setup() {
         IeeeAddress ieeeAddress = new IeeeAddress();
         int endpointId = 1;
@@ -294,7 +294,7 @@ public class ZigBeeConverterGenericButtonTest {
         verify(thingHandler, times(0)).triggerChannel(channel.getUID(), CommonTriggerEvents.DOUBLE_PRESSED);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void commandWithNonMatchingSpecifiedParamNameIsNotHandled() {
         channelProperties.put("zigbee_shortpress_cluster_id", "768");
