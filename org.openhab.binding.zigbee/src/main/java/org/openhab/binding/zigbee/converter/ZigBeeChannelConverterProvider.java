@@ -15,7 +15,7 @@ package org.openhab.binding.zigbee.converter;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
+import org.openhab.core.thing.type.ChannelTypeUID;
 
 /**
  * The {@link ZigBeeChannelConverterProvider} can be registered as OSGi service in order to make additional

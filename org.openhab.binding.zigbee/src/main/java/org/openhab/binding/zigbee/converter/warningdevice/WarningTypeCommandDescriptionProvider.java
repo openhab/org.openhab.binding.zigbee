@@ -14,7 +14,7 @@ package org.openhab.binding.zigbee.converter.warningdevice;
 
 import java.util.List;
 
-import org.eclipse.smarthome.core.types.CommandOption;
+import org.openhab.core.types.CommandOption;
 
 /**
  * Interface for providers of additional warning device configurations that are provided as command options for warning

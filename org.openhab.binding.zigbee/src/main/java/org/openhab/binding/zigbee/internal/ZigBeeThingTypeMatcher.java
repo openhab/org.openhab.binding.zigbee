@@ -26,9 +26,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.smarthome.config.core.ConfigDescriptionRegistry;
-import org.eclipse.smarthome.core.thing.ThingTypeUID;
-import org.eclipse.smarthome.core.thing.type.ThingType;
+import org.openhab.core.config.core.ConfigDescriptionRegistry;
+import org.openhab.core.thing.ThingTypeUID;
+import org.openhab.core.thing.type.ThingType;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

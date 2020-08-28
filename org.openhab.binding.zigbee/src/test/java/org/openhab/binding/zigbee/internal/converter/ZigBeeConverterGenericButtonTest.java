@@ -20,9 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import org.eclipse.smarthome.core.thing.Channel;
-import org.eclipse.smarthome.core.thing.CommonTriggerEvents;
-import org.eclipse.smarthome.core.thing.ThingUID;
+import org.openhab.core.thing.Channel;
+import org.openhab.core.thing.CommonTriggerEvents;
+import org.openhab.core.thing.ThingUID;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
