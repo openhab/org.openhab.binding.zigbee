@@ -12,20 +12,20 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.openhab.core.thing.Channel;
-import org.openhab.core.thing.ThingUID;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.core.thing.Channel;
+import org.openhab.core.thing.ThingUID;
 
 import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.IeeeAddress;
@@ -49,7 +49,7 @@ public class ZigBeeConverterIasTamperTest {
     private ThingUID thingUID;
 
     @SuppressWarnings("deprecation")
-    @Before
+    @BeforeEach
     public void setup() throws InterruptedException, ExecutionException {
         IeeeAddress ieeeAddress = new IeeeAddress();
         int endpointId = 1;

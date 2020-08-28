@@ -12,21 +12,21 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.openhab.core.thing.Channel;
-import org.openhab.core.thing.ThingUID;
-import org.openhab.core.thing.type.ChannelTypeUID;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterProvider;
+import org.openhab.core.thing.Channel;
+import org.openhab.core.thing.ThingUID;
+import org.openhab.core.thing.type.ChannelTypeUID;
 
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
@@ -49,7 +49,7 @@ public final class ZigBeeChannelConverterFactoryImplTest {
     private ZigBeeChannelConverterFactoryImpl factory;
     private ZigBeeChannelConverterProvider provider;
 
-    @Before
+    @BeforeEach
     public void setup() {
         factory = new ZigBeeChannelConverterFactoryImpl();
 

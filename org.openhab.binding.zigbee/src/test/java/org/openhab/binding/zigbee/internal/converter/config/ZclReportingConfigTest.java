@@ -12,18 +12,18 @@
  */
 package org.openhab.binding.zigbee.internal.converter.config;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.openhab.core.config.core.ConfigDescriptionParameter;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.thing.Channel;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.zsmartsystems.zigbee.zcl.clusters.ZclLevelControlCluster;
 

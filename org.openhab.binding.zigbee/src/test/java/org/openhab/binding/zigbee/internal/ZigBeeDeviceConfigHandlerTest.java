@@ -12,16 +12,16 @@
  */
 package org.openhab.binding.zigbee.internal;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.openhab.core.config.core.Configuration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.openhab.core.config.core.Configuration;
 
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeNode;
