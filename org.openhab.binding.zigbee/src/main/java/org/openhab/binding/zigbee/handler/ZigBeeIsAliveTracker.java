@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  */
 @Component(immediate = true, service = ZigBeeIsAliveTracker.class)
 public class ZigBeeIsAliveTracker {
-    private static final int LAST_CHANCE_TIMER = 30000;
+    private static final int LAST_CHANCE_TIMER = 30; // Seconds
 
     private final Logger logger = LoggerFactory.getLogger(ZigBeeIsAliveTracker.class);
 
