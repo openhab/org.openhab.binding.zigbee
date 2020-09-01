@@ -8,26 +8,14 @@
     <version>3.0.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>org.openhab.binding.zigbee.ember</artifactId>
+  <artifactId>org.openhab.binding.zigbee.serial</artifactId>
 
-  <name>openHAB Add-ons :: Bundles :: ZigBee Ember Bridge</name>
+  <name>openHAB Add-ons :: Bundles :: ZigBee Serial Driver</name>
 
   <dependencies>
     <dependency>
-      <groupId>org.openhab.addons.bundles</groupId>
-      <artifactId>org.openhab.binding.zigbee</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.openhab.addons.bundles</groupId>
-      <artifactId>org.openhab.binding.zigbee.serial</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>com.zsmartsystems.zigbee</groupId>
-      <artifactId>com.zsmartsystems.zigbee.dongle.ember</artifactId>
+      <artifactId>com.zsmartsystems.zigbee</artifactId>
       <version>${zsmartsystems.version}</version>
     </dependency>
   </dependencies>

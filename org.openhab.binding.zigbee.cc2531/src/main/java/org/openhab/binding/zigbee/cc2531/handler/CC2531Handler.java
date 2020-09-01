@@ -15,12 +15,11 @@ package org.openhab.binding.zigbee.cc2531.handler;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.openhab.core.thing.Bridge;
-import org.openhab.core.io.transport.serial.SerialPortManager;
 import org.openhab.binding.zigbee.cc2531.internal.CC2531Configuration;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
-import org.openhab.binding.zigbee.handler.ZigBeeSerialPort;
+import org.openhab.core.io.transport.serial.SerialPortManager;
+import org.openhab.core.thing.Bridge;
 import org.osgi.service.component.annotations.Activate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,8 +64,8 @@ public class CC2531Handler extends ZigBeeCoordinatorHandler {
     }
 
     private ZigBeeTransportTransmit createDongle(CC2531Configuration config) {
-        ZigBeePort serialPort = new ZigBeeSerialPort(serialPortManager, config.zigbee_port, config.zigbee_baud,
-                FlowControl.FLOWCONTROL_OUT_RTSCTS);
+        ZigBeePort serialPort = new org.openhab.binding.zigbee.serial.ZigBeeSerialPort(serialPortManager,
+                config.zigbee_port, config.zigbee_baud, FlowControl.FLOWCONTROL_OUT_RTSCTS);
 
         ZigBeeTransportTransmit dongle = new ZigBeeDongleTiCc2531(serialPort);
 

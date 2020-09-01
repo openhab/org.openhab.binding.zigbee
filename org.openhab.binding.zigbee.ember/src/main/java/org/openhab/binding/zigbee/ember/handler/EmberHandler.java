@@ -12,11 +12,19 @@
  */
 package org.openhab.binding.zigbee.ember.handler;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
+import org.openhab.binding.zigbee.ember.EmberBindingConstants;
+import org.openhab.binding.zigbee.ember.internal.EmberConfiguration;
+import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
+import org.openhab.core.io.transport.serial.SerialPortManager;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.ChannelUID;
@@ -26,12 +34,6 @@ import org.openhab.core.thing.binding.firmware.Firmware;
 import org.openhab.core.thing.binding.firmware.FirmwareUpdateHandler;
 import org.openhab.core.thing.binding.firmware.ProgressCallback;
 import org.openhab.core.thing.binding.firmware.ProgressStep;
-import org.openhab.core.io.transport.serial.SerialPortManager;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
-import org.openhab.binding.zigbee.ember.internal.EmberConfiguration;
-import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
-import org.openhab.binding.zigbee.handler.ZigBeeSerialPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,18 +67,20 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
     private static final String ASH_RX_NAK = "ASH_RX_NAK";
     private static final String ASH_TX_NAK = "ASH_TX_NAK";
 
-    private static final String UID_ASH_RX_DAT = "rx_dat";
-    private static final String UID_ASH_TX_DAT = "tx_dat";
-    private static final String UID_ASH_RX_ACK = "rx_ack";
-    private static final String UID_ASH_TX_ACK = "tx_ack";
-    private static final String UID_ASH_RX_NAK = "rx_nak";
-    private static final String UID_ASH_TX_NAK = "tx_nak";
+    private static final ChannelUID UID_ASH_RX_DAT = new ChannelUID(EmberBindingConstants.BINDING_ID + ":rx_dat");
+    private static final ChannelUID UID_ASH_TX_DAT = new ChannelUID(EmberBindingConstants.BINDING_ID + ":tx_dat");
+    private static final ChannelUID UID_ASH_RX_ACK = new ChannelUID(EmberBindingConstants.BINDING_ID + ":rx_ack");
+    private static final ChannelUID UID_ASH_TX_ACK = new ChannelUID(EmberBindingConstants.BINDING_ID + ":tx_ack");
+    private static final ChannelUID UID_ASH_RX_NAK = new ChannelUID(EmberBindingConstants.BINDING_ID + ":rx_nak");
+    private static final ChannelUID UID_ASH_TX_NAK = new ChannelUID(EmberBindingConstants.BINDING_ID + ":tx_nak");
 
     private final Logger logger = LoggerFactory.getLogger(EmberHandler.class);
 
     private final SerialPortManager serialPortManager;
 
     private @Nullable ScheduledFuture<?> pollingJob;
+
+    private final Set<ChannelUID> thingChannelsLinked = new HashSet<>();
 
     public EmberHandler(Bridge coordinator, SerialPortManager serialPortManager,
             ZigBeeChannelConverterFactory channelFactory) {
@@ -101,18 +105,24 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
                     Map<String, Long> counters = dongle.getCounters();
 
                     if (!counters.isEmpty()) {
-                        updateState(new ChannelUID(getThing().getUID(), UID_ASH_RX_DAT),
-                                new DecimalType(counters.get(ASH_RX_DAT)));
-                        updateState(new ChannelUID(getThing().getUID(), UID_ASH_TX_DAT),
-                                new DecimalType(counters.get(ASH_TX_DAT)));
-                        updateState(new ChannelUID(getThing().getUID(), UID_ASH_RX_ACK),
-                                new DecimalType(counters.get(ASH_RX_ACK)));
-                        updateState(new ChannelUID(getThing().getUID(), UID_ASH_TX_ACK),
-                                new DecimalType(counters.get(ASH_TX_ACK)));
-                        updateState(new ChannelUID(getThing().getUID(), UID_ASH_RX_NAK),
-                                new DecimalType(counters.get(ASH_RX_NAK)));
-                        updateState(new ChannelUID(getThing().getUID(), UID_ASH_TX_NAK),
-                                new DecimalType(counters.get(ASH_TX_NAK)));
+                        if (thingChannelsLinked.contains(UID_ASH_RX_DAT)) {
+                            updateState(UID_ASH_RX_DAT, new DecimalType(counters.get(ASH_RX_DAT)));
+                        }
+                        if (thingChannelsLinked.contains(UID_ASH_TX_DAT)) {
+                            updateState(UID_ASH_TX_DAT, new DecimalType(counters.get(ASH_TX_DAT)));
+                        }
+                        if (thingChannelsLinked.contains(UID_ASH_RX_ACK)) {
+                            updateState(UID_ASH_RX_ACK, new DecimalType(counters.get(ASH_RX_ACK)));
+                        }
+                        if (thingChannelsLinked.contains(UID_ASH_TX_ACK)) {
+                            updateState(UID_ASH_TX_ACK, new DecimalType(counters.get(ASH_TX_ACK)));
+                        }
+                        if (thingChannelsLinked.contains(UID_ASH_RX_NAK)) {
+                            updateState(UID_ASH_RX_NAK, new DecimalType(counters.get(ASH_RX_NAK)));
+                        }
+                        if (thingChannelsLinked.contains(UID_ASH_TX_NAK)) {
+                            updateState(UID_ASH_TX_NAK, new DecimalType(counters.get(ASH_TX_NAK)));
+                        }
                     }
                 }
             };
@@ -128,6 +138,22 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
             pollingJob.cancel(true);
             pollingJob = null;
         }
+    }
+
+    @Override
+    public void channelLinked(ChannelUID channelUID) {
+        logger.debug("Ember MultiNetwork NCP Channel {} linked", channelUID);
+
+        // We keep track of what channels are used and only poll channels that the framework is using
+        thingChannelsLinked.add(channelUID);
+    }
+
+    @Override
+    public void channelUnlinked(ChannelUID channelUID) {
+        logger.debug("Ember MultiNetwork NCP Channel {} unlinked", channelUID);
+
+        // We keep track of what channels are used and only poll channels that the framework is using
+        thingChannelsLinked.remove(channelUID);
     }
 
     @Override
@@ -205,8 +231,8 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
             flowControl = FlowControl.FLOWCONTROL_OUT_NONE;
         }
 
-        ZigBeePort serialPort = new ZigBeeSerialPort(serialPortManager, config.zigbee_port, config.zigbee_baud,
-                flowControl);
+        ZigBeePort serialPort = new org.openhab.binding.zigbee.serial.ZigBeeSerialPort(serialPortManager,
+                config.zigbee_port, config.zigbee_baud, flowControl);
         final ZigBeeDongleEzsp dongle = new ZigBeeDongleEzsp(serialPort);
 
         logger.debug("ZigBee Ember Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,

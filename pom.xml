@@ -21,6 +21,7 @@
     <module>bom</module>
     <module>feature</module>
     <module>org.openhab.binding.zigbee</module>
+    <module>org.openhab.binding.zigbee.serial</module>
     <module>org.openhab.binding.zigbee.cc2531</module>
     <module>org.openhab.binding.zigbee.ember</module>
     <module>org.openhab.binding.zigbee.telegesis</module>
@@ -179,6 +180,11 @@
       </plugins>
     </pluginManagement>
     <plugins>
+         <plugin>
+           <groupId>org.apache.maven.plugins</groupId>
+           <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.0.0-M5</version>
+         </plugin>
       <plugin>
         <groupId>org.commonjava.maven.plugins</groupId>
         <artifactId>directory-maven-plugin</artifactId>
