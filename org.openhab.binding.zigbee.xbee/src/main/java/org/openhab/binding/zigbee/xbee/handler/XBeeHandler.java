@@ -12,13 +12,13 @@
  */
 package org.openhab.binding.zigbee.xbee.handler;
 
-import org.openhab.core.thing.Bridge;
-import org.openhab.core.io.transport.serial.SerialPortManager;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
-import org.openhab.binding.zigbee.handler.ZigBeeSerialPort;
+import org.openhab.binding.zigbee.serial.ZigBeeSerialPort;
 import org.openhab.binding.zigbee.xbee.internal.XBeeConfiguration;
+import org.openhab.core.io.transport.serial.SerialPortManager;
+import org.openhab.core.thing.Bridge;
 import org.osgi.service.component.annotations.Activate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
