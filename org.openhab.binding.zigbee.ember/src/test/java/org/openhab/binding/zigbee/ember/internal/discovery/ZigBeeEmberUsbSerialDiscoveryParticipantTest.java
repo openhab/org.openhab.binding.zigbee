@@ -26,35 +26,34 @@ import org.eclipse.smarthome.config.discovery.usbserial.UsbSerialDeviceInformati
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.openhab.binding.zigbee.ember.EmberBindingConstants;
-import org.openhab.binding.zigbee.ember.internal.discovery.ZigBeeEmberUsbSerialDiscoveryParticipant;
 
 /**
- * Unit tests for the {@link ZigBeeEmberUsbSerialDiscoveryParticipant}.
+ * Unit tests for the {@link
+ * org.openhab.binding.zigbee.ember.internal.discovery.ZigBeeEmberUsbSerialDiscoveryParticipant}.
  */
 public class ZigBeeEmberUsbSerialDiscoveryParticipantTest {
 
     private ZigBeeEmberUsbSerialDiscoveryParticipant discoveryParticipant;
-    
+
     @Before
     public void setup() {
         discoveryParticipant = new ZigBeeEmberUsbSerialDiscoveryParticipant();
     }
-    
+
     /**
-     * If only USB vendor ID or only USB product ID or none of them matches, then no device is discovered. 
+     * If only USB vendor ID or only USB product ID or none of them matches, then no device is discovered.
      */
     @Test
     public void testNonEmberDongleNotDiscovered() {
         assertNull(discoveryParticipant.getThingUID(forUsbDongle(SILICON_LABS_USB_VENDOR_ID, 0x1234)));
         assertNull(discoveryParticipant.getThingUID(forUsbDongle(0xabcd, BITRON_VIDEO_2010_10_PRODUCT_ID)));
         assertNull(discoveryParticipant.getThingUID(forUsbDongle(0xabcd, 0x1234)));
-        
+
         assertNull(discoveryParticipant.createResult(forUsbDongle(SILICON_LABS_USB_VENDOR_ID, 0x1234)));
         assertNull(discoveryParticipant.createResult(forUsbDongle(0xabcd, BITRON_VIDEO_2010_10_PRODUCT_ID)));
         assertNull(discoveryParticipant.createResult(forUsbDongle(0xabcd, 0x1234)));
     }
-    
+
     /**
      * For matching USB vendor and product ID, a suitable thingUID is returned.
      */
@@ -62,11 +61,11 @@ public class ZigBeeEmberUsbSerialDiscoveryParticipantTest {
     public void testEmberDongleDiscoveredThingUID() {
         ThingUID thingUID = discoveryParticipant.getThingUID(
                 forUsbDongle(SILICON_LABS_USB_VENDOR_ID, BITRON_VIDEO_2010_10_PRODUCT_ID, "serial", "/dev/ttyUSB0"));
-        
+
         assertNotNull(thingUID);
         assertEquals(thingUID, new ThingUID(THING_TYPE_EMBER, "serial"));
     }
-    
+
     /**
      * For matching USB vendor and product ID, a suitable discovery result is returned.
      */
@@ -74,7 +73,7 @@ public class ZigBeeEmberUsbSerialDiscoveryParticipantTest {
     public void testEmberDongleDiscoveredDiscoveryResult() {
         DiscoveryResult discoveryResult = discoveryParticipant.createResult(
                 forUsbDongle(SILICON_LABS_USB_VENDOR_ID, BITRON_VIDEO_2010_10_PRODUCT_ID, "serial", "/dev/ttyUSB0"));
-        
+
         assertNotNull(discoveryResult);
         assertEquals(discoveryResult.getThingUID(), new ThingUID(THING_TYPE_EMBER, "serial"));
         assertNotNull(discoveryResult.getLabel());
@@ -82,7 +81,7 @@ public class ZigBeeEmberUsbSerialDiscoveryParticipantTest {
         assertEquals(discoveryResult.getProperties().get(CONFIGURATION_PORT), "/dev/ttyUSB0");
         assertNotNull(discoveryResult.getProperties().get(CONFIGURATION_BAUD));
     }
-    
+
     private UsbSerialDeviceInformation forUsbDongle(int vendorId, int productId, String serial, String device) {
         return new UsbSerialDeviceInformation(vendorId, productId, serial, null, null, 0, null, device);
     }
@@ -90,5 +89,5 @@ public class ZigBeeEmberUsbSerialDiscoveryParticipantTest {
     private UsbSerialDeviceInformation forUsbDongle(int vendorId, int productId) {
         return new UsbSerialDeviceInformation(vendorId, productId, null, null, null, 0, null, "/dev/ttyUSB0");
     }
-    
+
 }
