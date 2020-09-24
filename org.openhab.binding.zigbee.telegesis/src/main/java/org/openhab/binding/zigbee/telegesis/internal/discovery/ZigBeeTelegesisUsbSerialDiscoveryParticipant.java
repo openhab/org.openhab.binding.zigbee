@@ -72,8 +72,7 @@ public class ZigBeeTelegesisUsbSerialDiscoveryParticipant implements UsbSerialDi
             return DiscoveryResultBuilder.create(createQiviconTelegesisDongleThingType(deviceInformation))
                     .withLabel(createQiviconTelegesisDongleLabel(deviceInformation))
                     .withRepresentationProperty(CONFIGURATION_PORT)
-                    .withProperty(CONFIGURATION_PORT, deviceInformation.getSerialPort())
-                    .build();
+                    .withProperty(CONFIGURATION_PORT, deviceInformation.getSerialPort()).build();
         } else {
             return null;
         }
@@ -95,7 +94,11 @@ public class ZigBeeTelegesisUsbSerialDiscoveryParticipant implements UsbSerialDi
     }
 
     private ThingUID createQiviconTelegesisDongleThingType(UsbSerialDeviceInformation deviceInformation) {
-        return new ThingUID(THING_TYPE_TELEGESIS, deviceInformation.getSerialNumber());
+        String serialNumber = deviceInformation.getSerialNumber();
+        if (serialNumber == null) {
+            serialNumber = "ember";
+        }
+        return new ThingUID(THING_TYPE_TELEGESIS, serialNumber);
     }
 
     private @Nullable String createQiviconTelegesisDongleLabel(UsbSerialDeviceInformation deviceInformation) {
