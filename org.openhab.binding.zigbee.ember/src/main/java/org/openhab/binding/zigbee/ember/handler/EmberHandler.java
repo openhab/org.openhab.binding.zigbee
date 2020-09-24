@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
-import org.openhab.binding.zigbee.ember.EmberBindingConstants;
 import org.openhab.binding.zigbee.ember.internal.EmberConfiguration;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.core.io.transport.serial.SerialPortManager;
@@ -67,20 +66,13 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
     private static final String ASH_RX_NAK = "ASH_RX_NAK";
     private static final String ASH_TX_NAK = "ASH_TX_NAK";
 
-    private static final ChannelUID UID_ASH_RX_DAT = new ChannelUID(EmberBindingConstants.BINDING_ID + ":rx_dat");
-    private static final ChannelUID UID_ASH_TX_DAT = new ChannelUID(EmberBindingConstants.BINDING_ID + ":tx_dat");
-    private static final ChannelUID UID_ASH_RX_ACK = new ChannelUID(EmberBindingConstants.BINDING_ID + ":rx_ack");
-    private static final ChannelUID UID_ASH_TX_ACK = new ChannelUID(EmberBindingConstants.BINDING_ID + ":tx_ack");
-    private static final ChannelUID UID_ASH_RX_NAK = new ChannelUID(EmberBindingConstants.BINDING_ID + ":rx_nak");
-    private static final ChannelUID UID_ASH_TX_NAK = new ChannelUID(EmberBindingConstants.BINDING_ID + ":tx_nak");
-
     private final Logger logger = LoggerFactory.getLogger(EmberHandler.class);
 
     private final SerialPortManager serialPortManager;
 
     private @Nullable ScheduledFuture<?> pollingJob;
 
-    private final Set<ChannelUID> thingChannelsLinked = new HashSet<>();
+    private final Set<String> thingChannelsLinked = new HashSet<>();
 
     public EmberHandler(Bridge coordinator, SerialPortManager serialPortManager,
             ZigBeeChannelConverterFactory channelFactory) {
@@ -105,23 +97,23 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
                     Map<String, Long> counters = dongle.getCounters();
 
                     if (!counters.isEmpty()) {
-                        if (thingChannelsLinked.contains(UID_ASH_RX_DAT)) {
-                            updateState(UID_ASH_RX_DAT, new DecimalType(counters.get(ASH_RX_DAT)));
+                        if (thingChannelsLinked.contains(ASH_RX_DAT)) {
+                            updateState(ASH_RX_DAT, new DecimalType(counters.get(ASH_RX_DAT)));
                         }
-                        if (thingChannelsLinked.contains(UID_ASH_TX_DAT)) {
-                            updateState(UID_ASH_TX_DAT, new DecimalType(counters.get(ASH_TX_DAT)));
+                        if (thingChannelsLinked.contains(ASH_TX_DAT)) {
+                            updateState(ASH_TX_DAT, new DecimalType(counters.get(ASH_TX_DAT)));
                         }
-                        if (thingChannelsLinked.contains(UID_ASH_RX_ACK)) {
-                            updateState(UID_ASH_RX_ACK, new DecimalType(counters.get(ASH_RX_ACK)));
+                        if (thingChannelsLinked.contains(ASH_RX_ACK)) {
+                            updateState(ASH_RX_ACK, new DecimalType(counters.get(ASH_RX_ACK)));
                         }
-                        if (thingChannelsLinked.contains(UID_ASH_TX_ACK)) {
-                            updateState(UID_ASH_TX_ACK, new DecimalType(counters.get(ASH_TX_ACK)));
+                        if (thingChannelsLinked.contains(ASH_TX_ACK)) {
+                            updateState(ASH_TX_ACK, new DecimalType(counters.get(ASH_TX_ACK)));
                         }
-                        if (thingChannelsLinked.contains(UID_ASH_RX_NAK)) {
-                            updateState(UID_ASH_RX_NAK, new DecimalType(counters.get(ASH_RX_NAK)));
+                        if (thingChannelsLinked.contains(ASH_RX_NAK)) {
+                            updateState(ASH_RX_NAK, new DecimalType(counters.get(ASH_RX_NAK)));
                         }
-                        if (thingChannelsLinked.contains(UID_ASH_TX_NAK)) {
-                            updateState(UID_ASH_TX_NAK, new DecimalType(counters.get(ASH_TX_NAK)));
+                        if (thingChannelsLinked.contains(ASH_TX_NAK)) {
+                            updateState(ASH_TX_NAK, new DecimalType(counters.get(ASH_TX_NAK)));
                         }
                     }
                 }
@@ -145,7 +137,7 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
         logger.debug("Ember MultiNetwork NCP Channel {} linked", channelUID);
 
         // We keep track of what channels are used and only poll channels that the framework is using
-        thingChannelsLinked.add(channelUID);
+        thingChannelsLinked.add(channelUID.getId());
     }
 
     @Override
@@ -153,7 +145,7 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
         logger.debug("Ember MultiNetwork NCP Channel {} unlinked", channelUID);
 
         // We keep track of what channels are used and only poll channels that the framework is using
-        thingChannelsLinked.remove(channelUID);
+        thingChannelsLinked.remove(channelUID.getId());
     }
 
     @Override

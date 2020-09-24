@@ -27,8 +27,8 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.openhab.core.config.core.ConfigConstants;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.core.config.core.ConfigConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -157,7 +157,7 @@ public class ZigBeeDataStore implements ZigBeeNetworkDataStore {
     public void removeNode(IeeeAddress address) {
         File file = getFile(address);
         if (file.delete()) {
-            logger.error("{}: ZigBee removing network state complete", address);
+            logger.debug("{}: ZigBee removing network state complete", address);
         } else {
             logger.error("{}: Error removing network state", address);
         }

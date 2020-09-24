@@ -439,8 +439,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             ZigBeeTransportFirmwareUpdate firmwareTransport = (ZigBeeTransportFirmwareUpdate) zigbeeTransport;
             properties.put(Thing.PROPERTY_FIRMWARE_VERSION, firmwareTransport.getFirmwareVersion());
         }
-        properties.put(ZigBeeBindingConstants.THING_PROPERTY_MACADDRESS,
-                networkManager.getLocalIeeeAddress().toString());
+        if (networkManager.getLocalIeeeAddress() == null) {
+            properties.remove(ZigBeeBindingConstants.THING_PROPERTY_MACADDRESS);
+        } else {
+            properties.put(ZigBeeBindingConstants.THING_PROPERTY_MACADDRESS,
+                    networkManager.getLocalIeeeAddress().toString());
+        }
         updateProperties(properties);
 
         switch (initializeResponse) {
