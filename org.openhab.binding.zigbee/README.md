@@ -317,7 +317,7 @@ The following channels are supported -:
 | ias_movement | ```IAS_ZONE``` (0x0500) | Switch |  |
 | ias_vibration | ```IAS_ZONE``` (0x0500) | Switch |  |
 | ias_tamper | ```IAS_ZONE``` (0x0500) | Switch |  |
-| measurement_illuminance | ```ILLUMINANCE_MEASUREMENT``` (0x0400) | Number |   |
+| measurement_illuminance | ```ILLUMINANCE_MEASUREMENT``` (0x0400) | Number:Illuminance |   |
 | measurement_pressure | ```PRESSURE_MEASUREMENT``` (0x0403) | Number:Pressure |   |
 | measurement_relativehumidity | ```RELATIVE_HUMIDITY_MEASUREMENT``` (0x0405) | Number |   |
 | measurement_temperature | ```TEMPERATURE_MEASUREMENT``` (0x0402) | Number:Temperature |   |

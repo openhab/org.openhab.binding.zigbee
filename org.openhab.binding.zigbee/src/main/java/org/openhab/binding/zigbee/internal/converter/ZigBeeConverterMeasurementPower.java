@@ -148,7 +148,7 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
         return ChannelBuilder
                 .create(createChannelUID(thingUID, endpoint,
                         ZigBeeBindingConstants.CHANNEL_NAME_ELECTRICAL_ACTIVEPOWER),
-                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER)
+                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER_POWER)
                 .withType(ZigBeeBindingConstants.CHANNEL_ELECTRICAL_ACTIVEPOWER)
                 .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_ELECTRICAL_ACTIVEPOWER)
                 .withProperties(createProperties(endpoint)).build();

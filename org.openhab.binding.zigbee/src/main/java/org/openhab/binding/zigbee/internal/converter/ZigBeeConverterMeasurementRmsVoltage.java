@@ -146,7 +146,7 @@ public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConve
 
         return ChannelBuilder
                 .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_ELECTRICAL_RMSVOLTAGE),
-                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER)
+                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER_ELECTRICPOTENTIAL)
                 .withType(ZigBeeBindingConstants.CHANNEL_ELECTRICAL_RMSVOLTAGE)
                 .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_ELECTRICAL_RMSVOLTAGE)
                 .withProperties(createProperties(endpoint)).build();

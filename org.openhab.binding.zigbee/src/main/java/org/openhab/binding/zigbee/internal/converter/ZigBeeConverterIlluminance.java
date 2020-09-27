@@ -22,6 +22,8 @@ import java.util.concurrent.ExecutionException;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.library.types.DecimalType;
+import org.eclipse.smarthome.core.library.types.QuantityType;
+import org.eclipse.smarthome.core.library.unit.SmartHomeUnits;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
@@ -161,7 +163,7 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
         }
         return ChannelBuilder
                 .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_ILLUMINANCE_VALUE),
-                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER)
+                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER_ILLUMINANCE)
                 .withType(ZigBeeBindingConstants.CHANNEL_ILLUMINANCE_VALUE)
                 .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_ILLUMINANCE_VALUE)
                 .withProperties(createProperties(endpoint)).build();
@@ -172,7 +174,7 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.ILLUMINANCE_MEASUREMENT
                 && attribute.getId() == ZclIlluminanceMeasurementCluster.ATTR_MEASUREDVALUE) {
-            updateChannelState(new DecimalType(Math.pow(10.0, (Integer) val / 10000.0) - 1));
+            updateChannelState(new QuantityType<>(new DecimalType(Math.pow(10.0, (Integer) val / 10000.0) - 1), SmartHomeUnits.LUX));
         }
     }
 }
