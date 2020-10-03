@@ -9,7 +9,7 @@
 	</parent>
 
 	<groupId>org.openhab.addons.features.karaf</groupId>
-	<artifactId>org.openhab.addons.features.karaf.zigbee</artifactId>
+	<artifactId>openhab-binding-zigbee</artifactId>
 	<packaging>feature</packaging>
 
 	<name>openHAB Add-ons :: Features :: Karaf :: openHAB ZigBee Binding</name>
