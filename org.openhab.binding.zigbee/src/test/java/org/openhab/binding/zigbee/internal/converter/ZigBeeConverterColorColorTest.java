@@ -181,7 +181,5 @@ public class ZigBeeConverterColorColorTest {
         converter.attributeUpdated(currentYAttribute, currentYAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
-
     }
-
 }

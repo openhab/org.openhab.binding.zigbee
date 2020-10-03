@@ -15,13 +15,13 @@ package org.openhab.binding.zigbee.discovery.internal;
 import java.util.Map;
 import java.util.Set;
 
+import org.openhab.binding.zigbee.discovery.ZigBeeDiscoveryParticipant;
+import org.openhab.binding.zigbee.internal.ZigBeeThingTypeMatcher;
 import org.openhab.core.config.discovery.DiscoveryResult;
 import org.openhab.core.config.discovery.DiscoveryResultBuilder;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.ThingUID;
-import org.openhab.binding.zigbee.discovery.ZigBeeDiscoveryParticipant;
-import org.openhab.binding.zigbee.internal.ZigBeeThingTypeMatcher;
 import org.osgi.service.component.annotations.Component;
 
 import com.zsmartsystems.zigbee.ZigBeeNode;

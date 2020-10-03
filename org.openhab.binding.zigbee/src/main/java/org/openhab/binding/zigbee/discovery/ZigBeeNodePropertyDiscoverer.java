@@ -13,8 +13,8 @@
 package org.openhab.binding.zigbee.discovery;
 
 import static com.zsmartsystems.zigbee.zcl.clusters.ZclBasicCluster.*;
-import static org.openhab.core.thing.Thing.*;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.*;
+import static org.openhab.core.thing.Thing.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,8 +26,8 @@ import java.util.concurrent.ExecutionException;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.core.thing.Thing;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.core.thing.Thing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -226,7 +226,6 @@ public class ZigBeeNodePropertyDiscoverer {
                 logger.debug("{}: Date code failed", node.getIeeeAddress());
             }
         }
-
     }
 
     private Map<String, Integer> getPropertiesToRead(ZclBasicCluster basicCluster) {
@@ -260,5 +259,4 @@ public class ZigBeeNodePropertyDiscoverer {
             logger.debug("{}: Node doesn't support OTA cluster", node.getIeeeAddress());
         }
     }
-
 }

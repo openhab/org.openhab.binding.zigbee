@@ -17,8 +17,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.openhab.core.config.core.Configuration;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.core.config.core.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -63,5 +63,4 @@ public class ZigBeeBaseChannelConverterTest {
         assertEquals(Integer.valueOf(889),
                 converter.temperatureToValue(new QuantityType(48.0, ImperialUnits.FAHRENHEIT)));
     }
-
 }

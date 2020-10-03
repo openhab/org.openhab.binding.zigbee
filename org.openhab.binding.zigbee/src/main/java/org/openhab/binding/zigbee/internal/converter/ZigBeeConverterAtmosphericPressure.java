@@ -22,13 +22,13 @@ import java.util.concurrent.ExecutionException;
 
 import javax.measure.quantity.Pressure;
 
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.core.library.types.QuantityType;
 import org.openhab.core.library.unit.SIUnits;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -190,5 +190,4 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
             }
         }
     }
-
 }

@@ -21,8 +21,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.binding.zigbee.console.ZigBeeConsoleCommandProvider;
+import org.openhab.core.thing.ThingTypeUID;
 import org.osgi.service.component.annotations.Component;
 
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleAttributeReadCommand;

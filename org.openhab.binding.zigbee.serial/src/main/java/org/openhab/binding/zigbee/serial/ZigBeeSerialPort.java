@@ -336,5 +336,4 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
             end = 0;
         }
     }
-
 }

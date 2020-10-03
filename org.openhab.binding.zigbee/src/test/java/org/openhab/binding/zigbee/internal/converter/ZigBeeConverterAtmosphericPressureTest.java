@@ -134,6 +134,5 @@ public class ZigBeeConverterAtmosphericPressureTest {
                 stateCapture.capture());
         value = (QuantityType<Pressure>) stateCapture.getValue();
         assertEquals(1245.6, value.doubleValue(), 0.01);
-
     }
 }

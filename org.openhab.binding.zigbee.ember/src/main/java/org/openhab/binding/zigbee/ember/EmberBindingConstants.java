@@ -28,5 +28,4 @@ public class EmberBindingConstants {
 
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_EMBER = new ThingTypeUID(BINDING_ID, "coordinator_ember");
-
 }

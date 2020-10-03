@@ -86,5 +86,4 @@ public class CC2531Handler extends ZigBeeCoordinatorHandler {
 
         return transportConfig;
     }
-
 }
