@@ -28,7 +28,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.core.config.core.ConfigConstants;
+import org.openhab.core.OpenHAB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +61,7 @@ public class ZigBeeDataStore implements ZigBeeNetworkDataStore {
     private final String networkStateFilePath;
 
     public ZigBeeDataStore(String networkId) {
-        networkStateFilePath = ConfigConstants.getUserDataFolder() + File.separator + ZigBeeBindingConstants.BINDING_ID
+        networkStateFilePath = OpenHAB.getUserDataFolder() + File.separator + ZigBeeBindingConstants.BINDING_ID
                 + File.separator + networkId + File.separator;
 
         final File folder = new File(networkStateFilePath);
