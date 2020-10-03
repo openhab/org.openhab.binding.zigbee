@@ -34,9 +34,9 @@
   <properties>
     <report.fail.on.error>false</report.fail.on.error>
     <zsmartsystems.version>1.3.8</zsmartsystems.version>
-    <spotless.version>1.24.3</spotless.version>
+    <spotless.version>2.0.3</spotless.version>
     <spotless.check.skip>true</spotless.check.skip> <!-- Spotless disabled for now -->
-    <sat.version>0.9.0</sat.version>
+    <sat.version>0.10.0</sat.version>
   </properties>
 
   <scm>
@@ -84,19 +84,22 @@
           <groupId>org.openhab.tools.sat</groupId>
           <artifactId>sat-plugin</artifactId>
           <version>${sat.version}</version>
+          <configuration>
+            <checkstyleProperties>${basedirRoot}/tools/static-code-analysis/checkstyle/ruleset.properties</checkstyleProperties>
+            <checkstyleFilter>${basedirRoot}/tools/static-code-analysis/checkstyle/suppressions.xml</checkstyleFilter>
+          </configuration>
           <executions>
             <execution>
               <id>sat-all</id>
-              <configuration>
-                <checkstyleProperties>tools/static-code-analysis/checkstyle/ruleset.properties</checkstyleProperties>
-                <checkstyleFilter>tools/static-code-analysis/checkstyle/suppressions.xml</checkstyleFilter>
-              </configuration>
+              <goals>
+                <goal>checkstyle</goal>
+                <goal>pmd</goal>
+                <goal>spotbugs</goal>
+                <goal>report</goal>
+              </goals>
+              <phase>verify</phase>
             </execution>
           </executions>
-          <configuration>
-            <checkstyleProperties>tools/static-code-analysis/checkstyle/ruleset.properties</checkstyleProperties>
-            <checkstyleFilter>tools/static-code-analysis/checkstyle/suppressions.xml</checkstyleFilter>
-          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -116,7 +119,7 @@
             <java>
               <eclipse>
                 <file>openhab_codestyle.xml</file>
-                <version>4.11.0</version>
+                <version>4.13.0</version>
               </eclipse>
               <removeUnusedImports/>
               <importOrder>
@@ -138,7 +141,7 @@
                   <files>
                     <file>openhab_wst_xml_files.prefs</file>
                   </files>
-                  <version>4.12.0</version>
+                  <version>4.13.0</version>
                 </eclipseWtp>
                 <trimTrailingWhitespace/>
                 <endWithNewline/>
@@ -153,7 +156,7 @@
                   <files>
                     <file>openhab_wst_pom_file.prefs</file>
                   </files>
-                  <version>4.12.0</version>
+                  <version>4.13.0</version>
                 </eclipseWtp>
                 <trimTrailingWhitespace/>
                 <endWithNewline/>
@@ -192,15 +195,15 @@
         <executions>
           <execution>
             <id>directories</id>
-            <phase>none</phase>
             <goals>
               <goal>directory-of</goal>
             </goals>
+            <phase>initialize</phase>
             <configuration>
               <property>basedirRoot</property>
               <project>
-                <groupId>org.openhab.addons</groupId>
-                <artifactId>org.openhab.addons.reactor</artifactId>
+                <groupId>org.openhab.addons.bundles</groupId>
+                <artifactId>org.openhab.addons.zigbee.reactor</artifactId>
               </project>
             </configuration>
           </execution>
