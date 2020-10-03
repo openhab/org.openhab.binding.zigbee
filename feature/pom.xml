@@ -55,6 +55,11 @@
 			<artifactId>org.openhab.binding.zigbee.xbee</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.openhab.addons.bundles</groupId>
+			<artifactId>org.openhab.binding.zigbee.serial</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>com.zsmartsystems.zigbee</groupId>
