@@ -4,7 +4,8 @@
 	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
 	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
 
-	<!-- These devices do not correctly report their clusters, so they need a static thing definition for the binding to inject the correct clusters into the ZigBeeNode -->
+	<!-- These devices do not correctly report their clusters, so they need a static thing definition for the binding to inject
+		the correct clusters into the ZigBeeNode -->
 
 	<thing-type id="xiaomi_lumisensor86sw2" listed="false">
 		<label>Xiaomi Wireless 2-Button Switch</label>
