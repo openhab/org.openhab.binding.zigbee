@@ -35,6 +35,7 @@ import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.binding.zigbee.internal.converter.config.ZclLevelControlConfig;
 import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
 import org.slf4j.Logger;
@@ -229,7 +230,9 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
     }
 
     @Override
-    public synchronized boolean initializeConverter() {
+    public synchronized boolean initializeConverter(ZigBeeThingHandler thing) {
+        super.initializeConverter(thing);
+
         updateScheduler = Executors.newSingleThreadScheduledExecutor();
 
         if (initializeConverterServer()) {

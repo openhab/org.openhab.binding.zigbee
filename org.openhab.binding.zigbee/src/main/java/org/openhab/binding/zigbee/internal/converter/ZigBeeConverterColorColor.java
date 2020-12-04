@@ -39,6 +39,7 @@ import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.UnDefType;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.binding.zigbee.internal.converter.config.ZclLevelControlConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -208,7 +209,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     }
 
     @Override
-    public boolean initializeConverter() {
+    public boolean initializeConverter(ZigBeeThingHandler thing) {
+        super.initializeConverter(thing);
         colorUpdateScheduler = Executors.newSingleThreadScheduledExecutor();
 
         clusterColorControl = (ZclColorControlCluster) endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID);

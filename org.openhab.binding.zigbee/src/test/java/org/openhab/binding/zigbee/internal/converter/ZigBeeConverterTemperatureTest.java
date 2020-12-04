@@ -50,12 +50,16 @@ public class ZigBeeConverterTemperatureTest {
         Mockito.when(coordinatorHandler.getEndpoint(ArgumentMatchers.any(IeeeAddress.class), ArgumentMatchers.anyInt()))
                 .thenReturn(endpoint);
 
+        ZclTemperatureMeasurementCluster cluster = Mockito.mock(ZclTemperatureMeasurementCluster.class);
+        Mockito.when(endpoint.getInputCluster(ZclClusterType.TEMPERATURE_MEASUREMENT.getId())).thenReturn(cluster);
+
         ZigBeeConverterTemperature converter = new ZigBeeConverterTemperature();
         ArgumentCaptor<ChannelUID> channelCapture = ArgumentCaptor.forClass(ChannelUID.class);
         ArgumentCaptor<State> stateCapture = ArgumentCaptor.forClass(State.class);
         ZigBeeThingHandler thingHandler = Mockito.mock(ZigBeeThingHandler.class);
         Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
-        converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
+        converter.initialize(channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
+        converter.initializeConverter(thingHandler);
 
         ZclAttribute attribute = Mockito.mock(ZclAttribute.class);
         Mockito.when(attribute.getCluster()).thenReturn(ZclClusterType.TEMPERATURE_MEASUREMENT);

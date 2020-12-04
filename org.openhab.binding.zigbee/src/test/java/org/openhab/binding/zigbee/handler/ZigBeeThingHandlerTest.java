@@ -183,9 +183,8 @@ public class ZigBeeThingHandlerTest {
     private ZigBeeChannelConverterFactory mockZigBeeChannelConverterFactory(
             ZigBeeBaseChannelConverter zigBeeChannelConverter) {
         ZigBeeChannelConverterFactory zigBeeChannelConverterFactory = mock(ZigBeeChannelConverterFactory.class);
-        when(zigBeeChannelConverterFactory.createConverter(any(ZigBeeThingHandler.class), any(Channel.class),
-                any(ZigBeeCoordinatorHandler.class), any(IeeeAddress.class), any(int.class)))
-                        .thenReturn(zigBeeChannelConverter);
+        when(zigBeeChannelConverterFactory.createConverter(any(Channel.class), any(ZigBeeCoordinatorHandler.class),
+                any(IeeeAddress.class), any(int.class))).thenReturn(zigBeeChannelConverter);
 
         return zigBeeChannelConverterFactory;
     }
@@ -193,7 +192,7 @@ public class ZigBeeThingHandlerTest {
     private ZigBeeBaseChannelConverter mockZigBeeBaseChannelConverterSuccessfull() {
         ZigBeeBaseChannelConverter zigBeeChannelConverter = mock(ZigBeeBaseChannelConverter.class);
         when(zigBeeChannelConverter.initializeDevice()).thenReturn(true);
-        when(zigBeeChannelConverter.initializeConverter()).thenReturn(true);
+        when(zigBeeChannelConverter.initializeConverter(any(ZigBeeThingHandler.class))).thenReturn(true);
 
         return zigBeeChannelConverter;
     }

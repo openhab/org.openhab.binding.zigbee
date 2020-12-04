@@ -51,7 +51,8 @@ public class ZigBeeConverterSwitchOnoffTest {
         ArgumentCaptor<State> stateCapture = ArgumentCaptor.forClass(State.class);
         ZigBeeThingHandler thingHandler = Mockito.mock(ZigBeeThingHandler.class);
         Channel channel = new Channel(new ChannelUID("a:b:c:d"), "");
-        converter.initialize(thingHandler, channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
+        converter.initialize(channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
+        converter.initializeConverter(thingHandler);
         ZclAttribute attribute = new ZclAttribute(new ZclOnOffCluster(endpoint), 0, "OnOff", ZclDataType.BOOLEAN, false,
                 false, false, false);
         converter.attributeUpdated(attribute, attribute.getLastValue());

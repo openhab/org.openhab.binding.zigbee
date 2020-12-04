@@ -26,6 +26,7 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +93,8 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
     }
 
     @Override
-    public boolean initializeConverter() {
+    public boolean initializeConverter(ZigBeeThingHandler thing) {
+        super.initializeConverter(thing);
         clusterMeasurement = (ZclElectricalMeasurementCluster) endpoint
                 .getInputCluster(ZclElectricalMeasurementCluster.CLUSTER_ID);
         if (clusterMeasurement == null) {

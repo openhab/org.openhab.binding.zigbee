@@ -22,6 +22,7 @@ import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +81,8 @@ public class ZigBeeConverterBinaryInput extends ZigBeeBaseChannelConverter imple
     }
 
     @Override
-    public boolean initializeConverter() {
+    public boolean initializeConverter(ZigBeeThingHandler thing) {
+        super.initializeConverter(thing);
         binaryInputCluster = (ZclBinaryInputBasicCluster) endpoint
                 .getInputCluster(ZclBinaryInputBasicCluster.CLUSTER_ID);
         if (binaryInputCluster == null) {

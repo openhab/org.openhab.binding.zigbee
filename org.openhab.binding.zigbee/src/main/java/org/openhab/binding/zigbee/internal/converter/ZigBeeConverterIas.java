@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.OpenClosedType;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,7 +104,8 @@ public abstract class ZigBeeConverterIas extends ZigBeeBaseChannelConverter
     }
 
     @Override
-    public boolean initializeConverter() {
+    public boolean initializeConverter(ZigBeeThingHandler thing) {
+        super.initializeConverter(thing);
         logger.debug("{}: Initialising device IAS Zone cluster for {}", endpoint.getIeeeAddress(),
                 channel.getChannelTypeUID());
 
