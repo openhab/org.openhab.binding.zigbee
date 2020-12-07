@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutionException;
 import javax.measure.quantity.ElectricPotential;
 
 import org.openhab.core.library.types.QuantityType;
-import org.openhab.core.library.unit.SmartHomeUnits;
+import org.openhab.core.library.unit.Units;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
@@ -155,7 +155,7 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
                 return;
             }
             BigDecimal valueInVolt = BigDecimal.valueOf(value, 1);
-            updateChannelState(new QuantityType<ElectricPotential>(valueInVolt, SmartHomeUnits.VOLT));
+            updateChannelState(new QuantityType<ElectricPotential>(valueInVolt, Units.VOLT));
         }
     }
 }

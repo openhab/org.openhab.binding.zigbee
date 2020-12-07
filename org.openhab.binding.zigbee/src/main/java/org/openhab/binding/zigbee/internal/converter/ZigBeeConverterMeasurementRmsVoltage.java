@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutionException;
 import javax.measure.quantity.ElectricPotential;
 
 import org.openhab.core.library.types.QuantityType;
-import org.openhab.core.library.unit.SmartHomeUnits;
+import org.openhab.core.library.unit.Units;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
@@ -159,7 +159,7 @@ public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConve
                 && attribute.getId() == ZclElectricalMeasurementCluster.ATTR_RMSVOLTAGE) {
             Integer value = (Integer) val;
             BigDecimal valueInVolts = BigDecimal.valueOf(value * multiplier / divisor);
-            updateChannelState(new QuantityType<ElectricPotential>(valueInVolts, SmartHomeUnits.VOLT));
+            updateChannelState(new QuantityType<ElectricPotential>(valueInVolts, Units.VOLT));
         }
     }
 
