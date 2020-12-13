@@ -62,8 +62,7 @@ public class ZigBeeEmberUsbSerialDiscoveryParticipant implements UsbSerialDiscov
                     .withRepresentationProperty(CONFIGURATION_PORT)
                     .withProperty(CONFIGURATION_PORT, deviceInformation.getSerialPort())
                     .withProperty(CONFIGURATION_BAUD, BITRON_VIDEO_2010_10_BAUD_RATE)
-                    .withProperty(CONFIGURATION_FLOWCONTROL, FLOWCONTROL_CONFIG_SOFTWARE_XONXOFF)
-                    .build();
+                    .withProperty(CONFIGURATION_FLOWCONTROL, FLOWCONTROL_CONFIG_SOFTWARE_XONXOFF).build();
         } else {
             return null;
         }
