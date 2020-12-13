@@ -210,6 +210,10 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_LABEL_WINDOWCOVERING_LIFT = "Window Covering Lift";
     public static final ChannelTypeUID CHANNEL_WINDOWCOVERING_LIFT = new ChannelTypeUID("zigbee:windowcovering_lift");
 
+    public static final String CHANNEL_NAME_TUYA_BUTTON = "tuyabutton";
+    public static final String CHANNEL_LABEL_TUYA_BUTTON = "Button";
+    public static final ChannelTypeUID CHANNEL_TUYA_BUTTON = new ChannelTypeUID("zigbee:tuya_button");
+
     public static final String CHANNEL_PROPERTY_ENDPOINT = "zigbee_endpoint";
     public static final String CHANNEL_PROPERTY_PROFILEID = "zigbee_profileid";
     public static final String CHANNEL_PROPERTY_INPUTCLUSTERS = "zigbee_inputclusters";
