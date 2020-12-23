@@ -33,6 +33,7 @@ import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.CommonTriggerEvents;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +84,8 @@ public class ZigBeeConverterGenericButton extends ZigBeeBaseChannelConverter
     }
 
     @Override
-    public synchronized boolean initializeConverter() {
+    public boolean initializeConverter(ZigBeeThingHandler thing) {
+        super.initializeConverter(thing);
         for (ButtonPressType buttonPressType : ButtonPressType.values()) {
             EventSpec eventSpec = parseEventSpec(channel.getProperties(), buttonPressType);
             if (eventSpec != null) {

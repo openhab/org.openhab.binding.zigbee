@@ -388,13 +388,13 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
             // Create the channel map to simplify processing incoming events
             for (Channel channel : getThing().getChannels()) {
-                ZigBeeBaseChannelConverter handler = createZigBeeBaseChannelConverter(channel);
+                ZigBeeBaseChannelConverter handler = createZigBeeChannelConverter(channel);
                 if (handler == null) {
                     logger.debug("{}: No handler found for {}", nodeIeeeAddress, channel.getUID());
                     continue;
                 }
 
-                if (handler.initializeConverter() == false) {
+                if (handler.initializeConverter(this) == false) {
                     logger.info("{}: Channel {} failed to initialise converter", nodeIeeeAddress, channel.getUID());
                     continue;
                 }
@@ -503,7 +503,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         boolean channelInitializationSuccessful = true;
         for (Channel channel : getThing().getChannels()) {
-            ZigBeeBaseChannelConverter handler = createZigBeeBaseChannelConverter(channel);
+            ZigBeeBaseChannelConverter handler = createZigBeeChannelConverter(channel);
             if (handler == null) {
                 logger.debug("{}: No handler found for {}", nodeIeeeAddress, channel.getUID());
                 continue;
@@ -520,10 +520,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 channelInitializationSuccessful ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
     }
 
-    private ZigBeeBaseChannelConverter createZigBeeBaseChannelConverter(Channel channel) {
+    private ZigBeeBaseChannelConverter createZigBeeChannelConverter(Channel channel) {
         ZigBeeNode node = coordinatorHandler.getNode(nodeIeeeAddress);
         Map<String, String> properties = channel.getProperties();
-        return channelFactory.createConverter(this, channel, coordinatorHandler, node.getIeeeAddress(),
+        return channelFactory.createConverter(channel, coordinatorHandler, node.getIeeeAddress(),
                 Integer.parseInt(properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_ENDPOINT)));
     }
 

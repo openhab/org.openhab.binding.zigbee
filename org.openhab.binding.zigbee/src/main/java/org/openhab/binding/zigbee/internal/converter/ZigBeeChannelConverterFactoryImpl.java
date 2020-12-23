@@ -29,7 +29,6 @@ import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterProvider;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
@@ -104,8 +103,8 @@ public final class ZigBeeChannelConverterFactoryImpl implements ZigBeeChannelCon
     }
 
     @Override
-    public ZigBeeBaseChannelConverter createConverter(ZigBeeThingHandler thingHandler, Channel channel,
-            ZigBeeCoordinatorHandler coordinatorHandler, IeeeAddress ieeeAddress, int endpointId) {
+    public ZigBeeBaseChannelConverter createConverter(Channel channel, ZigBeeCoordinatorHandler coordinatorHandler,
+            IeeeAddress ieeeAddress, int endpointId) {
         Constructor<? extends ZigBeeBaseChannelConverter> constructor;
         try {
             if (channelMap.get(channel.getChannelTypeUID()) == null) {
@@ -116,7 +115,7 @@ public final class ZigBeeChannelConverterFactoryImpl implements ZigBeeChannelCon
             constructor = channelMap.get(channel.getChannelTypeUID()).getConstructor();
             ZigBeeBaseChannelConverter instance = constructor.newInstance();
 
-            instance.initialize(thingHandler, channel, coordinatorHandler, ieeeAddress, endpointId);
+            instance.initialize(channel, coordinatorHandler, ieeeAddress, endpointId);
             return instance;
         } catch (Exception e) {
             logger.error("{}: Unable to create channel {}", ieeeAddress, channel.getUID(), e);
@@ -177,4 +176,5 @@ public final class ZigBeeChannelConverterFactoryImpl implements ZigBeeChannelCon
 
         return clusters;
     }
+
 }

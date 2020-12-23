@@ -77,8 +77,8 @@ public class ZigBeeConverterIasTamperTest {
         when(coordinatorHandler.getEndpoint(ieeeAddress, endpointId)).thenReturn(endpoint);
 
         converter = new ZigBeeConverterIasTamper();
-        converter.initialize(thingHandler, channel, coordinatorHandler, ieeeAddress, endpointId);
-        converter.initializeConverter();
+        converter.initialize(channel, coordinatorHandler, ieeeAddress, endpointId);
+        converter.initializeConverter(thingHandler);
     }
 
     @Test

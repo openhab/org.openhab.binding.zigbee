@@ -33,6 +33,7 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.converter.warningdevice.SquawkType;
 import org.openhab.binding.zigbee.converter.warningdevice.WarningType;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +70,8 @@ public class ZigBeeConverterWarningDevice extends ZigBeeBaseChannelConverter {
     }
 
     @Override
-    public boolean initializeConverter() {
+    public boolean initializeConverter(ZigBeeThingHandler thing) {
+        super.initializeConverter(thing);
         iasWdCluster = (ZclIasWdCluster) endpoint.getInputCluster(ZclIasWdCluster.CLUSTER_ID);
         if (iasWdCluster == null) {
             logger.error("{}: Error opening warning device controls", endpoint.getIeeeAddress());

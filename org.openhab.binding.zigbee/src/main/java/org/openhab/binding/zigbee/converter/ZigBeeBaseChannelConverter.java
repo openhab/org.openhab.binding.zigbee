@@ -182,19 +182,16 @@ public abstract class ZigBeeBaseChannelConverter {
     /**
      * Creates the converter handler.
      *
-     * @param thing the {@link ZigBeeThingHandler} the channel is part of
      * @param channel the {@link Channel} for the channel
      * @param coordinator the {@link ZigBeeCoordinatorHandler} this endpoint is part of
      * @param address the {@link IeeeAddress} of the node
      * @param endpointId the endpoint this channel is linked to
      */
-    public void initialize(ZigBeeThingHandler thing, Channel channel, ZigBeeCoordinatorHandler coordinator,
-            IeeeAddress address, int endpointId) {
+    public void initialize(Channel channel, ZigBeeCoordinatorHandler coordinator, IeeeAddress address, int endpointId) {
         this.endpoint = coordinator.getEndpoint(address, endpointId);
         if (this.endpoint == null) {
-            throw new IllegalArgumentException("Device was not found");
+            throw new IllegalArgumentException("Endpoint was not found");
         }
-        this.thing = thing;
         this.channel = channel;
         this.channelUID = channel.getUID();
         this.coordinator = coordinator;
@@ -238,9 +235,13 @@ public abstract class ZigBeeBaseChannelConverter {
      * A list of configuration parameters for the thing should be built and added to {@link #configOptions} based on the
      * features the device supports.
      *
+     * @param thing the {@link ZigBeeThingHandler} the channel is part of
      * @return true if the converter was initialised successfully
      */
-    public abstract boolean initializeConverter();
+    public boolean initializeConverter(ZigBeeThingHandler thing) {
+        this.thing = thing;
+        return false;
+    }
 
     /**
      * Closes the converter and releases any resources.
