@@ -21,16 +21,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
+import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.core.config.discovery.AbstractDiscoveryService;
 import org.openhab.core.config.discovery.DiscoveryResult;
 import org.openhab.core.config.discovery.DiscoveryResultBuilder;
 import org.openhab.core.config.discovery.DiscoveryService;
+import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.UID;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -41,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.IeeeAddress;
+import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeNetworkNodeListener;
 import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.zdo.field.NodeDescriptor.LogicalType;
@@ -73,6 +77,8 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
     private final Set<ZigBeeDiscoveryParticipant> participants = new CopyOnWriteArraySet<>();
     private final Map<UID, ZigBeeNetworkNodeListener> registeredListeners = new ConcurrentHashMap<>();
 
+    private ZigBeeChannelConverterFactory zigbeeChannelConverterFactory;
+
     public ZigBeeDiscoveryService() {
         super(SEARCH_TIME);
         logger.debug("Starting ZigBeeDiscoveryService");
@@ -85,6 +91,15 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
 
     protected void removeZigBeeDiscoveryParticipant(ZigBeeDiscoveryParticipant participant) {
         participants.remove(participant);
+    }
+
+    @Reference
+    protected void setZigBeeChannelConverterFactory(ZigBeeChannelConverterFactory zigbeeChannelConverterFactory) {
+        this.zigbeeChannelConverterFactory = zigbeeChannelConverterFactory;
+    }
+
+    protected void unsetZigBeeChannelConverterFactory(ZigBeeChannelConverterFactory zigbeeChannelConverterFactory) {
+        this.zigbeeChannelConverterFactory = null;
     }
 
     @Override
@@ -199,7 +214,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
                     return;
                 }
 
-                // Perform the device properties discovery
+                // Perform the device properties discovery.
                 // This is designed to allow us to provide the users with more information about what the device is.
                 // This information is also performed here so that it is available to discovery participants
                 // as this can take some time and discovery participants should return promptly.
@@ -220,6 +235,32 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
                         }
                     } catch (Exception e) {
                         logger.error("Participant '{}' threw an exception", participant.getClass().getName(), e);
+                    }
+                }
+
+                // Perform a service discovery.
+                // This is performed here to allow us to configure the device while it is awake - ie during the initial
+                // association and discovery. Many battery devices will quickly go to sleep, and if we don't perform the
+                // service interrogation here the device may have gone to sleep by the time it the channels are
+                // discovered and created in the thing handler.
+                for (ZigBeeEndpoint endpoint : node.getEndpoints()) {
+                    logger.debug("{}: Checking endpoint {} channels", node.getIeeeAddress(), endpoint.getEndpointId());
+                    for (Channel channel : zigbeeChannelConverterFactory.getChannels(defaultThingUID, endpoint)) {
+                        // ZigBeeBaseChannelConverter handler = createZigBeeBaseChannelConverter(channel);
+                        ZigBeeBaseChannelConverter channelConverter = zigbeeChannelConverterFactory
+                                .createConverter(channel, coordinator, node.getIeeeAddress(), endpoint.getEndpointId());
+                        if (channelConverter == null) {
+                            logger.debug("{}: No channel converter found for {}", node.getIeeeAddress(),
+                                    channel.getUID());
+                            continue;
+                        }
+
+                        logger.debug("{}: Initializing channel {} with {}", node.getIeeeAddress(), channel.getUID(),
+                                channelConverter);
+                        if (channelConverter.initializeDevice() == false) {
+                            logger.info("{}: Channel {} failed to initialise device", node.getIeeeAddress(),
+                                    channel.getUID());
+                        }
                     }
                 }
 
