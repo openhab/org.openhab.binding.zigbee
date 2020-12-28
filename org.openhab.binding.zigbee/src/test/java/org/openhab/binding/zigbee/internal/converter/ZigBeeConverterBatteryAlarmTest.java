@@ -60,7 +60,8 @@ public class ZigBeeConverterBatteryAlarmTest {
         when(coordinatorHandler.getEndpoint(ieeeAddress, endpointId)).thenReturn(endpoint);
 
         converter = new ZigBeeConverterBatteryAlarm();
-        converter.initialize(thingHandler, channel, coordinatorHandler, ieeeAddress, endpointId);
+        converter.initialize(channel, coordinatorHandler, ieeeAddress, endpointId);
+        converter.initializeConverter(thingHandler);
     }
 
     @Test

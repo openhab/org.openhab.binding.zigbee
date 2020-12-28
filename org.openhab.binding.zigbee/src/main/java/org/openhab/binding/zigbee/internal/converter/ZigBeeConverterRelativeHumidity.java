@@ -23,6 +23,7 @@ import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +81,8 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
     }
 
     @Override
-    public boolean initializeConverter() {
+    public boolean initializeConverter(ZigBeeThingHandler thing) {
+        super.initializeConverter(thing);
         cluster = (ZclRelativeHumidityMeasurementCluster) endpoint
                 .getInputCluster(ZclRelativeHumidityMeasurementCluster.CLUSTER_ID);
         if (cluster == null) {
