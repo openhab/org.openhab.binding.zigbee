@@ -496,6 +496,13 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         updateStatus(ThingStatus.OFFLINE);
     }
 
+    /**
+     * If the channel converter responds to a command, then the thing is considered ONLINE
+     */
+    public void alive() {
+        updateStatus(ThingStatus.ONLINE);
+    }
+
     private synchronized void initializeDevice() {
         logger.debug("{}: Initializing device", nodeIeeeAddress);
 
