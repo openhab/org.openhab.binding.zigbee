@@ -19,10 +19,11 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import org.eclipse.smarthome.core.thing.Channel;
-import org.eclipse.smarthome.core.thing.CommonTriggerEvents;
-import org.eclipse.smarthome.core.thing.ThingUID;
+import org.openhab.core.thing.Channel;
+import org.openhab.core.thing.CommonTriggerEvents;
+import org.openhab.core.thing.ThingUID;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.binding.zigbee.internal.converter.command.TuyaButtonPressCommand;
 import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
 import org.slf4j.Logger;
@@ -121,7 +122,7 @@ public class ZigBeeConverterTuyaButton extends ZigBeeBaseChannelConverter
     }
 
     @Override
-    public synchronized boolean initializeConverter() {
+    public synchronized boolean initializeConverter(ZigBeeThingHandler thing) {
         clientCluster = endpoint.getOutputCluster(ZclOnOffCluster.CLUSTER_ID);
         serverCluster = endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
 
