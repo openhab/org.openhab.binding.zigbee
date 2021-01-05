@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -58,11 +59,13 @@ import com.zsmartsystems.zigbee.zcl.clusters.levelcontrol.StepCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.levelcontrol.StepWithOnOffCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.levelcontrol.StopCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.levelcontrol.StopWithOnOffCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.levelcontrol.ZclLevelControlCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OffCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OffWithEffectCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OnCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.OnWithTimedOffCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.onoff.ToggleCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.onoff.ZclOnOffCommand;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
@@ -352,57 +355,67 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
 
     @Override
     public void handleCommand(final Command command) {
+        Future<CommandResult> responseFuture = null;
         if (command instanceof OnOffType) {
-            handleOnOffCommand((OnOffType) command);
+            responseFuture = handleOnOffCommand((OnOffType) command);
         } else if (command instanceof PercentType) {
-            handlePercentCommand((PercentType) command);
+            responseFuture = handlePercentCommand((PercentType) command);
         } else if (command instanceof IncreaseDecreaseType) {
-            handleIncreaseDecreaseCommand((IncreaseDecreaseType) command);
+            responseFuture = handleIncreaseDecreaseCommand((IncreaseDecreaseType) command);
         } else {
             logger.warn("{}: Level converter only accepts PercentType, IncreaseDecreaseType and OnOffType - not {}",
                     endpoint.getIeeeAddress(), command.getClass().getSimpleName());
+            return;
         }
 
         // Some functionality (eg IncreaseDecrease) requires that we know the last command received
         lastCommand = command;
+        monitorCommandResponse(command, responseFuture);
     }
 
     /**
      * If we support the OnOff cluster then we should perform the same function as the SwitchOnoffConverter. Otherwise,
      * interpret ON commands as moving to level 100%, and OFF commands as moving to level 0%.
+     *
+     * @return command result future
      */
-    private void handleOnOffCommand(OnOffType cmdOnOff) {
+    private Future<CommandResult> handleOnOffCommand(OnOffType cmdOnOff) {
         if (clusterOnOffServer != null) {
+            ZclOnOffCommand onOffCommand;
             if (cmdOnOff == OnOffType.ON) {
-                clusterOnOffServer.onCommand();
+                onOffCommand = new OnCommand();
             } else {
-                clusterOnOffServer.offCommand();
+                onOffCommand = new OffCommand();
             }
+            return clusterOnOffServer.sendCommand(onOffCommand);
         } else {
             if (cmdOnOff == OnOffType.ON) {
-                moveToLevel(PercentType.HUNDRED);
+                return moveToLevel(PercentType.HUNDRED);
             } else {
-                moveToLevel(PercentType.ZERO);
+                return moveToLevel(PercentType.ZERO);
             }
         }
     }
 
-    private void handlePercentCommand(PercentType cmdPercent) {
-        moveToLevel(cmdPercent);
+    private Future<CommandResult> handlePercentCommand(PercentType cmdPercent) {
+        return moveToLevel(cmdPercent);
     }
 
-    private void moveToLevel(PercentType percent) {
+    private Future<CommandResult> moveToLevel(PercentType percent) {
+        ZclLevelControlCommand levelControlCommand = null;
         if (clusterOnOffServer != null) {
             if (percent.equals(PercentType.ZERO)) {
-                clusterOnOffServer.offCommand();
+                return clusterOnOffServer.sendCommand(new OffCommand());
             } else {
-                clusterLevelControlServer.moveToLevelWithOnOffCommand(percentToLevel(percent),
+                levelControlCommand = new MoveToLevelWithOnOffCommand(percentToLevel(percent),
                         configLevelControl.getDefaultTransitionTime());
             }
         } else {
-            clusterLevelControlServer.moveToLevelCommand(percentToLevel(percent),
+            levelControlCommand = new MoveToLevelCommand(percentToLevel(percent),
                     configLevelControl.getDefaultTransitionTime());
         }
+
+        return clusterLevelControlServer.sendCommand(levelControlCommand);
     }
 
     /**
@@ -416,20 +429,26 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
      *
      * @param cmdIncreaseDecrease the command received
      */
-    private void handleIncreaseDecreaseCommand(IncreaseDecreaseType cmdIncreaseDecrease) {
+    private Future<CommandResult> handleIncreaseDecreaseCommand(IncreaseDecreaseType cmdIncreaseDecrease) {
+        ZclLevelControlCommand levelControlCommand = null;
         if (!cmdIncreaseDecrease.equals(lastCommand)) {
             switch (cmdIncreaseDecrease) {
                 case INCREASE:
-                    clusterLevelControlServer.moveWithOnOffCommand(0, 50);
-                    break;
+                    levelControlCommand = new MoveWithOnOffCommand(0, 50);
                 case DECREASE:
-                    clusterLevelControlServer.moveWithOnOffCommand(1, 50);
+                    levelControlCommand = new MoveWithOnOffCommand(1, 50);
                     break;
                 default:
                     break;
             }
         }
+
         startStopTimer(INCREASEDECREASE_TIMEOUT);
+        if (levelControlCommand != null) {
+            return clusterLevelControlServer.sendCommand(levelControlCommand);
+        }
+
+        return null;
     }
 
     @Override
