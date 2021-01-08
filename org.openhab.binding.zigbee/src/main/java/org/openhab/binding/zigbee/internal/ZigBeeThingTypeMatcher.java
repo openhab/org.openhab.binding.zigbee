@@ -26,10 +26,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.core.config.core.ConfigDescriptionRegistry;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.type.ThingType;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -84,5 +84,4 @@ public class ZigBeeEmberUsbSerialDiscoveryParticipantTest {
     private UsbSerialDeviceInformation forUsbDongle(int vendorId, int productId) {
         return new UsbSerialDeviceInformation(vendorId, productId, null, null, null, 0, null, "/dev/ttyUSB0");
     }
-
 }

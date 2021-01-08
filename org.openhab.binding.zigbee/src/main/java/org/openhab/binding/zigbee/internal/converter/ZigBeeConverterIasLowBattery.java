@@ -12,10 +12,10 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 
@@ -45,5 +45,4 @@ public class ZigBeeConverterIasLowBattery extends ZigBeeConverterIas {
             return null;
         }
     }
-
 }

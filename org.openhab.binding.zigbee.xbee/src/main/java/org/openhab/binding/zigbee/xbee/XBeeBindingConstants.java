@@ -28,5 +28,4 @@ public class XBeeBindingConstants {
 
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_XBEE = new ThingTypeUID(BINDING_ID, "coordinator_xbee");
-
 }

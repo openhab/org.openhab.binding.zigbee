@@ -35,5 +35,4 @@ public interface ZigBeeConsoleCommandProvider {
      * is provided.
      */
     ZigBeeConsoleCommand getCommand(String commandName, ThingTypeUID thingTypeUID);
-
 }

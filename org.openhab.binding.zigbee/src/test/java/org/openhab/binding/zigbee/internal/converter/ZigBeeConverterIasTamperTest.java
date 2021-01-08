@@ -104,5 +104,4 @@ public class ZigBeeConverterIasTamperTest {
         Channel channel = converter.getChannel(thingUID, endpoint);
         assertNull(channel);
     }
-
 }
