@@ -123,6 +123,8 @@ public class ZigBeeConverterTuyaButton extends ZigBeeBaseChannelConverter
 
     @Override
     public synchronized boolean initializeConverter(ZigBeeThingHandler thing) {
+        super.initializeConverter(thing);
+
         clientCluster = endpoint.getOutputCluster(ZclOnOffCluster.CLUSTER_ID);
         serverCluster = endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
 
