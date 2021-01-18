@@ -22,9 +22,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.core.config.core.ConfigDescriptionParameter;
 import org.openhab.core.config.core.Configuration;
-import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.library.types.PercentType;
 import org.openhab.core.library.types.QuantityType;
 import org.openhab.core.library.unit.ImperialUnits;
@@ -36,9 +38,6 @@ import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
 import org.openhab.core.types.StateDescription;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -491,9 +490,12 @@ public abstract class ZigBeeBaseChannelConverter {
      * Note that this is called from a separate thread created in the ThingHandler, so we can safely block here.
      *
      * @param command the {@link Command} that was sent from the framework
-     * @param futureResponse the response from the sendCommand method when sending a command
+     * @param futureResponse the response from the sendCommand method when sending a command (may be null)
      */
     protected void monitorCommandResponse(final Command command, final Future<CommandResult> futureResponse) {
+        if (futureResponse == null) {
+            return;
+        }
         try {
             logger.debug("{}: Channel {} waiting for response to {}", endpoint.getIeeeAddress(), channelUID, command);
             CommandResult response = futureResponse.get();
@@ -501,23 +503,17 @@ public abstract class ZigBeeBaseChannelConverter {
                 logger.debug("{}: Channel {} received TIMEOUT in response to {}", endpoint.getIeeeAddress(), channelUID,
                         command);
                 thing.aliveTimeoutReached();
+                return;
             }
             if (response.isError()) {
                 logger.debug("{}: Channel {} received ERROR in response to {}", endpoint.getIeeeAddress(), channelUID,
                         command);
+                return;
             }
             logger.debug("{}: Channel {} received SUCCESS in response to {}", endpoint.getIeeeAddress(), channelUID,
                     command);
-            // updateChannelState();
+            thing.alive();
         } catch (InterruptedException | ExecutionException e) {
         }
-    }
-
-    private State parseState(Command command) {
-        if (command instanceof OnOffType || command instanceof PercentType) {
-            return (OnOffType) command;
-        }
-
-        return null;
     }
 }
