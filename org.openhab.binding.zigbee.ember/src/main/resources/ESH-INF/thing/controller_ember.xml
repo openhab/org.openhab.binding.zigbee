@@ -129,7 +129,7 @@
 					<option value="1">High RAM</option>
 				</options>
 			</parameter>
-			
+
 			<parameter name="zigbee_initialise" type="boolean" groupName="network">
 				<label>Reset Controller</label>
 				<description>Resets the Controller and sets the configuration to the configured values</description>
@@ -228,7 +228,7 @@
 					<option value="604800">1 Week</option>
 				</options>
 			</parameter>
-			
+
 			<parameter name="zigbee_trustcentremode" type="text" groupName="network">
 				<label>Trust Centre Join Mode</label>
 				<description>Sets the Trust Centre join/rejoin mode</description>
@@ -241,7 +241,7 @@
 				<default>TC_JOIN_SECURE</default>
 				<advanced>true</advanced>
 			</parameter>
-			
+
 		</config-description>
 	</bridge-type>
 

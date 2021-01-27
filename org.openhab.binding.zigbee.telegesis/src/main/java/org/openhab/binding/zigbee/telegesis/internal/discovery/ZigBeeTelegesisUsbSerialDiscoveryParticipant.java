@@ -72,8 +72,7 @@ public class ZigBeeTelegesisUsbSerialDiscoveryParticipant implements UsbSerialDi
             return DiscoveryResultBuilder.create(createQiviconTelegesisDongleThingType(deviceInformation))
                     .withLabel(createQiviconTelegesisDongleLabel(deviceInformation))
                     .withRepresentationProperty(CONFIGURATION_PORT)
-                    .withProperty(CONFIGURATION_PORT, deviceInformation.getSerialPort())
-                    .build();
+                    .withProperty(CONFIGURATION_PORT, deviceInformation.getSerialPort()).build();
         } else {
             return null;
         }
