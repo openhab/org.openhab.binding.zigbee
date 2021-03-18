@@ -149,7 +149,7 @@ public class ZigBeeConverterColorTemperatureTest {
         assertEquals(UnDefType.UNDEF, stateCapture.getValue());
 
         // Set the color temperature and ensure that the channel is not set
-        colorTemperatureAttribute.updateValue(new Integer(100));
+        colorTemperatureAttribute.updateValue(Integer.valueOf(100));
         converter.attributeUpdated(colorTemperatureAttribute, colorTemperatureAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
@@ -162,7 +162,7 @@ public class ZigBeeConverterColorTemperatureTest {
         assertEquals(UnDefType.UNDEF, stateCapture.getValue());
 
         // Set the color temperature and ensure that the channel is not set
-        colorTemperatureAttribute.updateValue(new Integer(100));
+        colorTemperatureAttribute.updateValue(Integer.valueOf(100));
         converter.attributeUpdated(colorTemperatureAttribute, colorTemperatureAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(2)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
@@ -189,7 +189,7 @@ public class ZigBeeConverterColorTemperatureTest {
         // Do not initialize the color mode
 
         // Set the color temperature and ensure that the channel is set
-        colorTemperatureAttribute.updateValue(new Integer(250));
+        colorTemperatureAttribute.updateValue(Integer.valueOf(250));
         converter.attributeUpdated(colorTemperatureAttribute, colorTemperatureAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
@@ -223,7 +223,7 @@ public class ZigBeeConverterColorTemperatureTest {
                 stateCapture.capture());
 
         // Set the color temperature and ensure that the channel is not set
-        colorTemperatureAttribute.updateValue(new Integer(250));
+        colorTemperatureAttribute.updateValue(Integer.valueOf(250));
         converter.attributeUpdated(colorTemperatureAttribute, colorTemperatureAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
