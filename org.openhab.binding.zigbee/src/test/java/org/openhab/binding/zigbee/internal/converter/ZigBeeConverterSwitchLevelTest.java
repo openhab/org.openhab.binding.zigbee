@@ -64,7 +64,7 @@ public class ZigBeeConverterSwitchLevelTest {
 
         // The following sequence checks that the level is ignored if the OnOff state is OFF
         // Initial value of level is 100%
-        onAttribute.updateValue(new Boolean(true));
+        onAttribute.updateValue(Boolean.TRUE);
         converter.attributeUpdated(onAttribute, onAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
@@ -72,14 +72,14 @@ public class ZigBeeConverterSwitchLevelTest {
         assertEquals(PercentType.HUNDRED, stateCapture.getValue());
 
         // Set the level to ensure that level updates work before OnOff states are received
-        levelAttribute.updateValue(new Integer(50));
+        levelAttribute.updateValue(Integer.valueOf(50));
         converter.attributeUpdated(levelAttribute, levelAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(2)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
         assertEquals(new PercentType(20), stateCapture.getValue());
 
         // Turn off, and we should get OFF state
-        onAttribute.updateValue(new Boolean(false));
+        onAttribute.updateValue(Boolean.FALSE);
         converter.attributeUpdated(onAttribute, onAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(3)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
@@ -87,20 +87,20 @@ public class ZigBeeConverterSwitchLevelTest {
         assertEquals(OnOffType.OFF, stateCapture.getValue());
 
         // No update here, but we should remember the value for when it's turned on...
-        levelAttribute.updateValue(new Integer(101));
+        levelAttribute.updateValue(Integer.valueOf(101));
         converter.attributeUpdated(levelAttribute, levelAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(3)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
 
         // Turn on, and use the last level received (20%)
-        onAttribute.updateValue(new Boolean(true));
+        onAttribute.updateValue(Boolean.TRUE);
         converter.attributeUpdated(onAttribute, onAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(4)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
         assertEquals(new PercentType(40), stateCapture.getValue());
 
         // Set the level to 40% and make sure it's updated
-        levelAttribute.updateValue(new Integer(50));
+        levelAttribute.updateValue(Integer.valueOf(50));
         converter.attributeUpdated(levelAttribute, levelAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(5)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());

@@ -68,7 +68,7 @@ public class ZigBeeConverterColorColorTest {
 
         // The following sequence checks that the level is ignored if the OnOff state is OFF
         // Note that the converter assumes the default HSB is 0,0,100, so this is returned first.
-        onAttribute.updateValue(new Boolean(true));
+        onAttribute.updateValue(Boolean.TRUE);
         converter.attributeUpdated(onAttribute, onAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
@@ -76,14 +76,14 @@ public class ZigBeeConverterColorColorTest {
         assertEquals(new HSBType("0,0,100"), stateCapture.getValue());
 
         // Set the level to ensure that when no OnOff has been received, state updates are made
-        levelAttribute.updateValue(new Integer(50));
+        levelAttribute.updateValue(Integer.valueOf(50));
         converter.attributeUpdated(levelAttribute, levelAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(2)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
         assertEquals(new HSBType("0,0,20"), stateCapture.getValue());
 
         // Turn OFF, and state should be OFF (indeed 0,0,0)
-        onAttribute.updateValue(new Boolean(false));
+        onAttribute.updateValue(Boolean.FALSE);
         converter.attributeUpdated(onAttribute, onAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(3)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
@@ -91,20 +91,20 @@ public class ZigBeeConverterColorColorTest {
         assertEquals(new HSBType("0,0,0"), stateCapture.getValue());
 
         // No update here since state is OFF, but we remember the level (20%)...
-        levelAttribute.updateValue(new Integer(101));
+        levelAttribute.updateValue(Integer.valueOf(101));
         converter.attributeUpdated(levelAttribute, levelAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(3)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
 
         // When turned ON, we are set to the last level
-        onAttribute.updateValue(new Boolean(true));
+        onAttribute.updateValue(Boolean.TRUE);
         converter.attributeUpdated(onAttribute, onAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(4)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
         assertEquals(new HSBType("0,0,40"), stateCapture.getValue());
 
         // Set the level and ensure it updates
-        levelAttribute.updateValue(new Integer(50));
+        levelAttribute.updateValue(Integer.valueOf(50));
         converter.attributeUpdated(levelAttribute, levelAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(5)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
@@ -149,37 +149,37 @@ public class ZigBeeConverterColorColorTest {
         assertEquals(UnDefType.UNDEF, stateCapture.getValue());
 
         // Turn ON and ensure that the channel is not set
-        onAttribute.updateValue(new Boolean(true));
+        onAttribute.updateValue(Boolean.TRUE);
         converter.attributeUpdated(onAttribute, onAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
 
         // Set the level and ensure that the channel is not set
-        levelAttribute.updateValue(new Integer(50));
+        levelAttribute.updateValue(Integer.valueOf(50));
         converter.attributeUpdated(levelAttribute, levelAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
 
         // Set the hue and ensure that the channel is not set
-        currentHueAttribute.updateValue(new Integer(10));
+        currentHueAttribute.updateValue(Integer.valueOf(10));
         converter.attributeUpdated(currentHueAttribute, currentHueAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
 
         // Set the saturation and ensure that the channel is not set
-        currentSaturationAttribute.updateValue(new Integer(10));
+        currentSaturationAttribute.updateValue(Integer.valueOf(10));
         converter.attributeUpdated(currentSaturationAttribute, currentSaturationAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
 
         // Set the currentX and ensure that the channel is not set
-        currentXAttribute.updateValue(new Integer(10));
+        currentXAttribute.updateValue(Integer.valueOf(10));
         converter.attributeUpdated(currentXAttribute, currentXAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
 
         // Set the level and ensure that the channel is not set
-        currentYAttribute.updateValue(new Integer(10));
+        currentYAttribute.updateValue(Integer.valueOf(10));
         converter.attributeUpdated(currentYAttribute, currentYAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
