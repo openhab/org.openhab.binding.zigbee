@@ -86,7 +86,8 @@ public final class ZigBeeDefaultChannelConverterProvider implements ZigBeeChanne
         channelMap.put(ZigBeeBindingConstants.CHANNEL_THERMOSTAT_SYSTEMMODE, ZigBeeConverterThermostatSystemMode.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_FANCONTROL, ZigBeeConverterFanControl.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_WINDOWCOVERING_LIFT, ZigBeeConverterWindowCoveringLift.class);
-    }
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_TUYA_BUTTON, ZigBeeConverterTuyaButton.class);
+}
 
     @Override
     public Map<ChannelTypeUID, Class<? extends ZigBeeBaseChannelConverter>> getChannelConverters() {
