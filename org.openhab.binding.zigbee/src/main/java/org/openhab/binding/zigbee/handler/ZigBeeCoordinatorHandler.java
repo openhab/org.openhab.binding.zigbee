@@ -532,6 +532,10 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             logger.error("Error updating configuration ", e);
         }
 
+        // Set initializeNetwork to false to ensure that if communications to the dongle restarts, we don't reinitialise
+        // the network again!
+        initializeNetwork = false;
+
         initializeDongleSpecific();
     }
 
