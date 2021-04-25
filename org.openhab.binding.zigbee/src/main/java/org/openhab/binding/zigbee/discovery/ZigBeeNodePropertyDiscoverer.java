@@ -12,10 +12,6 @@
  */
 package org.openhab.binding.zigbee.discovery;
 
-import static com.zsmartsystems.zigbee.zcl.clusters.ZclBasicCluster.*;
-import static org.eclipse.smarthome.core.thing.Thing.*;
-import static org.openhab.binding.zigbee.ZigBeeBindingConstants.*;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,6 +38,7 @@ import com.zsmartsystems.zigbee.zdo.field.PowerDescriptor;
  *
  * @author Chris Jackson - initial contribution
  * @author Henning Sudbrock - read multiple attributes from basic cluster with a single command to speedup discovery
+ * @author Chris Jackson - fix issue with reading multiple attributes that are unsupported
  */
 public class ZigBeeNodePropertyDiscoverer {
 
@@ -50,13 +47,13 @@ public class ZigBeeNodePropertyDiscoverer {
     private static final Map<String, Integer> BASIC_CLUSTER_ATTRIBUTES_FOR_THING_PROPERTY;
     static {
         Map<String, Integer> map = new HashMap<String, Integer>();
-        map.put(PROPERTY_VENDOR, ATTR_MANUFACTURERNAME);
-        map.put(PROPERTY_MODEL_ID, ATTR_MODELIDENTIFIER);
-        map.put(PROPERTY_HARDWARE_VERSION, ATTR_HWVERSION);
-        map.put(THING_PROPERTY_APPLICATIONVERSION, ATTR_APPLICATIONVERSION);
-        map.put(THING_PROPERTY_STKVERSION, ATTR_STACKVERSION);
-        map.put(THING_PROPERTY_ZCLVERSION, ATTR_ZCLVERSION);
-        map.put(THING_PROPERTY_DATECODE, ATTR_DATECODE);
+        map.put(Thing.PROPERTY_VENDOR, ZclBasicCluster.ATTR_MANUFACTURERNAME);
+        map.put(Thing.PROPERTY_MODEL_ID, ZclBasicCluster.ATTR_MODELIDENTIFIER);
+        map.put(Thing.PROPERTY_HARDWARE_VERSION, ZclBasicCluster.ATTR_HWVERSION);
+        map.put(ZigBeeBindingConstants.THING_PROPERTY_APPLICATIONVERSION, ZclBasicCluster.ATTR_APPLICATIONVERSION);
+        map.put(ZigBeeBindingConstants.THING_PROPERTY_STKVERSION, ZclBasicCluster.ATTR_STACKVERSION);
+        map.put(ZigBeeBindingConstants.THING_PROPERTY_ZCLVERSION, ZclBasicCluster.ATTR_ZCLVERSION);
+        map.put(ZigBeeBindingConstants.THING_PROPERTY_DATECODE, ZclBasicCluster.ATTR_DATECODE);
         BASIC_CLUSTER_ATTRIBUTES_FOR_THING_PROPERTY = Collections.unmodifiableMap(map);
     }
 
@@ -116,21 +113,25 @@ public class ZigBeeNodePropertyDiscoverer {
 
     private void addPropertiesFromNodeDescriptors(ZigBeeNode node) {
         if (node.getLogicalType() != null) {
-            properties.put(THING_PROPERTY_LOGICALTYPE, node.getLogicalType().toString());
+            properties.put(ZigBeeBindingConstants.THING_PROPERTY_LOGICALTYPE, node.getLogicalType().toString());
         }
 
-        properties.put(THING_PROPERTY_NETWORKADDRESS, node.getNetworkAddress().toString());
+        properties.put(ZigBeeBindingConstants.THING_PROPERTY_NETWORKADDRESS, node.getNetworkAddress().toString());
 
         PowerDescriptor powerDescriptor = node.getPowerDescriptor();
         if (powerDescriptor != null) {
-            properties.put(THING_PROPERTY_AVAILABLEPOWERSOURCES, powerDescriptor.getAvailablePowerSources().toString());
-            properties.put(THING_PROPERTY_POWERSOURCE, powerDescriptor.getCurrentPowerSource().toString());
-            properties.put(THING_PROPERTY_POWERMODE, powerDescriptor.getCurrentPowerMode().toString());
-            properties.put(THING_PROPERTY_POWERLEVEL, powerDescriptor.getPowerLevel().toString());
+            properties.put(ZigBeeBindingConstants.THING_PROPERTY_AVAILABLEPOWERSOURCES,
+                    powerDescriptor.getAvailablePowerSources().toString());
+            properties.put(ZigBeeBindingConstants.THING_PROPERTY_POWERSOURCE,
+                    powerDescriptor.getCurrentPowerSource().toString());
+            properties.put(ZigBeeBindingConstants.THING_PROPERTY_POWERMODE,
+                    powerDescriptor.getCurrentPowerMode().toString());
+            properties.put(ZigBeeBindingConstants.THING_PROPERTY_POWERLEVEL,
+                    powerDescriptor.getPowerLevel().toString());
         }
 
         if (node.getNodeDescriptor() != null) {
-            properties.put(THING_PROPERTY_MANUFACTURERCODE,
+            properties.put(ZigBeeBindingConstants.THING_PROPERTY_MANUFACTURERCODE,
                     String.format("0x%04x", node.getNodeDescriptor().getManufacturerCode()));
         }
     }
@@ -151,6 +152,9 @@ public class ZigBeeNodePropertyDiscoverer {
         // Attempt to read all properties with a single command.
         // If successful, this updates the cache with the property values.
         try {
+            // Try to get the supported attributes so we can reduce the number of attribute read requests
+            basicCluster.discoverAttributes(false).get();
+
             Map<String, Integer> propertiesToRead = getPropertiesToRead(basicCluster);
             List<Integer> attributes = new ArrayList<>(propertiesToRead.values());
             if (!attributes.isEmpty()) {
@@ -164,8 +168,10 @@ public class ZigBeeNodePropertyDiscoverer {
         // Now, get each single property via the basic cluster. If the above multi-attribute read was successful,
         // this will get each property from the cache. Otherwise, it will try to get the property from the device again.
 
-        if (alwaysUpdate || properties.get(Thing.PROPERTY_VENDOR) == null) {
-            String manufacturer = basicCluster.getManufacturerName(Long.MAX_VALUE);
+        if ((alwaysUpdate || properties.get(Thing.PROPERTY_VENDOR) == null)
+                && basicCluster.isAttributeSupported(ZclBasicCluster.ATTR_MANUFACTURERNAME)) {
+            String manufacturer = (String) basicCluster.getAttribute(ZclBasicCluster.ATTR_MANUFACTURERNAME)
+                    .readValue(Long.MAX_VALUE);
             if (manufacturer != null) {
                 properties.put(Thing.PROPERTY_VENDOR, manufacturer.trim());
             } else {
@@ -173,8 +179,10 @@ public class ZigBeeNodePropertyDiscoverer {
             }
         }
 
-        if (alwaysUpdate || properties.get(Thing.PROPERTY_MODEL_ID) == null) {
-            String model = basicCluster.getModelIdentifier(Long.MAX_VALUE);
+        if ((alwaysUpdate || properties.get(Thing.PROPERTY_MODEL_ID) == null)
+                && basicCluster.isAttributeSupported(ZclBasicCluster.ATTR_MODELIDENTIFIER)) {
+            String model = (String) basicCluster.getAttribute(ZclBasicCluster.ATTR_MODELIDENTIFIER)
+                    .readValue(Long.MAX_VALUE);
             if (model != null) {
                 properties.put(Thing.PROPERTY_MODEL_ID, model.trim());
             } else {
@@ -182,8 +190,10 @@ public class ZigBeeNodePropertyDiscoverer {
             }
         }
 
-        if (alwaysUpdate || properties.get(Thing.PROPERTY_HARDWARE_VERSION) == null) {
-            Integer hwVersion = basicCluster.getHwVersion(Long.MAX_VALUE);
+        if ((alwaysUpdate || properties.get(Thing.PROPERTY_HARDWARE_VERSION) == null)
+                && basicCluster.isAttributeSupported(ZclBasicCluster.ATTR_MODELIDENTIFIER)) {
+            Integer hwVersion = (Integer) basicCluster.getAttribute(ZclBasicCluster.ATTR_HWVERSION)
+                    .readValue(Long.MAX_VALUE);
             if (hwVersion != null) {
                 properties.put(Thing.PROPERTY_HARDWARE_VERSION, hwVersion.toString());
             } else {
@@ -191,8 +201,10 @@ public class ZigBeeNodePropertyDiscoverer {
             }
         }
 
-        if (alwaysUpdate || properties.get(ZigBeeBindingConstants.THING_PROPERTY_APPLICATIONVERSION) == null) {
-            Integer appVersion = basicCluster.getApplicationVersion(Long.MAX_VALUE);
+        if ((alwaysUpdate || properties.get(ZigBeeBindingConstants.THING_PROPERTY_APPLICATIONVERSION) == null)
+                && basicCluster.isAttributeSupported(ZclBasicCluster.ATTR_MODELIDENTIFIER)) {
+            Integer appVersion = (Integer) basicCluster.getAttribute(ZclBasicCluster.ATTR_APPLICATIONVERSION)
+                    .readValue(Long.MAX_VALUE);
             if (appVersion != null) {
                 properties.put(ZigBeeBindingConstants.THING_PROPERTY_APPLICATIONVERSION, appVersion.toString());
             } else {
@@ -200,8 +212,10 @@ public class ZigBeeNodePropertyDiscoverer {
             }
         }
 
-        if (alwaysUpdate || properties.get(ZigBeeBindingConstants.THING_PROPERTY_STKVERSION) == null) {
-            Integer stkVersion = basicCluster.getStackVersion(Long.MAX_VALUE);
+        if ((alwaysUpdate || properties.get(ZigBeeBindingConstants.THING_PROPERTY_STKVERSION) == null)
+                && basicCluster.isAttributeSupported(ZclBasicCluster.ATTR_STACKVERSION)) {
+            Integer stkVersion = (Integer) basicCluster.getAttribute(ZclBasicCluster.ATTR_STACKVERSION)
+                    .readValue(Long.MAX_VALUE);
             if (stkVersion != null) {
                 properties.put(ZigBeeBindingConstants.THING_PROPERTY_STKVERSION, stkVersion.toString());
             } else {
@@ -209,8 +223,10 @@ public class ZigBeeNodePropertyDiscoverer {
             }
         }
 
-        if (alwaysUpdate || properties.get(ZigBeeBindingConstants.THING_PROPERTY_ZCLVERSION) == null) {
-            Integer zclVersion = basicCluster.getZclVersion(Long.MAX_VALUE);
+        if ((alwaysUpdate || properties.get(ZigBeeBindingConstants.THING_PROPERTY_ZCLVERSION) == null)
+                && basicCluster.isAttributeSupported(ZclBasicCluster.ATTR_ZCLVERSION)) {
+            Integer zclVersion = (Integer) basicCluster.getAttribute(ZclBasicCluster.ATTR_ZCLVERSION)
+                    .readValue(Long.MAX_VALUE);
             if (zclVersion != null) {
                 properties.put(ZigBeeBindingConstants.THING_PROPERTY_ZCLVERSION, zclVersion.toString());
             } else {
@@ -218,8 +234,10 @@ public class ZigBeeNodePropertyDiscoverer {
             }
         }
 
-        if (alwaysUpdate || properties.get(ZigBeeBindingConstants.THING_PROPERTY_DATECODE) == null) {
-            String dateCode = basicCluster.getDateCode(Long.MAX_VALUE);
+        if ((alwaysUpdate || properties.get(ZigBeeBindingConstants.THING_PROPERTY_DATECODE) == null)
+                && basicCluster.isAttributeSupported(ZclBasicCluster.ATTR_ZCLVERSION)) {
+            String dateCode = (String) basicCluster.getAttribute(ZclBasicCluster.ATTR_DATECODE)
+                    .readValue(Long.MAX_VALUE);
             if (dateCode != null) {
                 properties.put(ZigBeeBindingConstants.THING_PROPERTY_DATECODE, dateCode);
             } else {
@@ -232,8 +250,9 @@ public class ZigBeeNodePropertyDiscoverer {
     private Map<String, Integer> getPropertiesToRead(ZclBasicCluster basicCluster) {
         Map<String, Integer> result = new HashMap<>();
         for (Map.Entry<String, Integer> entry : BASIC_CLUSTER_ATTRIBUTES_FOR_THING_PROPERTY.entrySet()) {
-            if (alwaysUpdate || properties.get(entry.getKey()) == null
-                    || !basicCluster.getAttribute(entry.getValue()).isLastValueCurrent(Long.MAX_VALUE)) {
+            ZclAttribute attribute = basicCluster.getAttribute(entry.getValue());
+            if ((alwaysUpdate || properties.get(entry.getKey()) == null
+                    || !attribute.isLastValueCurrent(Long.MAX_VALUE)) && attribute.isImplemented()) {
                 result.put(entry.getKey(), entry.getValue());
             }
         }
@@ -252,7 +271,7 @@ public class ZigBeeNodePropertyDiscoverer {
             ZclAttribute attribute = otaCluster.getAttribute(ZclOtaUpgradeCluster.ATTR_CURRENTFILEVERSION);
             Object fileVersion = attribute.readValue(Long.MAX_VALUE);
             if (fileVersion != null) {
-                properties.put(PROPERTY_FIRMWARE_VERSION, String.format("0x%08X", fileVersion));
+                properties.put(Thing.PROPERTY_FIRMWARE_VERSION, String.format("0x%08X", fileVersion));
             } else {
                 logger.debug("{}: Could not get OTA firmware version from device", node.getIeeeAddress());
             }
