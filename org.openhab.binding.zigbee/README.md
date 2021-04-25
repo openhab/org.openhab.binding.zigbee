@@ -2,24 +2,6 @@
 
 The ZigBee binding supports an interface to a wireless ZigBee home automation network and allows ZigBee devices from numerous manufacturers to be used without a system specific gateway.
 
-## When to use this binding
-This binding is meant to be used with a Zigbee dongle that is connected directly to the machine where openHAB is running. Most of the time, this will be a USB dongle, in terms of this binding, this dongle is referred to as the _coordinator_. See the [section on coordinators](#coordinators) below for more information about coordinators.
-
-There are other ways to use Zigbee divices with openHAB. E.g. if you already have a gateway from a Philips Hue system or an IKEA Trådfri system, you could also use the [Hue binding](https://www.openhab.org/addons/bindings/hue/) or the [Tradfri binding](https://www.openhab.org/addons/bindings/tradfri/). And there are even more possibilities, e.g. some people use an MQTT bus to couple their Zigbee devices. To help you choose the right solution, here's a short list of pros and cons of this binding, compared to other solutions:
-
-### pro
-
-- Flexible, potentially able to combine Zigbee devices of all brands and types, as long as they adhere to the Zigbee standard.
-- Not limited by limitations of commercial gateways, that might be limited for commercial reasons.
-- A Zigbee dongle can be cheaper than a stand alone gateway.
-- Because the dongle is powered by the machine openHAB is running on, this solution is probably more energy efficient.
-
-### con
-
-- Zigbee dongles can't be bought at the hardware store around the corner. It might be hard to find one. (See [Supported Coordinators](#supported-coordinators) for some links to available devices.)
-- Due to the large numer of available Zigbee devices, it is impossible to test all combinations of devices. So you might run into unexpected problems.
-- Depending on your setup, chances are that you can't operate your Zigbee devices if there is a problem with your openHAB install. With a separate gateway, you probably have other means of operation as a backup.
-
 ## Supported Things
 
 ### Coordinators
@@ -218,7 +200,7 @@ If the usb dongle is not recognized, it might be necessary to make the dongle's 
 
 #### Telegesis ETRX3
 
-The thing type is `coordinator_telegesis`.
+The thing type is `coordinator_telegesis`. Note that this dongle may not support all Zigbee 3.0 devices.
 
 #### Digi XBee X-Stick
 
@@ -329,12 +311,14 @@ The following channels are supported -:
 |------------------------------|------------------------------------------|--------------------------|-------------|
 | battery-level                | `POWER_CONFIGURATION` (0x0001)           | Number                   |             |
 | battery_voltage              | `POWER_CONFIGURATION` (0x0001)           | Number:ElectricPotential |             |
+| binaryinput                  | `BINARY_INPUT__BASIC` (0x000F)           | Switch                   |             |
 | color_color                  | `COLOR_CONTROL` (0x0300)                 | Color                    |             |
 | color_temperature            | `COLOR_CONTROL` (0x0300)                 | Dimmer                   |             |
+| door_state                   | `DOOR_LOCK` (0x0101)                     | Switch                   |             |
 | electrical_activepower       | `ELECTRICAL_MEASUREMENT` (0x0B04)        | Number:Power             |             |
 | electrical_rmscurrent        | `ELECTRICAL_MEASUREMENT` (0x0B04)        | Number:ElectricCurrent   |             |
 | electrical_rmsvoltage        | `ELECTRICAL_MEASUREMENT` (0x0B04)        | Number:ElectricPotential |             |
-| binaryinput                  | `BINARY_INPUT__BASIC` (0x000F)           | Switch                   |             |
+| fancontrol                   | `FAN_CONTROL` (0x0202)                   | Number                   |             |
 | ias_codetector               | `IAS_ZONE` (0x0500)                      | Switch                   |             |
 | ias_contactportal1           | `IAS_ZONE` (0x0500)                      | Switch                   |             |
 | ias_fire                     | `IAS_ZONE` (0x0500)                      | Switch                   |             |
@@ -345,14 +329,27 @@ The following channels are supported -:
 | ias_movement                 | `IAS_ZONE` (0x0500)                      | Switch                   |             |
 | ias_vibration                | `IAS_ZONE` (0x0500)                      | Switch                   |             |
 | ias_tamper                   | `IAS_ZONE` (0x0500)                      | Switch                   |             |
+| ias_tamper                   | `IAS_ZONE` (0x0500)                      | Switch                   |             |
 | measurement_illuminance      | `ILLUMINANCE_MEASUREMENT` (0x0400)       | Number                   |             |
 | measurement_pressure         | `PRESSURE_MEASUREMENT` (0x0403)          | Number:Pressure          |             |
 | measurement_relativehumidity | `RELATIVE_HUMIDITY_MEASUREMENT` (0x0405) | Number                   |             |
 | measurement_temperature      | `TEMPERATURE_MEASUREMENT` (0x0402)       | Number:Temperature       |             |
+| metering_instantdemand       | `METERING` (0x0702)                      | Number                   |             |
+| metering_sumdelivered        | `METERING` (0x0702)                      | Number                   |             |
+| metering_sumreceived         | `METERING` (0x0702)                      | Number                   |             |
 | sensor_occupancy             | `OCCUPANCY_SENSING` (0x0406)             | Switch                   |             |
 | switch_dimmer                | `LEVEL_CONTROL` (0x0008)                 | Dimmer                   |             |
 | switch_onoff                 | `ON_OFF` (0x0006)                        | Switch                   |             |
+| thermostat_localtemp         | `THERMOSTAT` (0x0201)                    | Number                   |             |
+| thermostat_occupiedcooling   | `THERMOSTAT` (0x0201)                    | Number                   |             |
+| thermostat_occupiedheating   | `THERMOSTAT` (0x0201)                    | Number                   |             |
+| thermostat_outdoortemp       | `THERMOSTAT` (0x0201)                    | Number                   |             |
+| thermostat_runningmode       | `THERMOSTAT` (0x0201)                    | Number                   |             |
+| thermostat_systemmode        | `THERMOSTAT` (0x0201)                    | Number                   |             |
+| thermostat_unoccupiedcooling | `THERMOSTAT` (0x0201)                    | Number                   |             |
+| thermostat_unoccupiedheating | `THERMOSTAT` (0x0201)                    | Number                   |             |
 | warning_device               | `IAS_WD` (0x0502)                        | String                   |             |
+| windowcovering_lift          | `WINDOW_COVERING` (0x0102)               | Rollershutter            |             |
 
 
 ### Updates
