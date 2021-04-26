@@ -539,21 +539,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         logger.debug("ZigBee initialise done. channel={}, PanId={}  EPanId={}", currentChannel, currentPanId,
                 currentExtendedPanId);
 
-        try {
-            // Persist the network configuration
-            Configuration configuration = editConfiguration();
-            configuration.put(CONFIGURATION_PANID, currentPanId);
-            if (currentExtendedPanId != null) {
-                configuration.put(CONFIGURATION_EXTENDEDPANID, currentExtendedPanId.toString());
-            }
-            configuration.put(CONFIGURATION_CHANNEL, currentChannel.getChannel());
-
-            // If the thing is defined statically, then this will fail and we will never start!
-            updateConfiguration(configuration);
-        } catch (IllegalStateException e) {
-            logger.error("Error updating configuration ", e);
-        }
-
         // Set initializeNetwork to false to ensure that if communications to the dongle restarts, we don't reinitialise
         // the network again!
         initializeNetwork = false;
@@ -915,6 +900,25 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             case INITIALISING:
                 break;
             case ONLINE:
+                try {
+                    // Persist the network configuration
+                    ZigBeeChannel currentChannel = networkManager.getZigBeeChannel();
+                    int currentPanId = networkManager.getZigBeePanId();
+                    ExtendedPanId currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
+
+                    Configuration configuration = editConfiguration();
+                    configuration.put(CONFIGURATION_PANID, currentPanId);
+                    if (currentExtendedPanId != null) {
+                        configuration.put(CONFIGURATION_EXTENDEDPANID, currentExtendedPanId.toString());
+                    }
+                    configuration.put(CONFIGURATION_CHANNEL, currentChannel.getChannel());
+
+                    // If the thing is defined statically, then this will fail and we will never start!
+                    updateConfiguration(configuration);
+                } catch (IllegalStateException e) {
+                    logger.error("Error updating configuration when network is ONLINE ", e);
+                }
+
                 updateStatus(ThingStatus.ONLINE);
                 if (reconnectPollingTimer != null) {
                     reconnectPollingTimer.cancel(true);
