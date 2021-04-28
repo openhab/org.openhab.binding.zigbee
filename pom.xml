@@ -61,21 +61,18 @@
     <dependency>
       <groupId>org.openhab.core.bom</groupId>
       <artifactId>org.openhab.core.bom.compile</artifactId>
-      <version>${project.version}</version>
       <type>pom</type>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.openhab.core.bom</groupId>
       <artifactId>org.openhab.core.bom.openhab-core</artifactId>
-      <version>${project.version}</version>
       <type>pom</type>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.openhab.core.bom</groupId>
       <artifactId>org.openhab.core.bom.test</artifactId>
-      <version>${project.version}</version>
       <type>pom</type>
       <scope>test</scope>
     </dependency>
@@ -229,7 +226,6 @@
          <plugin>
            <groupId>org.apache.maven.plugins</groupId>
            <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.0.0-M5</version>
          </plugin>
       <plugin>
         <groupId>org.commonjava.maven.plugins</groupId>

@@ -27,15 +27,15 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
+import org.openhab.binding.zigbee.console.ZigBeeConsoleCommandProvider;
+import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
+import org.openhab.core.io.console.Console;
+import org.openhab.core.io.console.extensions.AbstractConsoleCommandExtension;
+import org.openhab.core.io.console.extensions.ConsoleCommandExtension;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingRegistry;
 import org.openhab.core.thing.ThingUID;
-import org.openhab.core.io.console.Console;
-import org.openhab.core.io.console.extensions.AbstractConsoleCommandExtension;
-import org.openhab.core.io.console.extensions.ConsoleCommandExtension;
-import org.openhab.binding.zigbee.console.ZigBeeConsoleCommandProvider;
-import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -105,7 +105,7 @@ public class ZigBeeConsoleCommandExtension extends AbstractConsoleCommandExtensi
                 .map(this::buildCommandUsage).collect(toList());
 
         result.add(buildCommandUsage(
-                "setBridgeUid [bridgeUid] - sets the ID of the bridge to be used in subsequent commands; only needed if there is more than 1 bridge"));
+                "setBridgeUid [bridgeUid] - sets the UID of the bridge to be used in subsequent commands; only required if there is more than 1 bridge"));
 
         return result;
     }
@@ -177,7 +177,7 @@ public class ZigBeeConsoleCommandExtension extends AbstractConsoleCommandExtensi
                 throw new CommandExecutionException("No ZigBee bridge found");
             } else if (bridges.size() > 1) {
                 throw new CommandExecutionException(
-                        "Multiple ZigBee bridges found; please select one using the setBridgeId command");
+                        "Multiple ZigBee bridges found; please select one using the setBridgeUid command");
             } else {
                 return (Bridge) bridges.get(0);
             }
