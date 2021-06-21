@@ -33,7 +33,7 @@
 
   <properties>
     <report.fail.on.error>false</report.fail.on.error>
-    <zsmartsystems.version>1.3.10</zsmartsystems.version>
+    <zsmartsystems.version>1.4.0</zsmartsystems.version>
     <spotless.version>2.0.3</spotless.version>
     <spotless.check.skip>true</spotless.check.skip> <!-- Spotless disabled for now -->
     <sat.version>0.10.0</sat.version>
@@ -309,18 +309,6 @@
       </releases>
       <snapshots>
         <enabled>true</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>snapshots-zsmartsystems-com.zsmartsystems</id>
-      <name>zsmartsystems-com.zsmartsystems</name>
-      <url>https://oss.jfrog.org/artifactory/oss-snapshot-local/</url>
-      <releases>
-          <enabled>false</enabled>
-          <updatePolicy>never</updatePolicy>
-      </releases>
-      <snapshots>
-          <enabled>true</enabled>
       </snapshots>
     </repository>
   </repositories>

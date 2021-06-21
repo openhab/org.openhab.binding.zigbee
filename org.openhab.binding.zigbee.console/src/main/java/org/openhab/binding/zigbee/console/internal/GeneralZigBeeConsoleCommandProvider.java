@@ -21,8 +21,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.binding.zigbee.console.ZigBeeConsoleCommandProvider;
+import org.openhab.core.thing.ThingTypeUID;
 import org.osgi.service.component.annotations.Component;
 
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleAttributeReadCommand;
@@ -36,6 +36,7 @@ import com.zsmartsystems.zigbee.console.ZigBeeConsoleDescribeEndpointCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleDescribeNodeCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleDeviceFingerprintCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleDeviceInformationCommand;
+import com.zsmartsystems.zigbee.console.ZigBeeConsoleGroupCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleInstallKeyCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleLinkKeyCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleNetworkBackupCommand;
@@ -47,6 +48,7 @@ import com.zsmartsystems.zigbee.console.ZigBeeConsoleReportingConfigCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleReportingSubscribeCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleReportingUnsubscribeCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleRoutingTableCommand;
+import com.zsmartsystems.zigbee.console.ZigBeeConsoleSceneCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleUnbindCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleWindowCoveringCommand;
 
@@ -59,19 +61,20 @@ import com.zsmartsystems.zigbee.console.ZigBeeConsoleWindowCoveringCommand;
 @Component
 public class GeneralZigBeeConsoleCommandProvider implements ZigBeeConsoleCommandProvider {
 
-    public static final List<ZigBeeConsoleCommand> GENERAL_COMMANDS = unmodifiableList(
-            asList(new ZigBeeConsoleAttributeReadCommand(), new ZigBeeConsoleAttributeSupportedCommand(),
-                    new ZigBeeConsoleAttributeWriteCommand(), new ZigBeeConsoleBindCommand(),
-                    new ZigBeeConsoleBindingTableCommand(), new ZigBeeConsoleCommandsSupportedCommand(),
-                    new ZigBeeConsoleDescribeEndpointCommand(), new ZigBeeConsoleDescribeNodeCommand(),
-                    new ZigBeeConsoleDeviceFingerprintCommand(), new ZigBeeConsoleDeviceInformationCommand(),
-                    new ZigBeeConsoleInstallKeyCommand(), new ZigBeeConsoleLinkKeyCommand(),
-                    new ZigBeeConsoleNetworkBackupCommand(), new ZigBeeConsoleNetworkJoinCommand(),
-                    new ZigBeeConsoleNetworkLeaveCommand(), new ZigBeeConsoleNodeListCommand(),
-                    new ZigBeeConsoleOtaUpgradeCommand(), new ZigBeeConsoleReportingConfigCommand(),
-                    new ZigBeeConsoleReportingSubscribeCommand(), new ZigBeeConsoleReportingUnsubscribeCommand(),
-                    new ZigBeeConsoleRoutingTableCommand(), new ZigBeeConsoleUnbindCommand(),
-                    new ZigBeeConsoleWindowCoveringCommand()));
+    @SuppressWarnings("null")
+    public static final List<ZigBeeConsoleCommand> GENERAL_COMMANDS = unmodifiableList(asList(
+            new ZigBeeConsoleAttributeReadCommand(), new ZigBeeConsoleAttributeSupportedCommand(),
+            new ZigBeeConsoleAttributeWriteCommand(), new ZigBeeConsoleBindCommand(),
+            new ZigBeeConsoleBindingTableCommand(), new ZigBeeConsoleCommandsSupportedCommand(),
+            new ZigBeeConsoleDescribeEndpointCommand(), new ZigBeeConsoleDescribeNodeCommand(),
+            new ZigBeeConsoleDeviceFingerprintCommand(), new ZigBeeConsoleDeviceInformationCommand(),
+            new ZigBeeConsoleGroupCommand(), new ZigBeeConsoleInstallKeyCommand(), new ZigBeeConsoleLinkKeyCommand(),
+            new ZigBeeConsoleNetworkBackupCommand(), new ZigBeeConsoleNetworkJoinCommand(),
+            new ZigBeeConsoleNetworkLeaveCommand(), new ZigBeeConsoleNodeListCommand(),
+            new ZigBeeConsoleOtaUpgradeCommand(), new ZigBeeConsoleSceneCommand(),
+            new ZigBeeConsoleReportingConfigCommand(), new ZigBeeConsoleReportingSubscribeCommand(),
+            new ZigBeeConsoleReportingUnsubscribeCommand(), new ZigBeeConsoleRoutingTableCommand(),
+            new ZigBeeConsoleUnbindCommand(), new ZigBeeConsoleWindowCoveringCommand()));
 
     private Map<String, ZigBeeConsoleCommand> generalCommands = GENERAL_COMMANDS.stream()
             .collect(toMap(ZigBeeConsoleCommand::getCommand, identity()));
