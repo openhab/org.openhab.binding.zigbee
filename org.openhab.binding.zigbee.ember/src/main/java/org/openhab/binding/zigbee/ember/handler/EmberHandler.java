@@ -12,9 +12,7 @@
  */
 package org.openhab.binding.zigbee.ember.handler;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -26,7 +24,6 @@ import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.core.io.transport.serial.SerialPortManager;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.thing.Bridge;
-import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
 import org.openhab.core.thing.binding.firmware.Firmware;
@@ -72,8 +69,6 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
 
     private @Nullable ScheduledFuture<?> pollingJob;
 
-    private final Set<String> thingChannelsLinked = new HashSet<>();
-
     public EmberHandler(Bridge coordinator, SerialPortManager serialPortManager,
             ZigBeeChannelConverterFactory channelFactory) {
         super(coordinator, channelFactory);
@@ -95,24 +90,23 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
                 @Override
                 public void run() {
                     Map<String, Long> counters = dongle.getCounters();
-
                     if (!counters.isEmpty()) {
-                        if (thingChannelsLinked.contains(ASH_RX_DAT)) {
+                        if (isLinked(ASH_RX_DAT)) {
                             updateState(ASH_RX_DAT, new DecimalType(counters.get(ASH_RX_DAT)));
                         }
-                        if (thingChannelsLinked.contains(ASH_TX_DAT)) {
+                        if (isLinked(ASH_TX_DAT)) {
                             updateState(ASH_TX_DAT, new DecimalType(counters.get(ASH_TX_DAT)));
                         }
-                        if (thingChannelsLinked.contains(ASH_RX_ACK)) {
+                        if (isLinked(ASH_RX_ACK)) {
                             updateState(ASH_RX_ACK, new DecimalType(counters.get(ASH_RX_ACK)));
                         }
-                        if (thingChannelsLinked.contains(ASH_TX_ACK)) {
+                        if (isLinked(ASH_TX_ACK)) {
                             updateState(ASH_TX_ACK, new DecimalType(counters.get(ASH_TX_ACK)));
                         }
-                        if (thingChannelsLinked.contains(ASH_RX_NAK)) {
+                        if (isLinked(ASH_RX_NAK)) {
                             updateState(ASH_RX_NAK, new DecimalType(counters.get(ASH_RX_NAK)));
                         }
-                        if (thingChannelsLinked.contains(ASH_TX_NAK)) {
+                        if (isLinked(ASH_TX_NAK)) {
                             updateState(ASH_TX_NAK, new DecimalType(counters.get(ASH_TX_NAK)));
                         }
                     }
@@ -130,22 +124,6 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
             pollingJob.cancel(true);
             pollingJob = null;
         }
-    }
-
-    @Override
-    public void channelLinked(ChannelUID channelUID) {
-        logger.debug("Ember MultiNetwork NCP Channel {} linked", channelUID);
-
-        // We keep track of what channels are used and only poll channels that the framework is using
-        thingChannelsLinked.add(channelUID.getId());
-    }
-
-    @Override
-    public void channelUnlinked(ChannelUID channelUID) {
-        logger.debug("Ember MultiNetwork NCP Channel {} unlinked", channelUID);
-
-        // We keep track of what channels are used and only poll channels that the framework is using
-        thingChannelsLinked.remove(channelUID.getId());
     }
 
     @Override

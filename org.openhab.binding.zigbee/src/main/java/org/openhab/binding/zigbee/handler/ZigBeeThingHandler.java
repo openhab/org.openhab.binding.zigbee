@@ -150,12 +150,6 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     private ExecutorService commandScheduler = ThreadPoolManager.getPool("zigbee-thinghandler-commands");
 
     /**
-     * A set of channels that have been linked to items. This is used to ensure we only poll channels that are linked to
-     * keep network activity to a minimum.
-     */
-    private final Set<ChannelUID> thingChannelsLinked = new HashSet<>();
-
-    /**
      * The factory to create the converters for the different channels.
      */
     private final ZigBeeChannelConverterFactory channelFactory;
@@ -599,7 +593,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                     logger.debug("{}: Polling {} channels...", nodeIeeeAddress, channels.keySet());
 
                     for (ChannelUID channelUid : channels.keySet()) {
-                        if (!thingChannelsLinked.contains(channelUid)) {
+                        if (isLinked(channelUid)) {
                             // Don't poll if this channel isn't linked
                             continue;
                         }
@@ -656,9 +650,6 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     public void channelLinked(ChannelUID channelUID) {
         logger.debug("{}: Channel {} linked - polling started.", nodeIeeeAddress, channelUID);
 
-        // We keep track of what channels are used and only poll channels that the framework is using
-        thingChannelsLinked.add(channelUID);
-
         // Refresh the value
         ZigBeeBaseChannelConverter channel = channels.get(channelUID);
         if (channel == null) {
@@ -666,14 +657,6 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             return;
         }
         channel.handleRefresh();
-    }
-
-    @Override
-    public void channelUnlinked(ChannelUID channelUID) {
-        logger.debug("{}: Channel {} unlinked - polling stopped.", nodeIeeeAddress, channelUID);
-
-        // We keep track of what channels are used and only poll channels that the framework is using
-        thingChannelsLinked.remove(channelUID);
     }
 
     @Override
