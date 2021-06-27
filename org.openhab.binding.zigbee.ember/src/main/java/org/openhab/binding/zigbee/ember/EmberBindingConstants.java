@@ -26,6 +26,13 @@ public class EmberBindingConstants {
 
     public static final String BINDING_ID = "zigbee";
 
+    public static final String CHANNEL_RX_DAT = "rx_dat";
+    public static final String CHANNEL_TX_DAT = "tx_dat";
+    public static final String CHANNEL_RX_ACK = "rx_ack";
+    public static final String CHANNEL_TX_ACK = "tx_ack";
+    public static final String CHANNEL_RX_NAK = "rx_nak";
+    public static final String CHANNEL_TX_NAK = "tx_nak";
+
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_EMBER = new ThingTypeUID(BINDING_ID, "coordinator_ember");
 

@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
+import org.openhab.binding.zigbee.ember.EmberBindingConstants;
 import org.openhab.binding.zigbee.ember.internal.EmberConfiguration;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.core.io.transport.serial.SerialPortManager;
@@ -91,23 +92,29 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
                 public void run() {
                     Map<String, Long> counters = dongle.getCounters();
                     if (!counters.isEmpty()) {
-                        if (isLinked(ASH_RX_DAT)) {
-                            updateState(ASH_RX_DAT, new DecimalType(counters.get(ASH_RX_DAT)));
+                        if (isLinked(EmberBindingConstants.CHANNEL_RX_DAT)) {
+                            updateState(EmberBindingConstants.CHANNEL_RX_DAT,
+                                    new DecimalType(counters.get(ASH_RX_DAT)));
                         }
-                        if (isLinked(ASH_TX_DAT)) {
-                            updateState(ASH_TX_DAT, new DecimalType(counters.get(ASH_TX_DAT)));
+                        if (isLinked(EmberBindingConstants.CHANNEL_TX_DAT)) {
+                            updateState(EmberBindingConstants.CHANNEL_TX_DAT,
+                                    new DecimalType(counters.get(ASH_TX_DAT)));
                         }
-                        if (isLinked(ASH_RX_ACK)) {
-                            updateState(ASH_RX_ACK, new DecimalType(counters.get(ASH_RX_ACK)));
+                        if (isLinked(EmberBindingConstants.CHANNEL_RX_ACK)) {
+                            updateState(EmberBindingConstants.CHANNEL_RX_ACK,
+                                    new DecimalType(counters.get(ASH_RX_ACK)));
                         }
-                        if (isLinked(ASH_TX_ACK)) {
-                            updateState(ASH_TX_ACK, new DecimalType(counters.get(ASH_TX_ACK)));
+                        if (isLinked(EmberBindingConstants.CHANNEL_TX_ACK)) {
+                            updateState(EmberBindingConstants.CHANNEL_TX_ACK,
+                                    new DecimalType(counters.get(ASH_TX_ACK)));
                         }
-                        if (isLinked(ASH_RX_NAK)) {
-                            updateState(ASH_RX_NAK, new DecimalType(counters.get(ASH_RX_NAK)));
+                        if (isLinked(EmberBindingConstants.CHANNEL_RX_NAK)) {
+                            updateState(EmberBindingConstants.CHANNEL_RX_NAK,
+                                    new DecimalType(counters.get(ASH_RX_NAK)));
                         }
-                        if (isLinked(ASH_TX_NAK)) {
-                            updateState(ASH_TX_NAK, new DecimalType(counters.get(ASH_TX_NAK)));
+                        if (isLinked(EmberBindingConstants.CHANNEL_TX_NAK)) {
+                            updateState(EmberBindingConstants.CHANNEL_TX_NAK,
+                                    new DecimalType(counters.get(ASH_TX_NAK)));
                         }
                     }
                 }
