@@ -648,13 +648,16 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     transportConfig.addOption(TransportConfigOption.RADIO_TX_POWER, configurationParameter.getValue());
                     break;
 
+                case ZigBeeBindingConstants.CONFIGURATION_CHANNEL:
+                    networkManager.setZigBeeChannel(ZigBeeChannel.create(channelId));
+                    break;
+
                 case ZigBeeBindingConstants.CONFIGURATION_LINKKEY:
                 case ZigBeeBindingConstants.CONFIGURATION_NETWORKKEY:
                 case ZigBeeBindingConstants.CONFIGURATION_POWERMODE:
                 case ZigBeeBindingConstants.CONFIGURATION_BAUD:
                 case ZigBeeBindingConstants.CONFIGURATION_FLOWCONTROL:
                 case ZigBeeBindingConstants.CONFIGURATION_PORT:
-                case ZigBeeBindingConstants.CONFIGURATION_CHANNEL:
                 case ZigBeeBindingConstants.CONFIGURATION_EXTENDEDPANID:
                 case ZigBeeBindingConstants.CONFIGURATION_INITIALIZE:
                     reinitialise = true;
