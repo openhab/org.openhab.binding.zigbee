@@ -533,6 +533,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         }
 
         // Get the final network configuration
+        nodeIeeeAddress = networkManager.getLocalIeeeAddress();
         currentChannel = networkManager.getZigBeeChannel();
         currentPanId = networkManager.getZigBeePanId();
         currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
