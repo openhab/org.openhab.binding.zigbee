@@ -15,9 +15,9 @@ package org.openhab.binding.zigbee.serial;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Set;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.TooManyListenersException;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import org.openhab.core.io.transport.serial.PortInUseException;
@@ -103,8 +103,6 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
      */
     private final Object bufferSynchronisationObject = new Object();
 
-    private Set<String> portOpenRuntimeExcepionMessages = ConcurrentHashMap.newKeySet();
-
     /**
      * Constructor setting port name and baud rate.
      *
@@ -136,24 +134,40 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
             logger.debug("Connecting to serial port [{}] at {} baud, flow control {}.", portName, baudRate,
                     flowControl);
 
-            // in some rare cases we have to check whether a port really exists, because if it doesn't the call to
-            // CommPortIdentifier#open will kill the whole JVM
-            Stream<SerialPortIdentifier> serialPortIdentifiers = serialPortManager.getIdentifiers();
-            if (!serialPortIdentifiers.findAny().isPresent()) {
-                logger.debug("No communication ports found, cannot connect to [{}]", portName);
+            // In some rare cases we have to check whether a port really exists, because if it doesn't the call to
+            // CommPortIdentifier#open will kill the whole JVM.
+            // Virtual ports (like RFC2217) do not have a discovery logic, so we have to skip this check.
+            // TODO: Remove this check once nrjavaserial does no longer crash on non-existent ports.
+            if(!portName.toLowerCase().startsWith("rfc2217")) {
+                Stream<SerialPortIdentifier> serialPortIdentifiers = serialPortManager.getIdentifiers();
+                if (!serialPortIdentifiers.findAny().isPresent()) {
+                    logger.debug("No communication ports found, cannot connect to [{}]", portName);
+                    return false;
+                }
+            }
+            SerialPortIdentifier portIdentifier = serialPortManager.getIdentifier(portName);
+            if (portIdentifier == null) {
+                logger.error("Serial Error: Port [{}] does not exist.", portName);
                 return false;
             }
 
-            SerialPortIdentifier portIdentifier = serialPortManager.getIdentifier(portName);
-            if (portIdentifier == null) {
-                logger.error("Serial Error: Port {} does not exist.", portName);
+            SerialPort localSerialPort;
+
+            try {
+                localSerialPort = portIdentifier.open("org.openhab.binding.zigbee", 100);
+            } catch (PortInUseException e) {
+                logger.error("Serial Error: Port [{}] is in use.", portName);
                 return false;
             }
 
             try {
-                SerialPort localSerialPort = portIdentifier.open("org.openhab.binding.zigbee", 100);
-                localSerialPort.setSerialPortParams(baudRate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1,
-                        SerialPort.PARITY_NONE);
+                localSerialPort.setSerialPortParams(baudRate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+            } catch (UnsupportedCommOperationException e) {
+                logger.error("Failed to set serial port parameters on [{}]", portName);
+                return false;
+            }
+
+            try {
                 switch (flowControl) {
                     case FLOWCONTROL_OUT_NONE:
                         localSerialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
@@ -167,41 +181,49 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
                     default:
                         break;
                 }
-
-                localSerialPort.enableReceiveTimeout(100);
-                localSerialPort.addEventListener(this);
-                localSerialPort.notifyOnDataAvailable(true);
-
-                logger.debug("Serial port [{}] is initialized.", portName);
-                serialPort = localSerialPort;
-                portOpenRuntimeExcepionMessages.clear();
-            } catch (PortInUseException e) {
-                logger.error("Serial Error: Port {} in use.", portName);
-                return false;
             } catch (UnsupportedCommOperationException e) {
-                logger.error("Serial Error: Unsupported comm operation on Port {}.", portName);
-                return false;
-            } catch (TooManyListenersException e) {
-                logger.error("Serial Error: Too many listeners on Port {}.", portName);
-                return false;
-            } catch (RuntimeException e) {
-                if (!portOpenRuntimeExcepionMessages.contains(e.getMessage())) {
-                    portOpenRuntimeExcepionMessages.add(e.getMessage());
-                    logger.error("Serial Error: Device cannot be opened on Port {}. Caused by {}", portName,
-                            e.getMessage());
-                }
+                logger.debug("Flow Control Mode {} is unsupported on [{}].", flowControl, portName);
+            }
+
+            try {
+                localSerialPort.enableReceiveTimeout(100);
+            } catch (UnsupportedCommOperationException e) {
+                logger.debug("Enabling receive timeout is unsupported on [{}]", portName);
+            }
+
+            try {
+                inputStream = localSerialPort.getInputStream();
+            } catch (IOException e) {
+                logger.debug("Failed to get input stream on [{}].", portName);
                 return false;
             }
 
             try {
-                inputStream = serialPort.getInputStream();
-                outputStream = serialPort.getOutputStream();
+                outputStream = localSerialPort.getOutputStream();
             } catch (IOException e) {
+                logger.debug("Failed to get output stream on [{}].", portName);
+                return false;
             }
 
+            try {
+                localSerialPort.addEventListener(this);
+            } catch (TooManyListenersException e) {
+                logger.error("Serial Error: Too many listeners on [{}].", portName);
+                return false;
+            }
+
+            localSerialPort.notifyOnDataAvailable(true);
+
+            logger.debug("Serial port [{}] is initialized.", portName);
+
+            serialPort = localSerialPort;
             return true;
-        } catch (Exception e) {
-            logger.error("Unable to open serial port: ", e);
+        } catch (RuntimeException e) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            pw.close();
+            logger.error("Serial Error: Device cannot be opened on [{}]. Caused by {}, call stack: {}", portName, e.getMessage(), sw.toString());
             return false;
         }
     }
@@ -241,6 +263,7 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
         }
         try {
             outputStream.write(value);
+            outputStream.flush();
         } catch (IOException e) {
         }
     }
@@ -257,6 +280,7 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
         }
         try {
             outputStream.write(bytes);
+            outputStream.flush();
         } catch (IOException e) {
         }
     }
