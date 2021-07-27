@@ -157,7 +157,7 @@ public class ZigBeeConverterMeteringSummationReceived extends ZigBeeBaseChannelC
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.ELECTRICAL_MEASUREMENT
+        if (attribute.getCluster() == ZclClusterType.METERING
                 && attribute.getId() == ZclMeteringCluster.ATTR_CURRENTSUMMATIONRECEIVED) {
             Integer value = (Integer) val;
             BigDecimal valueCalibrated = BigDecimal.valueOf(value * multiplier / divisor);
