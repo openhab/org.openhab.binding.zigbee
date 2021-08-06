@@ -159,7 +159,7 @@ public class ZigBeeConverterMeteringSummationDelivered extends ZigBeeBaseChannel
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.METERING
                 && attribute.getId() == ZclMeteringCluster.ATTR_CURRENTSUMMATIONDELIVERED) {
-            Integer value = (Integer) val;
+            Integer value = ((Long) val).intValue();
             BigDecimal valueCalibrated = BigDecimal.valueOf(value * multiplier / divisor);
             updateChannelState(new DecimalType(valueCalibrated));
         }
