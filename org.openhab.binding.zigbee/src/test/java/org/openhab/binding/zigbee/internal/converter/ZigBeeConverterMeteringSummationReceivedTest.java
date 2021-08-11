@@ -45,11 +45,15 @@ public class ZigBeeConverterMeteringSummationReceivedTest {
         ZigBeeEndpoint endpoint = Mockito.mock(ZigBeeEndpoint.class);
         ZigBeeCoordinatorHandler coordinatorHandler = Mockito.mock(ZigBeeCoordinatorHandler.class);
         ZclMeteringCluster cluster = Mockito.mock(ZclMeteringCluster.class);
-        ZclAttribute initAttribute = Mockito.mock(ZclAttribute.class);
-        Mockito.when(cluster.getAttribute(ZclMeteringCluster.ATTR_CURRENTSUMMATIONRECEIVED)).thenReturn(initAttribute);
-        Mockito.when(cluster.getAttribute(ZclMeteringCluster.ATTR_DIVISOR)).thenReturn(initAttribute);
-        Mockito.when(cluster.getAttribute(ZclMeteringCluster.ATTR_MULTIPLIER)).thenReturn(initAttribute);
-        Mockito.when(initAttribute.readValue(Long.MAX_VALUE)).thenReturn(1);
+        ZclAttribute divAttribute = Mockito.mock(ZclAttribute.class);
+        ZclAttribute multAttribute = Mockito.mock(ZclAttribute.class);
+        ZclAttribute valueAttribute = Mockito.mock(ZclAttribute.class);
+        Mockito.when(cluster.getAttribute(ZclMeteringCluster.ATTR_CURRENTSUMMATIONRECEIVED)).thenReturn(valueAttribute);
+        Mockito.when(cluster.getAttribute(ZclMeteringCluster.ATTR_DIVISOR)).thenReturn(divAttribute);
+        Mockito.when(cluster.getAttribute(ZclMeteringCluster.ATTR_MULTIPLIER)).thenReturn(multAttribute);
+        Mockito.when(divAttribute.readValue(Long.MAX_VALUE)).thenReturn(10000);
+        Mockito.when(multAttribute.readValue(Long.MAX_VALUE)).thenReturn(1);
+        Mockito.when(valueAttribute.readValue(Long.MAX_VALUE)).thenReturn(65);
 
         Mockito.when(coordinatorHandler.getEndpoint(ArgumentMatchers.any(IeeeAddress.class), ArgumentMatchers.anyInt()))
                 .thenReturn(endpoint);
@@ -67,11 +71,11 @@ public class ZigBeeConverterMeteringSummationReceivedTest {
                 ZclMeteringCluster.ATTR_CURRENTSUMMATIONRECEIVED, "Received", ZclDataType.SIGNED_48_BIT_INTEGER, false,
                 false, false, false);
 
-        attribute.updateValue(1L);
+        attribute.updateValue(65L);
         converter.attributeUpdated(attribute, attribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
         assertEquals(new ChannelUID("a:b:c:d"), channelCapture.getValue());
-        assertEquals(DecimalType.valueOf("1"), stateCapture.getValue());
+        assertEquals(DecimalType.valueOf("0.0065"), stateCapture.getValue());
     }
 }
