@@ -48,8 +48,8 @@ public class ZigBeeConverterMeteringSummationReceived extends ZigBeeBaseChannelC
 
     private ZclAttribute attribute;
 
-    private Integer divisor;
-    private Integer multiplier;
+    private double divisor = 1.0;
+    private double multiplier = 1.0;
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
@@ -159,7 +159,7 @@ public class ZigBeeConverterMeteringSummationReceived extends ZigBeeBaseChannelC
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getCluster() == ZclClusterType.METERING
                 && attribute.getId() == ZclMeteringCluster.ATTR_CURRENTSUMMATIONRECEIVED) {
-            Integer value = ((Long) val).intValue();
+            double value = ((Long) val).intValue();
             BigDecimal valueCalibrated = BigDecimal.valueOf(value * multiplier / divisor);
             updateChannelState(new DecimalType(valueCalibrated));
         }
@@ -169,12 +169,15 @@ public class ZigBeeConverterMeteringSummationReceived extends ZigBeeBaseChannelC
         ZclAttribute divisorAttribute = clusterMetering.getAttribute(ZclMeteringCluster.ATTR_DIVISOR);
         ZclAttribute multiplierAttribute = clusterMetering.getAttribute(ZclMeteringCluster.ATTR_MULTIPLIER);
 
-        divisor = (Integer) divisorAttribute.readValue(Long.MAX_VALUE);
-        multiplier = (Integer) multiplierAttribute.readValue(Long.MAX_VALUE);
-        if (divisor == null || multiplier == null) {
-            divisor = 1;
-            multiplier = 1;
+        Integer iDiv = (Integer) divisorAttribute.readValue(Long.MAX_VALUE);
+        Integer iMult = (Integer) multiplierAttribute.readValue(Long.MAX_VALUE);
+        if (iDiv == null || iMult == null) {
+            iDiv = 1;
+            iMult = 1;
         }
+
+        divisor = iDiv;
+        multiplier = iMult;
     }
 
 }
