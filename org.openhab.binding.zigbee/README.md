@@ -201,7 +201,9 @@ If the usb dongle is not recognized, it might be necessary to make the dongle's 
 ##### Flashing/Upgrading on Linux
 
 Some Ember EZSP NCP coordinators can be flashed to upgrade the firmware using walthowd/husbzb-firmware (https://github.com/walthowd/husbzb-firmware).
-It has been tested with the HUSZBZ-1 and Telegesis ETRX357USB and may work with other coordinators based on similar EM358x/EM3581, ETRX35x/ETRX357, and EFR32MGxx MCU chips from Silicon Labs.
+It has been tested with the HUSZBZ-1 and Telegesis ETRX357USB and may work with other coordinators. 
+You are responsible to ensure you load the correct firmware for your device. 
+Loading the wrong firmware may render your device inoperable
 
 Review the `husbzb-firmware` readme for detailed instructions.
 Using docker to upgrade a HUSZBZ-1 is as follows:
