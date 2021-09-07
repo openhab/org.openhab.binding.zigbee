@@ -37,6 +37,7 @@ import com.zsmartsystems.zigbee.console.ZigBeeConsoleDescribeEndpointCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleDescribeNodeCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleDeviceFingerprintCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleDeviceInformationCommand;
+import com.zsmartsystems.zigbee.console.ZigBeeConsoleFirmwareCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleGroupCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleInstallKeyCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleLinkKeyCommand;
@@ -70,8 +71,8 @@ public class GeneralZigBeeConsoleCommandProvider implements ZigBeeConsoleCommand
             new ZigBeeConsoleBindingTableCommand(), new ZigBeeConsoleChannelCommand(),
             new ZigBeeConsoleCommandsSupportedCommand(), new ZigBeeConsoleDescribeEndpointCommand(),
             new ZigBeeConsoleDescribeNodeCommand(), new ZigBeeConsoleDeviceFingerprintCommand(),
-            new ZigBeeConsoleDeviceInformationCommand(), new ZigBeeConsoleGroupCommand(),
-            new ZigBeeConsoleInstallKeyCommand(), new ZigBeeConsoleLinkKeyCommand(),
+            new ZigBeeConsoleDeviceInformationCommand(), new ZigBeeConsoleFirmwareCommand(),
+            new ZigBeeConsoleGroupCommand(), new ZigBeeConsoleInstallKeyCommand(), new ZigBeeConsoleLinkKeyCommand(),
             new ZigBeeConsoleNeighborsListCommand(), new ZigBeeConsoleNetworkBackupCommand(),
             new ZigBeeConsoleNetworkJoinCommand(), new ZigBeeConsoleNetworkLeaveCommand(),
             new ZigBeeConsoleNodeListCommand(), new ZigBeeConsoleOtaUpgradeCommand(), new ZigBeeConsoleSceneCommand(),
