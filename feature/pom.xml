@@ -45,11 +45,16 @@
 			<artifactId>org.openhab.binding.zigbee.ember</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.openhab.addons.bundles</groupId>
-			<artifactId>org.openhab.binding.zigbee.telegesis</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>org.openhab.addons.bundles</groupId>
+            <artifactId>org.openhab.binding.zigbee.telegesis</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openhab.addons.bundles</groupId>
+            <artifactId>org.openhab.binding.zigbee.tuya</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>org.openhab.addons.bundles</groupId>
 			<artifactId>org.openhab.binding.zigbee.xbee</artifactId>
