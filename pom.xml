@@ -33,7 +33,7 @@
 
   <properties>
     <report.fail.on.error>false</report.fail.on.error>
-    <zsmartsystems.version>1.4.0</zsmartsystems.version>
+    <zsmartsystems.version>1.4.1</zsmartsystems.version>
     <spotless.version>2.0.3</spotless.version>
     <spotless.check.skip>true</spotless.check.skip> <!-- Spotless disabled for now -->
     <sat.version>0.10.0</sat.version>
