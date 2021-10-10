@@ -77,7 +77,6 @@ public class ZigBeeDataStore implements ZigBeeNetworkDataStore {
 
     private XStream openStream() {
         XStream stream = new XStream(new StaxDriver());
-        XStream.setupDefaultSecurity(stream);
         stream.allowTypesByWildcard(new String[] { ZigBeeNode.class.getPackageName() + ".**" });
         stream.setClassLoader(this.getClass().getClassLoader());
 
