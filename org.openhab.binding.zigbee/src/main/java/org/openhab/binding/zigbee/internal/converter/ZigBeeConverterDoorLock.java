@@ -16,14 +16,14 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.types.Command;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +32,9 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclDoorLockCluster;
+import com.zsmartsystems.zigbee.zcl.clusters.doorlock.LockDoorCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.doorlock.UnlockDoorCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.doorlock.ZclDoorLockCommand;
 import com.zsmartsystems.zigbee.zcl.field.ByteArray;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
@@ -45,6 +48,7 @@ public class ZigBeeConverterDoorLock extends ZigBeeBaseChannelConverter implemen
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterDoorLock.class);
 
     private ZclDoorLockCluster cluster;
+    private ZclAttribute attribute;
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
@@ -68,8 +72,9 @@ public class ZigBeeConverterDoorLock extends ZigBeeBaseChannelConverter implemen
             CommandResult bindResponse = bind(serverCluster).get();
             if (bindResponse.isSuccess()) {
                 // Configure reporting - no faster than once per second - no slower than 2 hours.
-                CommandResult reportingResponse = serverCluster.setDoorStateReporting(1, REPORTING_PERIOD_DEFAULT_MAX)
-                        .get();
+                ZclAttribute attribute = cluster.getAttribute(ZclDoorLockCluster.ATTR_LOCKSTATE);
+                CommandResult reportingResponse = attribute.setReporting(1, REPORTING_PERIOD_DEFAULT_MAX).get();
+
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 pollingPeriod = POLLING_PERIOD_HIGH;
@@ -90,6 +95,8 @@ public class ZigBeeConverterDoorLock extends ZigBeeBaseChannelConverter implemen
             return false;
         }
 
+        attribute = cluster.getAttribute(ZclDoorLockCluster.ATTR_LOCKSTATE);
+
         // Add the listener
         cluster.addAttributeListener(this);
 
@@ -105,16 +112,19 @@ public class ZigBeeConverterDoorLock extends ZigBeeBaseChannelConverter implemen
 
     @Override
     public void handleRefresh() {
-        cluster.getDoorState(0);
+        attribute.readValue(0);
     }
 
     @Override
     public void handleCommand(final Command command) {
+        ZclDoorLockCommand zclCommand;
         if (command == OnOffType.ON) {
-            cluster.lockDoorCommand(new ByteArray(new byte[0]));
+            zclCommand = new LockDoorCommand(new ByteArray(new byte[0]));
         } else {
-            cluster.unlockDoorCommand(new ByteArray(new byte[0]));
+            zclCommand = new UnlockDoorCommand(new ByteArray(new byte[0]));
         }
+
+        monitorCommandResponse(command, cluster.sendCommand(zclCommand));
     }
 
     @Override
