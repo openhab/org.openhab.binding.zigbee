@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.IeeeAddress;
+import com.zsmartsystems.zigbee.ZigBeeDeviceType;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeProfileType;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
@@ -423,6 +424,27 @@ public abstract class ZigBeeBaseChannelConverter {
      */
     protected QuantityType valueToTemperature(int value) {
         return new QuantityType<>(BigDecimal.valueOf(value, 2), SIUnits.CELSIUS);
+    }
+
+    /**
+     * Gets a {@link String} of the device type for the {@link ZigBeeEndpoint} to be used in device labels.
+     *
+     * @param endpoint the {@link ZigBeeEndpoint}
+     * @return the {@link String} of the device type
+     */
+    protected String getDeviceTypeLabel(ZigBeeEndpoint endpoint) {
+        ZigBeeProfileType profileType = ZigBeeProfileType.getByValue(endpoint.getProfileId());
+        if (profileType == null) {
+            profileType = ZigBeeProfileType.ZIGBEE_HOME_AUTOMATION;
+        }
+
+        ZigBeeDeviceType deviceType = ZigBeeDeviceType.getByValue(profileType, endpoint.getDeviceId());
+
+        if (deviceType == null) {
+            return String.format("Unknown Device Type %04X", endpoint.getDeviceId());
+        }
+
+        return deviceType.toString();
     }
 
     /**
