@@ -463,8 +463,8 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
                 .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_SWITCH_LEVEL),
                         ZigBeeBindingConstants.ITEM_TYPE_DIMMER)
                 .withType(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL)
-                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_SWITCH_LEVEL).withProperties(createProperties(endpoint))
-                .build();
+                .withLabel(getDeviceTypeLabel(endpoint) + ": " + ZigBeeBindingConstants.CHANNEL_LABEL_SWITCH_LEVEL)
+                .withProperties(createProperties(endpoint)).build();
     }
 
     @Override

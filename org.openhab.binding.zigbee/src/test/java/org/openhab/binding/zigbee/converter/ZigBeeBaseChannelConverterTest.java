@@ -15,12 +15,16 @@ package org.openhab.binding.zigbee.converter;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeConverterSwitchLevel;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.PercentType;
 import org.openhab.core.library.types.QuantityType;
 import org.openhab.core.library.unit.ImperialUnits;
 import org.openhab.core.library.unit.SIUnits;
+
+import com.zsmartsystems.zigbee.ZigBeeEndpoint;
+import com.zsmartsystems.zigbee.ZigBeeProfileType;
 
 /**
  * Test of the ZigBeeBaseChannelConverter
@@ -44,6 +48,23 @@ public class ZigBeeBaseChannelConverterTest {
 
         assertEquals(PercentType.ZERO, converter.levelToPercent(0));
         assertEquals(PercentType.HUNDRED, converter.levelToPercent(254));
+    }
+
+    @Test
+    public void getDeviceTypeLabel() {
+        ZigBeeBaseChannelConverter converter = new ZigBeeConverterSwitchLevel();
+
+        ZigBeeEndpoint endpoint = Mockito.mock(ZigBeeEndpoint.class);
+        Mockito.when(endpoint.getDeviceId()).thenReturn(1);
+        assertEquals("LEVEL_CONTROL_SWITCH", converter.getDeviceTypeLabel(endpoint));
+
+        Mockito.when(endpoint.getProfileId()).thenReturn(ZigBeeProfileType.ZIGBEE_LIGHT_LINK.getKey());
+
+        Mockito.when(endpoint.getDeviceId()).thenReturn(0);
+        assertEquals("ZLL_ON_OFF_LIGHT", converter.getDeviceTypeLabel(endpoint));
+
+        Mockito.when(endpoint.getDeviceId()).thenReturn(65535);
+        assertEquals("Unknown Device Type FFFF", converter.getDeviceTypeLabel(endpoint));
     }
 
     @Test

@@ -246,8 +246,8 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
                 .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_SWITCH_ONOFF),
                         ZigBeeBindingConstants.ITEM_TYPE_SWITCH)
                 .withType(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF)
-                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_SWITCH_ONOFF).withProperties(createProperties(endpoint))
-                .build();
+                .withLabel(getDeviceTypeLabel(endpoint) + ": " + ZigBeeBindingConstants.CHANNEL_LABEL_SWITCH_ONOFF)
+                .withProperties(createProperties(endpoint)).build();
     }
 
     @Override
