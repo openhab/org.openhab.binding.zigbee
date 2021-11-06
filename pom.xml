@@ -36,7 +36,7 @@
     <zsmartsystems.version>1.4.1</zsmartsystems.version>
     <spotless.version>2.0.3</spotless.version>
     <spotless.check.skip>true</spotless.check.skip> <!-- Spotless disabled for now -->
-    <sat.version>0.10.0</sat.version>
+    <sat.version>0.12.0</sat.version>
   </properties>
 
   <scm>
