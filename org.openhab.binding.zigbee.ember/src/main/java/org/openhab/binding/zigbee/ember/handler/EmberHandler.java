@@ -85,11 +85,19 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
         TransportConfig transportConfig = createTransportConfig(config);
 
         startZigBee(dongle, transportConfig, DefaultSerializer.class, DefaultDeserializer.class);
+    }
 
+    @Override
+    protected void initializeDongleSpecific() {
         if (pollingJob == null) {
             Runnable pollingRunnable = new Runnable() {
                 @Override
                 public void run() {
+                    if (zigbeeTransport == null) {
+                        return;
+                    }
+
+                    ZigBeeDongleEzsp dongle = (ZigBeeDongleEzsp) zigbeeTransport;
                     Map<String, Long> counters = dongle.getCounters();
                     if (!counters.isEmpty()) {
                         if (isLinked(EmberBindingConstants.CHANNEL_RX_DAT)) {
@@ -120,7 +128,7 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
                 }
             };
 
-            pollingJob = scheduler.scheduleAtFixedRate(pollingRunnable, 30, 30, TimeUnit.SECONDS);
+            pollingJob = scheduler.scheduleWithFixedDelay(pollingRunnable, 30, 30, TimeUnit.SECONDS);
         }
     }
 
