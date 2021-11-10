@@ -13,6 +13,8 @@
 package org.openhab.binding.zigbee.tuya;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.type.ChannelTypeUID;
 
 /**
@@ -24,7 +26,9 @@ import org.openhab.core.thing.type.ChannelTypeUID;
 @NonNullByDefault
 public class TuyaBindingConstants {
 
-    public static final String BINDING_ID = "zigbee";
+    // List of Thing Type UIDs
+    public final static ThingTypeUID THING_TYPE_TUYA_BLIND_AM25 = new ThingTypeUID(ZigBeeBindingConstants.BINDING_ID,
+            "tuya_am25");
 
     public static final String CHANNEL_NAME_TUYA_BUTTON = "tuyabutton";
     public static final String CHANNEL_LABEL_TUYA_BUTTON = "Button";

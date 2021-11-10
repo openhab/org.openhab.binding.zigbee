@@ -1,3 +1,4 @@
+tuya_am25,vendor=_TZE200_zuz7f94z,modelId=TS0601
 tuya_ts0041,vendor=_TZ3000_tk3s5tyg,modelId=TS0041
 tuya_ts0042,vendor=_TZ3000_adkvzooy,modelId=TS0042
 tuya_ts0043,vendor=_TZ3000_qzjcsmar,modelId=TS0043

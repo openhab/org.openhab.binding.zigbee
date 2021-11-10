@@ -10,15 +10,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.zigbee.tuya.converter;
+package org.openhab.binding.zigbee.tuya.internal.converter;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterProvider;
+import org.openhab.binding.zigbee.tuya.TuyaBindingConstants;
 import org.openhab.core.thing.type.ChannelTypeUID;
 import org.osgi.service.component.annotations.Component;
 
@@ -35,7 +35,7 @@ public final class ZigBeeTuyaChannelConverterProvider implements ZigBeeChannelCo
 
     public ZigBeeTuyaChannelConverterProvider() {
         // Add all the converters into the map...
-        channelMap.put(ZigBeeBindingConstants.CHANNEL_COLOR_COLOR, ZigBeeConverterTuyaButton.class);
+        channelMap.put(TuyaBindingConstants.CHANNEL_TUYA_BUTTON, ZigBeeConverterTuyaButton.class);
     }
 
     @Override

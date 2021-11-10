@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.openhab.binding.zigbee.discovery.ZigBeeDiscoveryParticipant;
-import org.openhab.binding.zigbee.internal.ZigBeeThingTypeMatcher;
+import org.openhab.binding.zigbee.discovery.ZigBeeThingTypeMatcher;
 import org.openhab.core.config.discovery.DiscoveryResult;
 import org.openhab.core.config.discovery.DiscoveryResultBuilder;
 import org.openhab.core.thing.Thing;

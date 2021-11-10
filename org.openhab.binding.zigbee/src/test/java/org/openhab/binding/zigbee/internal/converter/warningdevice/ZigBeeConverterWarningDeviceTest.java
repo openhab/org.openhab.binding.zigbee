@@ -26,7 +26,7 @@ import org.openhab.binding.zigbee.converter.warningdevice.SquawkType;
 import org.openhab.binding.zigbee.converter.warningdevice.WarningMode;
 import org.openhab.binding.zigbee.converter.warningdevice.WarningType;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.binding.zigbee.handler.ZigBeeGenericThingHandler;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.thing.Channel;
@@ -44,7 +44,7 @@ public class ZigBeeConverterWarningDeviceTest {
 
     private ZigBeeConverterWarningDevice converter;
 
-    private ZigBeeThingHandler thingHandler;
+    private ZigBeeGenericThingHandler thingHandler;
     private Channel channel;
     private ZigBeeCoordinatorHandler coordinatorHandler;
     private ZigBeeEndpoint endpoint;
@@ -58,7 +58,7 @@ public class ZigBeeConverterWarningDeviceTest {
 
         endpoint = mock(ZigBeeEndpoint.class);
         channel = mock(Channel.class);
-        thingHandler = mock(ZigBeeThingHandler.class);
+        thingHandler = mock(ZigBeeGenericThingHandler.class);
         cluster = mock(ZclIasWdCluster.class);
 
         coordinatorHandler = mock(ZigBeeCoordinatorHandler.class);

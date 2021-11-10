@@ -4,23 +4,19 @@
 	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
 	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
 
-	<thing-type id="xiaomi_lumisensorht" listed="false">
-		<label>Xiaomi Temperature and Humidity Sensor</label>
-		<description>Xiaomi Temperature and Humidity Sensor</description>
+	<thing-type id="tuya_am25" listed="false">
+		<label>AM25</label>
+		<description>Smart Blinds Motor</description>
+		<category>Blinds</category>
 
 		<channels>
-			<channel id="temperature" typeId="measurement_temperature">
+
+			<channel id="batteryVoltage" typeId="battery_voltage">
 				<properties>
 					<property name="zigbee_endpoint">1</property>
-					<property name="zigbee_inputclusters">1026</property>
 				</properties>
 			</channel>
-			<channel id="humidity" typeId="measurement_relativehumidity">
-				<properties>
-					<property name="zigbee_endpoint">1</property>
-					<property name="zigbee_inputclusters">1029</property>
-				</properties>
-			</channel>
+
 		</channels>
 
 		<representation-property>zigbee_macaddress</representation-property>

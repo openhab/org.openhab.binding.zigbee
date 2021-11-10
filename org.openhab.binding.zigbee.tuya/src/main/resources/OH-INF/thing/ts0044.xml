@@ -4,9 +4,9 @@
 	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
 	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
 
-	<thing-type id="tuya_ts0042" listed="false">	
-		<label>TS0042</label>
-		<description>Generic Tuya 2-Button Wall Switch</description>
+	<thing-type id="tuya_ts0044" listed="false">	
+		<label>TS0044</label>
+		<description>Generic Tuya 4-Button Wall Switch</description>
 		<category>WallSwitch</category>
 
 		<channels>
@@ -29,27 +29,35 @@
 				</properties>
 			</channel>
 
-			<channel id="leftButton" typeId="tuya_button">
-				<label>Left Button</label>
+			<channel id="button1" typeId="tuya_button">
+				<label>Button 1</label>
 				<properties>
 					<property name="zigbee_endpoint">1</property>
 				</properties>
 			</channel>
 
-			<channel id="rightButton" typeId="tuya_button">
-				<label>Right Button</label>
+			<channel id="button2" typeId="tuya_button">
+				<label>Button 2</label>
 				<properties>
 					<property name="zigbee_endpoint">2</property>
 				</properties>
 			</channel>
 
-		</channels>
+			<channel id="button3" typeId="tuya_button">
+				<label>Button 3</label>
+				<properties>
+					<property name="zigbee_endpoint">3</property>
+				</properties>
+			</channel>
 
-		<properties>
-			<property name="vendor">Tuya</property>
-			<property name="modelId">TS0042</property>
-			<property name="zigbee_logicaltype">END_DEVICE</property>
-		</properties>
+			<channel id="button4" typeId="tuya_button">
+				<label>Button 4</label>
+				<properties>
+					<property name="zigbee_endpoint">4</property>
+				</properties>
+			</channel>
+
+		</channels>
 		
 		<representation-property>zigbee_macaddress</representation-property>
 

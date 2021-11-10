@@ -133,7 +133,7 @@ using your real name (sorry, no pseudonyms or anonymous contributions.)
 There are several exceptions to the signing requirement. Currently these are:
 
 * Your patch fixes spelling or grammar errors.
-* Your patch is a single line change to documentation.
+* Your patch is a small change to documentation.
 
 ## Community Guidelines
 

@@ -24,8 +24,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
-import org.openhab.binding.zigbee.tuya.internal.TuyaButtonPressCommand;
+import org.openhab.binding.zigbee.handler.ZigBeeGenericThingHandler;
+import org.openhab.binding.zigbee.tuya.internal.converter.ZigBeeConverterTuyaButton;
+import org.openhab.binding.zigbee.tuya.internal.zigbee.TuyaButtonPressCommand;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.CommonTriggerEvents;
 
@@ -47,7 +48,7 @@ public class ZigBeeConverterTuyaButtonTest {
 
     private ZigBeeConverterTuyaButton converter;
 
-    private ZigBeeThingHandler thingHandler;
+    private ZigBeeGenericThingHandler thingHandler;
     private Channel channel;
     private ZigBeeCoordinatorHandler coordinatorHandler;
     private ZigBeeEndpoint endpoint;
@@ -60,7 +61,7 @@ public class ZigBeeConverterTuyaButtonTest {
         int endpointId = 1;
 
         endpoint = mock(ZigBeeEndpoint.class);
-        thingHandler = mock(ZigBeeThingHandler.class);
+        thingHandler = mock(ZigBeeGenericThingHandler.class);
 
         channel = mock(Channel.class);
         channelProperties = new HashMap<>();

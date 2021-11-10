@@ -20,7 +20,7 @@ import static org.openhab.binding.zigbee.ZigBeeBindingConstants.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.binding.zigbee.handler.ZigBeeGenericThingHandler;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
@@ -42,7 +42,7 @@ public class ZigBeeConverterBatteryAlarmTest {
 
     private ZigBeeConverterBatteryAlarm converter;
 
-    private ZigBeeThingHandler thingHandler;
+    private ZigBeeGenericThingHandler thingHandler;
     private Channel channel;
     private ZigBeeCoordinatorHandler coordinatorHandler;
     private ZigBeeEndpoint endpoint;
@@ -54,7 +54,7 @@ public class ZigBeeConverterBatteryAlarmTest {
 
         endpoint = mock(ZigBeeEndpoint.class);
         channel = mock(Channel.class);
-        thingHandler = mock(ZigBeeThingHandler.class);
+        thingHandler = mock(ZigBeeGenericThingHandler.class);
 
         coordinatorHandler = mock(ZigBeeCoordinatorHandler.class);
         when(coordinatorHandler.getEndpoint(ieeeAddress, endpointId)).thenReturn(endpoint);

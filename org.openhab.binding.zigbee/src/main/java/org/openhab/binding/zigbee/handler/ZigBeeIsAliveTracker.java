@@ -41,30 +41,30 @@ public class ZigBeeIsAliveTracker {
 
     private final Logger logger = LoggerFactory.getLogger(ZigBeeIsAliveTracker.class);
 
-    private Map<ZigBeeThingHandler, Integer> handlerIntervalMapping = new ConcurrentHashMap<>();
-    private Map<ZigBeeThingHandler, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
-    private Set<ZigBeeThingHandler> lastChance = new HashSet<>();
+    private Map<ZigBeeBaseThingHandler, Integer> handlerIntervalMapping = new ConcurrentHashMap<>();
+    private Map<ZigBeeBaseThingHandler, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
+    private Set<ZigBeeBaseThingHandler> lastChance = new HashSet<>();
 
     protected final ScheduledExecutorService scheduler = ThreadPoolManager.getScheduledPool("ZigBeeIsAliveTracker");
 
     /**
-     * Adds a mapping from {@link ZigBeeThingHandler} to the interval in which it should have communicated
+     * Adds a mapping from {@link ZigBeeBaseThingHandler} to the interval in which it should have communicated
      *
-     * @param zigBeeThingHandler the {@link ZigBeeThingHandler}
+     * @param zigBeeThingHandler the {@link ZigBeeBaseThingHandler}
      * @param expectedUpdateInterval the interval in which the device should have communicated with us
      */
-    public void addHandler(ZigBeeThingHandler zigBeeThingHandler, int expectedUpdateInterval) {
+    public void addHandler(ZigBeeBaseThingHandler zigBeeThingHandler, int expectedUpdateInterval) {
         logger.debug("IsAlive Tracker added for thingUID={}", zigBeeThingHandler.getThing().getUID());
         handlerIntervalMapping.put(zigBeeThingHandler, expectedUpdateInterval);
         resetTimer(zigBeeThingHandler);
     }
 
     /**
-     * Removes a {@link ZigBeeThingHandler} from the map so it is not tracked anymore
+     * Removes a {@link ZigBeeBaseThingHandler} from the map so it is not tracked anymore
      *
-     * @param zigBeeThingHandler the {@link ZigBeeThingHandler}
+     * @param zigBeeThingHandler the {@link ZigBeeBaseThingHandler}
      */
-    public void removeHandler(ZigBeeThingHandler zigBeeThingHandler) {
+    public void removeHandler(ZigBeeBaseThingHandler zigBeeThingHandler) {
         logger.debug("IsAlive Tracker removed for thingUID={}", zigBeeThingHandler.getThing().getUID());
         cancelTask(zigBeeThingHandler);
         lastChance.remove(zigBeeThingHandler);
@@ -72,11 +72,12 @@ public class ZigBeeIsAliveTracker {
     }
 
     /**
-     * Reset the timer for a {@link ZigBeeThingHandler}, i.e. expressing that some communication has just occurred
+     * Reset the timer for a {@link ZigBeeBaseThingHandler}, i.e. expressing that some communication has just
+     * occurred
      *
-     * @param zigBeeThingHandler the {@link ZigBeeThingHandler}
+     * @param zigBeeThingHandler the {@link ZigBeeBaseThingHandler}
      */
-    public synchronized void resetTimer(ZigBeeThingHandler zigBeeThingHandler) {
+    public synchronized void resetTimer(ZigBeeBaseThingHandler zigBeeThingHandler) {
         logger.debug("IsAlive Tracker reset for handler with thingUID={}", zigBeeThingHandler.getThing().getUID());
         cancelTask(zigBeeThingHandler);
         ScheduledFuture<?> existingTask = scheduledTasks.get(zigBeeThingHandler);
@@ -88,7 +89,7 @@ public class ZigBeeIsAliveTracker {
         }
     }
 
-    private void scheduleTask(ZigBeeThingHandler handler, int interval) {
+    private void scheduleTask(ZigBeeBaseThingHandler handler, int interval) {
         ScheduledFuture<?> task = scheduler.schedule(() -> {
             synchronized (lastChance) {
                 scheduledTasks.remove(handler);
@@ -114,7 +115,7 @@ public class ZigBeeIsAliveTracker {
         scheduledTasks.put(handler, task);
     }
 
-    private void cancelTask(ZigBeeThingHandler handler) {
+    private void cancelTask(ZigBeeBaseThingHandler handler) {
         lastChance.remove(handler);
         ScheduledFuture<?> task = scheduledTasks.get(handler);
         if (task != null) {

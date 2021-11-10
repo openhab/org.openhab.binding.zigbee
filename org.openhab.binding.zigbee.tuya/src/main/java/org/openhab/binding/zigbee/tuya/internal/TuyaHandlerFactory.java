@@ -10,10 +10,17 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.zigbee.internal;
+package org.openhab.binding.zigbee.tuya.internal;
 
 import java.util.Hashtable;
 
+import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
+import org.openhab.binding.zigbee.discovery.ZigBeeThingTypeMatcher;
+import org.openhab.binding.zigbee.handler.ZigBeeBaseThingHandler;
+import org.openhab.binding.zigbee.handler.ZigBeeGenericThingHandler;
+import org.openhab.binding.zigbee.handler.ZigBeeIsAliveTracker;
+import org.openhab.binding.zigbee.tuya.TuyaBindingConstants;
+import org.openhab.binding.zigbee.tuya.handler.TuyaBlindsThingHandler;
 import org.openhab.core.config.core.ConfigDescriptionProvider;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
@@ -21,24 +28,17 @@ import org.openhab.core.thing.binding.BaseThingHandlerFactory;
 import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.thing.binding.ThingHandlerFactory;
 import org.openhab.core.thing.type.DynamicStateDescriptionProvider;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
-import org.openhab.binding.zigbee.discovery.ZigBeeThingTypeMatcher;
-import org.openhab.binding.zigbee.handler.ZigBeeGenericThingHandler;
-import org.openhab.binding.zigbee.handler.ZigBeeIsAliveTracker;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- * The {@link ZigBeeHandlerFactory} is responsible for creating things and thing
- * handlers.
+ * The {@link TuyaHandlerFactory} is responsible for creating things and thing
+ * handlers for Tuya devices.
  *
  * @author Chris Jackson - Initial contribution
- * @author Kai Kreuzer - Refactored to use DS annotations
- * @author Thomas Höfer - Injected zigbeeChannelConverterFactory via DS
  */
 @Component(service = ThingHandlerFactory.class)
-public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
+public class TuyaHandlerFactory extends BaseThingHandlerFactory {
 
     private final ZigBeeThingTypeMatcher matcher = new ZigBeeThingTypeMatcher();
 
@@ -47,11 +47,6 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
-        // The core binding provides dynamic device creation
-        if (thingTypeUID.equals(ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE)) {
-            return true;
-        }
-
         return matcher.getSupportedThingTypeUIDs().contains(thingTypeUID);
     }
 
@@ -61,7 +56,15 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
             return null;
         }
 
-        ZigBeeGenericThingHandler handler = new ZigBeeGenericThingHandler(thing, zigbeeChannelConverterFactory, zigbeeIsAliveTracker);
+        ZigBeeBaseThingHandler handler;
+
+        // Check for thing types with a custom thing handler
+        if (thing.getThingTypeUID().equals(TuyaBindingConstants.THING_TYPE_TUYA_BLIND_AM25)) {
+            handler = new TuyaBlindsThingHandler(thing, zigbeeChannelConverterFactory, zigbeeIsAliveTracker);
+        } else {
+            handler = new ZigBeeGenericThingHandler(thing, zigbeeChannelConverterFactory, zigbeeIsAliveTracker);
+        }
+
         bundleContext.registerService(ConfigDescriptionProvider.class.getName(), handler,
                 new Hashtable<String, Object>());
         bundleContext.registerService(DynamicStateDescriptionProvider.class.getName(), handler,

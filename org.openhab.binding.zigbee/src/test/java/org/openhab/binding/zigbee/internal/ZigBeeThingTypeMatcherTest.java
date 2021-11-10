@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.openhab.binding.zigbee.discovery.ZigBeeThingTypeMatcher;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
 

@@ -18,7 +18,7 @@ import java.util.Objects;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.config.core.Configuration;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.binding.zigbee.handler.ZigBeeGenericThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +28,7 @@ import com.zsmartsystems.zigbee.zcl.ZclCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclDataType;
 
 /**
- * Class to handle ZigBee device configuration. This is a helper class used by the {@link ZigBeeThingHandler} for
+ * Class to handle ZigBee device configuration. This is a helper class used by the {@link ZigBeeGenericThingHandler} for
  * managing device configuration.
  *
  * @author Chris Jackson - Initial Contribution
