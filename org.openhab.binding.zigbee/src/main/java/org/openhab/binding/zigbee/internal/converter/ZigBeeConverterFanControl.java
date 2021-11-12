@@ -16,12 +16,16 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.binding.zigbee.internal.converter.config.ZclFanControlConfig;
+import org.openhab.core.config.core.Configuration;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.thing.Channel;
@@ -58,6 +62,8 @@ public class ZigBeeConverterFanControl extends ZigBeeBaseChannelConverter implem
 
     private ZclFanControlCluster cluster;
     private ZclAttribute fanModeAttribute;
+
+    private ZclFanControlConfig configFanControl;
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
@@ -149,6 +155,11 @@ public class ZigBeeConverterFanControl extends ZigBeeBaseChannelConverter implem
         // Add the listener
         cluster.addAttributeListener(this);
 
+        configFanControl = new ZclFanControlConfig();
+        configFanControl.initialize(cluster);
+        configOptions = new ArrayList<>();
+        configOptions.addAll(configFanControl.getConfiguration());
+
         return true;
     }
 
@@ -177,6 +188,13 @@ public class ZigBeeConverterFanControl extends ZigBeeBaseChannelConverter implem
         }
 
         fanModeAttribute.writeValue(value);
+    }
+
+    @Override
+    public void updateConfiguration(@NonNull Configuration currentConfiguration,
+            Map<String, Object> updatedParameters) {
+
+        configFanControl.updateConfiguration(currentConfiguration, updatedParameters);
     }
 
     @Override
