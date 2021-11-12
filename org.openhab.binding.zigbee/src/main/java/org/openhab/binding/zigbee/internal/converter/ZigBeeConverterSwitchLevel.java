@@ -282,6 +282,8 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
         configLevelControl = new ZclLevelControlConfig();
         configLevelControl.initialize(clusterLevelControlServer);
 
+        // TODO Should we also support the ZclOnOffSwitchConfig here ?!?!?
+
         configOptions = new ArrayList<>();
         configOptions.addAll(configReporting.getConfiguration());
         configOptions.addAll(configLevelControl.getConfiguration());
@@ -355,12 +357,18 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
 
     @Override
     public void handleCommand(final Command command) {
+        Command localCommand = command;
         Future<CommandResult> responseFuture = null;
         if (command instanceof OnOffType) {
+            // TODO should this also be inverted
             responseFuture = handleOnOffCommand((OnOffType) command);
         } else if (command instanceof PercentType) {
-            responseFuture = handlePercentCommand((PercentType) command);
+            if (configLevelControl != null) {
+                localCommand = configLevelControl.handleInvertControl(command);
+            }
+            responseFuture = handlePercentCommand((PercentType) localCommand);
         } else if (command instanceof IncreaseDecreaseType) {
+            // TODO should this also be inverted
             responseFuture = handleIncreaseDecreaseCommand((IncreaseDecreaseType) command);
         } else {
             logger.warn("{}: Level converter only accepts PercentType, IncreaseDecreaseType and OnOffType - not {}",
@@ -369,8 +377,8 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
         }
 
         // Some functionality (eg IncreaseDecrease) requires that we know the last command received
-        lastCommand = command;
-        monitorCommandResponse(command, responseFuture);
+        lastCommand = localCommand;
+        monitorCommandResponse(localCommand, responseFuture);
     }
 
     /**
@@ -505,6 +513,9 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
         if (attribute.getCluster() == ZclClusterType.LEVEL_CONTROL
                 && attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
             lastLevel = levelToPercent((Integer) val);
+            if (configLevelControl != null) {
+                lastLevel = configLevelControl.handleInvertReport(lastLevel);
+            }
             if (currentOnOffState.get()) {
                 // Note that state is only updated if the current On/Off state is TRUE (ie ON)
                 updateChannelState(lastLevel);
