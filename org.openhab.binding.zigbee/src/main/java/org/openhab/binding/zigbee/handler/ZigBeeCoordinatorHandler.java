@@ -105,12 +105,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     protected ExtendedPanId extendedPanId;
 
     @Nullable
-    private IeeeAddress nodeIeeeAddress;
+    protected IeeeAddress nodeIeeeAddress;
 
     @Nullable
     protected ZigBeeTransportTransmit zigbeeTransport;
     @Nullable
-    private ZigBeeNetworkManager networkManager;
+    protected ZigBeeNetworkManager networkManager;
 
     @Nullable
     private Class<?> serializerClass;

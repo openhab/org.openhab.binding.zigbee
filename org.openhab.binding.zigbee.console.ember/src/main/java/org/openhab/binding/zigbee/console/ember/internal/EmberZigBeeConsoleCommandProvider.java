@@ -31,6 +31,7 @@ import com.zsmartsystems.zigbee.console.ember.EmberConsoleMmoHashCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpChildrenCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpConfigurationCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpCountersCommand;
+import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpMulticastCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpPolicyCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpRoutingCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleNcpScanCommand;
@@ -51,13 +52,14 @@ import com.zsmartsystems.zigbee.console.ember.EmberConsoleTransientKeyCommand;
 public class EmberZigBeeConsoleCommandProvider implements ZigBeeConsoleCommandProvider {
 
     @SuppressWarnings("null")
-    public static final List<ZigBeeConsoleCommand> EMBER_COMMANDS = unmodifiableList(asList(
-            new EmberConsoleMmoHashCommand(), new EmberConsoleNcpChildrenCommand(),
-            new EmberConsoleNcpConfigurationCommand(), new EmberConsoleNcpCountersCommand(),
-            new EmberConsoleNcpPolicyCommand(), new EmberConsoleNcpRoutingCommand(), new EmberConsoleNcpScanCommand(),
-            new EmberConsoleSecurityStateCommand(), new EmberConsoleNcpStateCommand(),
-            new EmberConsoleNcpTokenCommand(), new EmberConsoleTransientKeyCommand(), new EmberConsoleNcpValueCommand(),
-            new EmberConsoleNcpVersionCommand()));
+    public static final List<ZigBeeConsoleCommand> EMBER_COMMANDS = unmodifiableList(
+            asList(new EmberConsoleMmoHashCommand(), new EmberConsoleNcpChildrenCommand(),
+                    new EmberConsoleNcpConfigurationCommand(), new EmberConsoleNcpCountersCommand(),
+                    new EmberConsoleNcpMulticastCommand(), new EmberConsoleNcpPolicyCommand(),
+                    new EmberConsoleNcpRoutingCommand(), new EmberConsoleNcpScanCommand(),
+                    new EmberConsoleSecurityStateCommand(), new EmberConsoleNcpStateCommand(),
+                    new EmberConsoleNcpTokenCommand(), new EmberConsoleTransientKeyCommand(),
+                    new EmberConsoleNcpValueCommand(), new EmberConsoleNcpVersionCommand()));
 
     private Map<String, ZigBeeConsoleCommand> emberCommands = EMBER_COMMANDS.stream()
             .collect(toMap(ZigBeeConsoleCommand::getCommand, identity()));

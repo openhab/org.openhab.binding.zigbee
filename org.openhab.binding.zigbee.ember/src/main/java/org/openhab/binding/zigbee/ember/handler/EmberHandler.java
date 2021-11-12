@@ -12,7 +12,12 @@
  */
 package org.openhab.binding.zigbee.ember.handler;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -22,6 +27,7 @@ import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.ember.EmberBindingConstants;
 import org.openhab.binding.zigbee.ember.internal.EmberConfiguration;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
+import org.openhab.core.config.core.Configuration;
 import org.openhab.core.io.transport.serial.SerialPortManager;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.thing.Bridge;
@@ -34,7 +40,10 @@ import org.openhab.core.thing.binding.firmware.ProgressStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zsmartsystems.zigbee.dongle.ember.EmberNcp;
 import com.zsmartsystems.zigbee.dongle.ember.ZigBeeDongleEzsp;
+import com.zsmartsystems.zigbee.dongle.ember.ezsp.structure.EmberMulticastTableEntry;
+import com.zsmartsystems.zigbee.dongle.ember.ezsp.structure.EmberStatus;
 import com.zsmartsystems.zigbee.dongle.ember.ezsp.structure.EzspConfigId;
 import com.zsmartsystems.zigbee.serialization.DefaultDeserializer;
 import com.zsmartsystems.zigbee.serialization.DefaultSerializer;
@@ -64,6 +73,24 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
     private static final String ASH_RX_NAK = "ASH_RX_NAK";
     private static final String ASH_TX_NAK = "ASH_TX_NAK";
 
+    /**
+     * Sets the minimum size of the multicast address table
+     */
+    private static final int GROUPS_MINIMUM = 3;
+
+    /**
+     * Sets the minimum headroom in the multicast table. This allows for room for the table to grow during a session.
+     * Note that the table size is set only on startup since this impacts the Ember memory use.
+     */
+    private static final int GROUPS_HEADROOM = 3;
+
+    /**
+     * Sets the maximum size of the groups table. This is designed to be large enough to allow pretty much any
+     * configuration, but small enough that to protect against the user adding loads of random numbers or invalid
+     * formatting of the config string.
+     */
+    private static final int GROUPS_MAXIMUM = 20;
+
     private final Logger logger = LoggerFactory.getLogger(EmberHandler.class);
 
     private final SerialPortManager serialPortManager;
@@ -89,6 +116,9 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
 
     @Override
     protected void initializeDongleSpecific() {
+        EmberConfiguration config = getConfigAs(EmberConfiguration.class);
+        setGroupRegistration(config.zigbee_groupregistration);
+
         if (pollingJob == null) {
             Runnable pollingRunnable = new Runnable() {
                 @Override
@@ -129,6 +159,36 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
             };
 
             pollingJob = scheduler.scheduleWithFixedDelay(pollingRunnable, 30, 30, TimeUnit.SECONDS);
+        }
+    }
+
+    @Override
+    public void handleConfigurationUpdate(Map<String, Object> configurationParameters) {
+        logger.debug("{}: Ember configuration received.", nodeIeeeAddress);
+
+        Map<String, Object> unhandledConfiguration = new HashMap<>();
+        Configuration configuration = editConfiguration();
+        for (Entry<String, Object> configurationParameter : configurationParameters.entrySet()) {
+            // Ignore any configuration parameters that have not changed
+            if (Objects.equals(configurationParameter.getValue(), configuration.get(configurationParameter.getKey()))) {
+                logger.debug("{}: Ember configuration update: Ignored {} as no change", nodeIeeeAddress,
+                        configurationParameter.getKey());
+                continue;
+            }
+
+            logger.debug("{}: Ember configuration update: Processing {} -> {}", nodeIeeeAddress,
+                    configurationParameter.getKey(), configurationParameter.getValue());
+
+            switch (configurationParameter.getKey()) {
+                case ZigBeeBindingConstants.CONFIGURATION_GROUPREGISTRATION:
+                    setGroupRegistration((String) configurationParameter.getValue());
+                    break;
+                default:
+                    unhandledConfiguration.put(configurationParameter.getKey(), configurationParameter.getValue());
+                    break;
+            }
+
+            configuration.put(configurationParameter.getKey(), configurationParameter.getValue());
         }
     }
 
@@ -295,5 +355,45 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
         concentratorConfig.setRefreshMaximum(3600);
         transportConfig.addOption(TransportConfigOption.CONCENTRATOR_CONFIG, concentratorConfig);
         return transportConfig;
+    }
+
+    private void setGroupRegistration(String groupsString) {
+        if (groupsString.isBlank()) {
+            return;
+        }
+
+        logger.debug("ZigBee Ember Coordinator group registration is {}", groupsString);
+        ZigBeeDongleEzsp dongle = (ZigBeeDongleEzsp) zigbeeTransport;
+        EmberNcp ncp = dongle.getEmberNcp();
+
+        String[] groupsArray = groupsString.split(",");
+        Set<Integer> groups = new HashSet<>();
+
+        for (String groupString : groupsArray) {
+            groups.add(Integer.parseInt(groupString.trim(), 16));
+        }
+
+        int multicastTableSize = groups.size() + GROUPS_HEADROOM;
+        if (multicastTableSize < GROUPS_MINIMUM) {
+            multicastTableSize = GROUPS_MINIMUM;
+        } else if (multicastTableSize > GROUPS_MAXIMUM) {
+            multicastTableSize = GROUPS_MAXIMUM;
+        }
+        logger.debug("ZigBee Ember Coordinator multicast table size set to {}", multicastTableSize);
+        dongle.updateDefaultConfiguration(EzspConfigId.EZSP_CONFIG_MULTICAST_TABLE_SIZE, multicastTableSize);
+
+        int index = 0;
+        for (Integer group : groups) {
+            EmberMulticastTableEntry entry = new EmberMulticastTableEntry();
+            entry.setEndpoint(1);
+            entry.setNetworkIndex(0);
+            entry.setMulticastId(group);
+            EmberStatus result = ncp.setMulticastTableEntry(index, entry);
+
+            logger.debug("ZigBee Ember Coordinator multicast table index {} updated with {}, result {}", index, entry,
+                    result);
+
+            index++;
+        }
     }
 }
