@@ -629,7 +629,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             // Polling starts almost immediately to get an immediate refresh
             // Add some random element to the period so that all things aren't synchronised
             int pollingPeriodMs = pollingPeriod * 1000 + new Random().nextInt(pollingPeriod * 100);
-            pollingJob = scheduler.scheduleAtFixedRate(pollingRunnable, new Random().nextInt(pollingPeriodMs),
+            pollingJob = scheduler.scheduleWithFixedDelay(pollingRunnable, new Random().nextInt(pollingPeriodMs),
                     pollingPeriodMs, TimeUnit.MILLISECONDS);
             logger.debug("{}: Polling initialised at {}ms", nodeIeeeAddress, pollingPeriodMs);
         }
