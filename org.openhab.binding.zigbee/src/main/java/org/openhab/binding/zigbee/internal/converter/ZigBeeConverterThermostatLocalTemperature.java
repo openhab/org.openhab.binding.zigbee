@@ -16,12 +16,12 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import org.openhab.core.thing.Channel;
-import org.openhab.core.thing.ThingUID;
-import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.core.thing.Channel;
+import org.openhab.core.thing.ThingUID;
+import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,20 +116,12 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
             return null;
         }
 
-        try {
-            if (!cluster.discoverAttributes(false).get()) {
-                // Device is not supporting attribute reporting - instead, just read the attributes
-                Integer capabilities = cluster.getLocalTemperature(Long.MAX_VALUE);
-                if (capabilities == null) {
-                    logger.trace("{}: Thermostat local temperature returned null", endpoint.getIeeeAddress());
-                    return null;
-                }
-            } else if (!cluster.isAttributeSupported(ZclThermostatCluster.ATTR_LOCALTEMPERATURE)) {
-                logger.trace("{}: Thermostat local temperature not supported", endpoint.getIeeeAddress());
-                return null;
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.warn("{}: Exception discovering attributes in thermostat cluster", endpoint.getIeeeAddress(), e);
+        // Try to read the setpoint attribute
+        ZclAttribute attribute = cluster.getAttribute(ZclThermostatCluster.ATTR_LOCALTEMPERATURE);
+        Object value = attribute.readValue(Long.MAX_VALUE);
+        if (value == null) {
+            logger.trace("{}: Thermostat local temperature returned null", endpoint.getIeeeAddress());
+            return null;
         }
 
         return ChannelBuilder
