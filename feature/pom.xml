@@ -117,6 +117,18 @@
 					<aggregateFeatures>true</aggregateFeatures>
 					<includeTransitiveDependency>false</includeTransitiveDependency>
 				</configuration>
+                <executions>
+                    <execution>
+                        <id>create-kar</id>
+                        <goals>
+                            <goal>kar</goal>
+                        </goals>
+                        <configuration>
+                            <resourcesDir>${project.build.directory}/kar</resourcesDir>
+                            <ignoreDependencyFlag>true</ignoreDependencyFlag>
+                        </configuration>
+                    </execution>
+                </executions>
 			</plugin>
 		</plugins>
 	</build>
