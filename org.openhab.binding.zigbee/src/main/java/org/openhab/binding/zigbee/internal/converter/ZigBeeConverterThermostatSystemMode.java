@@ -180,20 +180,12 @@ public class ZigBeeConverterThermostatSystemMode extends ZigBeeBaseChannelConver
             return null;
         }
 
-        try {
-            if (!cluster.discoverAttributes(false).get()) {
-                // Device is not supporting attribute reporting - instead, just read the attributes
-                Integer capabilities = cluster.getSystemMode(Long.MAX_VALUE);
-                if (capabilities == null) {
-                    logger.trace("{}: Thermostat system mode returned null", endpoint.getIeeeAddress());
-                    return null;
-                }
-            } else if (!cluster.isAttributeSupported(ZclThermostatCluster.ATTR_SYSTEMMODE)) {
-                logger.trace("{}: Thermostat system mode not supported", endpoint.getIeeeAddress());
-                return null;
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.warn("{}: Exception discovering attributes in thermostat cluster", endpoint.getIeeeAddress(), e);
+        // Try to read the setpoint attribute
+        ZclAttribute attribute = cluster.getAttribute(ZclThermostatCluster.ATTR_SYSTEMMODE);
+        Object value = attribute.readValue(Long.MAX_VALUE);
+        if (value == null) {
+            logger.trace("{}: Thermostat system mode returned null", endpoint.getIeeeAddress());
+            return null;
         }
 
         return ChannelBuilder
