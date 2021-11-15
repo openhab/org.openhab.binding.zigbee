@@ -169,7 +169,9 @@ The Ember EZSP NCP (Network Co-Processor) supports Silicon Labs Mighty Gecko (EF
 
 Note that there are generally two versions of the Ember NCP firmware in use. One operates at a baud rate of 115200 with RTS/CTS flow control (i.e. hardware flow control), the other operates at a baud rate of 57600, and XON/XOFF flow control (i.e. software flow control). If you are programming your own stick (e.g. the CEL stick) then it should be advisable to use the hardware flow control version - many commercial sticks seem to use the lower speed and software flow control (e.g. Bitron and Nortek HUSBZB-1).
 
-Firmware versions higher than 6.4.0.0 may be required to work with some newer devices (i.e. those conforming to the Zigbee 3.0 standard). If your dongle has older firmware then devices may appear to join the network, but will not work as they will leave the network if they do not receive updated security information. Short summery of what versions is compatible with which hardware chips is that newer dongles are not compatible with older firmware just as older dongles usually not compatible with newer firmware.
+Firmware versions higher than 6.4.0.0 may be required to work with some newer devices (i.e. those conforming to the Zigbee 3.0 standard). If your dongle has older firmware then devices may appear to join the network, but will not work as they will leave the network if they do not receive updated security information. 
+
+EmberZNet Serial Protocol version 8 (EZSP v8) introduced in EmberZNet 6.7.x.x uses a new framing format and expanded command id field from 8 bits to 16 bits and is therefor not backward compatible. If you for whatever version want a backwards compatible firmware then use EmberZNet 6.6.x.x as it supports EZSP v5, v6 and v7 (so not EZSP v8).
 
 If the USB dongle is not recognized, it might be necessary to make the dongle's device id known to the CP240x driver by Silicon Labs:
 
@@ -182,16 +184,6 @@ If the USB dongle is not recognized, it might be necessary to make the dongle's 
   echo 10c4 8b34 > /sys/bus/usb-serial/drivers/cp210x/new_id
   ```
 - Plug in the dongle. It should now be recognized properly as ttyUSBx.
-
-##### EmberZNet and EZSP Protocol Version
-
-Silicon Labs (a.k.a. Silabs) Zigbee stack is called "EmberZNet PRO" (formerly "Ember Zigbee") and provides "EmberZNet Serial Protocol" (EZSP) as the protocol for a host application to interact with. openHAB is currenty support EZSP v5, v6, v7, and v8 which covers most if not all available Zigbee dongle based on Silabs Zigbee chips.
-
-Silicon Labs does not currently have a consolidated list of changes by EmberZNet SDK or EZSP protocol version. The EZSP additions, changes and deletions have only ever been listed in the "Zigbee EmberZNet Release Notes" (EmberZNet SDK) under the "New items" section as well as the Silabs UG100 EZSP Reference Guide included with each EmberZNet SDK release.
-
-Perhaps more important to know is that EZSP v5, v6 and v7 (EmberZNet 6.6.x.x) use the same framing format, while EZSP v8 (EmberZNet 6.7.x.x) introduced a new framing format and expanded command id field from 8 bits to 16 bits and is therefor not backward compatible. 
-
-The largest change was between EZSP v4 (first added in EmberZNet 4.7.2 SDK) and EZSP v5 that was added in EmberZNet 5.9.0 SDK which requires the Legacy Frame ID 0xFF. The change from EZSP v5 to EZSP v6 was done in EmberZNet 6.0.0 SDK. The change from EZSP v6 to EZSP v7 was in EmberZNet 6.4.0 SDK. EmberZNet 6.7.0 SDK added EZSP v8 (and Secure EZSP Protocol Version 2).
 
 ##### Upgrading firmware
 
