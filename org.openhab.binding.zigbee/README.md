@@ -163,9 +163,9 @@ The following coordinators are known to be supported.
 | [Digi XStick](https://www.digi.com/products/xbee-rf-solutions/boxed-rf-modems-adapters/xstick)                                                        | [XBee](#digi-xbee-x-stick)           |                                                          |                                                                                                                                                                                                                                                                                                |
 | [Texas Instruments CC2531EMK](http://www.ti.com/tool/cc2531emk)                                                                                       | [CC2531](#cc2531-coordinator)        |                                                          | CC2531 is not recommended for more then 15 devices due to its less powerful MCU. Also needs extra [hardware and Z-Stack Home 1.2 firmware flashed](https://www.zigbee2mqtt.io/guide/adapters/flashing/flashing_the_cc2531.html). CC2530 and CC2538 may work too with Z-Stack Home 1.2 compatible firmware. |
 
-#### Ember EZSP NCP Coordinator
+#### Ember Coordinator
 
-The Ember EZSP NCP (Network Co-Processor) supports the SiLabs MightyGecko (EFR32MG) and the older EM357/8 dongles with the standard NCP firmware. The thing type is `coordinator_ember`. This dongle type is recommended due to its extensive use within both the community, and commercial systems using this dongle.
+The Ember NCP (Network Co-Processor) supports the SiLabs MightyGecko (EFR32MG) and the older EM357/8 chipsets with the standard NCP firmware. The thing type is `coordinator_ember`. This dongle type is recommended due to its extensive use within both the community, and commercial systems using this dongle.
 
 Note that there are generally two versions of the Ember NCP firmware in use. One operates at a baud rate of 115200 with RTS/CTS flow control (i.e. hardware flow control), the other operates at a baud rate of 57600, and XON/XOFF flow control (i.e. software flow control). If you are programming your own stick (e.g. the CEL stick) then it should be advisable to use the hardware flow control version - many commercial sticks seem to use the lower speed and software flow control (e.g. Bitron and Nortek HUSBZB-1).
 
