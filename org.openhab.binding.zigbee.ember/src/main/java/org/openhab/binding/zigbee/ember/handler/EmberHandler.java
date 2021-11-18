@@ -190,6 +190,10 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
 
             configuration.put(configurationParameter.getKey(), configurationParameter.getValue());
         }
+
+        if (!unhandledConfiguration.isEmpty()) {
+            super.handleConfigurationUpdate(unhandledConfiguration);
+        }
     }
 
     @Override
