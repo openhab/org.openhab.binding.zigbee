@@ -12,11 +12,11 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.handler.ZigBeeBaseThingHandler;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 
@@ -28,7 +28,7 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 public class ZigBeeConverterIasTamper extends ZigBeeConverterIas {
 
     @Override
-    public boolean initializeConverter(ZigBeeThingHandler thing) {
+    public boolean initializeConverter(ZigBeeBaseThingHandler thing) {
         bitTest = CIE_TAMPER;
         return super.initializeConverter(thing);
     }

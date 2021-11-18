@@ -12,7 +12,7 @@
   <artifactId>org.openhab.addons.bom.zigbee</artifactId>
   <packaging>pom</packaging>
 
-  <name>openHAB ZigBee :: BOM :: openHAB ZigBee Binding</name>
+  <name>openHAB Add-ons :: Bundles :: ZigBee Binding BOM</name>
 
   <dependencies>
     <dependency>
@@ -48,6 +48,11 @@
     <dependency>
       <groupId>org.openhab.addons.bundles</groupId>
       <artifactId>org.openhab.binding.zigbee.telegesis</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openhab.addons.bundles</groupId>
+      <artifactId>org.openhab.binding.zigbee.tuya</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

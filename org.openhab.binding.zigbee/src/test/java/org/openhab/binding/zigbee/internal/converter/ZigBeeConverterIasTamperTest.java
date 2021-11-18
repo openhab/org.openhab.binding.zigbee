@@ -23,7 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.binding.zigbee.handler.ZigBeeGenericThingHandler;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 
@@ -42,7 +42,7 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclIasZoneCluster;
 public class ZigBeeConverterIasTamperTest {
 
     private ZigBeeConverterIasTamper converter;
-    private ZigBeeThingHandler thingHandler;
+    private ZigBeeGenericThingHandler thingHandler;
     private Channel channel;
     private ZigBeeCoordinatorHandler coordinatorHandler;
     private ZigBeeEndpoint endpoint;
@@ -71,7 +71,7 @@ public class ZigBeeConverterIasTamperTest {
         when(reportingFuture.get()).thenReturn(reportingResult);
 
         channel = mock(Channel.class);
-        thingHandler = mock(ZigBeeThingHandler.class);
+        thingHandler = mock(ZigBeeGenericThingHandler.class);
 
         coordinatorHandler = mock(ZigBeeCoordinatorHandler.class);
         when(coordinatorHandler.getEndpoint(ieeeAddress, endpointId)).thenReturn(endpoint);

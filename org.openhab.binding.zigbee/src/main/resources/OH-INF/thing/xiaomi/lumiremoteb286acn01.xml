@@ -53,12 +53,6 @@
 			</channel>
 		</channels>
 
-		<properties>
-			<property name="vendor">Xiaomi</property>
-			<property name="modelId">lumi.remote.b286acn01</property>
-			<property name="zigbee_logicaltype">END_DEVICE</property>
-		</properties>
-
 		<representation-property>zigbee_macaddress</representation-property>
 
 		<config-description>

@@ -23,7 +23,8 @@ import org.openhab.core.thing.binding.ThingHandlerFactory;
 import org.openhab.core.thing.type.DynamicStateDescriptionProvider;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.binding.zigbee.discovery.ZigBeeThingTypeMatcher;
+import org.openhab.binding.zigbee.handler.ZigBeeGenericThingHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeIsAliveTracker;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -60,7 +61,7 @@ public class ZigBeeHandlerFactory extends BaseThingHandlerFactory {
             return null;
         }
 
-        ZigBeeThingHandler handler = new ZigBeeThingHandler(thing, zigbeeChannelConverterFactory, zigbeeIsAliveTracker);
+        ZigBeeGenericThingHandler handler = new ZigBeeGenericThingHandler(thing, zigbeeChannelConverterFactory, zigbeeIsAliveTracker);
         bundleContext.registerService(ConfigDescriptionProvider.class.getName(), handler,
                 new Hashtable<String, Object>());
         bundleContext.registerService(DynamicStateDescriptionProvider.class.getName(), handler,

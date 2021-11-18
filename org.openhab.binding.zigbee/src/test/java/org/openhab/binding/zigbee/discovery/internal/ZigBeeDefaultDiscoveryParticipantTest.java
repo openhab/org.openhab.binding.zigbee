@@ -21,7 +21,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
-import org.openhab.binding.zigbee.internal.ZigBeeThingTypeMatcher;
+import org.openhab.binding.zigbee.discovery.ZigBeeThingTypeMatcher;
 import org.openhab.core.config.discovery.DiscoveryResult;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.ThingUID;

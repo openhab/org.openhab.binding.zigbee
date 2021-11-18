@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.binding.zigbee.handler.ZigBeeGenericThingHandler;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.CommonTriggerEvents;
 import org.openhab.core.thing.ThingUID;
@@ -52,7 +52,7 @@ public class ZigBeeConverterGenericButtonTest {
 
     private ZigBeeConverterGenericButton converter;
 
-    private ZigBeeThingHandler thingHandler;
+    private ZigBeeGenericThingHandler thingHandler;
     private Channel channel;
     private ZigBeeCoordinatorHandler coordinatorHandler;
     private ZigBeeEndpoint endpoint;
@@ -65,7 +65,7 @@ public class ZigBeeConverterGenericButtonTest {
         int endpointId = 1;
 
         endpoint = mock(ZigBeeEndpoint.class);
-        thingHandler = mock(ZigBeeThingHandler.class);
+        thingHandler = mock(ZigBeeGenericThingHandler.class);
 
         channel = mock(Channel.class);
         channelProperties = new HashMap<>();

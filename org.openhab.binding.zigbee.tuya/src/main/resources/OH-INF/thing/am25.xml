@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="zigbee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<thing-type id="tuya_am25" listed="false">
+		<label>AM25</label>
+		<description>Smart Blinds Motor</description>
+		<category>Blinds</category>
+
+		<channels>
+
+			<channel id="batteryVoltage" typeId="battery_voltage">
+				<properties>
+					<property name="zigbee_endpoint">1</property>
+				</properties>
+			</channel>
+
+		</channels>
+
+		<representation-property>zigbee_macaddress</representation-property>
+
+		<config-description>
+			<parameter name="zigbee_macaddress" type="text" readOnly="true" required="true">
+				<label>MAC Address</label>
+			</parameter>
+		</config-description>
+	</thing-type>
+</thing:thing-descriptions>

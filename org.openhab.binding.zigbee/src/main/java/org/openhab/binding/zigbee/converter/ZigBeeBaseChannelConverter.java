@@ -23,8 +23,8 @@ import java.util.concurrent.Future;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.handler.ZigBeeBaseThingHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.core.config.core.ConfigDescriptionParameter;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.library.types.PercentType;
@@ -59,7 +59,7 @@ import com.zsmartsystems.zigbee.zcl.ZclCluster;
  * required features are available. If so, it should return the channel. This method allows dynamic channel detection
  * for unknown devices and may not be called if a device is defined through another mechanism.
  * <li>The thing handler will call the
- * {@link #initialize(ZigBeeThingHandler, Channel, ZigBeeCoordinatorHandler, IeeeAddress, int)} to initialise the
+ * {@link #initialize(ZigBeeBaseThingHandler, Channel, ZigBeeCoordinatorHandler, IeeeAddress, int)} to initialise the
  * channel
  * converter. This simply links the converter to the node endpoint.
  * <li>The thing handler will call {@link #initializeDevice()} to initialise the device. This method may not be called
@@ -122,9 +122,9 @@ public abstract class ZigBeeBaseChannelConverter {
     protected final int POLLING_PERIOD_HIGH = 60;
 
     /**
-     * The {@link ZigBeeThingHandler} to which this channel belongs.
+     * The {@link ZigBeeBaseThingHandler} to which this channel belongs.
      */
-    protected ZigBeeThingHandler thing = null;
+    protected ZigBeeBaseThingHandler thing = null;
 
     /**
      * The {@link ZigBeeCoordinatorHandler} that controls the network
@@ -228,17 +228,18 @@ public abstract class ZigBeeBaseChannelConverter {
     public abstract Set<Integer> getImplementedServerClusters();
 
     /**
-     * Initialise the converter. This is called by the {@link ZigBeeThingHandler} when the channel is created. The
+     * Initialise the converter. This is called by the {@link ZigBeeBaseThingHandler} when the channel is created.
+     * The
      * converter should initialise any internal states, open any clusters, add reporting and binding that it needs to
      * operate.
      * <p>
      * A list of configuration parameters for the thing should be built and added to {@link #configOptions} based on the
      * features the device supports.
      *
-     * @param thing the {@link ZigBeeThingHandler} the channel is part of
+     * @param thing the {@link ZigBeeBaseThingHandler} the channel is part of
      * @return true if the converter was initialised successfully
      */
-    public boolean initializeConverter(ZigBeeThingHandler thing) {
+    public boolean initializeConverter(ZigBeeBaseThingHandler thing) {
         this.thing = thing;
         return false;
     }

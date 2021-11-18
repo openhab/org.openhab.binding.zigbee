@@ -22,7 +22,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.binding.zigbee.handler.ZigBeeGenericThingHandler;
 import org.openhab.core.library.types.QuantityType;
 import org.openhab.core.library.unit.SIUnits;
 import org.openhab.core.thing.Channel;
@@ -54,7 +54,7 @@ public class ZigBeeConverterAtmosphericPressureTest {
         ZigBeeConverterAtmosphericPressure converter = new ZigBeeConverterAtmosphericPressure();
         ArgumentCaptor<ChannelUID> channelCapture = ArgumentCaptor.forClass(ChannelUID.class);
         ArgumentCaptor<State> stateCapture = ArgumentCaptor.forClass(State.class);
-        ZigBeeThingHandler thingHandler = Mockito.mock(ZigBeeThingHandler.class);
+        ZigBeeGenericThingHandler thingHandler = Mockito.mock(ZigBeeGenericThingHandler.class);
         Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
         converter.initialize(channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
         converter.initializeConverter(thingHandler);

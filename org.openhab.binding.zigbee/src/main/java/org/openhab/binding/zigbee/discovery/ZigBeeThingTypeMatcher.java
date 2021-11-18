@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.zigbee.internal;
+package org.openhab.binding.zigbee.discovery;
 
 import java.io.BufferedReader;
 import java.io.IOException;

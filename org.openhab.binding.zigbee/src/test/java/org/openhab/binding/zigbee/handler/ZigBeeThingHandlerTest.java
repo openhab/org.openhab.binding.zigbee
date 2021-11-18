@@ -58,9 +58,9 @@ public class ZigBeeThingHandlerTest {
             SecurityException {
         Method privateMethod;
 
-        ZigBeeThingHandler handler = new ZigBeeThingHandler(null, null, null);
+        ZigBeeGenericThingHandler handler = new ZigBeeGenericThingHandler(null, null, null);
 
-        privateMethod = ZigBeeThingHandler.class.getDeclaredMethod("processClusterList", Collection.class,
+        privateMethod = ZigBeeGenericThingHandler.class.getDeclaredMethod("processClusterList", Collection.class,
                 String.class);
         privateMethod.setAccessible(true);
 
@@ -155,13 +155,13 @@ public class ZigBeeThingHandlerTest {
 
         ZigBeeIsAliveTracker zigBeeIsAliveTracker = mock(ZigBeeIsAliveTracker.class);
 
-        ZigBeeThingHandler zigBeeThingHandler = new ZigBeeThingHandler(thing, zigBeeChannelConverterFactory,
+        ZigBeeGenericThingHandler zigBeeThingHandler = new ZigBeeGenericThingHandler(thing, zigBeeChannelConverterFactory,
                 zigBeeIsAliveTracker);
         injectIntoPrivateField(zigBeeThingHandler, zigBeeCoordinatorHandler, "coordinatorHandler");
         injectIntoPrivateField(zigBeeThingHandler, ieeeAddress, "nodeIeeeAddress");
 
         // call doNodeInitialisation by reflection as it is not accessible
-        Method doNodeInitialisationMethod = ZigBeeThingHandler.class.getDeclaredMethod("doNodeInitialisation",
+        Method doNodeInitialisationMethod = ZigBeeGenericThingHandler.class.getDeclaredMethod("doNodeInitialisation",
                 (Class<Object>[]) null);
         doNodeInitialisationMethod.setAccessible(true);
         doNodeInitialisationMethod.invoke(zigBeeThingHandler, (Object[]) null);
@@ -191,7 +191,7 @@ public class ZigBeeThingHandlerTest {
     private ZigBeeBaseChannelConverter mockZigBeeBaseChannelConverterSuccessfull() {
         ZigBeeBaseChannelConverter zigBeeChannelConverter = mock(ZigBeeBaseChannelConverter.class);
         when(zigBeeChannelConverter.initializeDevice()).thenReturn(true);
-        when(zigBeeChannelConverter.initializeConverter(any(ZigBeeThingHandler.class))).thenReturn(true);
+        when(zigBeeChannelConverter.initializeConverter(any(ZigBeeGenericThingHandler.class))).thenReturn(true);
 
         return zigBeeChannelConverter;
     }
@@ -245,7 +245,7 @@ public class ZigBeeThingHandlerTest {
 
     private void injectIntoPrivateField(Object object, Object value, String fieldname)
             throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-        Field coordinatorHandlerField = ZigBeeThingHandler.class.getDeclaredField(fieldname);
+        Field coordinatorHandlerField = ZigBeeGenericThingHandler.class.getDeclaredField(fieldname);
         coordinatorHandlerField.setAccessible(true);
         coordinatorHandlerField.set(object, value);
     }
