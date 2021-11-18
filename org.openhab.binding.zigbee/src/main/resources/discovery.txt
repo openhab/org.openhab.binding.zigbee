@@ -7,6 +7,7 @@ xiaomi_lumisensorht,modelId=lumi.sensor_ht
 xiaomi_lumisensor-motion,modelId=lumi.sensor_motion
 xiaomi_lumiremoteb286acn01,modelId=lumi.remote.b286acn01
 xiaomi_lumisensor86sw2,modelId=lumi.sensor_86sw2
+xiaomi_lumisensor-switch,modelId=lumi.sensor_switch
 xiaomi_lumisensor-switchaq2,modelId=lumi.sensor_switch.aq2
 xiaomi_lumisensorwaterleak,modelId=lumi.sensor_wleak.aq1
 xiaomi_lumisensormagnet,modelId=lumi.sensor_magnet
