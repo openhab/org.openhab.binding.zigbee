@@ -462,15 +462,15 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 return;
         }
 
-        int meshUpdateTime = MESH_UPDATE_PERIOD;
+        int meshUpdatePeriod = MESH_UPDATE_PERIOD;
         if (getConfig().get(CONFIGURATION_MESHUPDATEPERIOD) != null) {
             logger.debug("Mesh Update Period {}", getConfig().get(CONFIGURATION_MESHUPDATEPERIOD));
-            meshUpdateTime = ((BigDecimal) getConfig().get(CONFIGURATION_MESHUPDATEPERIOD)).intValue();
+            meshUpdatePeriod = ((BigDecimal) getConfig().get(CONFIGURATION_MESHUPDATEPERIOD)).intValue();
         }
 
         // Add the extensions to the network
         ZigBeeDiscoveryExtension discoveryExtension = new ZigBeeDiscoveryExtension();
-        discoveryExtension.setUpdatePeriod(meshUpdateTime);
+        discoveryExtension.setUpdatePeriod(meshUpdatePeriod);
         networkManager.addExtension(discoveryExtension);
 
         networkManager.addExtension(new ZigBeeIasCieExtension());

@@ -534,6 +534,12 @@ public abstract class ZigBeeBaseChannelConverter {
             }
             logger.debug("{}: Channel {} received SUCCESS in response to {}", endpoint.getIeeeAddress(), channelUID,
                     command);
+
+            // Treat a successful response as confirmation the device is in the commanded state
+            // This might not be 100% correct, but if the device doesn't send the report, then things can get messy, so
+            // this is a good compromise.
+            updateChannelState((State) command);
+
             thing.alive();
         } catch (InterruptedException | ExecutionException e) {
         }
