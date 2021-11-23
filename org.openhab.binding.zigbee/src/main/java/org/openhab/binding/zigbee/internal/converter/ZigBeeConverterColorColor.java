@@ -14,6 +14,7 @@ package org.openhab.binding.zigbee.internal.converter;
 
 import static com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster.*;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.binding.zigbee.internal.converter.config.ZclColorControlConfig;
+import org.openhab.binding.zigbee.internal.converter.config.ZclColorControlConfig.ControlMethod;
+import org.openhab.binding.zigbee.internal.converter.config.ZclLevelControlConfig;
+import org.openhab.binding.zigbee.internal.converter.config.ZclOnOffSwitchConfig;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.HSBType;
@@ -37,10 +45,6 @@ import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.UnDefType;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
-import org.openhab.binding.zigbee.internal.converter.config.ZclLevelControlConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +96,9 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
     private final AtomicBoolean currentOnOffState = new AtomicBoolean(true);
 
+    private ZclColorControlConfig configColorControl;
     private ZclLevelControlConfig configLevelControl;
+    private ZclOnOffSwitchConfig configOnOffSwitch;
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
@@ -236,7 +242,15 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         // Create a configuration handler and get the available options
         configLevelControl = new ZclLevelControlConfig();
         configLevelControl.initialize(clusterLevelControl);
-        configOptions = configLevelControl.getConfiguration();
+        configColorControl = new ZclColorControlConfig(channel);
+        configColorControl.initialize(clusterLevelControl);
+        configOnOffSwitch = new ZclOnOffSwitchConfig();
+        configOnOffSwitch.initialize(clusterLevelControl);
+
+        configOptions = new ArrayList<>();
+        configOptions.addAll(configLevelControl.getConfiguration());
+        configOptions.addAll(configColorControl.getConfiguration());
+        configOptions.addAll(configOnOffSwitch.getConfiguration());
 
         clusterColorControl.addAttributeListener(this);
         clusterLevelControl.addAttributeListener(this);
@@ -500,6 +514,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     public void updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> updatedParameters) {
         configLevelControl.updateConfiguration(currentConfiguration, updatedParameters);
+        configColorControl.updateConfiguration(currentConfiguration, updatedParameters);
+        configOnOffSwitch.updateConfiguration(currentConfiguration, updatedParameters);
     }
 
     @Override
@@ -596,6 +612,12 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     }
 
     private boolean discoverSupportedColorCommands(ZclColorControlCluster serverClusterColorControl) {
+        // If the configuration is not set to AUTO, then we can override the control method
+        if (configColorControl.getControlMethod() != ControlMethod.AUTO) {
+            supportsHue = configColorControl.getControlMethod() == ControlMethod.HUE;
+            return true;
+        }
+
         // Discover whether the device supports HUE/SAT or XY color set of commands
         try {
             if (!serverClusterColorControl.discoverAttributes(false).get()) {
