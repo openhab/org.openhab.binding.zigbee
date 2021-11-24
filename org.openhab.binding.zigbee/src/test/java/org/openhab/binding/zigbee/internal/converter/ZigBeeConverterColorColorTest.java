@@ -13,6 +13,11 @@
 package org.openhab.binding.zigbee.internal.converter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
+
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -20,6 +25,7 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.core.config.core.ConfigDescriptionParameter;
 import org.openhab.core.library.types.HSBType;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
@@ -45,6 +51,42 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclDataType;
  *
  */
 public class ZigBeeConverterColorColorTest {
+
+    @Test
+    public void testInitialisation() throws InterruptedException, ExecutionException {
+        ZigBeeEndpoint endpoint = Mockito.mock(ZigBeeEndpoint.class);
+        ZigBeeCoordinatorHandler coordinatorHandler = Mockito.mock(ZigBeeCoordinatorHandler.class);
+        Mockito.when(coordinatorHandler.getEndpoint(ArgumentMatchers.any(IeeeAddress.class), ArgumentMatchers.anyInt()))
+                .thenReturn(endpoint);
+
+        ZigBeeConverterColorColor converter = new ZigBeeConverterColorColor();
+        ZigBeeThingHandler thingHandler = Mockito.mock(ZigBeeThingHandler.class);
+        Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
+
+        ZclOnOffCluster onoffCluster = Mockito.mock(ZclOnOffCluster.class);
+        ZclColorControlCluster colorCluster = Mockito.mock(ZclColorControlCluster.class);
+        ZclLevelControlCluster levelCluster = Mockito.mock(ZclLevelControlCluster.class);
+        Mockito.when(endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID)).thenReturn(onoffCluster);
+        Mockito.when(endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID)).thenReturn(colorCluster);
+        Mockito.when(endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID)).thenReturn(levelCluster);
+
+        Future<Boolean> attributeFuture = mock(Future.class);
+        when(attributeFuture.get()).thenReturn(false);
+
+        Mockito.when(onoffCluster.discoverAttributes(ArgumentMatchers.anyBoolean())).thenReturn(attributeFuture);
+        Mockito.when(colorCluster.discoverAttributes(ArgumentMatchers.anyBoolean())).thenReturn(attributeFuture);
+        Mockito.when(levelCluster.discoverAttributes(ArgumentMatchers.anyBoolean())).thenReturn(attributeFuture);
+
+        Mockito.when(onoffCluster.isAttributeSupported(ArgumentMatchers.anyInt())).thenReturn(false);
+        Mockito.when(colorCluster.isAttributeSupported(ArgumentMatchers.anyInt())).thenReturn(false);
+        Mockito.when(levelCluster.isAttributeSupported(ArgumentMatchers.anyInt())).thenReturn(false);
+
+        converter.initialize(channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
+        converter.initializeConverter(thingHandler);
+
+        List<ConfigDescriptionParameter> config = converter.getConfigDescription();
+        assertEquals(4, config.size());
+    }
 
     @Test
     public void testAttributeUpdated() {
@@ -183,7 +225,6 @@ public class ZigBeeConverterColorColorTest {
         converter.attributeUpdated(currentYAttribute, currentYAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
-
     }
 
 }

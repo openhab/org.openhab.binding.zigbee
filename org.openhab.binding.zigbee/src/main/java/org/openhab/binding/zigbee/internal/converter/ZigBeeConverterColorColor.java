@@ -218,39 +218,40 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     public boolean initializeConverter(ZigBeeThingHandler thing) {
         super.initializeConverter(thing);
         colorUpdateScheduler = Executors.newSingleThreadScheduledExecutor();
-
         clusterColorControl = (ZclColorControlCluster) endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID);
         if (clusterColorControl == null) {
             logger.error("{}: Error opening device color controls", endpoint.getIeeeAddress());
             return false;
         }
 
+        configOptions = new ArrayList<>();
+
         clusterLevelControl = (ZclLevelControlCluster) endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
         if (clusterLevelControl == null) {
             logger.warn("{}: Device does not support level control", endpoint.getIeeeAddress());
+        } else {
+            configLevelControl = new ZclLevelControlConfig();
+            configLevelControl.initialize(clusterLevelControl);
+            configOptions.addAll(configLevelControl.getConfiguration());
         }
 
         clusterOnOff = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
         if (clusterOnOff == null) {
             logger.debug("{}: Device does not support on/off control", endpoint.getIeeeAddress());
+        } else {
+            configOnOffSwitch = new ZclOnOffSwitchConfig();
+            configOnOffSwitch.initialize(clusterOnOff);
+            configOptions.addAll(configOnOffSwitch.getConfiguration());
         }
+
+        // Create a configuration handler and get the available options
+        configColorControl = new ZclColorControlConfig(channel);
+        configColorControl.initialize(clusterColorControl);
+        configOptions.addAll(configColorControl.getConfiguration());
 
         if (!discoverSupportedColorCommands(clusterColorControl)) {
             return false;
         }
-
-        // Create a configuration handler and get the available options
-        configLevelControl = new ZclLevelControlConfig();
-        configLevelControl.initialize(clusterLevelControl);
-        configColorControl = new ZclColorControlConfig(channel);
-        configColorControl.initialize(clusterLevelControl);
-        configOnOffSwitch = new ZclOnOffSwitchConfig();
-        configOnOffSwitch.initialize(clusterLevelControl);
-
-        configOptions = new ArrayList<>();
-        configOptions.addAll(configLevelControl.getConfiguration());
-        configOptions.addAll(configColorControl.getConfiguration());
-        configOptions.addAll(configOnOffSwitch.getConfiguration());
 
         clusterColorControl.addAttributeListener(this);
         clusterLevelControl.addAttributeListener(this);
