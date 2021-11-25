@@ -12,7 +12,6 @@
  */
 package org.openhab.binding.zigbee.internal.converter.config;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,12 +71,12 @@ public class ZclColorControlConfig implements ZclClusterConfigHandler {
         List<ParameterOption> options = new ArrayList<>();
 
         options = new ArrayList<>();
-        options.add(new ParameterOption("0", "OFF"));
-        options.add(new ParameterOption("1", "ON"));
-        parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_CONTROLMETHOD, Type.INTEGER)
-                .withLabel("Power on state").withDescription("The state to set after powering on").withDefault("0")
-                .withMinimum(new BigDecimal(0)).withMaximum(new BigDecimal(1)).withOptions(options)
-                .withLimitToOptions(true).build());
+        options.add(new ParameterOption(ControlMethod.AUTO.toString(), "Auto"));
+        options.add(new ParameterOption(ControlMethod.HUE.toString(), "Hue Commands"));
+        options.add(new ParameterOption(ControlMethod.XY.toString(), "XY Commands"));
+        parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_CONTROLMETHOD, Type.TEXT)
+                .withLabel("Color Control Method").withDescription("The commands used to control color")
+                .withDefault(ControlMethod.AUTO.toString()).withOptions(options).withLimitToOptions(true).build());
 
         return !parameters.isEmpty();
     }

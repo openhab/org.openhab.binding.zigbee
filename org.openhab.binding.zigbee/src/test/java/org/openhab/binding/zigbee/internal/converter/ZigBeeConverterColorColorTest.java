@@ -12,10 +12,13 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -26,6 +29,7 @@ import org.mockito.Mockito;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.core.config.core.ConfigDescriptionParameter;
+import org.openhab.core.config.core.ConfigDescriptionParameter.Type;
 import org.openhab.core.library.types.HSBType;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
@@ -86,6 +90,19 @@ public class ZigBeeConverterColorColorTest {
 
         List<ConfigDescriptionParameter> config = converter.getConfigDescription();
         assertEquals(4, config.size());
+
+        Map<String, ConfigDescriptionParameter> parameterMap = new HashMap<>();
+        Iterator<ConfigDescriptionParameter> iterator = config.iterator();
+        while (iterator.hasNext()) {
+            ConfigDescriptionParameter configParameter = iterator.next();
+            parameterMap.put(configParameter.getName(), configParameter);
+        }
+
+        assertTrue(parameterMap.containsKey("zigbee_color_controlmethod"));
+        ConfigDescriptionParameter configParameter = parameterMap.get("zigbee_color_controlmethod");
+        assertEquals("AUTO", configParameter.getDefault());
+        assertEquals(3, configParameter.getOptions().size());
+        assertEquals(Type.TEXT, configParameter.getType());
     }
 
     @Test
