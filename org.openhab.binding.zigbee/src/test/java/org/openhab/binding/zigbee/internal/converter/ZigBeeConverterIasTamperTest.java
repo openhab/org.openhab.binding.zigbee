@@ -30,7 +30,6 @@ import org.openhab.core.thing.ThingUID;
 import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
-import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclIasZoneCluster;
 
@@ -65,7 +64,7 @@ public class ZigBeeConverterIasTamperTest {
 
         @SuppressWarnings("unchecked")
         Future<CommandResult> reportingFuture = mock(Future.class);
-        when(zclCluster.setReporting(isNull(ZclAttribute.class), anyInt(), anyInt())).thenReturn(reportingFuture);
+        when(zclCluster.setReporting(isNull(), anyInt(), anyInt())).thenReturn(reportingFuture);
 
         CommandResult reportingResult = new CommandResult();
         when(reportingFuture.get()).thenReturn(reportingResult);
