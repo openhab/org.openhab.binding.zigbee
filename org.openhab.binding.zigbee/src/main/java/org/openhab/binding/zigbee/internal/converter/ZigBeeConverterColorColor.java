@@ -614,7 +614,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
     private boolean discoverSupportedColorCommands(ZclColorControlCluster serverClusterColorControl) {
         // If the configuration is not set to AUTO, then we can override the control method
-        if (configColorControl.getControlMethod() != ControlMethod.AUTO) {
+        if (configColorControl != null & configColorControl.getControlMethod() != ControlMethod.AUTO) {
             supportsHue = configColorControl.getControlMethod() == ControlMethod.HUE;
             return true;
         }
