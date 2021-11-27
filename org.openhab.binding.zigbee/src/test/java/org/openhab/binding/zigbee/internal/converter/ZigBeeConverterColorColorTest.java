@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
@@ -37,6 +38,7 @@ import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.types.State;
 import org.openhab.core.types.UnDefType;
 
+import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
@@ -242,6 +244,38 @@ public class ZigBeeConverterColorColorTest {
         converter.attributeUpdated(currentYAttribute, currentYAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
+    }
+
+    @Disabled
+    @Test
+    public void initializeDevicee() throws InterruptedException, ExecutionException {
+        ZigBeeEndpoint endpoint = Mockito.mock(ZigBeeEndpoint.class);
+        ZigBeeCoordinatorHandler coordinatorHandler = Mockito.mock(ZigBeeCoordinatorHandler.class);
+        Mockito.when(coordinatorHandler.getEndpoint(ArgumentMatchers.any(IeeeAddress.class), ArgumentMatchers.anyInt()))
+                .thenReturn(endpoint);
+
+        ZigBeeConverterColorColor converter = new ZigBeeConverterColorColor();
+        ArgumentCaptor<ChannelUID> channelCapture = ArgumentCaptor.forClass(ChannelUID.class);
+        ArgumentCaptor<State> stateCapture = ArgumentCaptor.forClass(State.class);
+        ZigBeeThingHandler thingHandler = Mockito.mock(ZigBeeThingHandler.class);
+        Channel channel = ChannelBuilder.create(new ChannelUID("a:b:c:d"), "").build();
+        converter.initialize(channel, coordinatorHandler, new IeeeAddress("1234567890ABCDEF"), 1);
+
+        ZclColorControlCluster colorCluster = Mockito.mock(ZclColorControlCluster.class);
+        Mockito.when(endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID)).thenReturn(colorCluster);
+
+        Future<CommandResult> futureGet = Mockito.mock(Future.class);
+        CommandResult resultGet = Mockito.mock(CommandResult.class);
+        Mockito.when(futureGet.get()).thenReturn(resultGet);
+        Mockito.when(resultGet.isSuccess()).thenReturn(true);
+        Mockito.when(colorCluster.bind(ArgumentMatchers.any(), ArgumentMatchers.anyInt())).thenReturn(futureGet);
+
+        Future<Boolean> futureDiscover = Mockito.mock(Future.class);
+        Mockito.when(futureDiscover.get()).thenReturn(false);
+
+        Mockito.when(colorCluster.discoverAttributes(false)).thenReturn(futureDiscover);
+
+        converter.initializeDevice();
     }
 
 }
