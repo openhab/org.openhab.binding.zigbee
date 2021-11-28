@@ -64,7 +64,7 @@ public class ZigBeeConverterIasTamperTest {
 
         @SuppressWarnings("unchecked")
         Future<CommandResult> reportingFuture = mock(Future.class);
-        when(zclCluster.setReporting(isNull(), anyInt(), anyInt())).thenReturn(reportingFuture);
+        when(zclCluster.setReporting(any(), anyInt(), anyInt())).thenReturn(reportingFuture);
 
         CommandResult reportingResult = new CommandResult();
         when(reportingFuture.get()).thenReturn(reportingResult);

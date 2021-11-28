@@ -115,7 +115,7 @@ public class ZclOnOffSwitchConfig implements ZclClusterConfigHandler {
                 continue;
             }
 
-            logger.debug("{}: Update LevelControl configuration property {}->{} ({})", onoffCluster.getZigBeeAddress(),
+            logger.debug("{}: Update OnOff configuration property {}->{} ({})", onoffCluster.getZigBeeAddress(),
                     configurationParameter.getKey(), configurationParameter.getValue(),
                     configurationParameter.getValue().getClass().getSimpleName());
             Integer response = null;
