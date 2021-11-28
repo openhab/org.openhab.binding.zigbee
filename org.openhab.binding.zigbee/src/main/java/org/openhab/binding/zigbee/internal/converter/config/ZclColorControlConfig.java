@@ -12,7 +12,6 @@
  */
 package org.openhab.binding.zigbee.internal.converter.config;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,7 @@ import com.zsmartsystems.zigbee.zcl.ZclCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster;
 
 /**
- * Configuration handler for the {@link ZclOnOffSwitchCluster}
+ * Configuration handler for the {@link ZclColorControlCluster}
  *
  * @author Chris Jackson
  *
@@ -75,7 +74,9 @@ public class ZclColorControlConfig implements ZclClusterConfigHandler {
         options.add(new ParameterOption(ControlMethod.HUE.toString(), "Hue Commands"));
         options.add(new ParameterOption(ControlMethod.XY.toString(), "XY Commands"));
         parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_CONTROLMETHOD, Type.TEXT)
-                .withLabel("Color Control Method").withDescription("The commands used to control color")
+                .withLabel("Color Control Method")
+                .withDescription(
+                        "The commands used to control color. AUTO will use HUE if the device supports, otherwise XY")
                 .withDefault(ControlMethod.AUTO.toString()).withOptions(options).withLimitToOptions(true).build());
 
         return !parameters.isEmpty();
@@ -105,19 +106,14 @@ public class ZclColorControlConfig implements ZclClusterConfigHandler {
             logger.debug("{}: Update ColorControl configuration property {}->{} ({})",
                     colorControlCluster.getZigBeeAddress(), configurationParameter.getKey(),
                     configurationParameter.getValue(), configurationParameter.getValue().getClass().getSimpleName());
-            Integer response = null;
             switch (configurationParameter.getKey()) {
                 case CONFIG_CONTROLMETHOD:
+                    controlMethod = ControlMethod.valueOf((String) configurationParameter.getValue());
                     break;
                 default:
                     logger.warn("{}: Unhandled configuration property {}", colorControlCluster.getZigBeeAddress(),
                             configurationParameter.getKey());
                     break;
-            }
-
-            if (response != null) {
-                currentConfiguration.put(configurationParameter.getKey(), BigInteger.valueOf(response));
-                updated = true;
             }
         }
 

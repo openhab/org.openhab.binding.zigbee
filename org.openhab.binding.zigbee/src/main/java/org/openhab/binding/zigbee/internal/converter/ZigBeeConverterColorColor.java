@@ -454,7 +454,6 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         } else if (!on) {
             updateChannelState(OnOffType.OFF);
         }
-
     }
 
     private void updateBrightness(PercentType brightness) {
