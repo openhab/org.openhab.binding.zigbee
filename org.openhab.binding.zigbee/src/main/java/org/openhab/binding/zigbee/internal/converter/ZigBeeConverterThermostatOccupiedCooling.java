@@ -122,7 +122,7 @@ public class ZigBeeConverterThermostatOccupiedCooling extends ZigBeeBaseChannelC
             return;
         }
 
-        attribute.writeValue(value);
+        monitorCommandResponse(command, attribute.writeValue(value));
     }
 
     @Override
