@@ -17,13 +17,13 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +44,7 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterRelativeHumidity.class);
 
     private ZclRelativeHumidityMeasurementCluster cluster;
+    private ZclAttribute attribute;
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
@@ -67,10 +68,12 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
         try {
             CommandResult bindResponse = bind(serverCluster).get();
             if (bindResponse.isSuccess()) {
-                // Configure reporting - no faster than once per second - no slower than 2 hours.
-                CommandResult response = serverCluster.setMeasuredValueReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1)
-                        .get();
-                handleReportingResponse(response, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+                // Configure reporting
+                ZclAttribute attribute = serverCluster
+                        .getAttribute(ZclRelativeHumidityMeasurementCluster.ATTR_MEASUREDVALUE);
+                CommandResult reportingResponse = attribute
+                        .setReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
@@ -90,6 +93,12 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
             return false;
         }
 
+        attribute = cluster.getAttribute(ZclRelativeHumidityMeasurementCluster.ATTR_MEASUREDVALUE);
+        if (attribute == null) {
+            logger.error("{}: Error opening device measured value attribute", endpoint.getIeeeAddress());
+            return false;
+        }
+
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
         return true;
@@ -102,7 +111,7 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
 
     @Override
     public void handleRefresh() {
-        cluster.getMeasuredValue(0);
+        attribute.readValue(0);
     }
 
     @Override

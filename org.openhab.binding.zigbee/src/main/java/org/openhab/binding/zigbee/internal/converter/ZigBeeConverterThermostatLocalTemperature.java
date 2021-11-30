@@ -45,6 +45,7 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
     private final int INVALID_TEMPERATURE = 0x8000;
 
     private ZclThermostatCluster cluster;
+    private ZclAttribute attribute;
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
@@ -69,9 +70,9 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
             CommandResult bindResponse = bind(serverCluster).get();
             if (bindResponse.isSuccess()) {
                 // Configure reporting
-                CommandResult reportingResponse = serverCluster
-                        .setLocalTemperatureReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 0.1)
-                        .get();
+                ZclAttribute attribute = serverCluster.getAttribute(ZclThermostatCluster.ATTR_LOCALTEMPERATURE);
+                CommandResult reportingResponse = attribute
+                        .setReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 logger.debug("{}: Failed to bind thermostat cluster", endpoint.getIeeeAddress());
@@ -93,6 +94,12 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
             return false;
         }
 
+        attribute = cluster.getAttribute(ZclThermostatCluster.ATTR_LOCALTEMPERATURE);
+        if (attribute == null) {
+            logger.error("{}: Error opening device thermostat local temperature attribute", endpoint.getIeeeAddress());
+            return false;
+        }
+
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
         return true;
@@ -105,7 +112,7 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
 
     @Override
     public void handleRefresh() {
-        cluster.getLocalTemperature(0);
+        attribute.readValue(0);
     }
 
     @Override

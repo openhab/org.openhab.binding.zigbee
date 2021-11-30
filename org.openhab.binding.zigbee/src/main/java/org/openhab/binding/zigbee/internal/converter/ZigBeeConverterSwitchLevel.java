@@ -780,7 +780,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
             @Override
             public void run() {
                 logger.debug("{}: IncreaseDecrease Stop timer expired", endpoint.getIeeeAddress());
-                clusterLevelControlServer.stopWithOnOffCommand();
+                clusterLevelControlServer.sendCommand(new StopWithOnOffCommand());
                 lastCommand = null;
                 updateTimer = null;
             }
