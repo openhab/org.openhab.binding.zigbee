@@ -13,16 +13,27 @@
 package org.openhab.binding.zigbee.converter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.times;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.binding.zigbee.internal.converter.ZigBeeConverterSwitchLevel;
 import org.openhab.core.library.types.DecimalType;
+import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.library.types.PercentType;
 import org.openhab.core.library.types.QuantityType;
 import org.openhab.core.library.unit.ImperialUnits;
 import org.openhab.core.library.unit.SIUnits;
+import org.openhab.core.types.Command;
 
+import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeProfileType;
 
@@ -85,4 +96,46 @@ public class ZigBeeBaseChannelConverterTest {
                 converter.temperatureToValue(new QuantityType(48.0, ImperialUnits.FAHRENHEIT)));
     }
 
+    @Test
+    public void monitorCommandResponse() throws InterruptedException, ExecutionException {
+        ZigBeeBaseChannelConverter converter = new ZigBeeConverterSwitchLevel();
+
+        ZigBeeThingHandler thingHandler = Mockito.mock(ZigBeeThingHandler.class);
+
+        converter.thing = thingHandler;
+
+        ZigBeeEndpoint endpoint = Mockito.mock(ZigBeeEndpoint.class);
+        converter.endpoint = endpoint;
+
+        Future<CommandResult> result;
+        Command command = OnOffType.ON;
+        result = null;
+        converter.monitorCommandResponse(command, result);
+
+        Mockito.verify(thingHandler, times(0)).setChannelState(ArgumentMatchers.any(), ArgumentMatchers.any());
+
+        List<Future<CommandResult>> results = new ArrayList<>();
+
+        result = Mockito.mock(Future.class);
+        CommandResult commandResult = Mockito.mock(CommandResult.class);
+        Mockito.when(result.get()).thenReturn(commandResult);
+
+        results.add(result);
+        results.add(null);
+
+        Mockito.when(commandResult.isTimeout()).thenReturn(true);
+        Mockito.when(commandResult.isError()).thenReturn(false);
+        converter.monitorCommandResponse(command, result);
+        Mockito.verify(thingHandler, times(0)).setChannelState(ArgumentMatchers.any(), ArgumentMatchers.any());
+
+        Mockito.when(commandResult.isTimeout()).thenReturn(false);
+        Mockito.when(commandResult.isError()).thenReturn(true);
+        converter.monitorCommandResponse(command, result);
+        Mockito.verify(thingHandler, times(0)).setChannelState(ArgumentMatchers.any(), ArgumentMatchers.any());
+
+        Mockito.when(commandResult.isTimeout()).thenReturn(false);
+        Mockito.when(commandResult.isError()).thenReturn(false);
+        converter.monitorCommandResponse(command, result);
+        Mockito.verify(thingHandler, times(1)).setChannelState(ArgumentMatchers.any(), ArgumentMatchers.any());
+    }
 }

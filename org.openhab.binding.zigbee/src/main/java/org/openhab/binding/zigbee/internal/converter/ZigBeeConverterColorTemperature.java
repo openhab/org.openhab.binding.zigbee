@@ -12,12 +12,13 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
-import static com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster.ATTR_COLORTEMPERATURE;
-
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.library.types.PercentType;
 import org.openhab.core.thing.Channel;
@@ -25,9 +26,6 @@ import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.UnDefType;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +36,7 @@ import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorCapabilitiesEnum;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorModeEnum;
+import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.MoveToColorTemperatureCommand;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
@@ -85,17 +84,14 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             CommandResult bindResponse = bind(serverClusterColorControl).get();
             if (bindResponse.isSuccess()) {
                 // Configure reporting - no faster than once per second - no slower than 2 hours.
-                CommandResult reportingResponse = serverClusterColorControl
-                        .setReporting(serverClusterColorControl.getAttribute(ATTR_COLORTEMPERATURE), 1,
-                                REPORTING_PERIOD_DEFAULT_MAX, 1)
-                        .get();
+                CommandResult reportingResponse = clusterColorControl
+                        .getAttribute(ZclColorControlCluster.ATTR_COLORTEMPERATURE)
+                        .setReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
 
                 // ColorMode reporting
-                ZclAttribute colorModeAttribute = serverClusterColorControl
-                        .getAttribute(ZclColorControlCluster.ATTR_COLORMODE);
-                reportingResponse = serverClusterColorControl
-                        .setReporting(colorModeAttribute, 1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                reportingResponse = clusterColorControl.getAttribute(ZclColorControlCluster.ATTR_COLORMODE)
+                        .setReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
             }
         } catch (InterruptedException | ExecutionException e) {
@@ -129,7 +125,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
 
     @Override
     public void handleRefresh() {
-        clusterColorControl.getColorTemperature(0);
+        clusterColorControl.readAttribute(ZclColorControlCluster.ATTR_COLORTEMPERATURE);
     }
 
     @Override
@@ -142,7 +138,9 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             return;
         }
 
-        clusterColorControl.moveToColorTemperatureCommand(percentToMired(colorTemperaturePercentage), 10);
+        MoveToColorTemperatureCommand zclCommand = new MoveToColorTemperatureCommand(
+                percentToMired(colorTemperaturePercentage), 10);
+        monitorCommandResponse(command, clusterColorControl.sendCommand(zclCommand));
     }
 
     @Override
@@ -158,8 +156,10 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
         try {
             if (!clusterColorControl.discoverAttributes(false).get()) {
                 // Device is not supporting attribute reporting - instead, just read the attributes
-                Integer capabilities = clusterColorControl.getColorCapabilities(Long.MAX_VALUE);
-                if (capabilities == null && clusterColorControl.getColorTemperature(Long.MAX_VALUE) == null) {
+                Integer capabilities = (Integer) clusterColorControl
+                        .getAttribute(ZclColorControlCluster.ATTR_COLORCAPABILITIES).readValue(Long.MAX_VALUE);
+                if (capabilities == null && clusterColorControl
+                        .getAttribute(ZclColorControlCluster.ATTR_COLORTEMPERATURE).readValue(Long.MAX_VALUE) == null) {
                     logger.trace("{}: Color control color temperature attribute returned null on endpoint {}",
                             endpoint.getIeeeAddress(), endpoint.getEndpointId());
                     return null;
@@ -172,7 +172,8 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
                 }
             } else if (clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_COLORCAPABILITIES)) {
                 // If the device is reporting is capabilities, then use this over attribute detection
-                Integer capabilities = clusterColorControl.getColorCapabilities(Long.MAX_VALUE);
+                Integer capabilities = (Integer) clusterColorControl
+                        .getAttribute(ZclColorControlCluster.ATTR_COLORCAPABILITIES).readValue(Long.MAX_VALUE);
                 if (capabilities != null && (capabilities & ColorCapabilitiesEnum.COLOR_TEMPERATURE.getKey()) == 0) {
                     // No support for color temperature
                     logger.trace("{}: Color control color temperature capability not supported on endpoint {}",
@@ -275,8 +276,10 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
     }
 
     private void determineMinMaxTemperature(ZclColorControlCluster serverClusterColorControl) {
-        Integer minTemperatureInMired = serverClusterColorControl.getColorTemperatureMin(Long.MAX_VALUE);
-        Integer maxTemperatureInMired = serverClusterColorControl.getColorTemperatureMax(Long.MAX_VALUE);
+        Integer minTemperatureInMired = (Integer) serverClusterColorControl
+                .getAttribute(ZclColorControlCluster.ATTR_COLORTEMPERATUREMIN).readValue(Long.MAX_VALUE);
+        Integer maxTemperatureInMired = (Integer) serverClusterColorControl
+                .getAttribute(ZclColorControlCluster.ATTR_COLORTEMPERATUREMAX).readValue(Long.MAX_VALUE);
 
         // High Mired values correspond to low Kelvin values, hence the max Mired value yields the min Kelvin value
         if (maxTemperatureInMired == null) {

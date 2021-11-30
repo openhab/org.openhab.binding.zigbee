@@ -14,6 +14,7 @@ package org.openhab.binding.zigbee.converter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -512,26 +513,53 @@ public abstract class ZigBeeBaseChannelConverter {
      * Note that this is called from a separate thread created in the ThingHandler, so we can safely block here.
      *
      * @param command the {@link Command} that was sent from the framework
-     * @param futureResponse the response from the sendCommand method when sending a command (may be null)
+     * @param future the response from the sendCommand method when sending a command (may be null)
      */
-    protected void monitorCommandResponse(final Command command, final Future<CommandResult> futureResponse) {
-        if (futureResponse == null) {
+    protected void monitorCommandResponse(final Command command, final Future<CommandResult> future) {
+        if (future == null) {
+            return;
+        }
+
+        monitorCommandResponse(command, Collections.singletonList(future));
+    }
+
+    /**
+     * Monitors the command response.
+     * <ul>
+     * <li>If the command fails (timeout), then we set the thing OFFLINE.
+     * <li>If the command succeeds, we wait for an attribute report to update the state
+     * <li>If there is no attribute report received, then we set the state to the original command (if applicable)
+     * </ul>
+     * <p>
+     * Note that this is called from a separate thread created in the ThingHandler, so we can safely block here.
+     *
+     * @param command the OH command that is being sent
+     * @param futures the list of futures to wait for for the ZCL commands being sent to the device
+     */
+    protected void monitorCommandResponse(Command command, List<Future<CommandResult>> futures) {
+        if (futures == null) {
             return;
         }
         try {
             logger.debug("{}: Channel {} waiting for response to {}", endpoint.getIeeeAddress(), channelUID, command);
-            CommandResult response = futureResponse.get();
-            if (response.isTimeout()) {
-                logger.debug("{}: Channel {} received TIMEOUT in response to {}", endpoint.getIeeeAddress(), channelUID,
-                        command);
-                thing.aliveTimeoutReached();
-                return;
+            for (Future<CommandResult> future : futures) {
+                if (future == null) {
+                    continue;
+                }
+                CommandResult response = future.get();
+                if (response.isTimeout()) {
+                    logger.debug("{}: Channel {} received TIMEOUT in response to {}", endpoint.getIeeeAddress(),
+                            channelUID, command);
+                    thing.aliveTimeoutReached();
+                    return;
+                }
+                if (response.isError()) {
+                    logger.debug("{}: Channel {} received ERROR in response to {}", endpoint.getIeeeAddress(),
+                            channelUID, command);
+                    return;
+                }
             }
-            if (response.isError()) {
-                logger.debug("{}: Channel {} received ERROR in response to {}", endpoint.getIeeeAddress(), channelUID,
-                        command);
-                return;
-            }
+            // No commands timed out or errored
             logger.debug("{}: Channel {} received SUCCESS in response to {}", endpoint.getIeeeAddress(), channelUID,
                     command);
 
