@@ -180,5 +180,4 @@ public class ZigBeeConverterMeteringInstantaneousDemand extends ZigBeeBaseChanne
         divisor = iDiv;
         multiplier = iMult;
     }
-
 }
