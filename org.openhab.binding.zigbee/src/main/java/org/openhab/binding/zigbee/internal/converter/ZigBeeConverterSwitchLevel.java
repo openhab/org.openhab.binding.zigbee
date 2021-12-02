@@ -30,6 +30,7 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.binding.zigbee.internal.converter.config.ZclLevelControlConfig;
+import org.openhab.binding.zigbee.internal.converter.config.ZclOnOffSwitchConfig;
 import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.library.types.IncreaseDecreaseType;
@@ -98,6 +99,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
 
     private ZclReportingConfig configReporting;
     private ZclLevelControlConfig configLevelControl;
+    private ZclOnOffSwitchConfig configOnOff;
 
     private final AtomicBoolean currentOnOffState = new AtomicBoolean(true);
 
@@ -281,12 +283,13 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
         configReporting = new ZclReportingConfig(channel);
         configLevelControl = new ZclLevelControlConfig();
         configLevelControl.initialize(clusterLevelControlServer);
-
-        // TODO Should we also support the ZclOnOffSwitchConfig here ?!?!?
+        configOnOff = new ZclOnOffSwitchConfig();
+        configOnOff.initialize(clusterOnOffServer);
 
         configOptions = new ArrayList<>();
         configOptions.addAll(configReporting.getConfiguration());
         configOptions.addAll(configLevelControl.getConfiguration());
+        configOptions.addAll(configOnOff.getConfiguration());
 
         return true;
     }
@@ -504,6 +507,9 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
 
         if (configLevelControl != null) {
             configLevelControl.updateConfiguration(currentConfiguration, updatedParameters);
+        }
+        if (configOnOff != null) {
+            configOnOff.updateConfiguration(currentConfiguration, updatedParameters);
         }
     }
 
