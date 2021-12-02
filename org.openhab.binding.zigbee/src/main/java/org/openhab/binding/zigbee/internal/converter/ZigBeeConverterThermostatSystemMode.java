@@ -164,7 +164,7 @@ public class ZigBeeConverterThermostatSystemMode extends ZigBeeBaseChannelConver
             return;
         }
 
-        attribute.writeValue(value);
+        monitorCommandResponse(command, attribute.writeValue(value));
     }
 
     @Override

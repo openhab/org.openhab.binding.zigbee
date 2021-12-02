@@ -187,7 +187,7 @@ public class ZigBeeConverterFanControl extends ZigBeeBaseChannelConverter implem
             return;
         }
 
-        fanModeAttribute.writeValue(value);
+        monitorCommandResponse(command, fanModeAttribute.writeValue(value));
     }
 
     @Override
