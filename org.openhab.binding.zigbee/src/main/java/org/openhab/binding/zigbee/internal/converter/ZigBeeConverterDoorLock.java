@@ -72,7 +72,7 @@ public class ZigBeeConverterDoorLock extends ZigBeeBaseChannelConverter implemen
             CommandResult bindResponse = bind(serverCluster).get();
             if (bindResponse.isSuccess()) {
                 // Configure reporting - no faster than once per second - no slower than 2 hours.
-                ZclAttribute attribute = cluster.getAttribute(ZclDoorLockCluster.ATTR_LOCKSTATE);
+                ZclAttribute attribute = serverCluster.getAttribute(ZclDoorLockCluster.ATTR_LOCKSTATE);
                 CommandResult reportingResponse = attribute.setReporting(1, REPORTING_PERIOD_DEFAULT_MAX).get();
 
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
