@@ -84,13 +84,13 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             CommandResult bindResponse = bind(serverClusterColorControl).get();
             if (bindResponse.isSuccess()) {
                 // Configure reporting - no faster than once per second - no slower than 2 hours.
-                CommandResult reportingResponse = clusterColorControl
+                CommandResult reportingResponse = serverClusterColorControl
                         .getAttribute(ZclColorControlCluster.ATTR_COLORTEMPERATURE)
                         .setReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
 
                 // ColorMode reporting
-                reportingResponse = clusterColorControl.getAttribute(ZclColorControlCluster.ATTR_COLORMODE)
+                reportingResponse = serverClusterColorControl.getAttribute(ZclColorControlCluster.ATTR_COLORMODE)
                         .setReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
             }
