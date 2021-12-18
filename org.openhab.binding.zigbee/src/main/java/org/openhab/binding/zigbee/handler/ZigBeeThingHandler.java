@@ -858,9 +858,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_LASTUPDATE,
                 ZigBeeBindingConstants.getISO8601StringForDate(node.getLastUpdateTime()));
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_NETWORKADDRESS, node.getNetworkAddress().toString());
-        properties.put(ZigBeeBindingConstants.THING_PROPERTY_STACKCOMPLIANCE,
-                Integer.toString(node.getNodeDescriptor().getStackCompliance()));
-
+        if (node.getNodeDescriptor() != null) {
+            properties.put(ZigBeeBindingConstants.THING_PROPERTY_STACKCOMPLIANCE,
+                    Integer.toString(node.getNodeDescriptor().getStackCompliance()));
+        }
         updateProperties(properties);
 
         initialiseZigBeeNode();
