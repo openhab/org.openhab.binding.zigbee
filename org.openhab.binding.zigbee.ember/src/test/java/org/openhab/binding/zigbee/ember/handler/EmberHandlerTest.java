@@ -1,4 +1,4 @@
-package org.openhab.binding.zigbee.ember;
+package org.openhab.binding.zigbee.ember.handler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -10,7 +10,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
-import org.openhab.binding.zigbee.ember.handler.EmberHandler;
+import org.openhab.binding.zigbee.ember.internal.EmberConfiguration;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.io.transport.serial.SerialPortManager;
 import org.openhab.core.thing.Bridge;
@@ -36,6 +36,11 @@ public class EmberHandlerTest {
         @Override
         protected Configuration editConfiguration() {
             return new Configuration();
+        }
+
+        @Override
+        protected <T> T getConfigAs(Class<T> clazz) {
+            return (T) new EmberConfiguration();
         }
     }
 
@@ -68,5 +73,20 @@ public class EmberHandlerTest {
             assertEquals(0, valueCaptor.getAllValues().get(cnt).getNetworkIndex());
             assertEquals(mcastId[cnt], valueCaptor.getAllValues().get(cnt).getMulticastId());
         }
+    }
+
+    @Test
+    public void initializeDongleSpecific() {
+        Bridge bridge = Mockito.mock(Bridge.class);
+        SerialPortManager serialPortManager = Mockito.mock(SerialPortManager.class);
+        ZigBeeChannelConverterFactory zigBeeChannelConverterFactory = Mockito.mock(ZigBeeChannelConverterFactory.class);
+
+        ZigBeeDongleEzsp dongle = Mockito.mock(ZigBeeDongleEzsp.class);
+        EmberNcp ncp = Mockito.mock(EmberNcp.class);
+        Mockito.when(dongle.getEmberNcp()).thenReturn(ncp);
+        EmberHandler handler = new EmberHandlerForTest(bridge, serialPortManager, zigBeeChannelConverterFactory,
+                dongle);
+
+        handler.initializeDongleSpecific();
     }
 }
