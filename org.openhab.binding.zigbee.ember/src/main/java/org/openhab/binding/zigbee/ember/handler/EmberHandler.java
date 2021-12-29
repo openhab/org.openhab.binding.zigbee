@@ -362,7 +362,7 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
     }
 
     private void setGroupRegistration(String groupsString) {
-        if (groupsString.isBlank()) {
+        if (groupsString == null || groupsString.isBlank()) {
             return;
         }
 
