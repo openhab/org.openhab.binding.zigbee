@@ -32,7 +32,7 @@
 					<property name="zigbee_endpoint">1</property>
 					<property name="zigbee_shortpress_cluster_id">0x00</property>
 					<property name="zigbee_shortpress_attribute_id">5</property>
-					<property name="zigbee_shortpress_attribute_value">lumi.remote.b286acn01</property>
+					<property name="zigbee_shortpress_attribute_value">lumi.remote.b1acn01</property>
 				</properties>
 			</channel>
 		</channels>
