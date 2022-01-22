@@ -153,41 +153,19 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             return null;
         }
 
-        try {
-            if (!clusterColorControl.discoverAttributes(false).get()) {
-                // Device is not supporting attribute reporting - instead, just read the attributes
-                Integer capabilities = (Integer) clusterColorControl
-                        .getAttribute(ZclColorControlCluster.ATTR_COLORCAPABILITIES).readValue(Long.MAX_VALUE);
-                if (capabilities == null && clusterColorControl
-                        .getAttribute(ZclColorControlCluster.ATTR_COLORTEMPERATURE).readValue(Long.MAX_VALUE) == null) {
-                    logger.trace("{}: Color control color temperature attribute returned null on endpoint {}",
-                            endpoint.getIeeeAddress(), endpoint.getEndpointId());
-                    return null;
-                }
-                if (capabilities != null && (capabilities & ColorCapabilitiesEnum.COLOR_TEMPERATURE.getKey()) == 0) {
-                    // No support for color temperature
-                    logger.trace("{}: Color control color temperature capability not supported on endpoint {}",
-                            endpoint.getIeeeAddress(), endpoint.getEndpointId());
-                    return null;
-                }
-            } else if (clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_COLORCAPABILITIES)) {
-                // If the device is reporting is capabilities, then use this over attribute detection
-                Integer capabilities = (Integer) clusterColorControl
-                        .getAttribute(ZclColorControlCluster.ATTR_COLORCAPABILITIES).readValue(Long.MAX_VALUE);
-                if (capabilities != null && (capabilities & ColorCapabilitiesEnum.COLOR_TEMPERATURE.getKey()) == 0) {
-                    // No support for color temperature
-                    logger.trace("{}: Color control color temperature capability not supported on endpoint {}",
-                            endpoint.getIeeeAddress(), endpoint.getEndpointId());
-                    return null;
-                }
-            } else if (!clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_COLORTEMPERATURE)) {
-                logger.trace("{}: Color control color temperature attribute not supported on endpoint {}",
-                        endpoint.getIeeeAddress(), endpoint.getEndpointId());
-                return null;
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.warn(String.format("%s: Exception discovering attributes in color control cluster on endpoint %d",
-                    endpoint.getIeeeAddress(), endpoint.getEndpointId()), e);
+        Integer capabilities = (Integer) clusterColorControl.getAttribute(ZclColorControlCluster.ATTR_COLORCAPABILITIES)
+                .readValue(Long.MAX_VALUE);
+        if (capabilities == null && clusterColorControl.getAttribute(ZclColorControlCluster.ATTR_COLORTEMPERATURE)
+                .readValue(Long.MAX_VALUE) == null) {
+            logger.trace("{}: Color control color temperature attribute returned null on endpoint {}",
+                    endpoint.getIeeeAddress(), endpoint.getEndpointId());
+            return null;
+        }
+        if (capabilities != null && (capabilities & ColorCapabilitiesEnum.COLOR_TEMPERATURE.getKey()) == 0) {
+            // No support for color temperature
+            logger.trace("{}: Color control color temperature capability not supported on endpoint {}",
+                    endpoint.getIeeeAddress(), endpoint.getEndpointId());
+            return null;
         }
 
         return ChannelBuilder
