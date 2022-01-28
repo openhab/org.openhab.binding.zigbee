@@ -78,7 +78,7 @@ public class ZigBeeConverterMeteringSummationReceived extends ZigBeeBaseChannelC
                 ZclAttribute attribute = serverClusterMeasurement
                         .getAttribute(ZclMeteringCluster.ATTR_CURRENTSUMMATIONRECEIVED);
                 // Configure reporting - no faster than once per second - no slower than 2 hours.
-                CommandResult reportingResponse = attribute.setReporting(3, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                CommandResult reportingResponse = attribute.setReporting(3, REPORTING_PERIOD_DEFAULT_MAX, 1L).get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 pollingPeriod = POLLING_PERIOD_HIGH;
