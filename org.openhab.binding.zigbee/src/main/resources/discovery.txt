@@ -13,3 +13,4 @@ xiaomi_lumisensorwaterleak,modelId=lumi.sensor_wleak.aq1
 xiaomi_lumisensormagnet,modelId=lumi.sensor_magnet
 innr-rc-110,vendor=innr,modelId=RC 110
 osram-switch-4x-eu,vendor=OSRAM,modelId=Switch 4x EU-LIGHTIFY
+legrand_dimmer_without_neutral,vendor=\u001f Legrand,modelId=\u001f Dimmer switch w/o neutral
