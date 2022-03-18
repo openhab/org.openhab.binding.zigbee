@@ -120,21 +120,8 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
             return null;
         }
 
-        try {
-            if (!powerCluster.discoverAttributes(false).get()
-                    && !powerCluster.isAttributeSupported(ZclPowerConfigurationCluster.ATTR_BATTERYVOLTAGE)) {
-                logger.trace("{}: Power configuration cluster battery voltage not supported",
-                        endpoint.getIeeeAddress());
-
-                return null;
-            } else if (powerCluster.getBatteryVoltage(Long.MAX_VALUE) == null) {
-                logger.trace("{}: Power configuration cluster battery voltage returned null",
-                        endpoint.getIeeeAddress());
-                return null;
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.warn("{}: Exception discovering attributes in power configuration cluster",
-                    endpoint.getIeeeAddress(), e);
+        if (powerCluster.getBatteryVoltage(Long.MAX_VALUE) == null) {
+            logger.trace("{}: Power configuration cluster battery voltage returned null", endpoint.getIeeeAddress());
             return null;
         }
 
@@ -145,6 +132,7 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
                 .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_POWER_BATTERYVOLTAGE)
                 .withProperties(createProperties(endpoint)).build();
     }
+
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
