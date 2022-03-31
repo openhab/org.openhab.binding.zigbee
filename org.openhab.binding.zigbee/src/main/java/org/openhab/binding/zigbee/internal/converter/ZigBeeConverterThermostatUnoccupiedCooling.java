@@ -70,7 +70,7 @@ public class ZigBeeConverterThermostatUnoccupiedCooling extends ZigBeeBaseChanne
             // Configure reporting
             ZclAttribute attribute = serverCluster.getAttribute(ZclThermostatCluster.ATTR_UNOCCUPIEDCOOLINGSETPOINT);
             CommandResult reportingResponse = attribute
-                    .setReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
+                    .setReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 10).get();
             handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
             if (!bindResponse.isSuccess()) {
             } else {
