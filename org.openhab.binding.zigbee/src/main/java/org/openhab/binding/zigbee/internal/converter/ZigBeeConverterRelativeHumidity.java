@@ -72,7 +72,7 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
                 ZclAttribute attribute = serverCluster
                         .getAttribute(ZclRelativeHumidityMeasurementCluster.ATTR_MEASUREDVALUE);
                 CommandResult reportingResponse = attribute
-                        .setReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
+                        .setReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 50).get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
             }
         } catch (InterruptedException | ExecutionException e) {
