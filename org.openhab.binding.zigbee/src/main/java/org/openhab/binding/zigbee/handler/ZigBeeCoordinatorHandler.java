@@ -664,6 +664,14 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     reinitialise = true;
                     break;
 
+                case ZigBeeBindingConstants.CONFIGURATION_MESHUPDATEPERIOD:
+                    ZigBeeDiscoveryExtension extension = (ZigBeeDiscoveryExtension) networkManager
+                            .getExtension(ZigBeeDiscoveryExtension.class);
+                    if (extension != null) {
+                        extension.setUpdatePeriod(((BigDecimal) configurationParameter.getValue()).intValue());
+                    }
+                    break;
+
                 case ZigBeeBindingConstants.THING_PROPERTY_INSTALLCODE:
                     addInstallCode((String) configurationParameter.getValue());
                     // Don't save this - it's a transient key
