@@ -470,7 +470,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         // Add the extensions to the network
         ZigBeeDiscoveryExtension discoveryExtension = new ZigBeeDiscoveryExtension();
-        discoveryExtension.setUpdatePeriod(meshUpdatePeriod);
+        discoveryExtension.setUpdateMeshPeriod(meshUpdatePeriod);
         networkManager.addExtension(discoveryExtension);
 
         networkManager.addExtension(new ZigBeeIasCieExtension());
@@ -668,7 +668,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     ZigBeeDiscoveryExtension extension = (ZigBeeDiscoveryExtension) networkManager
                             .getExtension(ZigBeeDiscoveryExtension.class);
                     if (extension != null) {
-                        extension.setUpdatePeriod(((BigDecimal) configurationParameter.getValue()).intValue());
+                        extension.setUpdateMeshPeriod(((BigDecimal) configurationParameter.getValue()).intValue());
                     }
                     break;
 
@@ -803,7 +803,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     @Override
     public void nodeAdded(@Nullable ZigBeeNode node) {
-        nodeUpdated(node);
     }
 
     @Override

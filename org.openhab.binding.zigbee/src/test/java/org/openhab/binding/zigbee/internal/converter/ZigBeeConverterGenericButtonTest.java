@@ -35,6 +35,7 @@ import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeCommand;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeProfileType;
+import com.zsmartsystems.zigbee.ZigBeeStatus;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
@@ -400,8 +401,8 @@ public class ZigBeeConverterGenericButtonTest {
     private ZclCluster mockCluster(int clusterId) {
         ZclCluster cluster = mock(ZclCluster.class);
         when(cluster.getClusterId()).thenReturn(clusterId);
-        when(cluster.bind(ArgumentMatchers.any(IeeeAddress.class), ArgumentMatchers.anyInt()))
-                .thenReturn(CompletableFuture.completedFuture(new CommandResult(new ZigBeeCommand())));
+        when(cluster.bind(ArgumentMatchers.any(IeeeAddress.class), ArgumentMatchers.anyInt())).thenReturn(
+                CompletableFuture.completedFuture(new CommandResult(ZigBeeStatus.SUCCESS, new ZigBeeCommand())));
         when(endpoint.getOutputCluster(clusterId)).thenReturn(cluster);
         when(endpoint.getInputCluster(clusterId)).thenReturn(cluster);
         return cluster;
