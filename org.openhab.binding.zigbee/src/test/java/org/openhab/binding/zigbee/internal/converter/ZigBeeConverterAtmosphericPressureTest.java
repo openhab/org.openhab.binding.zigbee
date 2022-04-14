@@ -60,19 +60,19 @@ public class ZigBeeConverterAtmosphericPressureTest {
         converter.initializeConverter(thingHandler);
 
         ZclAttribute attributeMeasuredVal = Mockito.mock(ZclAttribute.class);
-        Mockito.when(attributeMeasuredVal.getCluster()).thenReturn(ZclClusterType.PRESSURE_MEASUREMENT);
+        Mockito.when(attributeMeasuredVal.getClusterType()).thenReturn(ZclClusterType.PRESSURE_MEASUREMENT);
         Mockito.when(attributeMeasuredVal.getId()).thenReturn(ZclPressureMeasurementCluster.ATTR_MEASUREDVALUE);
 
         ZclAttribute attributeScaledVal = Mockito.mock(ZclAttribute.class);
-        Mockito.when(attributeScaledVal.getCluster()).thenReturn(ZclClusterType.PRESSURE_MEASUREMENT);
+        Mockito.when(attributeScaledVal.getClusterType()).thenReturn(ZclClusterType.PRESSURE_MEASUREMENT);
         Mockito.when(attributeScaledVal.getId()).thenReturn(ZclPressureMeasurementCluster.ATTR_SCALEDVALUE);
 
         ZclAttribute attributeScaledVal2 = Mockito.mock(ZclAttribute.class);
-        Mockito.when(attributeScaledVal2.getCluster()).thenReturn(ZclClusterType.PRESSURE_MEASUREMENT);
+        Mockito.when(attributeScaledVal2.getClusterType()).thenReturn(ZclClusterType.PRESSURE_MEASUREMENT);
         Mockito.when(attributeScaledVal2.getId()).thenReturn(ZclPressureMeasurementCluster.ATTR_SCALEDVALUE);
 
         ZclAttribute attributeScale = Mockito.mock(ZclAttribute.class);
-        Mockito.when(attributeScale.getCluster()).thenReturn(ZclClusterType.PRESSURE_MEASUREMENT);
+        Mockito.when(attributeScale.getClusterType()).thenReturn(ZclClusterType.PRESSURE_MEASUREMENT);
         Mockito.when(attributeScale.getId()).thenReturn(ZclPressureMeasurementCluster.ATTR_SCALE);
         Mockito.when(attributeScale.getLastValue()).thenReturn(Integer.valueOf(-1));
 

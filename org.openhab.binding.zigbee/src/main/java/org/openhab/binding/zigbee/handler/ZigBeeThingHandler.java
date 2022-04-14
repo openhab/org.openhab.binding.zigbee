@@ -429,7 +429,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         }
 
         // If this is an RFD then we reduce polling to the max to avoid wasting battery
-        if (node.isReducedFuntionDevice()) {
+        if (node.isReducedFunctionDevice()) {
             pollingPeriod = POLLING_PERIOD_DEFAULT;
             logger.debug("{}: Thing is RFD, using long poll period of {}sec", nodeIeeeAddress, pollingPeriod);
         }

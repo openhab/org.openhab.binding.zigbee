@@ -145,7 +145,7 @@ public class ZigBeeConverterDoorLock extends ZigBeeBaseChannelConverter implemen
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.DOOR_LOCK
+        if (attribute.getClusterType() == ZclClusterType.DOOR_LOCK
                 && attribute.getId() == ZclDoorLockCluster.ATTR_LOCKSTATE) {
             Integer value = (Integer) val;
             if (value != null && value == 1) {

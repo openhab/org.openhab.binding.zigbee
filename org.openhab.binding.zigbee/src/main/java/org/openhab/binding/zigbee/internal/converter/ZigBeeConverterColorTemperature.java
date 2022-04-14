@@ -180,7 +180,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
     public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}  on endpoint {}", endpoint.getIeeeAddress(), attribute,
                 endpoint.getEndpointId());
-        if (attribute.getCluster() == ZclClusterType.COLOR_CONTROL
+        if (attribute.getClusterType() == ZclClusterType.COLOR_CONTROL
                 && attribute.getId() == ZclColorControlCluster.ATTR_COLORTEMPERATURE) {
 
             if (lastColorMode == null || lastColorMode == ColorModeEnum.COLOR_TEMPERATURE) {
@@ -191,7 +191,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
                     updateChannelState(percent);
                 }
             }
-        } else if (attribute.getCluster() == ZclClusterType.COLOR_CONTROL
+        } else if (attribute.getClusterType() == ZclClusterType.COLOR_CONTROL
                 && attribute.getId() == ZclColorControlCluster.ATTR_COLORMODE) {
             Integer colorMode = (Integer) val;
             lastColorMode = ColorModeEnum.getByValue(colorMode);

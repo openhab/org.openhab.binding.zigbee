@@ -516,7 +516,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
     @Override
     public synchronized void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.LEVEL_CONTROL
+        if (attribute.getClusterType() == ZclClusterType.LEVEL_CONTROL
                 && attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
             lastLevel = levelToPercent((Integer) val);
             if (configLevelControl != null) {
@@ -526,7 +526,8 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
                 // Note that state is only updated if the current On/Off state is TRUE (ie ON)
                 updateChannelState(lastLevel);
             }
-        } else if (attribute.getCluster() == ZclClusterType.ON_OFF && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
+        } else if (attribute.getClusterType() == ZclClusterType.ON_OFF
+                && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
             if (attribute.getLastValue() != null) {
                 currentOnOffState.set((Boolean) val);
                 updateChannelState(currentOnOffState.get() ? lastLevel : OnOffType.OFF);

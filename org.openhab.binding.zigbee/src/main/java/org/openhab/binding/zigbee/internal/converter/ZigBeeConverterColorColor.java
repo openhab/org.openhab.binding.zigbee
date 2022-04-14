@@ -520,18 +520,18 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
         synchronized (colorUpdateSync) {
             try {
-                if (attribute.getCluster().getId() == ZclOnOffCluster.CLUSTER_ID) {
+                if (attribute.getClusterType().getId() == ZclOnOffCluster.CLUSTER_ID) {
                     if (attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
                         Boolean value = (Boolean) val;
                         OnOffType onoff = value ? OnOffType.ON : OnOffType.OFF;
                         updateOnOff(onoff);
                     }
-                } else if (attribute.getCluster().getId() == ZclLevelControlCluster.CLUSTER_ID) {
+                } else if (attribute.getClusterType().getId() == ZclLevelControlCluster.CLUSTER_ID) {
                     if (attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
                         PercentType brightness = levelToPercent((Integer) val);
                         updateBrightness(brightness);
                     }
-                } else if (attribute.getCluster().getId() == ZclColorControlCluster.CLUSTER_ID) {
+                } else if (attribute.getClusterType().getId() == ZclColorControlCluster.CLUSTER_ID) {
                     if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTHUE) {
                         int hue = (Integer) val;
                         if (hue != lastHue) {
