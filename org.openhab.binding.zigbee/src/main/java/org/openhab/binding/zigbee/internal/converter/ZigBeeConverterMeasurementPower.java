@@ -35,7 +35,6 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclElectricalMeasurementCluster;
-import com.zsmartsystems.zigbee.zcl.clusters.ZclRelativeHumidityMeasurementCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
@@ -102,7 +101,7 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
             return false;
         }
 
-        attribute = clusterMeasurement.getAttribute(ZclRelativeHumidityMeasurementCluster.ATTR_MEASUREDVALUE);
+        attribute = clusterMeasurement.getAttribute(ZclElectricalMeasurementCluster.ATTR_ACTIVEPOWER);
         if (attribute == null) {
             logger.error("{}: Error opening device measured value attribute", endpoint.getIeeeAddress());
             return false;
