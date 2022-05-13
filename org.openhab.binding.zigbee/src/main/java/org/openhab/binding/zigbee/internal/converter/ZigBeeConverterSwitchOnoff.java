@@ -147,8 +147,6 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
         }
 
         if (clusterOnOffServer != null) {
-            // Add the listener
-            clusterOnOffServer.addAttributeListener(this);
             configOnOff = new ZclOnOffSwitchConfig();
             configOnOff.initialize(clusterOnOffServer);
             configReporting = new ZclReportingConfig(channel);
