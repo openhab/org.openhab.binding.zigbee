@@ -165,7 +165,7 @@ public class ZigBeeConverterMeteringSummationDelivered extends ZigBeeBaseChannel
         }
     }
 
-    private void determineDivisorAndMultiplier(ZclMeteringCluster serverClusterMeasurement) {
+    private void determineDivisorAndMultiplier(ZclMeteringCluster clusterMetering) {
         ZclAttribute divisorAttribute = clusterMetering.getAttribute(ZclMeteringCluster.ATTR_DIVISOR);
         ZclAttribute multiplierAttribute = clusterMetering.getAttribute(ZclMeteringCluster.ATTR_MULTIPLIER);
 
