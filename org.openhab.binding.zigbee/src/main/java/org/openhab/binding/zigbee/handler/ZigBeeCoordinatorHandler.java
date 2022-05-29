@@ -398,8 +398,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      */
     protected void startZigBee(ZigBeeTransportTransmit zigbeeTransport, TransportConfig transportConfig,
             Class<?> serializerClass, Class<?> deserializerClass) {
-        updateStatus(ThingStatus.UNKNOWN);
-
         this.zigbeeTransport = zigbeeTransport;
         this.transportConfig = transportConfig;
         this.serializerClass = serializerClass;
