@@ -66,6 +66,7 @@ public class ZigBeeBaseChannelConverterTest {
         ZigBeeBaseChannelConverter converter = new ZigBeeConverterSwitchLevel();
 
         ZigBeeEndpoint endpoint = Mockito.mock(ZigBeeEndpoint.class);
+        Mockito.when(endpoint.getProfileId()).thenReturn(0x104);
         Mockito.when(endpoint.getDeviceId()).thenReturn(1);
         assertEquals("LEVEL_CONTROL_SWITCH", converter.getDeviceTypeLabel(endpoint));
 
