@@ -215,11 +215,11 @@
 
     <!-- Humidity Channel -->
     <channel-type id="measurement_relativehumidity">
-        <item-type>Number</item-type>
+        <item-type>Number:Dimensionless</item-type>
         <label>Humidity</label>
         <description>Indicates the current relative humidity</description>
         <category>Humidity</category>
-        <state pattern="%.1f" readOnly="true" />
+        <state pattern="%.1f %%" readOnly="true" />
     </channel-type>
 
 	<!-- Temperature Channel -->

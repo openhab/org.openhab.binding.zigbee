@@ -392,7 +392,7 @@ The following channels are supported -:
 | ias_tamper                   | `IAS_ZONE` (0x0500)                      | Switch                   |             |
 | measurement_illuminance      | `ILLUMINANCE_MEASUREMENT` (0x0400)       | Number                   |             |
 | measurement_pressure         | `PRESSURE_MEASUREMENT` (0x0403)          | Number:Pressure          |             |
-| measurement_relativehumidity | `RELATIVE_HUMIDITY_MEASUREMENT` (0x0405) | Number                   |             |
+| measurement_relativehumidity | `RELATIVE_HUMIDITY_MEASUREMENT` (0x0405) | Number:Dimensionless     |             |
 | measurement_temperature      | `TEMPERATURE_MEASUREMENT` (0x0402)       | Number:Temperature       |             |
 | metering_instantdemand       | `METERING` (0x0702)                      | Number                   |             |
 | metering_sumdelivered        | `METERING` (0x0702)                      | Number                   |             |

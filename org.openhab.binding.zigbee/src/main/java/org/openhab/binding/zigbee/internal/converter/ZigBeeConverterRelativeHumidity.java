@@ -13,14 +13,18 @@
 package org.openhab.binding.zigbee.internal.converter;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
-import org.openhab.core.library.types.DecimalType;
+import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
+import org.openhab.core.config.core.Configuration;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
@@ -43,8 +47,13 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterRelativeHumidity.class);
 
+    private static BigDecimal CHANGE_DEFAULT = new BigDecimal(50);
+    private static BigDecimal CHANGE_MIN = new BigDecimal(1);
+    private static BigDecimal CHANGE_MAX = new BigDecimal(10000);
+
     private ZclRelativeHumidityMeasurementCluster cluster;
     private ZclAttribute attribute;
+    private ZclReportingConfig configReporting;
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
@@ -65,15 +74,17 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
             return false;
         }
 
+        ZclReportingConfig reporting = new ZclReportingConfig(channel);
+
         try {
             CommandResult bindResponse = bind(serverCluster).get();
             if (bindResponse.isSuccess()) {
                 // Configure reporting
                 ZclAttribute attribute = serverCluster
                         .getAttribute(ZclRelativeHumidityMeasurementCluster.ATTR_MEASUREDVALUE);
-                CommandResult reportingResponse = attribute
-                        .setReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 50).get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+                CommandResult reportingResponse = attribute.setReporting(reporting.getReportingTimeMin(),
+                        reporting.getReportingTimeMax(), reporting.getReportingChange()).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, reporting.getPollingPeriod());
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
@@ -99,6 +110,12 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
             return false;
         }
 
+        // Add reporting configuration
+        configReporting = new ZclReportingConfig(channel);
+        configReporting.setAnalogue(CHANGE_DEFAULT, CHANGE_MIN, CHANGE_MAX);
+        configOptions = new ArrayList<>();
+        configOptions.addAll(configReporting.getConfiguration());
+
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
         return true;
@@ -110,8 +127,30 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
     }
 
     @Override
+    public int getPollingPeriod() {
+        return configReporting.getPollingPeriod();
+    }
+
+    @Override
     public void handleRefresh() {
         attribute.readValue(0);
+    }
+
+    @Override
+    public void updateConfiguration(@NonNull Configuration currentConfiguration,
+            Map<String, Object> updatedParameters) {
+        if (configReporting.updateConfiguration(currentConfiguration, updatedParameters)) {
+            try {
+                ZclAttribute attribute = cluster.getAttribute(ZclRelativeHumidityMeasurementCluster.ATTR_MEASUREDVALUE);
+                CommandResult reportingResponse;
+                reportingResponse = attribute.setReporting(configReporting.getReportingTimeMin(),
+                        configReporting.getReportingTimeMax(), configReporting.getReportingChange()).get();
+                handleReportingResponse(reportingResponse, configReporting.getPollingPeriod(),
+                        configReporting.getReportingTimeMax());
+            } catch (InterruptedException | ExecutionException e) {
+                logger.debug("{}: Relative humidity measurement exception setting reporting", endpoint.getIeeeAddress(), e);
+            }
+        }
     }
 
     @Override
@@ -123,7 +162,7 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
 
         return ChannelBuilder
                 .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_HUMIDITY_VALUE),
-                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER)
+                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER_DIMENSIONLESS)
                 .withType(ZigBeeBindingConstants.CHANNEL_HUMIDITY_VALUE)
                 .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_HUMIDITY_VALUE)
                 .withProperties(createProperties(endpoint)).build();
@@ -135,7 +174,7 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
         if (attribute.getClusterType() == ZclClusterType.RELATIVE_HUMIDITY_MEASUREMENT
                 && attribute.getId() == ZclRelativeHumidityMeasurementCluster.ATTR_MEASUREDVALUE) {
             Integer value = (Integer) val;
-            updateChannelState(new DecimalType(BigDecimal.valueOf(value, 2)));
+            updateChannelState(valueToPercentDimensionless(BigDecimal.valueOf(value, 2)));
         }
     }
 }
