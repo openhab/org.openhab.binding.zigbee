@@ -32,6 +32,7 @@ import org.openhab.core.library.types.PercentType;
 import org.openhab.core.library.types.QuantityType;
 import org.openhab.core.library.unit.ImperialUnits;
 import org.openhab.core.library.unit.SIUnits;
+import org.openhab.core.library.unit.Units;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.ThingUID;
@@ -425,6 +426,16 @@ public abstract class ZigBeeBaseChannelConverter {
      */
     protected QuantityType valueToTemperature(int value) {
         return new QuantityType<>(BigDecimal.valueOf(value, 2), SIUnits.CELSIUS);
+    }
+
+    /**
+     * Converts an 0-100 numeric value into a Percentage {@link QuantityType}.
+     *
+     * @param value the integer value to convert
+     * @return the {@link QuantityType}
+     */
+    protected QuantityType valueToPercentDimensionless(Number value) {
+        return new QuantityType<>(value, Units.PERCENT);
     }
 
     /**
