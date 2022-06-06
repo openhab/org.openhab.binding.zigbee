@@ -243,6 +243,9 @@ public class ZigBeeBindingConstants {
     public static final String ITEM_TYPE_DIMMER = "Dimmer";
     public static final String ITEM_TYPE_NUMBER = "Number";
     public static final String ITEM_TYPE_NUMBER_DIMENSIONLESS = "Number:Dimensionless";
+    public static final String ITEM_TYPE_NUMBER_ELECTRICCURRENT = "Number:ElectricCurrent";
+    public static final String ITEM_TYPE_NUMBER_ELECTRICPOTENTIAL = "Number:ElectricPotential";
+    public static final String ITEM_TYPE_NUMBER_POWER = "Number:Power";
     public static final String ITEM_TYPE_NUMBER_PRESSURE = "Number:Pressure";
     public static final String ITEM_TYPE_NUMBER_TEMPERATURE = "Number:Temperature";
     public static final String ITEM_TYPE_ROLLERSHUTTER = "Rollershutter";
