@@ -202,6 +202,16 @@ public class ZigBeeBindingConstants {
     public static final ChannelTypeUID CHANNEL_THERMOSTAT_RUNNINGMODE = new ChannelTypeUID(
             "zigbee:thermostat_runningmode");
 
+    public static final String CHANNEL_NAME_THERMOSTAT_HEATING_DEMAND = "thermostatheatingdemand";
+    public static final String CHANNEL_LABEL_THERMOSTAT_HEATING_DEMAND = "Heating Demand";
+    public static final ChannelTypeUID CHANNEL_THERMOSTAT_HEATING_DEMAND = new ChannelTypeUID(
+            "zigbee:thermostat_heatingdemand");
+
+    public static final String CHANNEL_NAME_THERMOSTAT_COOLING_DEMAND = "thermostatcoolingdemand";
+    public static final String CHANNEL_LABEL_THERMOSTAT_COOLING_DEMAND = "Cooling Demand";
+    public static final ChannelTypeUID CHANNEL_THERMOSTAT_COOLING_DEMAND = new ChannelTypeUID(
+            "zigbee:thermostat_coolingdemand");
+
     public static final String CHANNEL_NAME_DOORLOCK_STATE = "doorlockstate";
     public static final String CHANNEL_LABEL_DOORLOCK_STATE = "Door Lock State";
     public static final ChannelTypeUID CHANNEL_DOORLOCK_STATE = new ChannelTypeUID("zigbee:door_state");
