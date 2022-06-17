@@ -6,7 +6,7 @@
 
 	<thing-type id="xiaomi_lumiremotemini" listed="false">
 		<label>AQARA WXKG11LM</label>
-		<description>AQARA WXKG11LM</description>
+		<description>Smart Wireless Switch</description>
 		<category>WallSwitch</category>
 
 		<channels>
@@ -36,12 +36,6 @@
 				</properties>
 			</channel>
 		</channels>
-
-		<properties>
-			<property name="vendor">LUMI</property>
-			<property name="modelId">lumi.remote.b1acn01</property>
-			<property name="zigbee_logicaltype">END_DEVICE</property>
-		</properties>
 
 		<representation-property>zigbee_macaddress</representation-property>
 
