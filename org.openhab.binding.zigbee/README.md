@@ -264,7 +264,7 @@ The following devices have been tested by openHAB users with the binding. This l
 | Hue Bulbs                                      | Color LED Bulb                                               |
 | Hue Dimmer Switch                              | Remote RWL021 / RWL022 _[<sup>[2]</sup>](#note2)_            |
 | Hue Motion Sensor                              | Motion and Luminance sensor                                  |
-| IKEA Fyrtur Blinds                             | Roller blinds                                                |
+| IKEA Fyrtur Blinds                             | Roller blinds. See [forum tutorial](https://community.openhab.org/t/ikea-fyrtur-zigbee-w-direct-control-howto/136735) for further information |
 | IKEA Tradfri Bulbs                             |                                                              |
 | IKEA Tradfri Motion Sensor                     |                                                              |
 | IKEA Tradfri Outlet                            |                                                              |
