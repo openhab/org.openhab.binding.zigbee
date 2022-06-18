@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
@@ -527,11 +528,15 @@ public abstract class ZigBeeBaseChannelConverter {
      * @param future the response from the sendCommand method when sending a command (may be null)
      */
     protected void monitorCommandResponse(final Command command, final Future<CommandResult> future) {
+        monitorCommandResponse(command, Collections.singletonList(future));
+    }
+
+    protected void monitorCommandResponse(Command command, final Future<CommandResult> future,
+            Consumer<Command> completionFunction) {
         if (future == null) {
             return;
         }
-
-        monitorCommandResponse(command, Collections.singletonList(future));
+        monitorCommandResponse(command, Collections.singletonList(future), completionFunction);
     }
 
     /**
@@ -548,9 +553,13 @@ public abstract class ZigBeeBaseChannelConverter {
      * @param futures the list of futures to wait for for the ZCL commands being sent to the device
      */
     protected void monitorCommandResponse(Command command, List<Future<CommandResult>> futures) {
-        if (futures == null) {
-            return;
-        }
+        monitorCommandResponse(command, futures, cmd -> {
+            updateChannelState((State) cmd);
+        });
+    }
+
+    protected void monitorCommandResponse(Command command, List<Future<CommandResult>> futures,
+            Consumer<Command> completionFunction) {
         try {
             logger.debug("{}: Channel {} waiting for response to {}", endpoint.getIeeeAddress(), channelUID, command);
             for (Future<CommandResult> future : futures) {
@@ -577,7 +586,7 @@ public abstract class ZigBeeBaseChannelConverter {
             // Treat a successful response as confirmation the device is in the commanded state
             // This might not be 100% correct, but if the device doesn't send the report, then things can get messy, so
             // this is a good compromise.
-            updateChannelState((State) command);
+            completionFunction.accept(command);
 
             thing.alive();
         } catch (InterruptedException | ExecutionException e) {
