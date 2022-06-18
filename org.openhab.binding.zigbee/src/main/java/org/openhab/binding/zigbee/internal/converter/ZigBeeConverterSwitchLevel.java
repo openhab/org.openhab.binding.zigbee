@@ -40,6 +40,7 @@ import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.types.Command;
+import org.openhab.core.types.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -381,7 +382,12 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
 
         // Some functionality (eg IncreaseDecrease) requires that we know the last command received
         lastCommand = localCommand;
-        monitorCommandResponse(localCommand, responseFuture);
+        monitorCommandResponse(localCommand, responseFuture, cmd -> {
+            updateChannelState((State) cmd);
+            if (cmd instanceof PercentType) {
+                lastLevel = ((PercentType) cmd);
+            }
+        });
     }
 
     /**
