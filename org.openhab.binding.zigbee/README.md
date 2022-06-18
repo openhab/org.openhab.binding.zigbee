@@ -304,6 +304,7 @@ The following devices have been tested by openHAB users with the binding. This l
 | Xiaomi Aqara Door and Window Sensor            | _[Known issues](#xiaomi-devices)_                            |
 | Xiaomi Aqara Temperature and Humidity Sensor   | _[Known issues](#xiaomi-devices)_                            |
 | Xiaomi Aqara Human Motion Sensor               | _[<sup>[3]</sup>](#note3)_ _[Known issues](#xiaomi-devices)_ |
+| Xiaomi Aqara Wireless Mini Switch              | WXKG11LM                                                     |
 | Xiaomi Aqara Wireless Mini Switch              | _[Known issues](#xiaomi-devices)_                            |
 | Xiaomi Aqara Wired Wall Switch                 | _[Known issues](#xiaomi-devices)_                            |
 | Xiaomi Aqara Wireless Remote Switch            | Double Rocker variant _[Known issues](#xiaomi-devices)_      |
