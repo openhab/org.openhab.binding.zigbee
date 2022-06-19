@@ -528,9 +528,26 @@ public abstract class ZigBeeBaseChannelConverter {
      * @param future the response from the sendCommand method when sending a command (may be null)
      */
     protected void monitorCommandResponse(final Command command, final Future<CommandResult> future) {
+        if (future == null) {
+            return;
+        }
         monitorCommandResponse(command, Collections.singletonList(future));
     }
 
+    /**
+     * Monitors the command response.
+     * <ul>
+     * <li>If the command fails (timeout), then we set the thing OFFLINE.
+     * <li>If the command succeeds, we wait for an attribute report to update the state
+     * <li>If there is no attribute report received, then we set the state to the original command (if applicable)
+     * </ul>
+     * <p>
+     * Note that this is called from a separate thread created in the ThingHandler, so we can safely block here.
+     *
+     * @param command the {@link Command} that was sent from the framework
+     * @param future the response from the sendCommand method when sending a command (may be null)
+     * @param completionFunction the expression to be called on successful completion
+     */
     protected void monitorCommandResponse(Command command, final Future<CommandResult> future,
             Consumer<Command> completionFunction) {
         if (future == null) {
@@ -558,6 +575,20 @@ public abstract class ZigBeeBaseChannelConverter {
         });
     }
 
+    /**
+     * Monitors the command response.
+     * <ul>
+     * <li>If the command fails (timeout), then we set the thing OFFLINE.
+     * <li>If the command succeeds, we wait for an attribute report to update the state
+     * <li>If there is no attribute report received, then we set the state to the original command (if applicable)
+     * </ul>
+     * <p>
+     * Note that this is called from a separate thread created in the ThingHandler, so we can safely block here.
+     *
+     * @param command the OH command that is being sent
+     * @param futures the list of futures to wait for for the ZCL commands being sent to the device
+     * @param completionFunction the expression to be called on successful completion
+     */
     protected void monitorCommandResponse(Command command, List<Future<CommandResult>> futures,
             Consumer<Command> completionFunction) {
         try {
