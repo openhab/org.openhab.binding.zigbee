@@ -97,7 +97,7 @@ public final class ZigBeeDefaultChannelConverterProvider implements ZigBeeChanne
         channelMap.put(ZigBeeBindingConstants.CHANNEL_SUMMATION_RECEIVED,
                 ZigBeeConverterMeteringSummationReceived.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_TUYA_BUTTON, ZigBeeConverterTuyaButton.class);
-}
+    }
 
     @Override
     public Map<ChannelTypeUID, Class<? extends ZigBeeBaseChannelConverter>> getChannelConverters() {
