@@ -220,11 +220,6 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_LABEL_WINDOWCOVERING_LIFT = "Window Covering Lift";
     public static final ChannelTypeUID CHANNEL_WINDOWCOVERING_LIFT = new ChannelTypeUID("zigbee:windowcovering_lift");
 
-<<<<<<< HEAD
-    public static final String CHANNEL_NAME_TUYA_BUTTON = "tuyabutton";
-    public static final String CHANNEL_LABEL_TUYA_BUTTON = "Button";
-    public static final ChannelTypeUID CHANNEL_TUYA_BUTTON = new ChannelTypeUID("zigbee:tuya_button");
-=======
     public static final String CHANNEL_NAME_INSTANTANEOUS_DEMAND = "meteringinstantdemand";
     public static final String CHANNEL_LABEL_INSTANTANEOUS_DEMAND = "Metering Instantaneous Demand";
     public static final ChannelTypeUID CHANNEL_INSTANTANEOUS_DEMAND = new ChannelTypeUID(
@@ -237,7 +232,10 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_NAME_SUMMATION_RECEIVED = "meteringsumreceived";
     public static final String CHANNEL_LABEL_SUMMATION_RECEIVED = "Metering Summation Received";
     public static final ChannelTypeUID CHANNEL_SUMMATION_RECEIVED = new ChannelTypeUID("zigbee:metering_sumreceived");
->>>>>>> upstream/main
+
+    public static final String CHANNEL_NAME_TUYA_BUTTON = "tuyabutton";
+    public static final String CHANNEL_LABEL_TUYA_BUTTON = "Button";
+    public static final ChannelTypeUID CHANNEL_TUYA_BUTTON = new ChannelTypeUID("zigbee:tuya_button");
 
     public static final String CHANNEL_PROPERTY_ENDPOINT = "zigbee_endpoint";
     public static final String CHANNEL_PROPERTY_PROFILEID = "zigbee_profileid";
