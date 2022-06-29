@@ -1,5 +1,6 @@
 philips_sml001,vendor=Philips,modelId=SML001
 philips_rwl021,vendor=Philips,modelId=RWL021
+philips_rwl022,vendor=Signify Netherlands B.V.,modelId=RWL022
 smartthings_motionv4,vendor=SmartThings,modelId=motionv4
 bitron-video-902010-23,vendor=Bitron Home,modelId=902010/23
 bitron-video-av2010-34,vendor=Bitron Video,modelId=AV2010/34
@@ -7,10 +8,14 @@ xiaomi_lumisensorht,modelId=lumi.sensor_ht
 xiaomi_lumisensor-motion,modelId=lumi.sensor_motion
 xiaomi_lumiremoteb286acn01,modelId=lumi.remote.b286acn01
 xiaomi_lumisensor86sw2,modelId=lumi.sensor_86sw2
+xiaomi_lumisensor-switch,modelId=lumi.sensor_switch
 xiaomi_lumisensor-switchaq2,modelId=lumi.sensor_switch.aq2
 xiaomi_lumisensorwaterleak,modelId=lumi.sensor_wleak.aq1
+xiaomi_lumisensormagnet,modelId=lumi.sensor_magnet
+xiaomi_lumiremotemini,modelId=lumi.remote.b1acn01
 innr-rc-110,vendor=innr,modelId=RC 110
 osram-switch-4x-eu,vendor=OSRAM,modelId=Switch 4x EU-LIGHTIFY
+legrand_dimmer_without_neutral,vendor=\u001f Legrand,modelId=\u001f Dimmer switch w/o neutral
 tuya_ts0041,vendor=_TZ3000_tk3s5tyg,modelId=TS0041
 tuya_ts0042,vendor=_TZ3000_adkvzooy,modelId=TS0042
 tuya_ts0043,vendor=_TZ3000_qzjcsmar,modelId=TS0043

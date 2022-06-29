@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -105,12 +105,12 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     protected ExtendedPanId extendedPanId;
 
     @Nullable
-    private IeeeAddress nodeIeeeAddress;
+    protected IeeeAddress nodeIeeeAddress;
 
     @Nullable
     protected ZigBeeTransportTransmit zigbeeTransport;
     @Nullable
-    private ZigBeeNetworkManager networkManager;
+    protected ZigBeeNetworkManager networkManager;
 
     @Nullable
     private Class<?> serializerClass;
@@ -398,8 +398,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      */
     protected void startZigBee(ZigBeeTransportTransmit zigbeeTransport, TransportConfig transportConfig,
             Class<?> serializerClass, Class<?> deserializerClass) {
-        updateStatus(ThingStatus.UNKNOWN);
-
         this.zigbeeTransport = zigbeeTransport;
         this.transportConfig = transportConfig;
         this.serializerClass = serializerClass;
@@ -462,15 +460,15 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 return;
         }
 
-        int meshUpdateTime = MESH_UPDATE_PERIOD;
+        int meshUpdatePeriod = MESH_UPDATE_PERIOD;
         if (getConfig().get(CONFIGURATION_MESHUPDATEPERIOD) != null) {
             logger.debug("Mesh Update Period {}", getConfig().get(CONFIGURATION_MESHUPDATEPERIOD));
-            meshUpdateTime = ((BigDecimal) getConfig().get(CONFIGURATION_MESHUPDATEPERIOD)).intValue();
+            meshUpdatePeriod = ((BigDecimal) getConfig().get(CONFIGURATION_MESHUPDATEPERIOD)).intValue();
         }
 
         // Add the extensions to the network
         ZigBeeDiscoveryExtension discoveryExtension = new ZigBeeDiscoveryExtension();
-        discoveryExtension.setUpdatePeriod(meshUpdateTime);
+        discoveryExtension.setUpdateMeshPeriod(meshUpdatePeriod);
         networkManager.addExtension(discoveryExtension);
 
         networkManager.addExtension(new ZigBeeIasCieExtension());
@@ -533,26 +531,20 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         }
 
         // Get the final network configuration
+        nodeIeeeAddress = networkManager.getLocalIeeeAddress();
         currentChannel = networkManager.getZigBeeChannel();
         currentPanId = networkManager.getZigBeePanId();
         currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
         logger.debug("ZigBee initialise done. channel={}, PanId={}  EPanId={}", currentChannel, currentPanId,
                 currentExtendedPanId);
 
-        try {
-            // Persist the network configuration
-            Configuration configuration = editConfiguration();
-            configuration.put(CONFIGURATION_PANID, currentPanId);
-            if (currentExtendedPanId != null) {
-                configuration.put(CONFIGURATION_EXTENDEDPANID, currentExtendedPanId.toString());
-            }
-            configuration.put(CONFIGURATION_CHANNEL, currentChannel.getChannel());
+        // Set initializeNetwork to false to ensure that if communications to the dongle restarts, we don't reinitialise
+        // the network again!
+        initializeNetwork = false;
 
-            // If the thing is defined statically, then this will fail and we will never start!
-            updateConfiguration(configuration);
-        } catch (IllegalStateException e) {
-            logger.error("Error updating configuration ", e);
-        }
+        // Set initializeNetwork to false to ensure that if communications to the dongle restarts, we don't reinitialise
+        // the network again!
+        initializeNetwork = false;
 
         initializeDongleSpecific();
     }
@@ -655,16 +647,27 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     transportConfig.addOption(TransportConfigOption.RADIO_TX_POWER, configurationParameter.getValue());
                     break;
 
+                case ZigBeeBindingConstants.CONFIGURATION_CHANNEL:
+                    networkManager.setZigBeeChannel(ZigBeeChannel.create(channelId));
+                    break;
+
                 case ZigBeeBindingConstants.CONFIGURATION_LINKKEY:
                 case ZigBeeBindingConstants.CONFIGURATION_NETWORKKEY:
                 case ZigBeeBindingConstants.CONFIGURATION_POWERMODE:
                 case ZigBeeBindingConstants.CONFIGURATION_BAUD:
                 case ZigBeeBindingConstants.CONFIGURATION_FLOWCONTROL:
                 case ZigBeeBindingConstants.CONFIGURATION_PORT:
-                case ZigBeeBindingConstants.CONFIGURATION_CHANNEL:
                 case ZigBeeBindingConstants.CONFIGURATION_EXTENDEDPANID:
                 case ZigBeeBindingConstants.CONFIGURATION_INITIALIZE:
                     reinitialise = true;
+                    break;
+
+                case ZigBeeBindingConstants.CONFIGURATION_MESHUPDATEPERIOD:
+                    ZigBeeDiscoveryExtension extension = (ZigBeeDiscoveryExtension) networkManager
+                            .getExtension(ZigBeeDiscoveryExtension.class);
+                    if (extension != null) {
+                        extension.setUpdateMeshPeriod(((BigDecimal) configurationParameter.getValue()).intValue());
+                    }
                     break;
 
                 case ZigBeeBindingConstants.THING_PROPERTY_INSTALLCODE:
@@ -798,7 +801,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     @Override
     public void nodeAdded(@Nullable ZigBeeNode node) {
-        nodeUpdated(node);
     }
 
     @Override
@@ -911,6 +913,25 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             case INITIALISING:
                 break;
             case ONLINE:
+                try {
+                    // Persist the network configuration
+                    ZigBeeChannel currentChannel = networkManager.getZigBeeChannel();
+                    int currentPanId = networkManager.getZigBeePanId();
+                    ExtendedPanId currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
+
+                    Configuration configuration = editConfiguration();
+                    configuration.put(CONFIGURATION_PANID, currentPanId);
+                    if (currentExtendedPanId != null) {
+                        configuration.put(CONFIGURATION_EXTENDEDPANID, currentExtendedPanId.toString());
+                    }
+                    configuration.put(CONFIGURATION_CHANNEL, currentChannel.getChannel());
+
+                    // If the thing is defined statically, then this will fail and we will never start!
+                    updateConfiguration(configuration);
+                } catch (IllegalStateException e) {
+                    logger.error("Error updating configuration when network is ONLINE ", e);
+                }
+
                 updateStatus(ThingStatus.ONLINE);
                 if (reconnectPollingTimer != null) {
                     reconnectPollingTimer.cancel(true);

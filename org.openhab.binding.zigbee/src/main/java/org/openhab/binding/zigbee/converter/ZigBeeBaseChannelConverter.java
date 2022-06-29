@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -14,12 +14,14 @@ package org.openhab.binding.zigbee.converter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
@@ -31,6 +33,7 @@ import org.openhab.core.library.types.PercentType;
 import org.openhab.core.library.types.QuantityType;
 import org.openhab.core.library.unit.ImperialUnits;
 import org.openhab.core.library.unit.SIUnits;
+import org.openhab.core.library.unit.Units;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.ThingUID;
@@ -43,6 +46,7 @@ import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.IeeeAddress;
+import com.zsmartsystems.zigbee.ZigBeeDeviceType;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeProfileType;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
@@ -426,6 +430,37 @@ public abstract class ZigBeeBaseChannelConverter {
     }
 
     /**
+     * Converts an 0-100 numeric value into a Percentage {@link QuantityType}.
+     *
+     * @param value the integer value to convert
+     * @return the {@link QuantityType}
+     */
+    protected QuantityType valueToPercentDimensionless(Number value) {
+        return new QuantityType<>(value, Units.PERCENT);
+    }
+
+    /**
+     * Gets a {@link String} of the device type for the {@link ZigBeeEndpoint} to be used in device labels.
+     *
+     * @param endpoint the {@link ZigBeeEndpoint}
+     * @return the {@link String} of the device type
+     */
+    protected String getDeviceTypeLabel(ZigBeeEndpoint endpoint) {
+        ZigBeeProfileType profileType = ZigBeeProfileType.getByValue(endpoint.getProfileId());
+        if (profileType == null) {
+            profileType = ZigBeeProfileType.ZIGBEE_HOME_AUTOMATION;
+        }
+
+        ZigBeeDeviceType deviceType = ZigBeeDeviceType.getByValue(profileType, endpoint.getDeviceId());
+
+        if (deviceType == null) {
+            return String.format("Unknown Device Type %04X", endpoint.getDeviceId());
+        }
+
+        return deviceType.toString();
+    }
+
+    /**
      * Converts a {@link Command} to a ZigBee temperature integer
      *
      * @param command the {@link Command} to convert
@@ -490,28 +525,100 @@ public abstract class ZigBeeBaseChannelConverter {
      * Note that this is called from a separate thread created in the ThingHandler, so we can safely block here.
      *
      * @param command the {@link Command} that was sent from the framework
-     * @param futureResponse the response from the sendCommand method when sending a command (may be null)
+     * @param future the response from the sendCommand method when sending a command (may be null)
      */
-    protected void monitorCommandResponse(final Command command, final Future<CommandResult> futureResponse) {
-        if (futureResponse == null) {
+    protected void monitorCommandResponse(final Command command, final Future<CommandResult> future) {
+        if (future == null) {
             return;
         }
+        monitorCommandResponse(command, Collections.singletonList(future));
+    }
+
+    /**
+     * Monitors the command response.
+     * <ul>
+     * <li>If the command fails (timeout), then we set the thing OFFLINE.
+     * <li>If the command succeeds, we wait for an attribute report to update the state
+     * <li>If there is no attribute report received, then we set the state to the original command (if applicable)
+     * </ul>
+     * <p>
+     * Note that this is called from a separate thread created in the ThingHandler, so we can safely block here.
+     *
+     * @param command the {@link Command} that was sent from the framework
+     * @param future the response from the sendCommand method when sending a command (may be null)
+     * @param completionFunction the expression to be called on successful completion
+     */
+    protected void monitorCommandResponse(Command command, final Future<CommandResult> future,
+            Consumer<Command> completionFunction) {
+        if (future == null) {
+            return;
+        }
+        monitorCommandResponse(command, Collections.singletonList(future), completionFunction);
+    }
+
+    /**
+     * Monitors the command response.
+     * <ul>
+     * <li>If the command fails (timeout), then we set the thing OFFLINE.
+     * <li>If the command succeeds, we wait for an attribute report to update the state
+     * <li>If there is no attribute report received, then we set the state to the original command (if applicable)
+     * </ul>
+     * <p>
+     * Note that this is called from a separate thread created in the ThingHandler, so we can safely block here.
+     *
+     * @param command the OH command that is being sent
+     * @param futures the list of futures to wait for for the ZCL commands being sent to the device
+     */
+    protected void monitorCommandResponse(Command command, List<Future<CommandResult>> futures) {
+        monitorCommandResponse(command, futures, cmd -> {
+            updateChannelState((State) cmd);
+        });
+    }
+
+    /**
+     * Monitors the command response.
+     * <ul>
+     * <li>If the command fails (timeout), then we set the thing OFFLINE.
+     * <li>If the command succeeds, we wait for an attribute report to update the state
+     * <li>If there is no attribute report received, then we set the state to the original command (if applicable)
+     * </ul>
+     * <p>
+     * Note that this is called from a separate thread created in the ThingHandler, so we can safely block here.
+     *
+     * @param command the OH command that is being sent
+     * @param futures the list of futures to wait for for the ZCL commands being sent to the device
+     * @param completionFunction the expression to be called on successful completion
+     */
+    protected void monitorCommandResponse(Command command, List<Future<CommandResult>> futures,
+            Consumer<Command> completionFunction) {
         try {
             logger.debug("{}: Channel {} waiting for response to {}", endpoint.getIeeeAddress(), channelUID, command);
-            CommandResult response = futureResponse.get();
-            if (response.isTimeout()) {
-                logger.debug("{}: Channel {} received TIMEOUT in response to {}", endpoint.getIeeeAddress(), channelUID,
-                        command);
-                thing.aliveTimeoutReached();
-                return;
+            for (Future<CommandResult> future : futures) {
+                if (future == null) {
+                    continue;
+                }
+                CommandResult response = future.get();
+                if (response.isTimeout()) {
+                    logger.debug("{}: Channel {} received TIMEOUT in response to {}", endpoint.getIeeeAddress(),
+                            channelUID, command);
+                    thing.aliveTimeoutReached();
+                    return;
+                }
+                if (response.isError()) {
+                    logger.debug("{}: Channel {} received ERROR in response to {}", endpoint.getIeeeAddress(),
+                            channelUID, command);
+                    return;
+                }
             }
-            if (response.isError()) {
-                logger.debug("{}: Channel {} received ERROR in response to {}", endpoint.getIeeeAddress(), channelUID,
-                        command);
-                return;
-            }
+            // No commands timed out or errored
             logger.debug("{}: Channel {} received SUCCESS in response to {}", endpoint.getIeeeAddress(), channelUID,
                     command);
+
+            // Treat a successful response as confirmation the device is in the commanded state
+            // This might not be 100% correct, but if the device doesn't send the report, then things can get messy, so
+            // this is a good compromise.
+            completionFunction.accept(command);
+
             thing.alive();
         } catch (InterruptedException | ExecutionException e) {
         }

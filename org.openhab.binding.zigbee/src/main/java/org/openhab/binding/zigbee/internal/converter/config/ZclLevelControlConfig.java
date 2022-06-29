@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -27,6 +27,8 @@ import org.openhab.core.config.core.ConfigDescriptionParameter.Type;
 import org.openhab.core.config.core.ConfigDescriptionParameterBuilder;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.config.core.ParameterOption;
+import org.openhab.core.library.types.PercentType;
+import org.openhab.core.types.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,9 +51,13 @@ public class ZclLevelControlConfig implements ZclClusterConfigHandler {
     private static final String CONFIG_OFFTRANSITIONTIME = CONFIG_ID + "transitiontimeoff";
     private static final String CONFIG_ONLEVEL = CONFIG_ID + "onlevel";
     private static final String CONFIG_DEFAULTMOVERATE = CONFIG_ID + "defaultrate";
+    private static final String CONFIG_INVERTCONTROL = CONFIG_ID + "invertcontrol";
+    private static final String CONFIG_INVERTREPORT = CONFIG_ID + "invertreport";
 
     private ZclLevelControlCluster levelControlCluster;
     private int defaultTransitionTime = 10;
+    private boolean invertControl = false;
+    private boolean invertReport = false;
 
     private final List<ConfigDescriptionParameter> parameters = new ArrayList<>();
 
@@ -77,6 +83,16 @@ public class ZclLevelControlConfig implements ZclClusterConfigHandler {
                 .withDescription("Default time in 100ms intervals to transition between ON and OFF").withDefault("0")
                 .withMinimum(new BigDecimal(0)).withMaximum(new BigDecimal(60000)).withOptions(options)
                 .withLimitToOptions(false).build());
+
+        options = new ArrayList<ParameterOption>();
+        parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_INVERTCONTROL, Type.BOOLEAN)
+                .withLabel("Invert Level Commands")
+                .withDescription("Invert all level control commands sent to the device").withDefault("false").build());
+
+        parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_INVERTCONTROL, Type.BOOLEAN)
+                .withLabel("Invert Level Reports")
+                .withDescription("Invert all level control reports received from the device").withDefault("false")
+                .build());
 
         if (levelControlCluster.isAttributeSupported(ZclLevelControlCluster.ATTR_ONOFFTRANSITIONTIME)) {
             options = new ArrayList<ParameterOption>();
@@ -176,6 +192,12 @@ public class ZclLevelControlConfig implements ZclClusterConfigHandler {
                 case CONFIG_DEFAULTTRANSITIONTIME:
                     defaultTransitionTime = ((BigDecimal) (configurationParameter.getValue())).intValue();
                     break;
+                case CONFIG_INVERTCONTROL:
+                    invertControl = ((Boolean) (configurationParameter.getValue())).booleanValue();
+                    break;
+                case CONFIG_INVERTREPORT:
+                    invertReport = ((Boolean) (configurationParameter.getValue())).booleanValue();
+                    break;
                 default:
                     logger.warn("{}: Unhandled configuration property {}", levelControlCluster.getZigBeeAddress(),
                             configurationParameter.getKey());
@@ -198,5 +220,33 @@ public class ZclLevelControlConfig implements ZclClusterConfigHandler {
      */
     public int getDefaultTransitionTime() {
         return defaultTransitionTime;
+    }
+
+    /**
+     * Handles the inversion of the command as required
+     *
+     * @param command
+     * @return
+     */
+    public Command handleInvertControl(Command command) {
+        if (command instanceof PercentType) {
+            if (invertControl) {
+                return new PercentType(100 - ((PercentType) command).intValue());
+            }
+        }
+        return command;
+    }
+
+    /**
+     * Handles the inversion of the report as required
+     *
+     * @param lastLevel
+     * @return
+     */
+    public PercentType handleInvertReport(PercentType Level) {
+        if (invertReport) {
+            return new PercentType(100 - Level.intValue());
+        }
+        return Level;
     }
 }

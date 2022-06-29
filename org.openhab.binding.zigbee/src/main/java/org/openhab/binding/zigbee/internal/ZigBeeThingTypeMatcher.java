@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -26,10 +26,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.core.config.core.ConfigDescriptionRegistry;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.type.ThingType;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,7 +127,7 @@ public class ZigBeeThingTypeMatcher {
                     continue;
                 }
 
-                newProperties.add(new RequiredProperty(discoveryElement[0].trim(), discoveryElement[1].trim()));
+                newProperties.add(new RequiredProperty(discoveryElement[0].trim(), unescape(discoveryElement[1].trim())));
             }
 
             if (newProperties.isEmpty()) {
@@ -171,5 +171,31 @@ public class ZigBeeThingTypeMatcher {
             this.name = name;
             this.value = value;
         }
+    }
+
+    /**
+     * Transforms \x&lt;nnnn&gt; occurrences into corresponding utf16 char.
+     * 
+     * @param s String that shall be unescaped.
+     * @return UTF16 string
+     */
+    private String unescape(String s) {
+        StringBuilder sb = new StringBuilder();
+        String[] segments = s.split("\\\\u");
+
+        sb.append(segments[0]);
+        for (int i = 1; i < segments.length; i++) {
+            try {
+                sb.appendCodePoint(Integer.valueOf(segments[i].substring(0, 4), 16)).append(segments[i].substring(4));
+            } catch (NumberFormatException nfe) {
+                throw new IllegalArgumentException("Unicode " + segments[i].substring(0, 4) + " cannot be parsed.",
+                        nfe);
+            } catch (IndexOutOfBoundsException ioobe) {
+                throw new IllegalArgumentException(
+                        "Unicode " + segments[i].substring(0, segments[i].length()) + " is too short.");
+            }
+        }
+
+        return sb.toString();
     }
 }

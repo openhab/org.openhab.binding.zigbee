@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -36,12 +36,21 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
+import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
+import org.openhab.binding.zigbee.internal.ZigBeeConfigDescriptionParameters;
+import org.openhab.binding.zigbee.internal.ZigBeeDeviceConfigHandler;
+import org.openhab.binding.zigbee.internal.converter.config.ZclClusterConfigFactory;
+import org.openhab.binding.zigbee.internal.converter.config.ZclClusterConfigHandler;
+import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
+import org.openhab.core.common.ThreadPoolManager;
 import org.openhab.core.config.core.ConfigDescription;
 import org.openhab.core.config.core.ConfigDescriptionBuilder;
 import org.openhab.core.config.core.ConfigDescriptionParameter;
 import org.openhab.core.config.core.ConfigDescriptionProvider;
 import org.openhab.core.config.core.Configuration;
-import org.openhab.core.common.ThreadPoolManager;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
@@ -59,15 +68,6 @@ import org.openhab.core.types.Command;
 import org.openhab.core.types.RefreshType;
 import org.openhab.core.types.State;
 import org.openhab.core.types.StateDescription;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
-import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
-import org.openhab.binding.zigbee.discovery.ZigBeeNodePropertyDiscoverer;
-import org.openhab.binding.zigbee.internal.ZigBeeConfigDescriptionParameters;
-import org.openhab.binding.zigbee.internal.ZigBeeDeviceConfigHandler;
-import org.openhab.binding.zigbee.internal.converter.config.ZclClusterConfigFactory;
-import org.openhab.binding.zigbee.internal.converter.config.ZclClusterConfigHandler;
-import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,12 +148,6 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     private boolean firmwareUpdateInProgress = false;
 
     private ExecutorService commandScheduler = ThreadPoolManager.getPool("zigbee-thinghandler-commands");
-
-    /**
-     * A set of channels that have been linked to items. This is used to ensure we only poll channels that are linked to
-     * keep network activity to a minimum.
-     */
-    private final Set<ChannelUID> thingChannelsLinked = new HashSet<>();
 
     /**
      * The factory to create the converters for the different channels.
@@ -435,7 +429,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         }
 
         // If this is an RFD then we reduce polling to the max to avoid wasting battery
-        if (node.isReducedFuntionDevice()) {
+        if (node.isReducedFunctionDevice()) {
             pollingPeriod = POLLING_PERIOD_DEFAULT;
             logger.debug("{}: Thing is RFD, using long poll period of {}sec", nodeIeeeAddress, pollingPeriod);
         }
@@ -549,7 +543,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         Set<Integer> clusters = new HashSet<Integer>();
         clusters.addAll(initialClusters);
         return clusters.addAll(
-                Arrays.asList(newClusters.split(",")).stream().map(s -> new Integer(s)).collect(Collectors.toSet()))
+                Arrays.asList(newClusters.split(",")).stream().map(s -> Integer.valueOf(s)).collect(Collectors.toSet()))
                         ? new ArrayList<Integer>(clusters)
                         : Collections.emptyList();
     }
@@ -599,7 +593,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                     logger.debug("{}: Polling {} channels...", nodeIeeeAddress, channels.keySet());
 
                     for (ChannelUID channelUid : channels.keySet()) {
-                        if (!thingChannelsLinked.contains(channelUid)) {
+                        if (isLinked(channelUid)) {
                             // Don't poll if this channel isn't linked
                             continue;
                         }
@@ -635,7 +629,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             // Polling starts almost immediately to get an immediate refresh
             // Add some random element to the period so that all things aren't synchronised
             int pollingPeriodMs = pollingPeriod * 1000 + new Random().nextInt(pollingPeriod * 100);
-            pollingJob = scheduler.scheduleAtFixedRate(pollingRunnable, new Random().nextInt(pollingPeriodMs),
+            pollingJob = scheduler.scheduleWithFixedDelay(pollingRunnable, new Random().nextInt(pollingPeriodMs),
                     pollingPeriodMs, TimeUnit.MILLISECONDS);
             logger.debug("{}: Polling initialised at {}ms", nodeIeeeAddress, pollingPeriodMs);
         }
@@ -656,9 +650,6 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     public void channelLinked(ChannelUID channelUID) {
         logger.debug("{}: Channel {} linked - polling started.", nodeIeeeAddress, channelUID);
 
-        // We keep track of what channels are used and only poll channels that the framework is using
-        thingChannelsLinked.add(channelUID);
-
         // Refresh the value
         ZigBeeBaseChannelConverter channel = channels.get(channelUID);
         if (channel == null) {
@@ -666,14 +657,6 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             return;
         }
         channel.handleRefresh();
-    }
-
-    @Override
-    public void channelUnlinked(ChannelUID channelUID) {
-        logger.debug("{}: Channel {} unlinked - polling stopped.", nodeIeeeAddress, channelUID);
-
-        // We keep track of what channels are used and only poll channels that the framework is using
-        thingChannelsLinked.remove(channelUID);
     }
 
     @Override
@@ -875,9 +858,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_LASTUPDATE,
                 ZigBeeBindingConstants.getISO8601StringForDate(node.getLastUpdateTime()));
         properties.put(ZigBeeBindingConstants.THING_PROPERTY_NETWORKADDRESS, node.getNetworkAddress().toString());
-        properties.put(ZigBeeBindingConstants.THING_PROPERTY_STACKCOMPLIANCE,
-                Integer.toString(node.getNodeDescriptor().getStackCompliance()));
-
+        if (node.getNodeDescriptor() != null) {
+            properties.put(ZigBeeBindingConstants.THING_PROPERTY_STACKCOMPLIANCE,
+                    Integer.toString(node.getNodeDescriptor().getStackCompliance()));
+        }
         updateProperties(properties);
 
         initialiseZigBeeNode();

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -77,7 +77,6 @@ public class ZigBeeDataStore implements ZigBeeNetworkDataStore {
 
     private XStream openStream() {
         XStream stream = new XStream(new StaxDriver());
-        XStream.setupDefaultSecurity(stream);
         stream.allowTypesByWildcard(new String[] { ZigBeeNode.class.getPackageName() + ".**" });
         stream.setClassLoader(this.getClass().getClassLoader());
 

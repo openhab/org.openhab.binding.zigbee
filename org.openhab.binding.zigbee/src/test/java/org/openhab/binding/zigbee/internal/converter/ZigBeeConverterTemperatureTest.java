@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -62,7 +62,7 @@ public class ZigBeeConverterTemperatureTest {
         converter.initializeConverter(thingHandler);
 
         ZclAttribute attribute = Mockito.mock(ZclAttribute.class);
-        Mockito.when(attribute.getCluster()).thenReturn(ZclClusterType.TEMPERATURE_MEASUREMENT);
+        Mockito.when(attribute.getClusterType()).thenReturn(ZclClusterType.TEMPERATURE_MEASUREMENT);
         Mockito.when(attribute.getId()).thenReturn(ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE);
 
         converter.attributeUpdated(attribute, Integer.valueOf(2345));

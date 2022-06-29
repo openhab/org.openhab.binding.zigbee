@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -29,8 +29,9 @@ import org.openhab.core.thing.ThingUID;
 
 import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.IeeeAddress;
+import com.zsmartsystems.zigbee.ZigBeeCommand;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
-import com.zsmartsystems.zigbee.zcl.ZclAttribute;
+import com.zsmartsystems.zigbee.ZigBeeStatus;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclIasZoneCluster;
 
@@ -65,9 +66,9 @@ public class ZigBeeConverterIasTamperTest {
 
         @SuppressWarnings("unchecked")
         Future<CommandResult> reportingFuture = mock(Future.class);
-        when(zclCluster.setReporting(isNull(ZclAttribute.class), anyInt(), anyInt())).thenReturn(reportingFuture);
+        when(zclCluster.setReporting(any(), anyInt(), anyInt())).thenReturn(reportingFuture);
 
-        CommandResult reportingResult = new CommandResult();
+        CommandResult reportingResult = new CommandResult(ZigBeeStatus.SUCCESS, new ZigBeeCommand());
         when(reportingFuture.get()).thenReturn(reportingResult);
 
         channel = mock(Channel.class);

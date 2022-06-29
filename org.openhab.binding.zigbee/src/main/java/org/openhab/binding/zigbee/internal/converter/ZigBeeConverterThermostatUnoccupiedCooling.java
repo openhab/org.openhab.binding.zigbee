@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -16,13 +16,13 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.types.Command;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +70,7 @@ public class ZigBeeConverterThermostatUnoccupiedCooling extends ZigBeeBaseChanne
             // Configure reporting
             ZclAttribute attribute = serverCluster.getAttribute(ZclThermostatCluster.ATTR_UNOCCUPIEDCOOLINGSETPOINT);
             CommandResult reportingResponse = attribute
-                    .setReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
+                    .setReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 10).get();
             handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
             if (!bindResponse.isSuccess()) {
             } else {
@@ -119,7 +119,7 @@ public class ZigBeeConverterThermostatUnoccupiedCooling extends ZigBeeBaseChanne
             return;
         }
 
-        attribute.writeValue(value);
+        monitorCommandResponse(command, attribute.writeValue(value));
     }
 
     @Override
@@ -135,20 +135,12 @@ public class ZigBeeConverterThermostatUnoccupiedCooling extends ZigBeeBaseChanne
             return null;
         }
 
-        try {
-            if (!cluster.discoverAttributes(false).get()) {
-                // Device is not supporting attribute reporting - instead, just read the attributes
-                Integer capabilities = cluster.getUnoccupiedCoolingSetpoint(Long.MAX_VALUE);
-                if (capabilities == null) {
-                    logger.trace("{}: Thermostat unoccupied cooling setpoint returned null", endpoint.getIeeeAddress());
-                    return null;
-                }
-            } else if (!cluster.isAttributeSupported(ZclThermostatCluster.ATTR_UNOCCUPIEDCOOLINGSETPOINT)) {
-                logger.trace("{}: Thermostat unoccupied cooling setpoint not supported", endpoint.getIeeeAddress());
-                return null;
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.warn("{}: Exception discovering attributes in thermostat cluster", endpoint.getIeeeAddress(), e);
+        // Try to read the setpoint attribute
+        ZclAttribute attribute = cluster.getAttribute(ZclThermostatCluster.ATTR_UNOCCUPIEDCOOLINGSETPOINT);
+        Object value = attribute.readValue(Long.MAX_VALUE);
+        if (value == null) {
+            logger.trace("{}: Thermostat unoccupied cooling setpoint returned null", endpoint.getIeeeAddress());
+            return null;
         }
 
         return ChannelBuilder
@@ -163,7 +155,7 @@ public class ZigBeeConverterThermostatUnoccupiedCooling extends ZigBeeBaseChanne
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.THERMOSTAT
+        if (attribute.getClusterType() == ZclClusterType.THERMOSTAT
                 && attribute.getId() == ZclThermostatCluster.ATTR_UNOCCUPIEDCOOLINGSETPOINT) {
             updateChannelState(valueToTemperature((Integer) val));
         }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -12,13 +12,14 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
-import static com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster.*;
-
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +28,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.binding.zigbee.internal.converter.config.ZclColorControlConfig;
+import org.openhab.binding.zigbee.internal.converter.config.ZclColorControlConfig.ControlMethod;
+import org.openhab.binding.zigbee.internal.converter.config.ZclLevelControlConfig;
+import org.openhab.binding.zigbee.internal.converter.config.ZclOnOffSwitchConfig;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.HSBType;
@@ -37,10 +45,6 @@ import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.UnDefType;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
-import org.openhab.binding.zigbee.internal.converter.config.ZclLevelControlConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +57,14 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclLevelControlCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorCapabilitiesEnum;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorModeEnum;
+import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.MoveToColorCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.MoveToHueAndSaturationCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.levelcontrol.MoveToLevelCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.levelcontrol.MoveToLevelWithOnOffCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.levelcontrol.ZclLevelControlCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.onoff.OffCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.onoff.OnCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.onoff.ZclOnOffCommand;
 
 /**
  * Converter for color control. Uses the {@link ZclColorControlCluster}, and may also use the
@@ -92,7 +104,9 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
     private final AtomicBoolean currentOnOffState = new AtomicBoolean(true);
 
+    private ZclColorControlConfig configColorControl;
     private ZclLevelControlConfig configLevelControl;
+    private ZclOnOffSwitchConfig configOnOffSwitch;
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
@@ -115,19 +129,6 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             return false;
         }
 
-        ZclLevelControlCluster serverClusterLevelControl = (ZclLevelControlCluster) endpoint
-                .getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
-        if (serverClusterLevelControl == null) {
-            logger.warn("{}: Device does not support level control", endpoint.getIeeeAddress());
-            return false;
-        }
-
-        ZclOnOffCluster serverClusterOnOff = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
-        if (serverClusterOnOff == null) {
-            logger.debug("{}: Device does not support on/off control", endpoint.getIeeeAddress());
-            return false;
-        }
-
         if (!discoverSupportedColorCommands(serverClusterColorControl)) {
             return false;
         }
@@ -140,25 +141,28 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                 CommandResult reportingResponse;
                 if (supportsHue) {
                     reportingResponse = serverClusterColorControl
-                            .setReporting(serverClusterColorControl.getAttribute(ATTR_CURRENTHUE), 1,
-                                    REPORTING_PERIOD_DEFAULT_MAX, 1)
+                            .setReporting(ZclColorControlCluster.ATTR_CURRENTHUE, 1, REPORTING_PERIOD_DEFAULT_MAX, 1)
                             .get();
                     handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
 
-                    reportingResponse = serverClusterColorControl
-                            .setReporting(serverClusterColorControl.getAttribute(ATTR_CURRENTSATURATION), 1,
-                                    REPORTING_PERIOD_DEFAULT_MAX, 1)
-                            .get();
+                    reportingResponse = serverClusterColorControl.setReporting(
+                            ZclColorControlCluster.ATTR_CURRENTSATURATION, 1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
                     handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
                 } else {
                     reportingResponse = serverClusterColorControl
-                            .setCurrentXReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                            .setReporting(ZclColorControlCluster.ATTR_CURRENTX, 1, REPORTING_PERIOD_DEFAULT_MAX, 1)
+                            .get();
                     handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
 
                     reportingResponse = serverClusterColorControl
-                            .setCurrentYReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                            .setReporting(ZclColorControlCluster.ATTR_CURRENTY, 1, REPORTING_PERIOD_DEFAULT_MAX, 1)
+                            .get();
                     handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
                 }
+
+                reportingResponse = serverClusterColorControl
+                        .setReporting(ZclColorControlCluster.ATTR_COLORMODE, 1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 logger.error("{}: Error 0x{} setting server binding", endpoint.getIeeeAddress(),
                         Integer.toHexString(bindResponse.getStatusCode()));
@@ -169,40 +173,42 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             logger.debug("{}: Exception configuring color reporting", endpoint.getIeeeAddress(), e);
         }
 
-        try {
-            CommandResult bindResponse = bind(serverClusterLevelControl).get();
-            if (!bindResponse.isSuccess()) {
-                pollingPeriod = POLLING_PERIOD_HIGH;
+        ZclLevelControlCluster serverClusterLevelControl = (ZclLevelControlCluster) endpoint
+                .getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
+        if (serverClusterLevelControl == null) {
+            logger.warn("{}: Device does not support level control", endpoint.getIeeeAddress());
+        } else {
+            try {
+                CommandResult bindResponse = bind(serverClusterLevelControl).get();
+                if (!bindResponse.isSuccess()) {
+                    pollingPeriod = POLLING_PERIOD_HIGH;
+                }
+
+                CommandResult reportingResponse = serverClusterLevelControl
+                        .setReporting(ZclLevelControlCluster.ATTR_CURRENTLEVEL, 1, REPORTING_PERIOD_DEFAULT_MAX, 1)
+                        .get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+            } catch (ExecutionException | InterruptedException e) {
+                logger.debug("{}: Exception configuring level reporting", endpoint.getIeeeAddress(), e);
             }
-            CommandResult reportingResponse = serverClusterLevelControl
-                    .setCurrentLevelReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-            handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
-        } catch (ExecutionException | InterruptedException e) {
-            logger.debug("{}: Exception configuring level reporting", endpoint.getIeeeAddress(), e);
         }
 
-        try {
-            CommandResult bindResponse = bind(serverClusterOnOff).get();
-            if (!bindResponse.isSuccess()) {
-                pollingPeriod = POLLING_PERIOD_HIGH;
+        ZclOnOffCluster serverClusterOnOff = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
+        if (serverClusterOnOff == null) {
+            logger.debug("{}: Device does not support on/off control", endpoint.getIeeeAddress());
+        } else {
+            try {
+                CommandResult bindResponse = bind(serverClusterOnOff).get();
+                if (!bindResponse.isSuccess()) {
+                    pollingPeriod = POLLING_PERIOD_HIGH;
+                }
+                CommandResult reportingResponse = serverClusterOnOff
+                        .setReporting(ZclOnOffCluster.ATTR_ONOFF, 1, REPORTING_PERIOD_DEFAULT_MAX).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
+            } catch (ExecutionException | InterruptedException e) {
+                logger.debug("{}: Exception configuring on/off reporting", endpoint.getIeeeAddress(), e);
+                return false;
             }
-            CommandResult reportingResponse = serverClusterOnOff.setOnOffReporting(1, REPORTING_PERIOD_DEFAULT_MAX)
-                    .get();
-            handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
-        } catch (ExecutionException | InterruptedException e) {
-            logger.debug("{}: Exception configuring on/off reporting", endpoint.getIeeeAddress(), e);
-            return false;
-        }
-
-        try {
-            ZclAttribute colorModeAttribute = serverClusterColorControl
-                    .getAttribute(ZclColorControlCluster.ATTR_COLORMODE);
-            CommandResult reportingResponse = serverClusterColorControl
-                    .setReporting(colorModeAttribute, 1, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
-            handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
-        } catch (ExecutionException | InterruptedException e) {
-            logger.debug("{}: Exception configuring color mode reporting", endpoint.getIeeeAddress(), e);
-            return false;
         }
 
         return true;
@@ -212,31 +218,40 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     public boolean initializeConverter(ZigBeeThingHandler thing) {
         super.initializeConverter(thing);
         colorUpdateScheduler = Executors.newSingleThreadScheduledExecutor();
-
         clusterColorControl = (ZclColorControlCluster) endpoint.getInputCluster(ZclColorControlCluster.CLUSTER_ID);
         if (clusterColorControl == null) {
             logger.error("{}: Error opening device color controls", endpoint.getIeeeAddress());
             return false;
         }
 
+        configOptions = new ArrayList<>();
+
         clusterLevelControl = (ZclLevelControlCluster) endpoint.getInputCluster(ZclLevelControlCluster.CLUSTER_ID);
         if (clusterLevelControl == null) {
             logger.warn("{}: Device does not support level control", endpoint.getIeeeAddress());
+        } else {
+            configLevelControl = new ZclLevelControlConfig();
+            configLevelControl.initialize(clusterLevelControl);
+            configOptions.addAll(configLevelControl.getConfiguration());
         }
 
         clusterOnOff = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
         if (clusterOnOff == null) {
             logger.debug("{}: Device does not support on/off control", endpoint.getIeeeAddress());
+        } else {
+            configOnOffSwitch = new ZclOnOffSwitchConfig();
+            configOnOffSwitch.initialize(clusterOnOff);
+            configOptions.addAll(configOnOffSwitch.getConfiguration());
         }
+
+        // Create a configuration handler and get the available options
+        configColorControl = new ZclColorControlConfig(channel);
+        configColorControl.initialize(clusterColorControl);
+        configOptions.addAll(configColorControl.getConfiguration());
 
         if (!discoverSupportedColorCommands(clusterColorControl)) {
             return false;
         }
-
-        // Create a configuration handler and get the available options
-        configLevelControl = new ZclLevelControlConfig();
-        configLevelControl.initialize(clusterLevelControl);
-        configOptions = configLevelControl.getConfiguration();
 
         clusterColorControl.addAttributeListener(this);
         clusterLevelControl.addAttributeListener(this);
@@ -274,76 +289,85 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     @Override
     public void handleRefresh() {
         if (clusterOnOff != null) {
-            clusterOnOff.getOnOff(0);
+            clusterOnOff.readAttribute(ZclOnOffCluster.ATTR_ONOFF);
         }
 
+        List<Integer> colorAttributes = new ArrayList<>();
         if (supportsHue) {
-            clusterColorControl.getCurrentHue(0);
-            clusterColorControl.getCurrentSaturation(0);
+            colorAttributes.add(ZclColorControlCluster.ATTR_CURRENTHUE);
+            colorAttributes.add(ZclColorControlCluster.ATTR_CURRENTSATURATION);
         } else {
-            clusterColorControl.getCurrentX(0);
-            clusterColorControl.getCurrentY(0);
+            colorAttributes.add(ZclColorControlCluster.ATTR_CURRENTX);
+            colorAttributes.add(ZclColorControlCluster.ATTR_CURRENTY);
         }
+        colorAttributes.add(ZclColorControlCluster.ATTR_COLORMODE);
+        clusterColorControl.readAttributes(colorAttributes);
 
         if (clusterLevelControl != null) {
-            clusterLevelControl.getCurrentLevel(0);
+            clusterLevelControl.readAttribute(ZclLevelControlCluster.ATTR_CURRENTLEVEL);
         }
-
-        clusterColorControl.getColorMode(0);
     }
 
-    private void changeOnOff(OnOffType onoff) throws InterruptedException, ExecutionException {
+    private Future<CommandResult> changeOnOff(OnOffType onoff) throws InterruptedException, ExecutionException {
         boolean on = onoff == OnOffType.ON;
 
         if (clusterOnOff == null) {
             if (clusterLevelControl == null) {
                 logger.warn("{}: ignoring on/off command", endpoint.getIeeeAddress());
+
+                return null;
             } else {
-                changeBrightness(on ? PercentType.HUNDRED : PercentType.ZERO);
+                return changeBrightness(on ? PercentType.HUNDRED : PercentType.ZERO);
             }
-            return;
         }
 
+        ZclOnOffCommand command;
         if (on) {
-            clusterOnOff.onCommand().get();
+            command = new OnCommand();
         } else {
-            clusterOnOff.offCommand().get();
+            command = new OffCommand();
         }
+
+        return clusterOnOff.sendCommand(command);
     }
 
-    private void changeBrightness(PercentType brightness) throws InterruptedException, ExecutionException {
+    private Future<CommandResult> changeBrightness(PercentType brightness)
+            throws InterruptedException, ExecutionException {
         if (clusterLevelControl == null) {
             if (clusterOnOff == null) {
                 logger.warn("{}: ignoring brightness command", endpoint.getIeeeAddress());
+                return null;
             } else {
-                changeOnOff(brightness.intValue() == 0 ? OnOffType.OFF : OnOffType.ON);
+                return changeOnOff(brightness.intValue() == 0 ? OnOffType.OFF : OnOffType.ON);
             }
-            return;
         }
 
         int level = percentToLevel(brightness);
 
+        ZclLevelControlCommand command;
         if (clusterOnOff != null) {
             if (brightness.equals(PercentType.ZERO)) {
-                clusterOnOff.offCommand();
+                return clusterOnOff.sendCommand(new OffCommand());
             } else {
-                clusterLevelControl.moveToLevelWithOnOffCommand(level, configLevelControl.getDefaultTransitionTime())
-                        .get();
+                command = new MoveToLevelWithOnOffCommand(level, configLevelControl.getDefaultTransitionTime());
             }
         } else {
-            clusterLevelControl.moveToLevelCommand(level, configLevelControl.getDefaultTransitionTime()).get();
+            command = new MoveToLevelCommand(level, configLevelControl.getDefaultTransitionTime());
         }
+
+        return clusterLevelControl.sendCommand(command);
     }
 
-    private void changeColorHueSaturation(HSBType color) throws InterruptedException, ExecutionException {
+    private Future<CommandResult> changeColorHueSaturation(HSBType color)
+            throws InterruptedException, ExecutionException {
         int hue = (int) (color.getHue().floatValue() * 254.0f / 360.0f + 0.5f);
         int saturation = percentToLevel(color.getSaturation());
 
-        clusterColorControl
-                .moveToHueAndSaturationCommand(hue, saturation, configLevelControl.getDefaultTransitionTime()).get();
+        return clusterColorControl.sendCommand(
+                new MoveToHueAndSaturationCommand(hue, saturation, configLevelControl.getDefaultTransitionTime()));
     }
 
-    private void changeColorXY(HSBType color) throws InterruptedException, ExecutionException {
+    private Future<CommandResult> changeColorXY(HSBType color) throws InterruptedException, ExecutionException {
         PercentType xy[] = color.toXY();
 
         logger.debug("{}: Change Color HSV ({}, {}, {}) -> XY ({}, {})", endpoint.getIeeeAddress(), color.getHue(),
@@ -351,32 +375,36 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         int x = (int) (xy[0].floatValue() / 100.0f * 65536.0f + 0.5f); // up to 65279
         int y = (int) (xy[1].floatValue() / 100.0f * 65536.0f + 0.5f); // up to 65279
 
-        clusterColorControl.moveToColorCommand(x, y, configLevelControl.getDefaultTransitionTime()).get();
+        return clusterColorControl
+                .sendCommand(new MoveToColorCommand(x, y, configLevelControl.getDefaultTransitionTime()));
     }
 
     @Override
     public void handleCommand(final Command command) {
         try {
+            List<Future<CommandResult>> futures = new ArrayList<>();
             if (command instanceof HSBType) {
                 HSBType color = (HSBType) command;
                 PercentType brightness = color.getBrightness();
 
-                changeBrightness(brightness);
+                futures.add(changeBrightness(brightness));
 
                 if (delayedColorChange && brightness.intValue() != lastHSB.getBrightness().intValue()) {
                     Thread.sleep(1100);
                 }
 
                 if (supportsHue) {
-                    changeColorHueSaturation(color);
+                    futures.add(changeColorHueSaturation(color));
                 } else {
-                    changeColorXY(color);
+                    futures.add(changeColorXY(color));
                 }
             } else if (command instanceof PercentType) {
-                changeBrightness((PercentType) command);
+                futures.add(changeBrightness((PercentType) command));
             } else if (command instanceof OnOffType) {
-                changeOnOff((OnOffType) command);
+                futures.add(changeOnOff((OnOffType) command));
             }
+
+            super.monitorCommandResponse(command, futures);
         } catch (InterruptedException | ExecutionException e) {
             logger.warn("{}: Exception processing command", endpoint.getIeeeAddress(), e);
         }
@@ -391,39 +419,22 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             return null;
         }
 
-        try {
-            if (!clusterColorControl.discoverAttributes(false).get()) {
-                // Device is not supporting attribute reporting - instead, just read the attributes
-                Integer capabilities = clusterColorControl.getColorCapabilities(Long.MAX_VALUE);
-                if (capabilities == null && clusterColorControl.getCurrentX(Long.MAX_VALUE) == null
-                        && clusterColorControl.getCurrentHue(Long.MAX_VALUE) == null) {
-                    logger.trace("{}: Color control XY and Hue returned null", endpoint.getIeeeAddress());
-                    return null;
-                }
-                if (capabilities != null && ((capabilities & (ColorCapabilitiesEnum.HUE_AND_SATURATION.getKey()
-                        | ColorCapabilitiesEnum.XY_ATTRIBUTE.getKey())) == 0)) {
-                    // No support for hue or XY
-                    logger.trace("{}: Color control XY and Hue capabilities not supported", endpoint.getIeeeAddress());
-                    return null;
-                }
-            } else if (clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_COLORCAPABILITIES)) {
-                // If the device is reporting its capabilities, then use this over attribute detection
-                // The color control cluster is required to always support XY attributes, so a non-color bulb is still
-                // detected as a color bulb in this case.
-                Integer capabilities = clusterColorControl.getColorCapabilities(Long.MAX_VALUE);
-                if ((capabilities != null) && (capabilities & (ColorCapabilitiesEnum.HUE_AND_SATURATION.getKey()
-                        | ColorCapabilitiesEnum.XY_ATTRIBUTE.getKey())) == 0) {
-                    // No support for hue or XY
-                    logger.trace("{}: Color control XY and Hue capabilities not supported", endpoint.getIeeeAddress());
-                    return null;
-                }
-            } else if (!clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_CURRENTHUE)
-                    && !clusterColorControl.isAttributeSupported(ZclColorControlCluster.ATTR_CURRENTX)) {
-                logger.trace("{}: Color control XY and Hue attributes not supported", endpoint.getIeeeAddress());
-                return null;
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.warn("{}: Exception discovering attributes in color control cluster", endpoint.getIeeeAddress(), e);
+        // Device is not supporting attribute reporting - instead, just read the attributes
+        Integer capabilities = (Integer) clusterColorControl.getAttribute(ZclColorControlCluster.ATTR_COLORCAPABILITIES)
+                .readValue(Long.MAX_VALUE);
+        if (capabilities == null
+                && clusterColorControl.getAttribute(ZclColorControlCluster.ATTR_CURRENTX)
+                        .readValue(Long.MAX_VALUE) == null
+                && clusterColorControl.getAttribute(ZclColorControlCluster.ATTR_CURRENTHUE)
+                        .readValue(Long.MAX_VALUE) == null) {
+            logger.trace("{}: Color control XY and Hue returned null", endpoint.getIeeeAddress());
+            return null;
+        }
+        if (capabilities != null && ((capabilities & (ColorCapabilitiesEnum.HUE_AND_SATURATION.getKey()
+                | ColorCapabilitiesEnum.XY_ATTRIBUTE.getKey())) == 0)) {
+            // No support for hue or XY
+            logger.trace("{}: Color control XY and Hue capabilities not supported", endpoint.getIeeeAddress());
+            return null;
         }
 
         return ChannelBuilder
@@ -446,7 +457,6 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         } else if (!on) {
             updateChannelState(OnOffType.OFF);
         }
-
     }
 
     private void updateBrightness(PercentType brightness) {
@@ -500,6 +510,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     public void updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> updatedParameters) {
         configLevelControl.updateConfiguration(currentConfiguration, updatedParameters);
+        configColorControl.updateConfiguration(currentConfiguration, updatedParameters);
+        configOnOffSwitch.updateConfiguration(currentConfiguration, updatedParameters);
     }
 
     @Override
@@ -508,18 +520,18 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
         synchronized (colorUpdateSync) {
             try {
-                if (attribute.getCluster().getId() == ZclOnOffCluster.CLUSTER_ID) {
+                if (attribute.getClusterType().getId() == ZclOnOffCluster.CLUSTER_ID) {
                     if (attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
                         Boolean value = (Boolean) val;
                         OnOffType onoff = value ? OnOffType.ON : OnOffType.OFF;
                         updateOnOff(onoff);
                     }
-                } else if (attribute.getCluster().getId() == ZclLevelControlCluster.CLUSTER_ID) {
+                } else if (attribute.getClusterType().getId() == ZclLevelControlCluster.CLUSTER_ID) {
                     if (attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
                         PercentType brightness = levelToPercent((Integer) val);
                         updateBrightness(brightness);
                     }
-                } else if (attribute.getCluster().getId() == ZclColorControlCluster.CLUSTER_ID) {
+                } else if (attribute.getClusterType().getId() == ZclColorControlCluster.CLUSTER_ID) {
                     if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTHUE) {
                         int hue = (Integer) val;
                         if (hue != lastHue) {
@@ -596,6 +608,12 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     }
 
     private boolean discoverSupportedColorCommands(ZclColorControlCluster serverClusterColorControl) {
+        // If the configuration is not set to AUTO, then we can override the control method
+        if (configColorControl != null && configColorControl.getControlMethod() != ControlMethod.AUTO) {
+            supportsHue = configColorControl.getControlMethod() == ControlMethod.HUE;
+            return true;
+        }
+
         // Discover whether the device supports HUE/SAT or XY color set of commands
         try {
             if (!serverClusterColorControl.discoverAttributes(false).get()) {

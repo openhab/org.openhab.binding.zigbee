@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -82,7 +82,7 @@ public class ZclOnOffSwitchConfig implements ZclClusterConfigHandler {
                     .withDefault("65535").withMinimum(new BigDecimal(0)).withMaximum(new BigDecimal(60000)).build());
         }
         if (onoffCluster.isAttributeSupported(ZclOnOffCluster.ATTR_STARTUPONOFF)) {
-            options = new ArrayList<ParameterOption>();
+            options = new ArrayList<>();
             options.add(new ParameterOption("0", "OFF"));
             options.add(new ParameterOption("1", "ON"));
             parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_STARTUPONOFF, Type.INTEGER)
@@ -115,7 +115,7 @@ public class ZclOnOffSwitchConfig implements ZclClusterConfigHandler {
                 continue;
             }
 
-            logger.debug("{}: Update LevelControl configuration property {}->{} ({})", onoffCluster.getZigBeeAddress(),
+            logger.debug("{}: Update OnOff configuration property {}->{} ({})", onoffCluster.getZigBeeAddress(),
                     configurationParameter.getKey(), configurationParameter.getValue(),
                     configurationParameter.getValue().getClass().getSimpleName());
             Integer response = null;

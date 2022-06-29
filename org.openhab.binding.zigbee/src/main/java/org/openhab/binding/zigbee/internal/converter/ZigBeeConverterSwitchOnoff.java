@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -24,6 +24,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.binding.zigbee.internal.converter.config.ZclOnOffSwitchConfig;
+import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.library.types.PercentType;
@@ -31,11 +36,6 @@ import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.types.Command;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
-import org.openhab.binding.zigbee.internal.converter.config.ZclOnOffSwitchConfig;
-import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,8 +147,6 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
         }
 
         if (clusterOnOffServer != null) {
-            // Add the listener
-            clusterOnOffServer.addAttributeListener(this);
             configOnOff = new ZclOnOffSwitchConfig();
             configOnOff.initialize(clusterOnOffServer);
             configReporting = new ZclReportingConfig(channel);
@@ -246,8 +244,8 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
                 .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_SWITCH_ONOFF),
                         ZigBeeBindingConstants.ITEM_TYPE_SWITCH)
                 .withType(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF)
-                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_SWITCH_ONOFF).withProperties(createProperties(endpoint))
-                .build();
+                .withLabel(getDeviceTypeLabel(endpoint) + ": " + ZigBeeBindingConstants.CHANNEL_LABEL_SWITCH_ONOFF)
+                .withProperties(createProperties(endpoint)).build();
     }
 
     @Override
@@ -278,7 +276,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.ON_OFF && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
+        if (attribute.getClusterType() == ZclClusterType.ON_OFF && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
             Boolean value = (Boolean) val;
             if (value != null && value) {
                 updateChannelState(OnOffType.ON);

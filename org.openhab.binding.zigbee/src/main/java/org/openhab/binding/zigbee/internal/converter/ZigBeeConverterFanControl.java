@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -16,12 +16,16 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.binding.zigbee.internal.converter.config.ZclFanControlConfig;
+import org.openhab.core.config.core.Configuration;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.thing.Channel;
@@ -58,6 +62,8 @@ public class ZigBeeConverterFanControl extends ZigBeeBaseChannelConverter implem
 
     private ZclFanControlCluster cluster;
     private ZclAttribute fanModeAttribute;
+
+    private ZclFanControlConfig configFanControl;
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
@@ -149,6 +155,11 @@ public class ZigBeeConverterFanControl extends ZigBeeBaseChannelConverter implem
         // Add the listener
         cluster.addAttributeListener(this);
 
+        configFanControl = new ZclFanControlConfig();
+        configFanControl.initialize(cluster);
+        configOptions = new ArrayList<>();
+        configOptions.addAll(configFanControl.getConfiguration());
+
         return true;
     }
 
@@ -176,7 +187,14 @@ public class ZigBeeConverterFanControl extends ZigBeeBaseChannelConverter implem
             return;
         }
 
-        fanModeAttribute.writeValue(value);
+        monitorCommandResponse(command, fanModeAttribute.writeValue(value));
+    }
+
+    @Override
+    public void updateConfiguration(@NonNull Configuration currentConfiguration,
+            Map<String, Object> updatedParameters) {
+
+        configFanControl.updateConfiguration(currentConfiguration, updatedParameters);
     }
 
     @Override
@@ -198,7 +216,7 @@ public class ZigBeeConverterFanControl extends ZigBeeBaseChannelConverter implem
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.FAN_CONTROL
+        if (attribute.getClusterType() == ZclClusterType.FAN_CONTROL
                 && attribute.getId() == ZclFanControlCluster.ATTR_FANMODE) {
             Integer value = (Integer) val;
             if (value != null) {

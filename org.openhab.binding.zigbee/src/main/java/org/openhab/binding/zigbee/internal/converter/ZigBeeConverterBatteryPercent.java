@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -18,13 +18,13 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,21 +123,8 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
             return null;
         }
 
-        try {
-            if (!powerCluster.discoverAttributes(false).get() && !powerCluster
-                    .isAttributeSupported(ZclPowerConfigurationCluster.ATTR_BATTERYPERCENTAGEREMAINING)) {
-                logger.trace("{}: Power configuration cluster battery percentage not supported",
-                        endpoint.getIeeeAddress());
-
-                return null;
-            } else if (powerCluster.getBatteryPercentageRemaining(Long.MAX_VALUE) == null) {
-                logger.trace("{}: Power configuration cluster battery percentage returned null",
-                        endpoint.getIeeeAddress());
-                return null;
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.warn("{}: Exception discovering attributes in power configuration cluster",
-                    endpoint.getIeeeAddress(), e);
+        if (powerCluster.getBatteryPercentageRemaining(Long.MAX_VALUE) == null) {
+            logger.trace("{}: Power configuration cluster battery percentage returned null", endpoint.getIeeeAddress());
             return null;
         }
 
@@ -152,7 +139,7 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.POWER_CONFIGURATION
+        if (attribute.getClusterType() == ZclClusterType.POWER_CONFIGURATION
                 && attribute.getId() == ZclPowerConfigurationCluster.ATTR_BATTERYPERCENTAGEREMAINING) {
             Integer value = (Integer) val;
 

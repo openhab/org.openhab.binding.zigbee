@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -30,6 +30,7 @@ import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.binding.zigbee.internal.converter.config.ZclLevelControlConfig;
+import org.openhab.binding.zigbee.internal.converter.config.ZclOnOffSwitchConfig;
 import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.library.types.IncreaseDecreaseType;
@@ -39,6 +40,7 @@ import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.types.Command;
+import org.openhab.core.types.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,6 +100,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
 
     private ZclReportingConfig configReporting;
     private ZclLevelControlConfig configLevelControl;
+    private ZclOnOffSwitchConfig configOnOff;
 
     private final AtomicBoolean currentOnOffState = new AtomicBoolean(true);
 
@@ -281,10 +284,13 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
         configReporting = new ZclReportingConfig(channel);
         configLevelControl = new ZclLevelControlConfig();
         configLevelControl.initialize(clusterLevelControlServer);
+        configOnOff = new ZclOnOffSwitchConfig();
+        configOnOff.initialize(clusterOnOffServer);
 
         configOptions = new ArrayList<>();
         configOptions.addAll(configReporting.getConfiguration());
         configOptions.addAll(configLevelControl.getConfiguration());
+        configOptions.addAll(configOnOff.getConfiguration());
 
         return true;
     }
@@ -355,12 +361,18 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
 
     @Override
     public void handleCommand(final Command command) {
+        Command localCommand = command;
         Future<CommandResult> responseFuture = null;
         if (command instanceof OnOffType) {
+            // TODO should this also be inverted
             responseFuture = handleOnOffCommand((OnOffType) command);
         } else if (command instanceof PercentType) {
-            responseFuture = handlePercentCommand((PercentType) command);
+            if (configLevelControl != null) {
+                localCommand = configLevelControl.handleInvertControl(command);
+            }
+            responseFuture = handlePercentCommand((PercentType) localCommand);
         } else if (command instanceof IncreaseDecreaseType) {
+            // TODO should this also be inverted
             responseFuture = handleIncreaseDecreaseCommand((IncreaseDecreaseType) command);
         } else {
             logger.warn("{}: Level converter only accepts PercentType, IncreaseDecreaseType and OnOffType - not {}",
@@ -369,8 +381,13 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
         }
 
         // Some functionality (eg IncreaseDecrease) requires that we know the last command received
-        lastCommand = command;
-        monitorCommandResponse(command, responseFuture);
+        lastCommand = localCommand;
+        monitorCommandResponse(localCommand, responseFuture, cmd -> {
+            updateChannelState((State) cmd);
+            if (cmd instanceof PercentType) {
+                lastLevel = ((PercentType) cmd);
+            }
+        });
     }
 
     /**
@@ -463,8 +480,8 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
                 .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_SWITCH_LEVEL),
                         ZigBeeBindingConstants.ITEM_TYPE_DIMMER)
                 .withType(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL)
-                .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_SWITCH_LEVEL).withProperties(createProperties(endpoint))
-                .build();
+                .withLabel(getDeviceTypeLabel(endpoint) + ": " + ZigBeeBindingConstants.CHANNEL_LABEL_SWITCH_LEVEL)
+                .withProperties(createProperties(endpoint)).build();
     }
 
     @Override
@@ -497,19 +514,26 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
         if (configLevelControl != null) {
             configLevelControl.updateConfiguration(currentConfiguration, updatedParameters);
         }
+        if (configOnOff != null) {
+            configOnOff.updateConfiguration(currentConfiguration, updatedParameters);
+        }
     }
 
     @Override
     public synchronized void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.LEVEL_CONTROL
+        if (attribute.getClusterType() == ZclClusterType.LEVEL_CONTROL
                 && attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
             lastLevel = levelToPercent((Integer) val);
+            if (configLevelControl != null) {
+                lastLevel = configLevelControl.handleInvertReport(lastLevel);
+            }
             if (currentOnOffState.get()) {
                 // Note that state is only updated if the current On/Off state is TRUE (ie ON)
                 updateChannelState(lastLevel);
             }
-        } else if (attribute.getCluster() == ZclClusterType.ON_OFF && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
+        } else if (attribute.getClusterType() == ZclClusterType.ON_OFF
+                && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
             if (attribute.getLastValue() != null) {
                 currentOnOffState.set((Boolean) val);
                 updateChannelState(currentOnOffState.get() ? lastLevel : OnOffType.OFF);
@@ -769,7 +793,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
             @Override
             public void run() {
                 logger.debug("{}: IncreaseDecrease Stop timer expired", endpoint.getIeeeAddress());
-                clusterLevelControlServer.stopWithOnOffCommand();
+                clusterLevelControlServer.sendCommand(new StopWithOnOffCommand());
                 lastCommand = null;
                 updateTimer = null;
             }

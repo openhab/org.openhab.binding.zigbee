@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -19,14 +19,14 @@ import java.util.concurrent.ExecutionException;
 
 import javax.measure.quantity.ElectricPotential;
 
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.core.library.types.QuantityType;
 import org.openhab.core.library.unit.Units;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,21 +120,8 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
             return null;
         }
 
-        try {
-            if (!powerCluster.discoverAttributes(false).get()
-                    && !powerCluster.isAttributeSupported(ZclPowerConfigurationCluster.ATTR_BATTERYVOLTAGE)) {
-                logger.trace("{}: Power configuration cluster battery voltage not supported",
-                        endpoint.getIeeeAddress());
-
-                return null;
-            } else if (powerCluster.getBatteryVoltage(Long.MAX_VALUE) == null) {
-                logger.trace("{}: Power configuration cluster battery voltage returned null",
-                        endpoint.getIeeeAddress());
-                return null;
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.warn("{}: Exception discovering attributes in power configuration cluster",
-                    endpoint.getIeeeAddress(), e);
+        if (powerCluster.getBatteryVoltage(Long.MAX_VALUE) == null) {
+            logger.trace("{}: Power configuration cluster battery voltage returned null", endpoint.getIeeeAddress());
             return null;
         }
 
@@ -149,7 +136,7 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.POWER_CONFIGURATION
+        if (attribute.getClusterType() == ZclClusterType.POWER_CONFIGURATION
                 && attribute.getId() == ZclPowerConfigurationCluster.ATTR_BATTERYVOLTAGE) {
             Integer value = (Integer) val;
             if (value == 0xFF) {

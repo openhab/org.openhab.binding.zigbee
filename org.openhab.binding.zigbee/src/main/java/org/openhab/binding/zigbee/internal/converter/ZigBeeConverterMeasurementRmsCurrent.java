@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -19,14 +19,14 @@ import java.util.concurrent.ExecutionException;
 
 import javax.measure.quantity.ElectricCurrent;
 
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.core.library.types.QuantityType;
 import org.openhab.core.library.unit.Units;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -157,7 +157,7 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.ELECTRICAL_MEASUREMENT
+        if (attribute.getClusterType() == ZclClusterType.ELECTRICAL_MEASUREMENT
                 && attribute.getId() == ZclElectricalMeasurementCluster.ATTR_RMSCURRENT) {
             Integer value = (Integer) val;
             BigDecimal valueInAmpere = BigDecimal.valueOf(value * multiplier / divisor);
@@ -166,8 +166,13 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
     }
 
     private void determineDivisorAndMultiplier(ZclElectricalMeasurementCluster serverClusterMeasurement) {
-        divisor = serverClusterMeasurement.getAcPowerDivisor(Long.MAX_VALUE);
-        multiplier = serverClusterMeasurement.getAcPowerMultiplier(Long.MAX_VALUE);
+        ZclAttribute divAttribute = serverClusterMeasurement
+                .getAttribute(ZclElectricalMeasurementCluster.ATTR_ACPOWERDIVISOR);
+        ZclAttribute mulAttribute = serverClusterMeasurement
+                .getAttribute(ZclElectricalMeasurementCluster.ATTR_ACPOWERMULTIPLIER);
+
+        divisor = (Integer) divAttribute.readValue(Long.MAX_VALUE);
+        multiplier = (Integer) mulAttribute.readValue(Long.MAX_VALUE);
         if (divisor == null || multiplier == null) {
             divisor = 1;
             multiplier = 1;

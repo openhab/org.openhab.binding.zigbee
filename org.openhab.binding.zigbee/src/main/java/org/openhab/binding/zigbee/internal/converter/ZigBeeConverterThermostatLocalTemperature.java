@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -16,12 +16,12 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import org.openhab.core.thing.Channel;
-import org.openhab.core.thing.ThingUID;
-import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.core.thing.Channel;
+import org.openhab.core.thing.ThingUID;
+import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +45,7 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
     private final int INVALID_TEMPERATURE = 0x8000;
 
     private ZclThermostatCluster cluster;
+    private ZclAttribute attribute;
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
@@ -69,9 +70,9 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
             CommandResult bindResponse = bind(serverCluster).get();
             if (bindResponse.isSuccess()) {
                 // Configure reporting
-                CommandResult reportingResponse = serverCluster
-                        .setLocalTemperatureReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 0.1)
-                        .get();
+                ZclAttribute attribute = serverCluster.getAttribute(ZclThermostatCluster.ATTR_LOCALTEMPERATURE);
+                CommandResult reportingResponse = attribute
+                        .setReporting(REPORTING_PERIOD_DEFAULT_MIN, REPORTING_PERIOD_DEFAULT_MAX, 10).get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 logger.debug("{}: Failed to bind thermostat cluster", endpoint.getIeeeAddress());
@@ -93,6 +94,12 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
             return false;
         }
 
+        attribute = cluster.getAttribute(ZclThermostatCluster.ATTR_LOCALTEMPERATURE);
+        if (attribute == null) {
+            logger.error("{}: Error opening device thermostat local temperature attribute", endpoint.getIeeeAddress());
+            return false;
+        }
+
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
         return true;
@@ -105,7 +112,7 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
 
     @Override
     public void handleRefresh() {
-        cluster.getLocalTemperature(0);
+        attribute.readValue(0);
     }
 
     @Override
@@ -116,20 +123,12 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
             return null;
         }
 
-        try {
-            if (!cluster.discoverAttributes(false).get()) {
-                // Device is not supporting attribute reporting - instead, just read the attributes
-                Integer capabilities = cluster.getLocalTemperature(Long.MAX_VALUE);
-                if (capabilities == null) {
-                    logger.trace("{}: Thermostat local temperature returned null", endpoint.getIeeeAddress());
-                    return null;
-                }
-            } else if (!cluster.isAttributeSupported(ZclThermostatCluster.ATTR_LOCALTEMPERATURE)) {
-                logger.trace("{}: Thermostat local temperature not supported", endpoint.getIeeeAddress());
-                return null;
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.warn("{}: Exception discovering attributes in thermostat cluster", endpoint.getIeeeAddress(), e);
+        // Try to read the setpoint attribute
+        ZclAttribute attribute = cluster.getAttribute(ZclThermostatCluster.ATTR_LOCALTEMPERATURE);
+        Object value = attribute.readValue(Long.MAX_VALUE);
+        if (value == null) {
+            logger.trace("{}: Thermostat local temperature returned null", endpoint.getIeeeAddress());
+            return null;
         }
 
         return ChannelBuilder
@@ -144,7 +143,7 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.THERMOSTAT
+        if (attribute.getClusterType() == ZclClusterType.THERMOSTAT
                 && attribute.getId() == ZclThermostatCluster.ATTR_LOCALTEMPERATURE) {
             Integer value = (Integer) val;
             if (value != null && value != INVALID_TEMPERATURE) {

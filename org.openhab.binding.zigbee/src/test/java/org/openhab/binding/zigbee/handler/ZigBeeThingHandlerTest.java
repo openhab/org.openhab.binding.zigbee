@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
@@ -143,7 +142,7 @@ public class ZigBeeThingHandlerTest {
 
         // create the thing properties which can contain the device initialized property
         Map<String, String> thingProperties = new HashMap<String, String>();
-        if (StringUtils.isNotBlank(deviceInitializedProperty)) {
+        if (deviceInitializedProperty != null && !deviceInitializedProperty.isBlank()) {
             thingProperties.put(ZigBeeBindingConstants.THING_PROPERTY_DEVICE_INITIALIZED, deviceInitializedProperty);
         }
 
@@ -169,7 +168,7 @@ public class ZigBeeThingHandlerTest {
 
         // When the device was already initialized the initialization will be skipped and the thing property will not
         // be updated
-        if (StringUtils.equals(deviceInitializedProperty, Boolean.TRUE.toString())) {
+        if (Boolean.TRUE.toString().equals(deviceInitializedProperty)) {
             Mockito.verify(zigBeeChannelConverter, never()).initializeDevice();
             Mockito.verify(thing, never()).setProperty(ZigBeeBindingConstants.THING_PROPERTY_DEVICE_INITIALIZED,
                     Boolean.TRUE.toString());

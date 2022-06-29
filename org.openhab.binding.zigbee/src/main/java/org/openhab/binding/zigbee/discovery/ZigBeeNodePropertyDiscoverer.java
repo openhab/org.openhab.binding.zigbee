@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -13,8 +13,8 @@
 package org.openhab.binding.zigbee.discovery;
 
 import static com.zsmartsystems.zigbee.zcl.clusters.ZclBasicCluster.*;
-import static org.openhab.core.thing.Thing.*;
 import static org.openhab.binding.zigbee.ZigBeeBindingConstants.*;
+import static org.openhab.core.thing.Thing.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,8 +26,8 @@ import java.util.concurrent.ExecutionException;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.core.thing.Thing;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.core.thing.Thing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -16,13 +16,13 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.types.Command;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
-import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +79,7 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
                 // Configure reporting
                 ZclAttribute attribute = serverCluster
                         .getAttribute(ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE);
-                CommandResult reportingResponse = attribute.setReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 0.1).get();
+                CommandResult reportingResponse = attribute.setReporting(1, REPORTING_PERIOD_DEFAULT_MAX, 10).get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 logger.debug("{}: Failed to bind temperature measurement cluster", endpoint.getIeeeAddress());
@@ -169,7 +169,7 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
-        if (attribute.getCluster() == ZclClusterType.TEMPERATURE_MEASUREMENT
+        if (attribute.getClusterType() == ZclClusterType.TEMPERATURE_MEASUREMENT
                 && attribute.getId() == ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE) {
             updateChannelState(valueToTemperature((Integer) val));
         }

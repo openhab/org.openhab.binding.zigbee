@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -15,13 +15,13 @@ package org.openhab.binding.zigbee.internal.converter;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.openhab.core.thing.DefaultSystemChannelTypeProvider;
-import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterProvider;
 import org.openhab.binding.zigbee.internal.converter.warningdevice.ZigBeeConverterWarningDevice;
+import org.openhab.core.thing.DefaultSystemChannelTypeProvider;
+import org.openhab.core.thing.type.ChannelTypeUID;
 import org.osgi.service.component.annotations.Component;
 
 /**
@@ -83,9 +83,19 @@ public final class ZigBeeDefaultChannelConverterProvider implements ZigBeeChanne
                 ZigBeeConverterThermostatUnoccupiedHeating.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_THERMOSTAT_RUNNINGMODE,
                 ZigBeeConverterThermostatRunningMode.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_THERMOSTAT_HEATING_DEMAND,
+                ZigBeeConverterThermostatPiHeatingDemand.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_THERMOSTAT_COOLING_DEMAND,
+                ZigBeeConverterThermostatPiCoolingDemand.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_THERMOSTAT_SYSTEMMODE, ZigBeeConverterThermostatSystemMode.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_FANCONTROL, ZigBeeConverterFanControl.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_WINDOWCOVERING_LIFT, ZigBeeConverterWindowCoveringLift.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_INSTANTANEOUS_DEMAND,
+                ZigBeeConverterMeteringInstantaneousDemand.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_SUMMATION_DELIVERED,
+                ZigBeeConverterMeteringSummationDelivered.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_SUMMATION_RECEIVED,
+                ZigBeeConverterMeteringSummationReceived.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_TUYA_BUTTON, ZigBeeConverterTuyaButton.class);
 }
 
