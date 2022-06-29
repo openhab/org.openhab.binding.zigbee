@@ -15,8 +15,7 @@ xiaomi_lumisensormagnet,modelId=lumi.sensor_magnet
 xiaomi_lumiremotemini,modelId=lumi.remote.b1acn01
 innr-rc-110,vendor=innr,modelId=RC 110
 osram-switch-4x-eu,vendor=OSRAM,modelId=Switch 4x EU-LIGHTIFY
-legrand_dimmer_without_neutral,vendor=\u001f Legrand,modelId=\u001f Dimmer switch w/o neutral
-tuya_ts0041,vendor=_TZ3000_tk3s5tyg,modelId=TS0041
-tuya_ts0042,vendor=_TZ3000_adkvzooy,modelId=TS0042
-tuya_ts0043,vendor=_TZ3000_qzjcsmar,modelId=TS0043
-tuya_ts0044,vendor=_TZ3000_vp6clf9d,modelId=TS0044
+tuya_ts0041,modelId=TS0041
+tuya_ts0042,modelId=TS0042
+tuya_ts0043,modelId=TS0043
+tuya_ts0044,modelId=TS0044
