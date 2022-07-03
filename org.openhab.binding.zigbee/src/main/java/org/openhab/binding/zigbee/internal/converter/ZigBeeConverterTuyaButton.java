@@ -174,11 +174,11 @@ public class ZigBeeConverterTuyaButton extends ZigBeeBaseChannelConverter
 
     @Override
     public boolean commandReceived(ZclCommand command) {
-        logger.debug("{} received command {}", endpoint.getIeeeAddress(), command);
+        logger.debug("{}: received command {}", endpoint.getIeeeAddress(), command);
         Integer thisTxId = command.getTransactionId();
         if(lastTxId == thisTxId)
         {
-            logger.debug("{} ignoring duplicate command {}", endpoint.getIeeeAddress(), thisTxId);
+            logger.debug("{}: ignoring duplicate command {}", endpoint.getIeeeAddress(), thisTxId);
         }
         else if (command instanceof TuyaButtonPressCommand) {
             TuyaButtonPressCommand tuyaButtonPressCommand = (TuyaButtonPressCommand) command;
@@ -186,7 +186,7 @@ public class ZigBeeConverterTuyaButton extends ZigBeeBaseChannelConverter
            clientCluster.sendDefaultResponse(command, ZclStatus.SUCCESS);
         }
         else {
-           logger.warn("{} received unknown command {}", endpoint.getIeeeAddress(), command);
+           logger.warn("{}: received unknown command {}", endpoint.getIeeeAddress(), command);
         }
 
         lastTxId = thisTxId;
@@ -209,7 +209,7 @@ public class ZigBeeConverterTuyaButton extends ZigBeeBaseChannelConverter
             case 2:
                 return CommonTriggerEvents.LONG_PRESSED;
             default:
-                logger.warn("{} received unknown pressType {}", endpoint.getIeeeAddress(), pressType);
+                logger.warn("{}: received unknown pressType {}", endpoint.getIeeeAddress(), pressType);
                 return CommonTriggerEvents.SHORT_PRESSED;
         }
     }
