@@ -593,7 +593,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                     logger.debug("{}: Polling {} channels...", nodeIeeeAddress, channels.keySet().size());
 
                     for (ChannelUID channelUid : channels.keySet()) {
-                        if (isLinked(channelUid)) {
+                        if (isLinked(channelUid.getId())) {
                             // Don't poll if this channel isn't linked
                             logger.debug("{}: Not polling {} - unlinked", nodeIeeeAddress, channelUid);
                             continue;
