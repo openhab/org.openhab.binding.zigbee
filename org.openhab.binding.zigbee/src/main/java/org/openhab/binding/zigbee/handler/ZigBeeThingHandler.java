@@ -590,21 +590,20 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             @Override
             public void run() {
                 try {
-                    logger.debug("{}: Polling {} channels...", nodeIeeeAddress, channels.keySet().size());
+                    logger.debug("{}: Polling {} channels", nodeIeeeAddress, channels.keySet().size());
 
                     for (ChannelUID channelUid : channels.keySet()) {
-                        if (isLinked(channelUid.getId())) {
+                        if (!isLinked(channelUid)) {
                             // Don't poll if this channel isn't linked
-                            logger.debug("{}: Not polling {} - unlinked", nodeIeeeAddress, channelUid.getId());
+                            logger.debug("{}: Not polling {} - channel is not linked", nodeIeeeAddress, channelUid);
                             continue;
                         }
 
                         ZigBeeBaseChannelConverter converter = channels.get(channelUid);
                         if (converter == null) {
-                            logger.debug("{}: Not polling {} - no converter found", nodeIeeeAddress,
-                                    channelUid.getId());
+                            logger.debug("{}: Not polling {} - no converter found", nodeIeeeAddress, channelUid);
                         } else {
-                            logger.debug("{}: Polling {}", nodeIeeeAddress, channelUid.getId());
+                            logger.debug("{}: Polling {}", nodeIeeeAddress, channelUid);
                             converter.handleRefresh();
                         }
                     }
