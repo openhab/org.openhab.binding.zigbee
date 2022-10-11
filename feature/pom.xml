@@ -50,11 +50,16 @@
 			<artifactId>org.openhab.binding.zigbee.telegesis</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.openhab.addons.bundles</groupId>
-			<artifactId>org.openhab.binding.zigbee.xbee</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>org.openhab.addons.bundles</groupId>
+            <artifactId>org.openhab.binding.zigbee.xbee</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openhab.addons.bundles</groupId>
+            <artifactId>org.openhab.binding.zigbee.firmware</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>org.openhab.addons.bundles</groupId>
 			<artifactId>org.openhab.binding.zigbee.serial</artifactId>

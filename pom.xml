@@ -29,6 +29,7 @@
     <module>org.openhab.binding.zigbee.console</module>
     <module>org.openhab.binding.zigbee.console.ember</module>
     <module>org.openhab.binding.zigbee.console.telegesis</module>
+    <module>org.openhab.binding.zigbee.firmware</module>
   </modules>
 
   <properties>
