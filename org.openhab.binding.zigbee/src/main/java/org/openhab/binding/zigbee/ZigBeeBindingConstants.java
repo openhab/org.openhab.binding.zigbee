@@ -212,6 +212,11 @@ public class ZigBeeBindingConstants {
     public static final ChannelTypeUID CHANNEL_THERMOSTAT_COOLING_DEMAND = new ChannelTypeUID(
             "zigbee:thermostat_coolingdemand");
 
+    public static final String CHANNEL_NAME_EUROTRONIC_SPZB001_WINDOW_OPEN = "spzb0001windowopen";
+    public static final String CHANNEL_LABEL_EUROTRONIC_SPZB001_WINDOW_OPEN = "Cooling Demand";
+    public static final ChannelTypeUID CHANNEL_EUROTRONIC_SPZB001_WINDOW_OPEN = new ChannelTypeUID(
+            "zigbee:eurotronic_spzb0001_window_open");
+
     public static final String CHANNEL_NAME_DOORLOCK_STATE = "doorlockstate";
     public static final String CHANNEL_LABEL_DOORLOCK_STATE = "Door Lock State";
     public static final ChannelTypeUID CHANNEL_DOORLOCK_STATE = new ChannelTypeUID("zigbee:door_state");
