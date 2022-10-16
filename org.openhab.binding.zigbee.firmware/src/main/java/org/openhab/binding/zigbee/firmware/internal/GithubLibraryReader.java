@@ -1,10 +1,14 @@
 /**
- * Copyright (c) 2018-2021 by Z-Smart Systems Ltd.
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.zigbee.firmware.internal;
 
@@ -96,7 +100,6 @@ public class GithubLibraryReader {
         this.httpClient.setExecutor(executor);
 
         try {
-            // httpClient.setFollowRedirects(false);
             this.httpClient.start();
         } catch (Exception e) {
             logger.debug("ZigBee Firmware Provider: Cannot start HttpClient for GitHub connection!");
@@ -219,8 +222,7 @@ public class GithubLibraryReader {
         try {
             createMd5Hash(data, entry);
         } catch (NoSuchAlgorithmException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+            logger.error("System does not support MD5");
 
             return false;
         }
@@ -234,11 +236,9 @@ public class GithubLibraryReader {
             outputStream.write(data, 0, data.length);
             outputStream.close();
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("Can't find file {}", local.getName());
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("IO Exception writing file {}", local.getName(), e);
         }
 
         return true;
@@ -260,8 +260,7 @@ public class GithubLibraryReader {
             }
             return inputStream;
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("IO Exception reading file {}", local.getName(), e);
             return null;
         }
     }

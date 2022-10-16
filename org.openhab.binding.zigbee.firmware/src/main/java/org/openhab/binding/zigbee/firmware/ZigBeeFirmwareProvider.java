@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
+ * Copyright (c) 2010-2022 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -60,8 +60,7 @@ public class ZigBeeFirmwareProvider implements FirmwareProvider {
             directoryReader.create("https://raw.githubusercontent.com/Koenkk/zigbee-OTA/master");
             directoryReader.updateRemoteDirectory();
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("Exception activating ZigBee firmware provider ", e);
         }
     }
 
@@ -145,10 +144,6 @@ public class ZigBeeFirmwareProvider implements FirmwareProvider {
         if (!directoryEntry.getPrerequisiteVersion().isEmpty()) {
             builder.withPrerequisiteVersion(directoryEntry.getPrerequisiteVersion());
         }
-
-        // BufferedInputStream inputStream = new BufferedInputStream(new URL("").openStream());
-
-        // builder.withInputStream(inputStream);
 
         return builder.build();
     }
