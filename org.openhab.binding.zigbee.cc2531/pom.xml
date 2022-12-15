@@ -10,7 +10,7 @@
 
   <artifactId>org.openhab.binding.zigbee.cc2531</artifactId>
 
-  <name>openHAB Add-ons :: Bundles :: ZigBee CC2531 Bridge</name>
+  <name>openHAB Add-ons :: Bundles :: Zigbee CC2531 Bridge</name>
 
   <dependencies>
     <dependency>

@@ -10,7 +10,7 @@
 
   <artifactId>org.openhab.binding.zigbee</artifactId>
 
-  <name>openHAB Add-ons :: Bundles :: ZigBee Binding</name>
+  <name>openHAB Add-ons :: Bundles :: Zigbee Binding</name>
 
   <dependencies>
     <dependency>

@@ -14,7 +14,7 @@
 	<artifactId>openhab-binding-zigbee</artifactId>
 	<packaging>feature</packaging>
 
-	<name>openHAB Add-ons :: Features :: Karaf :: openHAB ZigBee Binding</name>
+	<name>openHAB Add-ons :: Features :: Karaf :: openHAB Zigbee Binding</name>
 
 	<dependencies>
 		<dependency>

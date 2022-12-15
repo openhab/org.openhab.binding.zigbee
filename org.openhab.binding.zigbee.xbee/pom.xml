@@ -10,7 +10,7 @@
 
   <artifactId>org.openhab.binding.zigbee.xbee</artifactId>
 
-  <name>openHAB Add-ons :: Bundles :: ZigBee XBee Bridge</name>
+  <name>openHAB Add-ons :: Bundles :: Zigbee XBee Bridge</name>
 
   <dependencies>
     <dependency>

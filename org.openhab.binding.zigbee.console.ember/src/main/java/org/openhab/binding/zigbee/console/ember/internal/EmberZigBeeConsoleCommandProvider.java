@@ -43,7 +43,7 @@ import com.zsmartsystems.zigbee.console.ember.EmberConsoleSecurityStateCommand;
 import com.zsmartsystems.zigbee.console.ember.EmberConsoleTransientKeyCommand;
 
 /**
- * This class provides ZigBee console commands for Ember dongles.
+ * This class provides Zigbee console commands for Ember dongles.
  *
  * @author Henning Sudbrock - initial contribution
  * @author Chris Jackson - added commands

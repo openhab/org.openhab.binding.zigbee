@@ -79,7 +79,7 @@ public class GithubLibraryReader {
     }
 
     public boolean create(String repositoryAddress) throws Exception {
-        logger.debug("ZigBee Firmware Provider: Creating directory at {}", repositoryAddress);
+        logger.debug("Zigbee Firmware Provider: Creating directory at {}", repositoryAddress);
         String localAddress;
         if (repositoryAddress.endsWith("/")) {
             localAddress = repositoryAddress.substring(0, repositoryAddress.length() - 1);
@@ -102,19 +102,19 @@ public class GithubLibraryReader {
         try {
             this.httpClient.start();
         } catch (Exception e) {
-            logger.debug("ZigBee Firmware Provider: Cannot start HttpClient for GitHub connection!");
+            logger.debug("Zigbee Firmware Provider: Cannot start HttpClient for GitHub connection!");
             return false;
         }
 
-        logger.debug("ZigBee Firmware Provider communicator created for {}", this.repositoryAddress);
+        logger.debug("Zigbee Firmware Provider communicator created for {}", this.repositoryAddress);
 
         File folder = new File(OpenHAB.getUserDataFolder() + File.separator + ZigBeeBindingConstants.BINDING_ID
                 + File.separator + PATH_TO_FIRMWARE);
 
         if (!folder.exists()) {
-            logger.debug("ZigBee Firmware Provider creating firmware folder {}", folder);
+            logger.debug("Zigbee Firmware Provider creating firmware folder {}", folder);
             if (!folder.mkdirs()) {
-                logger.error("ZigBee Firmware Provider error creating firmware folder {}", folder);
+                logger.error("Zigbee Firmware Provider error creating firmware folder {}", folder);
             }
         }
 
@@ -131,12 +131,12 @@ public class GithubLibraryReader {
     }
 
     public void updateRemoteDirectory() {
-        logger.debug("ZigBee Firmware Provider: Scheduling update from remote");
+        logger.debug("Zigbee Firmware Provider: Scheduling update from remote");
 
         Runnable commandHandler = new Runnable() {
             @Override
             public void run() {
-                logger.debug("ZigBee Firmware Provider: Starting update from remote");
+                logger.debug("Zigbee Firmware Provider: Starting update from remote");
                 List<DirectoryFileEntry> newDirectory = getIndex();
 
                 processDirectory(newDirectory);
@@ -151,12 +151,12 @@ public class GithubLibraryReader {
         for (DirectoryFileEntry entry : newDirectory) {
             File localFile = getLocalFile(entry);
             if (localFile.exists()) {
-                logger.debug("ZigBee Firmware Provider found local file '{}'", localFile);
+                logger.debug("Zigbee Firmware Provider found local file '{}'", localFile);
 
                 // Check hash and delete local file if invalid
                 InputStream stream = getInputStream(entry);
                 if (stream == null) {
-                    logger.debug("ZigBee Firmware Provider local file '{}' failed hash check and is deleted",
+                    logger.debug("Zigbee Firmware Provider local file '{}' failed hash check and is deleted",
                             localFile);
                     localFile.delete();
                 } else {
@@ -165,7 +165,7 @@ public class GithubLibraryReader {
                         stream.close();
                         createMd5Hash(data, entry);
                     } catch (IOException | NoSuchAlgorithmException e) {
-                        logger.debug("ZigBee Firmware Provider local file '{}' failed hash check and is deleted: {}",
+                        logger.debug("Zigbee Firmware Provider local file '{}' failed hash check and is deleted: {}",
                                 localFile, e.getLocalizedMessage());
                         localFile.delete();
                     }
@@ -174,7 +174,7 @@ public class GithubLibraryReader {
         }
 
         if (newDirectory == null) {
-            logger.debug("ZigBee Firmware Provider directory update from GitHub failed!");
+            logger.debug("Zigbee Firmware Provider directory update from GitHub failed!");
             return;
         }
 
@@ -192,21 +192,21 @@ public class GithubLibraryReader {
         // Download from remote
         String url = entry.getUrl();
 
-        logger.debug("ZigBee Firmware Provider: Requesting GitHub request: {}", url);
+        logger.debug("Zigbee Firmware Provider: Requesting GitHub request: {}", url);
         ContentResponse response;
 
         try {
             response = httpClient.newRequest(url).method(GET).timeout(HTTP_TIMEOUT, TimeUnit.SECONDS).send();
             if (response.getStatus() != HttpURLConnection.HTTP_OK) {
-                logger.warn("ZigBee Firmware Provider return status other than HTTP_OK : {}", response.getStatus());
+                logger.warn("Zigbee Firmware Provider return status other than HTTP_OK : {}", response.getStatus());
                 return false;
             }
 
         } catch (TimeoutException | ExecutionException | NullPointerException e) {
-            logger.warn("ZigBee Firmware Provider could not connect to server with exception: ", e);
+            logger.warn("Zigbee Firmware Provider could not connect to server with exception: ", e);
             return false;
         } catch (InterruptedException e) {
-            logger.warn("ZigBee Firmware Provider connect to server interrupted: ", e);
+            logger.warn("Zigbee Firmware Provider connect to server interrupted: ", e);
             Thread.currentThread().interrupt();
             return false;
         }
@@ -268,21 +268,21 @@ public class GithubLibraryReader {
     private synchronized List<DirectoryFileEntry> getIndex() {
         String url = "https://" + repositoryAddress + INDEX_JSON;
 
-        logger.debug("ZigBee Firmware Provider: Performing GitHub request: {}", url);
+        logger.debug("Zigbee Firmware Provider: Performing GitHub request: {}", url);
         ContentResponse response;
 
         try {
             response = httpClient.newRequest(url).method(GET).timeout(HTTP_TIMEOUT, TimeUnit.SECONDS).send();
             if (response.getStatus() != HttpURLConnection.HTTP_OK) {
-                logger.warn("ZigBee Firmware Provider server return status other than HTTP_OK : {}",
+                logger.warn("Zigbee Firmware Provider server return status other than HTTP_OK : {}",
                         response.getStatus());
                 return null;
             }
         } catch (TimeoutException | ExecutionException | NullPointerException e) {
-            logger.warn("ZigBee Firmware Provider could not connect to server with exception: ", e);
+            logger.warn("Zigbee Firmware Provider could not connect to server with exception: ", e);
             return null;
         } catch (InterruptedException e) {
-            logger.warn("ZigBee Firmware Provider connection to server interrupted: ", e);
+            logger.warn("Zigbee Firmware Provider connection to server interrupted: ", e);
             Thread.currentThread().interrupt();
             return null;
         }
@@ -303,13 +303,13 @@ public class GithubLibraryReader {
 
             String hash = hashToString(messageDigest);
             if (!entry.getSha512().equalsIgnoreCase(hash)) {
-                logger.warn("ZigBee Firmware Provider SHA512 hash check on file {} failed", entry.getUrl());
+                logger.warn("Zigbee Firmware Provider SHA512 hash check on file {} failed", entry.getUrl());
                 return false;
             }
 
             return true;
         } catch (NoSuchAlgorithmException e) {
-            logger.warn("ZigBee Firmware Provider error checking hash on file {}: ", entry.getUrl(), e);
+            logger.warn("Zigbee Firmware Provider error checking hash on file {}: ", entry.getUrl(), e);
         }
 
         return false;

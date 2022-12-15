@@ -178,7 +178,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}  on endpoint {}", endpoint.getIeeeAddress(), attribute,
+        logger.debug("{}: Zigbee attribute reports {}  on endpoint {}", endpoint.getIeeeAddress(), attribute,
                 endpoint.getEndpointId());
         if (attribute.getClusterType() == ZclClusterType.COLOR_CONTROL
                 && attribute.getId() == ZclColorControlCluster.ATTR_COLORTEMPERATURE) {

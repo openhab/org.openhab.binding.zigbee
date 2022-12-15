@@ -13,7 +13,7 @@
   <version>3.4.0-SNAPSHOT</version>
   <!-- do not delete the version here as it is required by the release process -->
 
-  <name>openHAB Add-ons :: Bundles :: ZigBee Reactor</name>
+  <name>openHAB Add-ons :: Bundles :: Zigbee Reactor</name>
 
   <packaging>pom</packaging>
 

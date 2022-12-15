@@ -195,7 +195,7 @@ public class ZigBeeConverterTuyaButton extends ZigBeeBaseChannelConverter
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
+        logger.debug("{}: Zigbee attribute reports {}", endpoint.getIeeeAddress(), attribute);
     }
 
     private String getEventType(Integer pressType)

@@ -27,7 +27,7 @@ import org.osgi.service.component.annotations.Component;
 import com.zsmartsystems.zigbee.ZigBeeNode;
 
 /**
- * The default ZigBee discovery participant
+ * The default Zigbee discovery participant
  *
  * @author Chris Jackson
  *
@@ -57,7 +57,7 @@ public class ZigBeeDefaultDiscoveryParticipant implements ZigBeeDiscoveryPartici
         if ((properties.get(Thing.PROPERTY_VENDOR) != null) && (properties.get(Thing.PROPERTY_MODEL_ID) != null)) {
             label = properties.get(Thing.PROPERTY_VENDOR) + " " + properties.get(Thing.PROPERTY_MODEL_ID);
         } else {
-            label = "Unknown ZigBee Device";
+            label = "Unknown Zigbee Device";
         }
 
         return DiscoveryResultBuilder.create(thingUID).withThingType(thingTypeUID).withProperties(properties)

@@ -399,7 +399,7 @@ public abstract class ZigBeeBaseChannelConverter {
     }
 
     /**
-     * Converts a ZigBee 8 bit level as used in Level Control cluster and others to a percentage
+     * Converts a Zigbee 8 bit level as used in Level Control cluster and others to a percentage
      *
      * @param level an integer between 0 and 254
      * @return the scaled {@link PercentType}
@@ -420,7 +420,7 @@ public abstract class ZigBeeBaseChannelConverter {
 
     /**
      * Converts an integer value into a {@link QuantityType}. The temperature as an integer is assumed to be multiplied
-     * by 100 as per the ZigBee standard format.
+     * by 100 as per the Zigbee standard format.
      *
      * @param value the integer value to convert
      * @return the {@link QuantityType}
@@ -461,7 +461,7 @@ public abstract class ZigBeeBaseChannelConverter {
     }
 
     /**
-     * Converts a {@link Command} to a ZigBee temperature integer
+     * Converts a {@link Command} to a Zigbee temperature integer
      *
      * @param command the {@link Command} to convert
      * @return the {@link Command} or null if the conversion was not possible

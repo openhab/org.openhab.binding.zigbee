@@ -89,7 +89,7 @@ import com.zsmartsystems.zigbee.zdo.field.NeighborTable;
 import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
 
 /**
- * The standard ZigBee thing handler.
+ * The standard Zigbee thing handler.
  *
  * @author Chris Jackson - Initial Contribution
  * @author Thomas Höfer - Injected ZigBeeChannelConverterFactory via constructor
@@ -478,7 +478,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         nodeInitialised = true;
 
-        logger.debug("{}: Done initialising ZigBee Thing handler", nodeIeeeAddress);
+        logger.debug("{}: Done initialising Zigbee Thing handler", nodeIeeeAddress);
 
         // Save the network state
         coordinatorHandler.serializeNetwork(node.getIeeeAddress());

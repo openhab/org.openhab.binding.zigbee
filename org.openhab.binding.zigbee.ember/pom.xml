@@ -10,7 +10,7 @@
 
   <artifactId>org.openhab.binding.zigbee.ember</artifactId>
 
-  <name>openHAB Add-ons :: Bundles :: ZigBee Ember Bridge</name>
+  <name>openHAB Add-ons :: Bundles :: Zigbee Ember Bridge</name>
 
   <dependencies>
     <dependency>

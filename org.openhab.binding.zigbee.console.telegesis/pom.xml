@@ -10,7 +10,7 @@
 
   <artifactId>org.openhab.binding.zigbee.console.telegesis</artifactId>
 
-  <name>openHAB Add-ons :: Bundles :: ZigBee Console Telegesis</name>
+  <name>openHAB Add-ons :: Bundles :: Zigbee Console Telegesis</name>
 
   <dependencies>
     <dependency>

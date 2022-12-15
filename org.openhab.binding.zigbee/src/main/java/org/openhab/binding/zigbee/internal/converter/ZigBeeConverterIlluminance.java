@@ -171,7 +171,7 @@ public class ZigBeeConverterIlluminance extends ZigBeeBaseChannelConverter imple
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
+        logger.debug("{}: Zigbee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getClusterType() == ZclClusterType.ILLUMINANCE_MEASUREMENT
                 && attribute.getId() == ZclIlluminanceMeasurementCluster.ATTR_MEASUREDVALUE) {
             updateChannelState(new DecimalType(Math.pow(10.0, (Integer) val / 10000.0) - 1));

@@ -10,7 +10,7 @@
 
   <artifactId>org.openhab.binding.zigbee.firmware</artifactId>
 
-  <name>openHAB Add-ons :: Bundles :: ZigBee Firmware Provider</name>
+  <name>openHAB Add-ons :: Bundles :: Zigbee Firmware Provider</name>
 
   <dependencies>
     <dependency>

@@ -153,7 +153,7 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
+        logger.debug("{}: Zigbee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getClusterType() == ZclClusterType.ELECTRICAL_MEASUREMENT
                 && attribute.getId() == ZclElectricalMeasurementCluster.ATTR_ACTIVEPOWER) {
             Integer value = (Integer) val;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <features xmlns="http://karaf.apache.org/xmlns/features/v1.2.1" name="feature">
-    <feature name="openhab-binding-zigbee" description="openHAB ZigBee Binding" version="${project.version}">
+    <feature name="openhab-binding-zigbee" description="openHAB Zigbee Binding" version="${project.version}">
         <feature>openhab-runtime-base</feature>
         <feature>openhab-transport-serial</feature>
     </feature>

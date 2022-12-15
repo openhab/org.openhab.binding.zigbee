@@ -275,7 +275,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
+        logger.debug("{}: Zigbee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getClusterType() == ZclClusterType.ON_OFF && attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
             Boolean value = (Boolean) val;
             if (value != null && value) {
@@ -288,7 +288,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
 
     @Override
     public boolean commandReceived(ZclCommand command) {
-        logger.debug("{}: ZigBee command received {}", endpoint.getIeeeAddress(), command);
+        logger.debug("{}: Zigbee command received {}", endpoint.getIeeeAddress(), command);
         if (command instanceof OnCommand) {
             currentOnOffState.set(true);
             updateChannelState(OnOffType.ON);

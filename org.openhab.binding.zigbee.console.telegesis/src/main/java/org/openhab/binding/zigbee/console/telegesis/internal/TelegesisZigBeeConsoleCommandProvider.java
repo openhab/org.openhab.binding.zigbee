@@ -30,7 +30,7 @@ import com.zsmartsystems.zigbee.console.ZigBeeConsoleCommand;
 import com.zsmartsystems.zigbee.console.telegesis.TelegesisConsoleSecurityStateCommand;
 
 /**
- * This class provides ZigBee console commands for Telegesis dongles.
+ * This class provides Zigbee console commands for Telegesis dongles.
  *
  * @author Henning Sudbrock - initial contribution
  */

@@ -35,7 +35,7 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclMeteringCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
- * ZigBee channel converter for instantaneous demand measurement
+ * Zigbee channel converter for instantaneous demand measurement
  *
  * @author Chris Jackson - Initial Contribution
  *
@@ -157,7 +157,7 @@ public class ZigBeeConverterMeteringInstantaneousDemand extends ZigBeeBaseChanne
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
+        logger.debug("{}: Zigbee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getClusterType() == ZclClusterType.METERING
                 && attribute.getId() == ZclMeteringCluster.ATTR_INSTANTANEOUSDEMAND) {
             double value = (Integer) val;

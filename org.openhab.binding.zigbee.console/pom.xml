@@ -10,7 +10,7 @@
 
   <artifactId>org.openhab.binding.zigbee.console</artifactId>
 
-  <name>openHAB Add-ons :: Bundles :: ZigBee Console</name>
+  <name>openHAB Add-ons :: Bundles :: Zigbee Console</name>
 
   <dependencies>
     <dependency>

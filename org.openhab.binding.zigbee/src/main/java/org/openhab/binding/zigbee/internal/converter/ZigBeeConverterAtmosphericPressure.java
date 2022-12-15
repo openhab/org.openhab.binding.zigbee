@@ -157,7 +157,7 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
 
     @Override
     public synchronized void attributeUpdated(ZclAttribute attribute, Object value) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
+        logger.debug("{}: Zigbee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getClusterType() != ZclClusterType.PRESSURE_MEASUREMENT) {
             return;
         }

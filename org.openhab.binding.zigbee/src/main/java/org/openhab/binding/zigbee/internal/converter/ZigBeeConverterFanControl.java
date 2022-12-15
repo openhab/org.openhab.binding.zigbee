@@ -215,7 +215,7 @@ public class ZigBeeConverterFanControl extends ZigBeeBaseChannelConverter implem
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
+        logger.debug("{}: Zigbee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getClusterType() == ZclClusterType.FAN_CONTROL
                 && attribute.getId() == ZclFanControlCluster.ATTR_FANMODE) {
             Integer value = (Integer) val;

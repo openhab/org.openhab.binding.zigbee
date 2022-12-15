@@ -521,7 +521,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
 
     @Override
     public synchronized void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
+        logger.debug("{}: Zigbee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getClusterType() == ZclClusterType.LEVEL_CONTROL
                 && attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
             lastLevel = levelToPercent((Integer) val);
@@ -543,7 +543,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
 
     @Override
     public boolean commandReceived(ZclCommand command) {
-        logger.debug("{}: ZigBee command received {}", endpoint.getIeeeAddress(), command);
+        logger.debug("{}: Zigbee command received {}", endpoint.getIeeeAddress(), command);
 
         // OnOff Cluster Commands
         if (command instanceof OnCommand) {

@@ -54,7 +54,7 @@ public class CC2531Handler extends ZigBeeCoordinatorHandler {
 
     @Override
     protected void initializeDongle() {
-        logger.debug("Initializing ZigBee CC2531 serial bridge handler.");
+        logger.debug("Initializing Zigbee CC2531 serial bridge handler.");
 
         CC2531Configuration config = getConfigAs(CC2531Configuration.class);
         ZigBeeTransportTransmit dongle = createDongle(config);
@@ -69,7 +69,7 @@ public class CC2531Handler extends ZigBeeCoordinatorHandler {
 
         ZigBeeTransportTransmit dongle = new ZigBeeDongleTiCc2531(serialPort);
 
-        logger.debug("ZigBee CC2531 Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
+        logger.debug("Zigbee CC2531 Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
                 Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
 
         return dongle;

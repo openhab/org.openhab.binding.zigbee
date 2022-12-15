@@ -516,7 +516,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
+        logger.debug("{}: Zigbee attribute reports {}", endpoint.getIeeeAddress(), attribute);
 
         synchronized (colorUpdateSync) {
             try {

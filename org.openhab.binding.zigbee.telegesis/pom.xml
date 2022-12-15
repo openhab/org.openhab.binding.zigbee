@@ -10,7 +10,7 @@
 
   <artifactId>org.openhab.binding.zigbee.telegesis</artifactId>
 
-  <name>openHAB Add-ons :: Bundles :: ZigBee Telegesis Bridge</name>
+  <name>openHAB Add-ons :: Bundles :: Zigbee Telegesis Bridge</name>
 
   <dependencies>
     <dependency>

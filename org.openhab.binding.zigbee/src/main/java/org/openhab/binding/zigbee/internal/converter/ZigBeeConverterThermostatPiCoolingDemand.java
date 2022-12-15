@@ -180,7 +180,7 @@ public class ZigBeeConverterThermostatPiCoolingDemand extends ZigBeeBaseChannelC
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
+        logger.debug("{}: Zigbee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getClusterType() == ZclClusterType.THERMOSTAT
                 && attribute.getId() == ZclThermostatCluster.ATTR_PICOOLINGDEMAND) {
             Integer value = (Integer) val;

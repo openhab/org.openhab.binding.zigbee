@@ -149,7 +149,7 @@ public class TelegesisHandler extends ZigBeeCoordinatorHandler implements Firmwa
                 FlowControl.FLOWCONTROL_OUT_NONE);
         final ZigBeeDongleTelegesis dongle = new ZigBeeDongleTelegesis(serialPort);
 
-        logger.debug("ZigBee Telegesis Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
+        logger.debug("Zigbee Telegesis Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
                 Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
 
         dongle.setTelegesisPassword(config.zigbee_password);

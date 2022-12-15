@@ -58,7 +58,7 @@ import com.zsmartsystems.zigbee.console.ZigBeeConsoleUnbindCommand;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleWindowCoveringCommand;
 
 /**
- * This class provides general ZigBee console commands that are not tied to a specific ZigBee dongle.
+ * This class provides general Zigbee console commands that are not tied to a specific Zigbee dongle.
  *
  * @author Henning Sudbrock - initial contribution
  * @author Chris Jackson - added commands

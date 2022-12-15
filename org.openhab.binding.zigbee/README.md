@@ -1,12 +1,12 @@
-# ZigBee Binding
+# Zigbee Binding
 
-The ZigBee binding supports an interface to a wireless ZigBee home automation network and allows ZigBee devices from numerous manufacturers to be used without a system specific gateway. It should be compatible with a broad range of devices that implement and meet the Zigbee standards including lights, alarms, switches, sensors, etc.
+The Zigbee binding supports an interface to a wireless Zigbee home automation network and allows Zigbee devices from numerous manufacturers to be used without a system specific gateway. It should be compatible with a broad range of devices that implement and meet the Zigbee standards including lights, alarms, switches, sensors, etc.
 
 ## Supported Things
 
 ### Coordinators
 
-A ZigBee Coordinator is the network controller, and is therefore the heart of the ZigBee network. It also acts as the trust centre to control security access to the network.
+A Zigbee Coordinator is the network controller, and is therefore the heart of the Zigbee network. It also acts as the trust centre to control security access to the network.
 
 #### Configuring a coordinator
 
@@ -58,7 +58,7 @@ Note that not all configuration parameters are available with all coordinators.
 
 ##### Link Key (zigbee_linkkey)
 
-The key is defined as 16 hexadecimal values. If not defined, this will default to the well known ZigBee HA link key which is required for ZigBee HA 1.2 devices. Do not alter this key if using with a ZigBee HA 1.2 network unless you fully understand the impact.
+The key is defined as 16 hexadecimal values. If not defined, this will default to the well known Zigbee HA link key which is required for Zigbee HA 1.2 devices. Do not alter this key if using with a Zigbee HA 1.2 network unless you fully understand the impact.
 
 If defined with the word `INSTALLCODE:` before the key, this will create a link key from an install code which may be shorter than 16 bytes.
 
@@ -71,11 +71,11 @@ The key is defined as 16 hexadecimal values. If not defined, a random key will b
 
 ##### Child Aging (zigbee_childtimeout)
 
-ZigBee routers (and the coordinator) only have room to allow a certain number of devices to join the network via each router - once the child table in a router is full, devices will need to join via another router (assuming the child can communicate via another router). To avoid the child table becoming full of devices that no longer exist, routers will age out children that do not contact them within a specified period of time.
+Zigbee routers (and the coordinator) only have room to allow a certain number of devices to join the network via each router - once the child table in a router is full, devices will need to join via another router (assuming the child can communicate via another router). To avoid the child table becoming full of devices that no longer exist, routers will age out children that do not contact them within a specified period of time.
 
 Once a child is removed from the child table of a router, it will be asked to rejoin if it tries to communicate with the parent again. Setting this time too large may mean that the router fills its tables with devices that no longer exist, while setting it too small can mean devices unnecessarily rejoining the network.
 
-Note that ZigBee compliant devices should rejoin the network seamlessly, however some non-compliant devices may not rejoin which may leave them unusable without a manual rejoin.
+Note that Zigbee compliant devices should rejoin the network seamlessly, however some non-compliant devices may not rejoin which may leave them unusable without a manual rejoin.
 
 **Values:** Timeout time in seconds. The table below lists the options that are shown in PaperUI and the equivalent values that can be set in a configuration file:
 
@@ -97,7 +97,7 @@ Note that this value should be given as a number in the configuration file, with
 
 ##### Concentrator Type (zigbee_concentrator)
 
-The Concentrator is used to improve routing within a ZigBee network, and is especially useful in a network where much of the traffic is sent to or from a central coordinator. If the coordinator has sufficient memory, it can store routing information, thus reducing network traffic.
+The Concentrator is used to improve routing within a Zigbee network, and is especially useful in a network where much of the traffic is sent to or from a central coordinator. If the coordinator has sufficient memory, it can store routing information, thus reducing network traffic.
 
 If supported, the High RAM concentrator should be used.
 
@@ -159,8 +159,8 @@ The following coordinators are known to be supported.
 | [POPP ZB-STICK 701554](https://www.popp.eu/zb-stick/) and [POPP ZB-SHIELD 701561](https://www.popp.eu/zb-shield/) (rebranded Elelabs ELU013 and ELR023)| [Ember](#ember-ezsp-ncp-coordinator) | 115200bps<br>Hardware&nbsp;flow&nbsp;control<br>High RAM | Based on Silicon Labs EFR32MG13P MCU. Both the stick and the shield can be upgraded without additional hardware, firmware available [here](https://github.com/Elelabs/elelabs-zigbee-ezsp-utility).                                                                                                                                      |
 | [Bitron Video AV2010/10 Funkstick (also sold as SMaBiT AV2010/10)](https://bv.smabit.eu/index.php/smart-home-produkte/zb-funkstick/)                                           | [Ember](#ember-ezsp-ncp-coordinator) | 57600bps<br>Software&nbsp;flow&nbsp;control<br>High RAM  | Based on Silicon Labs EM3587.                                                                                                                                                                                                                                                         |
 | [CEL Cortet MeshConnect USB Sticks (EM358, ZM357S-USB, ZM3588S-USB models)](https://www.cel.com/product/)                                                       | [Ember](#ember-ezsp-ncp-coordinator) |  | Based on Silicon Labs EM358, EM357, and EM3588 MCUs respectivly. Requires specific drivers that may not work on MacOS Monterey.                                                                                                                                                                                                                                                         |
-| [Nortek GoControl QuickStick Combo Model HUSBZB-1](https://nortekcontrol.com/products/2gig/husbzb-1-gocontrol-quickstick-combo/)                                    | [Ember](#ember-ezsp-ncp-coordinator) | 57600bps<br>Software&nbsp;flow&nbsp;control<br>High RAM  | Based on Silicon Labs EM3581 MCU. Stick contains both Z-Wave and ZigBee.                                                                                                                                                                                                                                                         |
-| [Telegesis ETRX357USB, ETRX357USB+8M, and ETRX357USB-LRS ZigBee USB Stick](https://www.silabs.com/products/wireless/mesh-networking/telegesis-modules-gateways/etrx3-zigbee-usb-sticks) | [Telegesis](#telegesis-etrx3)        |                                                          | Based on Silicon Labs EM357 MCU. Not supported for ZigBee 3.0                                                                                                                                                                                                                                                                                               |
+| [Nortek GoControl QuickStick Combo Model HUSBZB-1](https://nortekcontrol.com/products/2gig/husbzb-1-gocontrol-quickstick-combo/)                                    | [Ember](#ember-ezsp-ncp-coordinator) | 57600bps<br>Software&nbsp;flow&nbsp;control<br>High RAM  | Based on Silicon Labs EM3581 MCU. Stick contains both Z-Wave and Zigbee.                                                                                                                                                                                                                                                         |
+| [Telegesis ETRX357USB, ETRX357USB+8M, and ETRX357USB-LRS Zigbee USB Stick](https://www.silabs.com/products/wireless/mesh-networking/telegesis-modules-gateways/etrx3-zigbee-usb-sticks) | [Telegesis](#telegesis-etrx3)        |                                                          | Based on Silicon Labs EM357 MCU. Not supported for Zigbee 3.0                                                                                                                                                                                                                                                                                               |
 | [QIVICON ZigBee-Funkstick](https://www.qivicon.com/de/produkte/produktinformationen/zigbee-funkstick/)                                                | [Telegesis](#telegesis-etrx3)        |                                                          | Only working on Linux devices                                                                                                                                                                                                                                                                  |
 | [Digi XStick (Digi XBee 3 USB Adapter)](https://www.digi.com/products/xbee-rf-solutions/boxed-rf-modems-adapters/xstick)                                                        | [XBee](#digi-xbee-x-stick)           |                                                          |                                                                                                                                                                                                                                                                                                |
 | [Texas Instruments CC2531EMK](http://www.ti.com/tool/cc2531emk)                                                                                     | [CC2531](#cc2531-coordinator)        |                                                          | CC2530 are not recommended for more then 15 devices due to its less powerful MCU. Also needs extra [hardware and Z-Stack Home 1.2 firmware flashed](https://www.zigbee2mqtt.io/guide/adapters/flashing/flashing_the_cc2531.html). CC2530 and CC2538 may work too with Z-Stack Home 1.2 compatible firmware. |
@@ -248,7 +248,7 @@ Extract and install the TI Flash Programmer, connect the CC-Debugger trough USB,
 
 ### Devices
 
-The following devices have been tested by openHAB users with the binding. This list is far from exhaustive, and the absence of a device in this list does not mean it will not work - **if the device is a standard ZigBee device similar to ones on this list, then it should work**. It should be noted that many "new" devices (approximately newer than 2020) will require coordinators that support ZigBee 3.0. If this is not supported, then devices may briefly join the network, and then leave when they find the network does not support the newer security requirements.
+The following devices have been tested by openHAB users with the binding. This list is far from exhaustive, and the absence of a device in this list does not mean it will not work - **if the device is a standard Zigbee device similar to ones on this list, then it should work**. It should be noted that many "new" devices (approximately newer than 2020) will require coordinators that support Zigbee 3.0. If this is not supported, then devices may briefly join the network, and then leave when they find the network does not support the newer security requirements.
 
 | Device                                         | Description                                                  |
 | ---------------------------------------------- | ------------------------------------------------------------ |
@@ -323,17 +323,17 @@ The following devices have been tested by openHAB users with the binding. This l
 
 Discovery is performed by putting the binding into join mode (by starting an thing search), and then putting the device into join mode. Generally, it is best to reset the device to do this. Resetting the device ensures that it is no longer joined to a previous network, will ensure it is awake if it is a battery device, and will restart any channel and network search that the device may perform. Consult the manual of the device at hand to see how to reset it, this differs from device to device.
 
-When the binding is put into discovery mode via the user interface, the network will have join enabled for 60 seconds. You can put it in discovery mode via the **Scan** button in the user interface. This can be found after you click the blue **+** button in the bottom right corder of the **Things** screen and then select the **ZigBee Binding**.
+When the binding is put into discovery mode via the user interface, the network will have join enabled for 60 seconds. You can put it in discovery mode via the **Scan** button in the user interface. This can be found after you click the blue **+** button in the bottom right corder of the **Things** screen and then select the **Zigbee Binding**.
 
-The binding will store the list of devices that have joined the network locally between restarts to allow them to be found again later. A ZigBee coordinator does not store a list of known devices, so rediscovery of devices following a restart may not be seemless if the dongle is moved to another system.
+The binding will store the list of devices that have joined the network locally between restarts to allow them to be found again later. A Zigbee coordinator does not store a list of known devices, so rediscovery of devices following a restart may not be seemless if the dongle is moved to another system.
 
-When a ZigBee device restarts (e.g. a bulb is powered on), it will send an announcement to advise the coordinator that it is on the network and this will allow the binding to rediscover devices that have become lost. Battery devices often have a button that may also perform this function.
+When a Zigbee device restarts (e.g. a bulb is powered on), it will send an announcement to advise the coordinator that it is on the network and this will allow the binding to rediscover devices that have become lost. Battery devices often have a button that may also perform this function.
 
 ### Install Codes
 
 Note: Currently only Ember coordinators support Zigbee 3.0, it does not look like the Telegesis coordinators will receive an update to support it.
 
-ZigBee 3.0 requires that devices use an install code to securely join the network. This must be added
+Zigbee 3.0 requires that devices use an install code to securely join the network. This must be added
 to the binding before the discovery starts. Install codes should be printed on the box the device came
 in, or possibly on the device itself. Note that there is no standard format for how these codes may be
 displayed on the device or its packaging. You may need to use a QR reader to read the code - again these
@@ -347,7 +347,7 @@ The format is `IEEE Address:Install Code` in the following format -:
 AAAAAAAAAAAAAAAA:CCCC-CCCC-CCCC-CCCC-CCCC-CCCC-CCCC-CCCC-DDDD
 ```
 
-ZigBee 3.0 requires the install code to be 16 bytes long (8 blocks of characters) but some older systems using
+Zigbee 3.0 requires the install code to be 16 bytes long (8 blocks of characters) but some older systems using
 this method may use less bytes, but it should still be formatted as 2, 4, or 8 groups of 4 values.
 Note that the last four characters in the install code are the checksum and may be provided separately.
 
@@ -361,7 +361,7 @@ The binding will attempt to automatically detect new devices, giving them a type
 
 ### Thing Types
 
-Most ZigBee things have the same thing type of `zigbee_device`. The binding will automatically discover the device features and provide channels linked to device functionality that it is able to support. A small number of devices that require a manual thing definition may be defined in the binding to support devices that have non-standard functionality, or do not support the autodiscovery functionality provided by ZigBee.
+Most Zigbee things have the same thing type of `zigbee_device`. The binding will automatically discover the device features and provide channels linked to device functionality that it is able to support. A small number of devices that require a manual thing definition may be defined in the binding to support devices that have non-standard functionality, or do not support the autodiscovery functionality provided by Zigbee.
 
 ### Channel Types
 
@@ -369,7 +369,7 @@ A set of channels will be created depending on what clusters and endpoints a dev
 
 The following channels are supported -:
 
-| Channel UID                  | ZigBee Cluster                           | Type                     | Description |
+| Channel UID                  | Zigbee Cluster                           | Type                     | Description |
 | ---------------------------- | ---------------------------------------- | ------------------------ | ----------- |
 | battery-level                | `POWER_CONFIGURATION` (0x0001)           | Number                   |             |
 | battery_voltage              | `POWER_CONFIGURATION` (0x0001)           | Number:ElectricPotential |             |
@@ -471,7 +471,7 @@ end
 
 ## Reporting and Polling
 
-ZigBee has a standard way of configuring how a device sends status reports to the binding - this is called Reporting. Reporting is configured using three pieces of information -:
+Zigbee has a standard way of configuring how a device sends status reports to the binding - this is called Reporting. Reporting is configured using three pieces of information -:
 
 - Minimum Reporting Period: This is the minimum time between reports that the device will send updates. So, if data is changing regularly, this will prevent the binding receiving a flood of reports.
 - Maximum Reporting Period: This is the maximum time between reports that the device will send updates. If the data never changes, then the device will still send an update at this rate. This is important so that the binding knows the device has not failed, so it should not be set too long (normally a couple of hours will be fine).
@@ -510,9 +510,9 @@ This will log data into the standard `openhab.log` file. There is an [online log
 
 Note that logs can only show what is happening at a high level - it can't show all data exchanges between the device and the coordinator - just what the coordinator sends to the binding. For this reason it can be difficult to debug issues where devices are not joining the network, or other low level issues need resolving. In such cases a network sniffer log is required, which requires additional hardware and software. Information and software required to use an Ember dongle as a sniffer can be found on the [OpenSmartHouse](https://opensmarthouse.org/blog/zigbee_network_sniffer) site.
 
-### ZigBee Console Commands
+### Zigbee Console Commands
 
-The openHAB command line interface provides a number of commands to interact with the ZigBee framework. These can provide useful options for debugging when things aren't going as planned, and can also provide advanced users a means to make changes that are not possible directly through the binding. This section will provide information on a few common issues that users may come up against, but is not an exhaustive user manual for low level ZigBee commands.
+The openHAB command line interface provides a number of commands to interact with the Zigbee framework. These can provide useful options for debugging when things aren't going as planned, and can also provide advanced users a means to make changes that are not possible directly through the binding. This section will provide information on a few common issues that users may come up against, but is not an exhaustive user manual for low level Zigbee commands.
 
 All commands described below must be preceded by the word `zigbee` on the command line. To keep the documentation concise this is omitted in the examples below.
 
@@ -524,11 +524,11 @@ In some instances a device may not work correctly, or you may wish to see more t
 
 #### Binding and Reporting
 
-The binding table is used within ZigBee to configure devices to send reports to the binding when their state changes. The binding will attempt to set the required ZigBee bindings during device initialisation, but sometimes this can fail. Often this may occur on older devices that have limited memory, and only have a small number of entries in the binding table, and then manual manipulation of the table may be required.
+The binding table is used within Zigbee to configure devices to send reports to the binding when their state changes. The binding will attempt to set the required Zigbee bindings during device initialisation, but sometimes this can fail. Often this may occur on older devices that have limited memory, and only have a small number of entries in the binding table, and then manual manipulation of the table may be required.
 
 The binding table for a node can be displayed with the `bindtable` command. It can then be updated with the `bind` command, and bindings can be removed with the `unbind` command.
 
-A second part to the binding and reporting system is the reporting. The binding table tells the device where it should send reports, but the actual reports must be configured as well. Many attributes in a ZigBee cluster can be configured to send reports if their state changes, or at a periodical rate if there have been no state updates within a certain time. Analogue values can be configured so that they report if the value changes by a certain amount so that the reports do not flood the system.  Care must be exercised when changing this configuration as it may interfere with the binding operation.
+A second part to the binding and reporting system is the reporting. The binding table tells the device where it should send reports, but the actual reports must be configured as well. Many attributes in a Zigbee cluster can be configured to send reports if their state changes, or at a periodical rate if there have been no state updates within a certain time. Analogue values can be configured so that they report if the value changes by a certain amount so that the reports do not flood the system.  Care must be exercised when changing this configuration as it may interfere with the binding operation.
 
 The exact command required to configure reporting can depend on whether the attribute is a binary or analogue type. The console commands `subscribe` and `unsubscribe` allow the user to manipulate the reporting of an attribute, and the `reportcfg` command can be used to display the current configuration.
 
@@ -601,7 +601,7 @@ The following commands are available if the transport layer is using the Silabs 
 
 ### Xiaomi devices
 
-Xiaomi/Aqara devices are not fully ZigBee compliant, and are known to suffer from multiple problems.
+Xiaomi/Aqara devices are not fully Zigbee compliant, and are known to suffer from multiple problems.
 
 #### Pairing
 

@@ -2,7 +2,7 @@
 
 Delete this section in your issue...
 
-This issue list is to report bugs or enhancements for the openHAB ZigBee binding. If you're not sure about something, please consider discussing it on the [forum](http://community.openhab.org) before raising an issue - more people follow the forum than monitor the issues list, so if you are having trouble with a device, or want to ask a question, you will have a much larger audience there.
+This issue list is to report bugs or enhancements for the openHAB Zigbee binding. If you're not sure about something, please consider discussing it on the [forum](http://community.openhab.org) before raising an issue - more people follow the forum than monitor the issues list, so if you are having trouble with a device, or want to ask a question, you will have a much larger audience there.
 
 Please provide a debug log file. You can enable debug logging with the following Karaf commands -:
 

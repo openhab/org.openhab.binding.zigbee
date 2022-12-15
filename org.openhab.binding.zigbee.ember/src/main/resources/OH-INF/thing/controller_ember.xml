@@ -20,7 +20,7 @@
 		<config-description>
 			<parameter-group name="network">
 				<context></context>
-				<label>ZigBee Network Configuration</label>
+				<label>Zigbee Network Configuration</label>
 				<description></description>
 			</parameter-group>
 

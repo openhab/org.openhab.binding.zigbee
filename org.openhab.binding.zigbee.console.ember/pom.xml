@@ -10,7 +10,7 @@
 
   <artifactId>org.openhab.binding.zigbee.console.ember</artifactId>
 
-  <name>openHAB Add-ons :: Bundles :: ZigBee Console Ember</name>
+  <name>openHAB Add-ons :: Bundles :: Zigbee Console Ember</name>
 
   <dependencies>
     <dependency>

@@ -38,7 +38,7 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclElectricalMeasurementCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
- * ZigBee channel converter for RMS current measurement
+ * Zigbee channel converter for RMS current measurement
  *
  * @author Chris Jackson - Initial Contribution
  *
@@ -156,7 +156,7 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
+        logger.debug("{}: Zigbee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getClusterType() == ZclClusterType.ELECTRICAL_MEASUREMENT
                 && attribute.getId() == ZclElectricalMeasurementCluster.ATTR_RMSCURRENT) {
             Integer value = (Integer) val;

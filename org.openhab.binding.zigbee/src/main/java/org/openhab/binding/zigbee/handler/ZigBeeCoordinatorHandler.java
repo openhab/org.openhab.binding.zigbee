@@ -359,7 +359,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 }
             }
 
-            // Shut down the ZigBee library
+            // Shut down the Zigbee library
             networkManager.shutdown();
         }
 
@@ -367,7 +367,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             networkDataStore.delete();
         }
 
-        logger.debug("ZigBee network [{}] closed.", thing.getUID());
+        logger.debug("Zigbee network [{}] closed.", thing.getUID());
     }
 
     @Override
@@ -377,7 +377,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     }
 
     /**
-     * Common initialisation point for all ZigBee coordinators.
+     * Common initialisation point for all Zigbee coordinators.
      * Called by bridge implementations after they have initialised their interfaces.
      *
      * @param zigbeeTransport a {@link ZigBeeTransportTransmit} interface instance
@@ -388,7 +388,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     }
 
     /**
-     * Common initialisation point for all ZigBee coordinators.
+     * Common initialisation point for all Zigbee coordinators.
      * Called by bridge implementations after they have initialised their interfaces.
      *
      * @param zigbeeTransport a {@link ZigBeeTransportTransmit} interface instance
@@ -409,7 +409,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     }
 
     /**
-     * Initialise the ZigBee network
+     * Initialise the Zigbee network
      *
      * synchronized to avoid executing this if a reconnect is still in progress
      */
@@ -535,7 +535,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         currentChannel = networkManager.getZigBeeChannel();
         currentPanId = networkManager.getZigBeePanId();
         currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
-        logger.debug("ZigBee initialise done. channel={}, PanId={}  EPanId={}", currentChannel, currentPanId,
+        logger.debug("Zigbee initialise done. channel={}, PanId={}  EPanId={}", currentChannel, currentPanId,
                 currentExtendedPanId);
 
         // Set initializeNetwork to false to ensure that if communications to the dongle restarts, we don't reinitialise
@@ -550,9 +550,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     }
 
     private void startZigBeeNetwork() {
-        logger.debug("Scheduling ZigBee start");
+        logger.debug("Scheduling Zigbee start");
         restartJob = scheduler.schedule(() -> {
-            logger.debug("ZigBee network starting");
+            logger.debug("Zigbee network starting");
             restartJob = null;
             initialiseZigBee();
         }, 1, TimeUnit.SECONDS);
@@ -571,7 +571,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                     return;
                 }
 
-                logger.info("ZigBee dongle inactivity timer. Reinitializing ZigBee");
+                logger.info("Zigbee dongle inactivity timer. Reinitializing Zigbee");
 
                 // Close everything that has been started prior to initializing the serial port
                 if (restartJob != null) {
@@ -1040,14 +1040,14 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      * @param duration the duration of the join
      */
     public boolean permitJoin(@Nullable IeeeAddress address, int duration) {
-        logger.debug("{}: ZigBee join command", address);
+        logger.debug("{}: Zigbee join command", address);
         ZigBeeNode node = networkManager.getNode(address);
         if (node == null) {
-            logger.debug("{}: ZigBee join command - node not found", address);
+            logger.debug("{}: Zigbee join command - node not found", address);
             return false;
         }
 
-        logger.debug("{}: ZigBee join command to {}", address, node.getNetworkAddress());
+        logger.debug("{}: Zigbee join command to {}", address, node.getNetworkAddress());
 
         networkManager.permitJoin(new ZigBeeEndpointAddress(node.getNetworkAddress()), duration);
         return true;
@@ -1066,14 +1066,14 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         // First we want to make sure that join is disabled
         networkManager.permitJoin(0);
 
-        logger.debug("{}: ZigBee leave command", address);
+        logger.debug("{}: Zigbee leave command", address);
         ZigBeeNode node = networkManager.getNode(address);
         if (node == null) {
-            logger.debug("{}: ZigBee leave command - node not found", address);
+            logger.debug("{}: Zigbee leave command - node not found", address);
             return false;
         }
 
-        logger.debug("{}: ZigBee leave command to {}", address, node.getNetworkAddress());
+        logger.debug("{}: Zigbee leave command to {}", address, node.getNetworkAddress());
 
         networkManager.leave(node.getNetworkAddress(), node.getIeeeAddress(), forceRemoval);
         return true;
@@ -1119,7 +1119,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
      */
     public void scanStart(int joinTime) {
         if (getThing().getStatus() != ThingStatus.ONLINE) {
-            logger.debug("ZigBee coordinator is offline - aborted scan for {}", getThing().getUID());
+            logger.debug("Zigbee coordinator is offline - aborted scan for {}", getThing().getUID());
             return;
         }
 
@@ -1127,7 +1127,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     }
 
     /**
-     * Stops an active scan on the ZigBee coordinator
+     * Stops an active scan on the Zigbee coordinator
      */
     public void scanStop() {
         networkManager.permitJoin(0);

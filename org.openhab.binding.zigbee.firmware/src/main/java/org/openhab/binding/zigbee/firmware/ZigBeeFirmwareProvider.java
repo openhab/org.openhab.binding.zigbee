@@ -53,20 +53,20 @@ public class ZigBeeFirmwareProvider implements FirmwareProvider {
 
     @Activate
     protected void activate() {
-        logger.debug("ZigBee Firmware Provider: Activated");
+        logger.debug("Zigbee Firmware Provider: Activated");
         String folder = OpenHAB.getUserDataFolder() + File.separator + "firmware" + File.separator;
         directoryReader = new GithubLibraryReader(folder);
         try {
             directoryReader.create("https://raw.githubusercontent.com/Koenkk/zigbee-OTA/master");
             directoryReader.updateRemoteDirectory();
         } catch (Exception e) {
-            logger.error("Exception activating ZigBee firmware provider ", e);
+            logger.error("Exception activating Zigbee firmware provider ", e);
         }
     }
 
     @Deactivate
     protected void deactivate() {
-        logger.debug("ZigBee Firmware Provider: Deactivated");
+        logger.debug("Zigbee Firmware Provider: Deactivated");
     }
 
     @Override
@@ -115,7 +115,7 @@ public class ZigBeeFirmwareProvider implements FirmwareProvider {
     }
 
     private ZigBeeFirmwareVersion getRequestedVersionFromThing(@NonNull Thing thing) {
-        // We only deal in ZigBee devices here
+        // We only deal in Zigbee devices here
         if (!(thing.getHandler() instanceof ZigBeeThingHandler)) {
             return null;
         }

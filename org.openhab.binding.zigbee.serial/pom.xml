@@ -10,7 +10,7 @@
 
   <artifactId>org.openhab.binding.zigbee.serial</artifactId>
 
-  <name>openHAB Add-ons :: Bundles :: ZigBee Serial Driver</name>
+  <name>openHAB Add-ons :: Bundles :: Zigbee Serial Driver</name>
 
   <dependencies>
     <dependency>

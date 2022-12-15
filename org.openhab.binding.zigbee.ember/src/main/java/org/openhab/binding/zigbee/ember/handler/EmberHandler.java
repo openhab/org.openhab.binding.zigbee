@@ -284,7 +284,7 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
                 config.zigbee_port, config.zigbee_baud, flowControl);
         final ZigBeeDongleEzsp dongle = new ZigBeeDongleEzsp(serialPort);
 
-        logger.debug("ZigBee Ember Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
+        logger.debug("Zigbee Ember Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
                 Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
 
         dongle.updateDefaultConfiguration(EzspConfigId.EZSP_CONFIG_ADDRESS_TABLE_SIZE, config.zigbee_networksize);
@@ -366,7 +366,7 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
             return;
         }
 
-        logger.debug("ZigBee Ember Coordinator group registration is {}", groupsString);
+        logger.debug("Zigbee Ember Coordinator group registration is {}", groupsString);
         ZigBeeDongleEzsp dongle = (ZigBeeDongleEzsp) zigbeeTransport;
         EmberNcp ncp = dongle.getEmberNcp();
 
@@ -383,7 +383,7 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
         } else if (multicastTableSize > GROUPS_MAXIMUM) {
             multicastTableSize = GROUPS_MAXIMUM;
         }
-        logger.debug("ZigBee Ember Coordinator multicast table size set to {}", multicastTableSize);
+        logger.debug("Zigbee Ember Coordinator multicast table size set to {}", multicastTableSize);
         dongle.updateDefaultConfiguration(EzspConfigId.EZSP_CONFIG_MULTICAST_TABLE_SIZE, multicastTableSize);
 
         int index = 0;
@@ -394,7 +394,7 @@ public class EmberHandler extends ZigBeeCoordinatorHandler implements FirmwareUp
             entry.setMulticastId(group);
             EmberStatus result = ncp.setMulticastTableEntry(index, entry);
 
-            logger.debug("ZigBee Ember Coordinator multicast table index {} updated with {}, result {}", index, entry,
+            logger.debug("Zigbee Ember Coordinator multicast table index {} updated with {}, result {}", index, entry,
                     result);
 
             index++;

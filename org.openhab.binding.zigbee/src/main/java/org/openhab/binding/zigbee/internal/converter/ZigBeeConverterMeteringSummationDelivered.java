@@ -35,7 +35,7 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclMeteringCluster;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
- * ZigBee channel converter for summation delivered measurement
+ * Zigbee channel converter for summation delivered measurement
  *
  * @author Chris Jackson - Initial Contribution
  *
@@ -156,7 +156,7 @@ public class ZigBeeConverterMeteringSummationDelivered extends ZigBeeBaseChannel
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
+        logger.debug("{}: Zigbee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getClusterType() == ZclClusterType.METERING
                 && attribute.getId() == ZclMeteringCluster.ATTR_CURRENTSUMMATIONDELIVERED) {
             double value = ((Long) val).intValue();

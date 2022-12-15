@@ -123,7 +123,7 @@ public class ZigBeeConverterBinaryInput extends ZigBeeBaseChannelConverter imple
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
+        logger.debug("{}: Zigbee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getClusterType() == ZclClusterType.BINARY_INPUT_BASIC
                 && attribute.getId() == ZclBinaryInputBasicCluster.ATTR_PRESENTVALUE) {
             Boolean value = (Boolean) val;

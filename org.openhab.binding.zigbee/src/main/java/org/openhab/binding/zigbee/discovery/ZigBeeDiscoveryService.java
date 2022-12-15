@@ -273,7 +273,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
                         String updatedLabel = nodeProperties.get(Thing.PROPERTY_VENDOR) + " "
                                 + nodeProperties.get(Thing.PROPERTY_MODEL_ID);
 
-                        logger.debug("{}: Update ZigBee device {} with bridge {}, label '{}'", node.getIeeeAddress(),
+                        logger.debug("{}: Update Zigbee device {} with bridge {}, label '{}'", node.getIeeeAddress(),
                                 defaultThingTypeUID, bridgeUID, updatedLabel);
 
                         DiscoveryResult updatedDiscoveryResult = DiscoveryResultBuilder.create(defaultThingUID)

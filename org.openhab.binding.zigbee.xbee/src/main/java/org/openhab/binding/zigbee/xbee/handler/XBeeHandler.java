@@ -51,7 +51,7 @@ public class XBeeHandler extends ZigBeeCoordinatorHandler {
 
     @Override
     public void initializeDongle() {
-        logger.debug("Initializing ZigBee XBee serial bridge handler.");
+        logger.debug("Initializing Zigbee XBee serial bridge handler.");
 
         XBeeConfiguration config = getConfigAs(XBeeConfiguration.class);
         ZigBeeTransportTransmit dongle = createDongle(config);
@@ -66,7 +66,7 @@ public class XBeeHandler extends ZigBeeCoordinatorHandler {
                 flowControl);
         ZigBeeTransportTransmit dongle = new ZigBeeDongleXBee(serialPort);
 
-        logger.debug("ZigBee XBee Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
+        logger.debug("Zigbee XBee Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
                 Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
 
         return dongle;

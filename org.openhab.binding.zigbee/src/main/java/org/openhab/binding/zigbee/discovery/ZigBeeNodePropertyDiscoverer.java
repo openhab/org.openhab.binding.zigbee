@@ -103,13 +103,13 @@ public class ZigBeeNodePropertyDiscoverer {
      * @return a {@link Map} of properties or an empty map if there was an error
      */
     public Map<String, String> getProperties(final ZigBeeNode node) {
-        logger.debug("{}: ZigBee node property discovery start", node.getIeeeAddress());
+        logger.debug("{}: Zigbee node property discovery start", node.getIeeeAddress());
 
         addPropertiesFromNodeDescriptors(node);
         addPropertiesFromBasicCluster(node);
         addPropertiesFromOtaCluster(node);
 
-        logger.debug("{}: ZigBee node property discovery complete: {}", node.getIeeeAddress(), properties);
+        logger.debug("{}: Zigbee node property discovery complete: {}", node.getIeeeAddress(), properties);
 
         return properties;
     }
@@ -145,7 +145,7 @@ public class ZigBeeNodePropertyDiscoverer {
             return;
         }
 
-        logger.debug("{}: ZigBee node property discovery using basic cluster on endpoint {}", node.getIeeeAddress(),
+        logger.debug("{}: Zigbee node property discovery using basic cluster on endpoint {}", node.getIeeeAddress(),
                 basicCluster.getZigBeeAddress());
 
         // Attempt to read all properties with a single command.
@@ -246,7 +246,7 @@ public class ZigBeeNodePropertyDiscoverer {
                 .orElse(null);
 
         if (otaCluster != null) {
-            logger.debug("{}: ZigBee node property discovery using OTA cluster on endpoint {}", node.getIeeeAddress(),
+            logger.debug("{}: Zigbee node property discovery using OTA cluster on endpoint {}", node.getIeeeAddress(),
                     otaCluster.getZigBeeAddress());
 
             ZclAttribute attribute = otaCluster.getAttribute(ZclOtaUpgradeCluster.ATTR_CURRENTFILEVERSION);

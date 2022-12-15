@@ -43,7 +43,7 @@ import com.zsmartsystems.zigbee.ZigBeeNetworkManager;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleCommand;
 
 /**
- * Console command extension that delegates commands to the ZigBee console of the underlying ZigBee core framework.
+ * Console command extension that delegates commands to the Zigbee console of the underlying Zigbee core framework.
  *
  * @author Henning Sudbrock - initial contribution
  */
@@ -57,7 +57,7 @@ public class ZigBeeConsoleCommandExtension extends AbstractConsoleCommandExtensi
     private ThingUID bridgeUID;
 
     public ZigBeeConsoleCommandExtension() {
-        super("zigbee", "ZigBee console commands");
+        super("zigbee", "Zigbee console commands");
     }
 
     @Reference
@@ -174,10 +174,10 @@ public class ZigBeeConsoleCommandExtension extends AbstractConsoleCommandExtensi
                     thing -> BINDING_ID.equals(thing.getThingTypeUID().getBindingId()) && thing instanceof Bridge)
                     .collect(toList());
             if (bridges.isEmpty()) {
-                throw new CommandExecutionException("No ZigBee bridge found");
+                throw new CommandExecutionException("No Zigbee bridge found");
             } else if (bridges.size() > 1) {
                 throw new CommandExecutionException(
-                        "Multiple ZigBee bridges found; please select one using the setBridgeUid command");
+                        "Multiple Zigbee bridges found; please select one using the setBridgeUid command");
             } else {
                 return (Bridge) bridges.get(0);
             }
