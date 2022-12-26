@@ -46,6 +46,8 @@ public class ZigBeeConverterThermostatOccupiedHeating extends ZigBeeBaseChannelC
     private ZclThermostatCluster cluster;
     private ZclAttribute attribute;
 
+    private boolean isServer;
+
     @Override
     public Set<Integer> getImplementedClientClusters() {
         return Collections.singleton(ZclThermostatCluster.CLUSTER_ID);
@@ -53,18 +55,28 @@ public class ZigBeeConverterThermostatOccupiedHeating extends ZigBeeBaseChannelC
 
     @Override
     public Set<Integer> getImplementedServerClusters() {
-        return Collections.emptySet();
+        return Collections.singleton(ZclThermostatCluster.CLUSTER_ID);
     }
 
     @Override
     public boolean initializeDevice() {
-        ZclThermostatCluster serverCluster = (ZclThermostatCluster) endpoint
-                .getInputCluster(ZclThermostatCluster.CLUSTER_ID);
-        if (serverCluster == null) {
-            logger.error("{}: Error opening device thermostat cluster", endpoint.getIeeeAddress());
-            return false;
+        ZclThermostatCluster localCluster;
+
+        localCluster = (ZclThermostatCluster) endpoint.getInputCluster(ZclThermostatCluster.CLUSTER_ID);
+        if (localCluster != null) {
+            return initialiseDeviceServer(localCluster);
         }
 
+        localCluster = (ZclThermostatCluster) endpoint.getOutputCluster(ZclThermostatCluster.CLUSTER_ID);
+        if (localCluster != null) {
+            return initialiseDeviceClient(localCluster);
+        }
+
+        logger.error("{}: Error opening device thermostat cluster", endpoint.getIeeeAddress());
+        return false;
+    }
+
+    private boolean initialiseDeviceServer(ZclThermostatCluster serverCluster) {
         try {
             CommandResult bindResponse = bind(serverCluster).get();
             if (bindResponse.isSuccess()) {
@@ -82,23 +94,44 @@ public class ZigBeeConverterThermostatOccupiedHeating extends ZigBeeBaseChannelC
         return true;
     }
 
+    private boolean initialiseDeviceClient(ZclThermostatCluster clientCluster) {
+        try {
+            CommandResult bindResponse = bind(clientCluster).get();
+            if (!bindResponse.isSuccess()) {
+                logger.error("{}: Error 0x{} setting client binding", endpoint.getIeeeAddress(),
+                        Integer.toHexString(bindResponse.getStatusCode()));
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}: Exception setting binding ", endpoint.getIeeeAddress(), e);
+        }
+
+        return true;
+    }
+
     @Override
     public boolean initializeConverter(ZigBeeThingHandler thing) {
         super.initializeConverter(thing);
         cluster = (ZclThermostatCluster) endpoint.getInputCluster(ZclThermostatCluster.CLUSTER_ID);
-        if (cluster == null) {
-            logger.error("{}: Error opening device thermostat cluster", endpoint.getIeeeAddress());
-            return false;
+        if (cluster != null) {
+            isServer = true;
+        } else {
+            cluster = (ZclThermostatCluster) endpoint.getOutputCluster(ZclThermostatCluster.CLUSTER_ID);
+            if (cluster != null) {
+                isServer = false;
+            } else {
+                logger.error("{}: Error opening device thermostat cluster", endpoint.getIeeeAddress());
+                return false;
+            }
         }
 
         attribute = cluster.getAttribute(ZclThermostatCluster.ATTR_OCCUPIEDHEATINGSETPOINT);
         if (attribute == null) {
-            logger.error("{}: Error opening device thermostat occupied heating setpoint attribute",
-                    endpoint.getIeeeAddress());
+            logger.error("{}: Error opening device thermostat occupied heating setpoint {} attribute",
+                    endpoint.getIeeeAddress(), isServer ? "server" : "client");
             return false;
         }
 
-        // Add a listener, then request the status
+        // Add a listener
         cluster.addAttributeListener(this);
         return true;
     }
@@ -110,6 +143,12 @@ public class ZigBeeConverterThermostatOccupiedHeating extends ZigBeeBaseChannelC
 
     @Override
     public void handleCommand(final Command command) {
+        if (!isServer) {
+            logger.warn("{}: Thermostat occupied heating setpoint server can't be commanded",
+                    endpoint.getIeeeAddress());
+            return;
+        }
+
         Integer value = temperatureToValue(command);
 
         if (value == null) {
@@ -123,23 +162,31 @@ public class ZigBeeConverterThermostatOccupiedHeating extends ZigBeeBaseChannelC
 
     @Override
     public void handleRefresh() {
+        if (!isServer) {
+            return;
+        }
         attribute.readValue(0);
     }
 
     @Override
     public Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint) {
         ZclThermostatCluster cluster = (ZclThermostatCluster) endpoint.getInputCluster(ZclThermostatCluster.CLUSTER_ID);
-        if (cluster == null) {
-            logger.trace("{}: Thermostat cluster not found", endpoint.getIeeeAddress());
-            return null;
-        }
+        if (cluster != null) {
+            // Try to read the setpoint attribute
+            ZclAttribute attribute = cluster.getAttribute(ZclThermostatCluster.ATTR_OCCUPIEDHEATINGSETPOINT);
+            Object value = attribute.readValue(Long.MAX_VALUE);
+            if (value == null) {
+                logger.trace("{}: Thermostat occupied heating setpoint returned null", endpoint.getIeeeAddress());
+                return null;
+            }
+        } else {
+            cluster = (ZclThermostatCluster) endpoint.getInputCluster(ZclThermostatCluster.CLUSTER_ID);
+            if (cluster == null) {
+                return null;
+            }
 
-        // Try to read the setpoint attribute
-        ZclAttribute attribute = cluster.getAttribute(ZclThermostatCluster.ATTR_OCCUPIEDHEATINGSETPOINT);
-        Object value = attribute.readValue(Long.MAX_VALUE);
-        if (value == null) {
-            logger.trace("{}: Thermostat occupied heating setpoint returned null", endpoint.getIeeeAddress());
-            return null;
+            // Should this check the supported commands to make sure this is really supported?
+            // Downside is not all devices may report this!
         }
 
         return ChannelBuilder
@@ -159,4 +206,5 @@ public class ZigBeeConverterThermostatOccupiedHeating extends ZigBeeBaseChannelC
             updateChannelState(valueToTemperature((Integer) val));
         }
     }
+
 }
