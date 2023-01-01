@@ -64,6 +64,7 @@ import com.zsmartsystems.zigbee.ZigBeeStatus;
 import com.zsmartsystems.zigbee.app.discovery.ZigBeeDiscoveryExtension;
 import com.zsmartsystems.zigbee.app.iasclient.ZigBeeIasCieExtension;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaUpgradeExtension;
+import com.zsmartsystems.zigbee.app.time.ZigBeeTimeExtension;
 import com.zsmartsystems.zigbee.security.MmoHash;
 import com.zsmartsystems.zigbee.security.ZigBeeKey;
 import com.zsmartsystems.zigbee.serialization.DefaultDeserializer;
@@ -79,6 +80,7 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclBasicCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOtaUpgradeCluster;
 import com.zsmartsystems.zigbee.zdo.field.NeighborTable;
 import com.zsmartsystems.zigbee.zdo.field.RoutingTable;
+
 
 /**
  * The {@link ZigBeeCoordinatorHandler} is responsible for handling commands,
@@ -184,29 +186,30 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         String networkKeyString = "";
 
         try {
-            if (getConfig().get(CONFIGURATION_CHANNEL) != null) {
-                logger.debug("Channel {}", getConfig().get(CONFIGURATION_CHANNEL));
-                channelId = ((BigDecimal) getConfig().get(CONFIGURATION_CHANNEL)).intValue();
+            if (getConfig().get(ZigBeeBindingConstants.CONFIGURATION_CHANNEL) != null) {
+                logger.debug("Channel {}", getConfig().get(ZigBeeBindingConstants.CONFIGURATION_CHANNEL));
+                channelId = ((BigDecimal) getConfig().get(ZigBeeBindingConstants.CONFIGURATION_CHANNEL)).intValue();
             }
 
-            if (getConfig().get(CONFIGURATION_PANID) != null) {
-                logger.debug("PANID {}", getConfig().get(CONFIGURATION_PANID));
-                panId = ((BigDecimal) getConfig().get(CONFIGURATION_PANID)).intValue();
+            if (getConfig().get(ZigBeeBindingConstants.CONFIGURATION_PANID) != null) {
+                logger.debug("PANID {}", getConfig().get(ZigBeeBindingConstants.CONFIGURATION_PANID));
+                panId = ((BigDecimal) getConfig().get(ZigBeeBindingConstants.CONFIGURATION_PANID)).intValue();
             }
 
-            if (getConfig().get(CONFIGURATION_EXTENDEDPANID) != null) {
-                logger.debug("EPANID {}", getConfig().get(CONFIGURATION_EXTENDEDPANID));
-                extendedPanId = new ExtendedPanId((String) getConfig().get(CONFIGURATION_EXTENDEDPANID));
+            if (getConfig().get(ZigBeeBindingConstants.CONFIGURATION_EXTENDEDPANID) != null) {
+                logger.debug("EPANID {}", getConfig().get(ZigBeeBindingConstants.CONFIGURATION_EXTENDEDPANID));
+                extendedPanId = new ExtendedPanId(
+                        (String) getConfig().get(ZigBeeBindingConstants.CONFIGURATION_EXTENDEDPANID));
             }
 
-            Object param = getConfig().get(CONFIGURATION_NETWORKKEY);
-            logger.debug("Network Key {}", getConfig().get(CONFIGURATION_NETWORKKEY));
+            Object param = getConfig().get(ZigBeeBindingConstants.CONFIGURATION_NETWORKKEY);
+            logger.debug("Network Key {}", getConfig().get(ZigBeeBindingConstants.CONFIGURATION_NETWORKKEY));
             if (param != null && param instanceof String) {
                 networkKeyString = (String) param;
             }
 
-            param = getConfig().get(CONFIGURATION_LINKKEY);
-            logger.debug("Link Key {}", getConfig().get(CONFIGURATION_LINKKEY));
+            param = getConfig().get(ZigBeeBindingConstants.CONFIGURATION_LINKKEY);
+            logger.debug("Link Key {}", getConfig().get(ZigBeeBindingConstants.CONFIGURATION_LINKKEY));
             if (param != null && param instanceof String) {
                 linkKeyString = (String) param;
             }
@@ -216,12 +219,14 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             return;
         }
 
-        if (getConfig().get(CONFIGURATION_INITIALIZE) != null) {
-            initializeNetwork = (Boolean) getConfig().get(CONFIGURATION_INITIALIZE);
-            logger.debug("Config: {} found, initializeNetwork={}", CONFIGURATION_INITIALIZE, initializeNetwork);
+        if (getConfig().get(ZigBeeBindingConstants.CONFIGURATION_INITIALIZE) != null) {
+            initializeNetwork = (Boolean) getConfig().get(ZigBeeBindingConstants.CONFIGURATION_INITIALIZE);
+            logger.debug("Config: {} found, initializeNetwork={}", ZigBeeBindingConstants.CONFIGURATION_INITIALIZE,
+                    initializeNetwork);
         } else {
             initializeNetwork = true;
-            logger.debug("Config: {} not found, initializeNetwork={} ", CONFIGURATION_INITIALIZE, initializeNetwork);
+            logger.debug("Config: {} not found, initializeNetwork={} ", ZigBeeBindingConstants.CONFIGURATION_INITIALIZE,
+                    initializeNetwork);
         }
 
         if (extendedPanId == null || extendedPanId.equals(new ExtendedPanId()) || panId == 0) {
@@ -265,7 +270,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 try {
                     // Update the channel
                     Configuration configuration = editConfiguration();
-                    configuration.put(CONFIGURATION_CHANNEL, channelId);
+                    configuration.put(ZigBeeBindingConstants.CONFIGURATION_CHANNEL, channelId);
                     updateConfiguration(configuration);
                 } catch (IllegalStateException e) {
                     logger.error("Error updating configuration: Unable to set channel. ", e);
@@ -279,7 +284,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 try {
                     // Update the PAN ID
                     Configuration configuration = editConfiguration();
-                    configuration.put(CONFIGURATION_PANID, panId);
+                    configuration.put(ZigBeeBindingConstants.CONFIGURATION_PANID, panId);
                     updateConfiguration(configuration);
                 } catch (IllegalStateException e) {
                     logger.error("Error updating configuration: Unable to set PanID. ", e);
@@ -297,7 +302,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 try {
                     // Update the Extended PAN ID
                     Configuration configuration = editConfiguration();
-                    configuration.put(CONFIGURATION_EXTENDEDPANID, extendedPanId.toString());
+                    configuration.put(ZigBeeBindingConstants.CONFIGURATION_EXTENDEDPANID, extendedPanId.toString());
                     updateConfiguration(configuration);
                 } catch (IllegalStateException e) {
                     logger.error("Error updating configuration: Unable to set Extended PanID. ", e);
@@ -461,15 +466,19 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         }
 
         int meshUpdatePeriod = MESH_UPDATE_PERIOD;
-        if (getConfig().get(CONFIGURATION_MESHUPDATEPERIOD) != null) {
-            logger.debug("Mesh Update Period {}", getConfig().get(CONFIGURATION_MESHUPDATEPERIOD));
-            meshUpdatePeriod = ((BigDecimal) getConfig().get(CONFIGURATION_MESHUPDATEPERIOD)).intValue();
+        if (getConfig().get(ZigBeeBindingConstants.CONFIGURATION_MESHUPDATEPERIOD) != null) {
+            logger.debug("Mesh Update Period {}",
+                    getConfig().get(ZigBeeBindingConstants.CONFIGURATION_MESHUPDATEPERIOD));
+            meshUpdatePeriod = ((BigDecimal) getConfig().get(ZigBeeBindingConstants.CONFIGURATION_MESHUPDATEPERIOD))
+                    .intValue();
         }
 
         // Add the extensions to the network
         ZigBeeDiscoveryExtension discoveryExtension = new ZigBeeDiscoveryExtension();
         discoveryExtension.setUpdateMeshPeriod(meshUpdatePeriod);
         networkManager.addExtension(discoveryExtension);
+        ZigBeeTimeExtension timeExtension = new ZigBeeTimeExtension();
+        networkManager.addExtension(timeExtension);
 
         networkManager.addExtension(new ZigBeeIasCieExtension());
         networkManager.addExtension(new ZigBeeOtaUpgradeExtension());
@@ -515,9 +524,9 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             networkManager.setZigBeeExtendedPanId(extendedPanId);
         }
 
-        if (getConfig().get(CONFIGURATION_TRUSTCENTREMODE) != null) {
-            String mode = (String) getConfig().get(CONFIGURATION_TRUSTCENTREMODE);
-            logger.debug("Config: {}={}", CONFIGURATION_TRUSTCENTREMODE, mode);
+        if (getConfig().get(ZigBeeBindingConstants.CONFIGURATION_TRUSTCENTREMODE) != null) {
+            String mode = (String) getConfig().get(ZigBeeBindingConstants.CONFIGURATION_TRUSTCENTREMODE);
+            logger.debug("Config: {}={}", ZigBeeBindingConstants.CONFIGURATION_TRUSTCENTREMODE, mode);
             TrustCentreJoinMode linkMode = TrustCentreJoinMode.valueOf(mode);
             transportConfig.addOption(TransportConfigOption.TRUST_CENTRE_JOIN_MODE, linkMode);
         }
