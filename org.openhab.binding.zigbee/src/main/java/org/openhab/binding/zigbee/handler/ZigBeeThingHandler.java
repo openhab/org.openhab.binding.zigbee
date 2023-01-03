@@ -577,16 +577,17 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         stopPolling();
 
-        if (nodeIeeeAddress != null) {
-            if (coordinatorHandler != null) {
+        if (coordinatorHandler != null) {
+            coordinatorHandler.removeNetworkNodeListener(this);
+            coordinatorHandler.removeAnnounceListener(this);
+
+            if (nodeIeeeAddress != null && coordinatorHandler.getNode(nodeIeeeAddress) != null) {
                 ZclOtaUpgradeServer otaServer = getOtaServer(coordinatorHandler.getNode(nodeIeeeAddress));
                 if (otaServer != null) {
                     otaServer.removeListener(this);
                 }
-
-                coordinatorHandler.removeNetworkNodeListener(this);
-                coordinatorHandler.removeAnnounceListener(this);
             }
+
             nodeIeeeAddress = null;
         }
 
