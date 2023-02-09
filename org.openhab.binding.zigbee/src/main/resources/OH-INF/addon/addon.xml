@@ -7,6 +7,5 @@
 	<name>ZigBee Binding</name>
 	<description>This is the binding for ZigBee providing a vendor neutral ZigBee implementation supporting many different
 		ZigBee devices.</description>
-	<author>Chris Jackson</author>
 
 </addon:addon>
