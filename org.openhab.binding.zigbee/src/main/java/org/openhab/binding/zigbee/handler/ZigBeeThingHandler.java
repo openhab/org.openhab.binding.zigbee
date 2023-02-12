@@ -374,7 +374,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 newChannelUidList.add(channel.getUID());
 
                 // Add the configuration from the existing channel into the new channel
-                Channel currentChannel = getThing().getChannel(channel.getUID().toString());
+                Channel currentChannel = getThing().getChannel(channel.getUID());
                 if (currentChannel != null) {
                     channel.getConfiguration().setProperties(currentChannel.getConfiguration().getProperties());
                 }
