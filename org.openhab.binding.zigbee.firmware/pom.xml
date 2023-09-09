@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.openhab.addons.bundles</groupId>
     <artifactId>org.openhab.addons.zigbee.reactor</artifactId>
-    <version>4.0.3-SNAPSHOT</version>
+    <version>4.0.3</version>
   </parent>
 
   <artifactId>org.openhab.binding.zigbee.firmware</artifactId>
