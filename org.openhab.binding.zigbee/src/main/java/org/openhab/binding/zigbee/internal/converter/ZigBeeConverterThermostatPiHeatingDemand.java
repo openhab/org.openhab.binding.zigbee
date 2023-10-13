@@ -172,7 +172,7 @@ public class ZigBeeConverterThermostatPiHeatingDemand extends ZigBeeBaseChannelC
 
         return ChannelBuilder
                 .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_THERMOSTAT_HEATING_DEMAND),
-                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER)
+                        ZigBeeBindingConstants.ITEM_TYPE_NUMBER_DIMENSIONLESS)
                 .withType(ZigBeeBindingConstants.CHANNEL_THERMOSTAT_HEATING_DEMAND)
                 .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_THERMOSTAT_HEATING_DEMAND)
                 .withProperties(createProperties(endpoint)).build();
