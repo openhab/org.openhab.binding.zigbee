@@ -47,6 +47,7 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterBatteryVoltage.class);
 
     private ZclPowerConfigurationCluster cluster;
+    private ZclAttribute attribute;
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
@@ -74,8 +75,7 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
             if (bindResponse.isSuccess()) {
                 ZclAttribute attribute = serverCluster.getAttribute(ZclPowerConfigurationCluster.ATTR_BATTERYVOLTAGE);
                 // Configure reporting - no faster than once per ten minutes - no slower than every 2 hours.
-                CommandResult reportingResponse = serverCluster
-                        .setReporting(attribute, 600, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                CommandResult reportingResponse = attribute.setReporting(600, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
             }
         } catch (InterruptedException | ExecutionException e) {
@@ -94,6 +94,8 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
             return false;
         }
 
+        attribute = cluster.getAttribute(ZclPowerConfigurationCluster.ATTR_BATTERYVOLTAGE);
+
         // Add a listener, then request the status
         cluster.addAttributeListener(this);
         return true;
@@ -108,7 +110,7 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
 
     @Override
     public void handleRefresh() {
-        cluster.getBatteryVoltage(0);
+        attribute.readValue(0);
     }
 
     @Override
@@ -120,7 +122,8 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
             return null;
         }
 
-        if (powerCluster.getBatteryVoltage(Long.MAX_VALUE) == null) {
+        ZclAttribute attribute = cluster.getAttribute(ZclPowerConfigurationCluster.ATTR_BATTERYVOLTAGE);
+        if (attribute.readValue(Long.MAX_VALUE) == null) {
             logger.trace("{}: Power configuration cluster battery voltage returned null", endpoint.getIeeeAddress());
             return null;
         }
