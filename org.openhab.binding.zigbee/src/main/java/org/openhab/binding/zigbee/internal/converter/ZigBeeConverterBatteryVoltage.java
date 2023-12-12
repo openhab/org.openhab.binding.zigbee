@@ -122,8 +122,8 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
             return null;
         }
 
-        ZclAttribute attribute = cluster.getAttribute(ZclPowerConfigurationCluster.ATTR_BATTERYVOLTAGE);
-        if (attribute.readValue(Long.MAX_VALUE) == null) {
+        ZclAttribute attribute = powerCluster.getAttribute(ZclPowerConfigurationCluster.ATTR_BATTERYVOLTAGE);
+        if (attribute == null || attribute.readValue(Long.MAX_VALUE) == null) {
             logger.trace("{}: Power configuration cluster battery voltage returned null", endpoint.getIeeeAddress());
             return null;
         }
