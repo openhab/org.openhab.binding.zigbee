@@ -12,8 +12,10 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
-import static java.lang.Integer.*;
-
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.temporal.TemporalUnit;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Set;
@@ -57,9 +59,12 @@ public class ZigBeeConverterTuyaButton extends ZigBeeBaseChannelConverter
     private ZclCluster serverCluster = null;
 
     // Tuya devices sometimes send duplicate commands with the same tx id.
-    // We keep track of the last received Tx id and ignore the duplicate.
+    // We keep track of the last received Tx id and time and ignore the duplicate.
+    // The time is needed because tx ids start over at 1 after some inactivity.
     private Integer lastTxId = -1;
-    
+    private LocalDateTime lastTxTime = LocalDateTime.of(2000, Month.JANUARY, 1, 0, 0, 0);
+    private final int IGNORE_DUPLICATE_TX_DURATION_IN_MINUTES = 5;
+
     @Override
     public Set<Integer> getImplementedClientClusters() {
         return Collections.singleton(ZclOnOffCluster.CLUSTER_ID);
@@ -111,7 +116,7 @@ public class ZigBeeConverterTuyaButton extends ZigBeeBaseChannelConverter
             CommandResult bindResponse = bind(clientCluster).get();
             if (!bindResponse.isSuccess()) {
                 logger.error("{}: Error 0x{} setting client binding for cluster {}", endpoint.getIeeeAddress(),
-                        toHexString(bindResponse.getStatusCode()), ZclOnOffCluster.CLUSTER_ID);
+                        Integer.toHexString(bindResponse.getStatusCode()), ZclOnOffCluster.CLUSTER_ID);
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting client binding to cluster {}: {}", endpoint.getIeeeAddress(),
@@ -175,13 +180,14 @@ public class ZigBeeConverterTuyaButton extends ZigBeeBaseChannelConverter
     @Override
     public boolean commandReceived(ZclCommand command) {
         logger.debug("{}: received command {}", endpoint.getIeeeAddress(), command);
+        LocalDateTime thisTxTime = LocalDateTime.now();
         Integer thisTxId = command.getTransactionId();
-        if(lastTxId == thisTxId)
+        if(lastTxId == thisTxId && Duration.between(lastTxTime, thisTxTime).toMinutes() < IGNORE_DUPLICATE_TX_DURATION_IN_MINUTES)
         {
             logger.debug("{}: ignoring duplicate command {}", endpoint.getIeeeAddress(), thisTxId);
         }
         else if (command instanceof TuyaButtonPressCommand) {
-            TuyaButtonPressCommand tuyaButtonPressCommand = (TuyaButtonPressCommand) command;
+           TuyaButtonPressCommand tuyaButtonPressCommand = (TuyaButtonPressCommand) command;
            thing.triggerChannel(channel.getUID(), getEventType(tuyaButtonPressCommand.getPressType()));
            clientCluster.sendDefaultResponse(command, ZclStatus.SUCCESS);
         }
@@ -190,6 +196,7 @@ public class ZigBeeConverterTuyaButton extends ZigBeeBaseChannelConverter
         }
 
         lastTxId = thisTxId;
+        lastTxTime = thisTxTime;
         return true;
     }
 
