@@ -22,6 +22,19 @@
 				</match-property>
 			</match-properties>
 		</discovery-method>
+		<discovery-method>
+			<service-type>usb</service-type>
+			<match-properties>
+				<match-property>
+					<name>remote</name>
+					<regex>false</regex>
+				</match-property>
+				<match-property>
+					<name>chipId</name>
+					<regex>0x0403:0x8A28|0x0451:0x16A8|0x10C4:0x89FB|0x10C4:0x8B34|0x1CF1:0x0030|0x10C4:0x8A2A</regex>
+				</match-property>
+			</match-properties>
+		</discovery-method>
 	</discovery-methods>
 
 </addon:addon>
