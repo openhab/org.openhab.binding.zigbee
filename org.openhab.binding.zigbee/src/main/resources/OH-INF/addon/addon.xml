@@ -18,7 +18,7 @@
 				</match-property>
 				<match-property>
 					<name>product</name>
-					<regex>(?i).*zigbee|hubz|husbzb|zi-stick|conbee.*</regex>
+					<regex>(?i).*zigb|hubz|husbzb|zi-stick|conbee.*</regex>
 				</match-property>
 			</match-properties>
 		</discovery-method>
@@ -31,7 +31,7 @@
 				</match-property>
 				<match-property>
 					<name>chipId</name>
-					<regex>0x0403:0x8A28|0x0451:0x16A8|0x10C4:0x89FB|0x10C4:0x8B34|0x1CF1:0x0030|0x10C4:0x8A2A</regex>
+					<regex>0x0403:0x8A28|0x0451:0x16A8|0x10C4:0x89FB|0x10C4:0x8B34|0x10C4:0x8A2A|0x1CF1:0x0030</regex>
 				</match-property>
 			</match-properties>
 		</discovery-method>
