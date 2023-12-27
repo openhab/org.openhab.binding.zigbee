@@ -31,7 +31,7 @@
 				</match-property>
 				<match-property>
 					<name>chipId</name>
-					<regex>0x0403:0x8A28|0x0451:0x16A8|0x10C4:0x89FB|0x10C4:0x8B34|0x10C4:0x8A2A|0x1CF1:0x0030</regex>
+					<regex>0403:8A28|0451:16A8|10C4:89FB|10C4:8B34|10C4:8A2A|1CF1:0030</regex>
 				</match-property>
 			</match-properties>
 		</discovery-method>
