@@ -2,6 +2,23 @@
 
 The ZigBee binding supports an interface to a wireless ZigBee home automation network and allows ZigBee devices from numerous manufacturers to be used without a system specific gateway. It should be compatible with a broad range of devices that implement and meet the Zigbee standards including lights, alarms, switches, sensors, etc.
 
+### Comparison with Zigbee2MQTT
+In general, Zigbee can be integrated into openHAB in two different ways: Via the Zigbee openHAB-binding or via an external software (e.g. Zigbee2MQTT). Below a comparison on the two paths. _[<sup>[5]</sup> ](#note5)_ _[<sup>[6]</sup> ](#note6)_
+
+| Criteria           | openHAB Zigbee Binding                        | Zigbee2MQTT                                                                |
+| --------------------- | ---------------------------- | ------------------------------------------------------------------------------------------- |
+| Separate software needed     | No (only openHAB-binding)              | Yes (Zigbee2MQTT, MQTT broker: both available as part of openHABian)                                                 |
+| Configuration      | Via openHAB's Thing-section   | Via Zigbee2MQTT, MQTT-broker and openHAB's MQTT Thing-section
+| Setup effort       | Low             |  High                                                                                            |
+| Number of documented compatible devices| 50+ (but others might still be working) | 3.000+ from 400 vendors (see [here](https://www.zigbee2mqtt.io/supported-devices/) for complete list).|
+| Out-of-the-box # of channels per devices | Mostly basic functions (switch, dim, etc) | Also more sophisticated functions (signal strength, switch-on behavior, etc) |  
+| Dependency on openHAB | Yes | No (Zigbee devices can still be controlled without / outside of openHAB) |
+| Compatibility with "Sonoff Zigbee 3.0 USB Dongle Plus" | Only works with "Sonoff Zigbee 3.0 USB Dongle Plus V2" | Works with "Sonoff Zigbee 3.0 USB Dongle Plus" and "Sonoff Zigbee 3.0 USB Dongle Plus V2" | 
+| Other |  | Can be more robust towards proprietary functions outside of the ZigBee-standard                           |
+
+<a name="note5"></a> _Note 5: See discussion [here](https://community.openhab.org/t/zigbee-binding-or-zigbee2mqtt/135292/)._
+<a name="note6"></a> _Note 6: See discussion [here](https://community.openhab.org/t/performance-or-quality-recommendation-mqtt-vs-binding/151959)._
+
 ## Supported Things
 
 ### Coordinators
