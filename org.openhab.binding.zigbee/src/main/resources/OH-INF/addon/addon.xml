@@ -32,7 +32,7 @@
 						10C4:8B34 Bitronvideo BV 2010/10 ZigBee
 						1CF1:0030 Dresden elektronik ingenieurtechnik gmbh ZigBee gateway ConBee II
 					-->
-					<regex>0403:8A28|0451:16A8|10C4:89FB|10C4:8A2A|10C4:8B34|1CF1:0030</regex>
+					<regex>(?i)0403:8A28|0451:16A8|10C4:89FB|10C4:8A2A|10C4:8B34|1CF1:0030</regex>
 				</match-property>
 			</match-properties>
 		</discovery-method>
