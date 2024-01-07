@@ -398,6 +398,14 @@
         <state pattern="%.0f %%" readOnly="true" />
     </channel-type>
 
+    <!-- Eurotronic SPZB0001 Host Flags -->
+    <channel-type id="eurotronic_spzb0001_window_open">
+        <item-type>Switch</item-type>
+        <label>Window Open</label>
+        <description>Window Open Mode Enabled</description>
+        <category>HVAC</category>
+    </channel-type>
+
 	<!-- Warning device -->
 	<channel-type id="warning_device">
 		<item-type>String</item-type>
