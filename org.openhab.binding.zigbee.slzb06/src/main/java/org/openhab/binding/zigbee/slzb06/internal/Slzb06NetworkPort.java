@@ -20,22 +20,21 @@ import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-import org.openhab.binding.zigbee.slzb06.Slzb06BindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.transport.ZigBeePort;
 
 /**
- * The default/reference Java serial port implementation using serial events to provide a non-blocking read call.
+ * The network implementation of Java serial port.
  *
  * @author Chris Jackson
  */
-public class Slzb06SerialPort implements ZigBeePort {
+public class Slzb06NetworkPort implements ZigBeePort {
     /**
      * The logger.
      */
-    private final Logger logger = LoggerFactory.getLogger(Slzb06SerialPort.class);
+    private final Logger logger = LoggerFactory.getLogger(Slzb06NetworkPort.class);
 
     /**
      * The socket
@@ -58,12 +57,17 @@ public class Slzb06SerialPort implements ZigBeePort {
     private final String serverName;
 
     /**
+     * The server port.
+     */
+    private final int serverPort;
+
+    /**
      * The length of the receive buffer
      */
     private static final int RX_BUFFER_LEN = 512;
 
     /**
-     * The circular fifo queue for receive data
+     * The circular FIFO queue for receive data
      */
     private final int[] buffer = new int[RX_BUFFER_LEN];
 
@@ -82,15 +86,19 @@ public class Slzb06SerialPort implements ZigBeePort {
      */
     private final Object bufferSynchronisationObject = new Object();
 
+    private ReceiveThread receiveThread;
+
+    private volatile boolean running = true;
+
     /**
      * Constructor setting port name and baud rate.
      *
-     * @param portName the port name
-     * @param baudRate the baud rate
-     * @param flowControl to use flow control
+     * @param serverName the server name
+     * @param serverPort the server port
      */
-    public Slzb06SerialPort(String serverName) {
+    public Slzb06NetworkPort(String serverName, int serverPort) {
         this.serverName = serverName;
+        this.serverPort = serverPort;
     }
 
     @Override
@@ -106,10 +114,10 @@ public class Slzb06SerialPort implements ZigBeePort {
     @Override
     public boolean open() {
         try {
-            logger.debug("Connecting to network port [{}]", serverName);
+            logger.debug("Connecting to network port [{}:{}]", serverName, serverPort);
 
             Socket localSocket = new Socket();
-            socket.connect(new InetSocketAddress(serverName, Slzb06BindingConstants.PORT), 1000);
+            localSocket.connect(new InetSocketAddress(serverName, serverPort), 1000);
 
             dataIn = new DataInputStream(localSocket.getInputStream());
             dataOut = new DataOutputStream(localSocket.getOutputStream());
@@ -117,14 +125,18 @@ public class Slzb06SerialPort implements ZigBeePort {
             logger.debug("Network port [{}] is initialized.", serverName);
 
             socket = localSocket;
+
+            receiveThread = new ReceiveThread();
+            receiveThread.start();
+
             return true;
         } catch (RuntimeException | IOException e) {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
             pw.close();
-            logger.error("Network Error: Device cannot be opened on [{}]. Caused by {}, call stack: {}", serverName,
-                    e.getMessage(), sw.toString());
+            logger.error("Network Error: Device cannot be opened on [{}:{}]. Caused by {}, call stack: {}", serverName,
+                    serverPort, e.getMessage(), sw.toString());
             return false;
         }
     }
@@ -133,6 +145,9 @@ public class Slzb06SerialPort implements ZigBeePort {
     public void close() {
         try {
             if (socket != null) {
+                running = false;
+                receiveThread.join();
+
                 dataIn.close();
                 dataOut.close();
                 socket.close();
@@ -154,19 +169,24 @@ public class Slzb06SerialPort implements ZigBeePort {
 
     @Override
     public void write(int value) {
+        logger.debug("SLZB06 '{}': Writing {} bytes", serverName, 1);
         if (dataOut == null) {
+            logger.error("SLZB06 '{}': Write failed, dataOut is null", serverName);
             return;
         }
         try {
             dataOut.write(value);
             dataOut.flush();
         } catch (IOException e) {
+            logger.error("SLZB06 '{}': Write failed, IO Exception {}", serverName, e.getMessage());
         }
     }
 
     @Override
     public void write(int[] outArray) {
         if (dataOut == null) {
+            logger.error("SLZB06 '{}': Write failed, dataOut is null", serverName);
+
             return;
         }
         byte[] bytes = new byte[outArray.length];
@@ -178,6 +198,7 @@ public class Slzb06SerialPort implements ZigBeePort {
             dataOut.write(bytes);
             dataOut.flush();
         } catch (IOException e) {
+            logger.error("SLZB06 '{}': Write failed, IO Exception {}", serverName, e.getMessage());
         }
     }
 
@@ -221,6 +242,44 @@ public class Slzb06SerialPort implements ZigBeePort {
         synchronized (bufferSynchronisationObject) {
             start = 0;
             end = 0;
+        }
+    }
+
+    private class ReceiveThread extends Thread {
+        @Override
+        public void run() {
+            logger.debug("SLZB06: ReceiveThread started");
+            try {
+                byte[] dataChunk = new byte[1024];
+                int bytesRead;
+                while (running && (bytesRead = dataIn.read(dataChunk)) != -1) {
+                    processReceivedData(dataChunk, bytesRead);
+                }
+            } catch (Exception e) {
+                logger.error("SLZB06: Error in ReceiveThread: {}", e.getMessage());
+            }
+            logger.debug("SLZB06: ReceiveThread closed");
+        }
+    }
+
+    private void processReceivedData(byte[] dataChunk, int bytesRead) {
+        synchronized (bufferSynchronisationObject) {
+            for (int i = 0; i < bytesRead; i++) {
+                buffer[end++] = dataChunk[i] & 0xff;
+                if (end >= RX_BUFFER_LEN) {
+                    end = 0;
+                }
+                if (end == start) {
+                    logger.warn("Processing received data event: Serial buffer overrun");
+                    if (++start == RX_BUFFER_LEN) {
+                        start = 0;
+                    }
+                }
+            }
+        }
+
+        synchronized (this) {
+            this.notify();
         }
     }
 }

@@ -19,9 +19,8 @@ package org.openhab.binding.zigbee.slzb06.internal;
  * @author Chris Jackson - Initial contribution
  */
 public class Slzb06Configuration {
-    public String zigbee_port;
-    public Integer zigbee_baud;
-    public Integer zigbee_flowcontrol;
+    public String slzb06_server;
+    public Integer slzb06_port;
     public Integer zigbee_powermode;
     public Integer zigbee_childtimeout;
     public Integer zigbee_concentrator;

@@ -27,12 +27,10 @@ import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.slzb06.Slzb06BindingConstants;
 import org.openhab.binding.zigbee.slzb06.internal.Slzb06Configuration;
-import org.openhab.binding.zigbee.slzb06.internal.Slzb06SerialPort;
+import org.openhab.binding.zigbee.slzb06.internal.Slzb06NetworkPort;
 import org.openhab.core.config.core.Configuration;
-import org.openhab.core.io.transport.serial.SerialPortManager;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.thing.Bridge;
-import org.openhab.core.thing.binding.firmware.FirmwareUpdateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +46,6 @@ import com.zsmartsystems.zigbee.transport.ConcentratorType;
 import com.zsmartsystems.zigbee.transport.TransportConfig;
 import com.zsmartsystems.zigbee.transport.TransportConfigOption;
 import com.zsmartsystems.zigbee.transport.ZigBeePort;
-import com.zsmartsystems.zigbee.transport.ZigBeePort.FlowControl;
 
 /**
  * The {@link Slzb06Handler} is responsible for handling commands, which are
@@ -57,7 +54,7 @@ import com.zsmartsystems.zigbee.transport.ZigBeePort.FlowControl;
  * @author Chris Jackson - Initial contribution
  */
 // @NonNullByDefault
-public class Slzb06Handler extends ZigBeeCoordinatorHandler implements FirmwareUpdateHandler {
+public class Slzb06Handler extends ZigBeeCoordinatorHandler {
 
     private static final String ASH_RX_DAT = "ASH_RX_DAT";
     private static final String ASH_TX_DAT = "ASH_TX_DAT";
@@ -86,14 +83,10 @@ public class Slzb06Handler extends ZigBeeCoordinatorHandler implements FirmwareU
 
     private final Logger logger = LoggerFactory.getLogger(Slzb06Handler.class);
 
-    private final SerialPortManager serialPortManager;
-
     private @Nullable ScheduledFuture<?> pollingJob;
 
-    public Slzb06Handler(Bridge coordinator, SerialPortManager serialPortManager,
-            ZigBeeChannelConverterFactory channelFactory) {
+    public Slzb06Handler(Bridge coordinator, ZigBeeChannelConverterFactory channelFactory) {
         super(coordinator, channelFactory);
-        this.serialPortManager = serialPortManager;
     }
 
     @Override
@@ -199,21 +192,12 @@ public class Slzb06Handler extends ZigBeeCoordinatorHandler implements FirmwareU
     }
 
     private ZigBeeDongleEzsp createDongle(Slzb06Configuration config) {
-        FlowControl flowControl;
-        if (ZigBeeBindingConstants.FLOWCONTROL_CONFIG_HARDWARE_CTSRTS.equals(config.zigbee_flowcontrol)) {
-            flowControl = FlowControl.FLOWCONTROL_OUT_RTSCTS;
-        } else if (ZigBeeBindingConstants.FLOWCONTROL_CONFIG_SOFTWARE_XONXOFF.equals(config.zigbee_flowcontrol)) {
-            flowControl = FlowControl.FLOWCONTROL_OUT_XONOFF;
-        } else {
-            flowControl = FlowControl.FLOWCONTROL_OUT_NONE;
-        }
 
-        ZigBeePort serialPort = new Slzb06SerialPort(serialPortManager, config.zigbee_port, config.zigbee_baud,
-                flowControl);
-        final ZigBeeDongleEzsp dongle = new ZigBeeDongleEzsp(serialPort);
+        ZigBeePort networkPort = new Slzb06NetworkPort(config.slzb06_server, config.slzb06_port);
+        final ZigBeeDongleEzsp dongle = new ZigBeeDongleEzsp(networkPort);
 
-        logger.debug("ZigBee SLZB06 Coordinator opening Port:'{}' PAN:{}, EPAN:{}, Channel:{}", config.zigbee_port,
-                Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
+        logger.debug("ZigBee SLZB06 Coordinator opening Port:'{}:{}' PAN:{}, EPAN:{}, Channel:{}", config.slzb06_server,
+                config.slzb06_port, Integer.toHexString(panId), extendedPanId, Integer.toString(channelId));
 
         dongle.updateDefaultConfiguration(EzspConfigId.EZSP_CONFIG_ADDRESS_TABLE_SIZE, config.zigbee_networksize);
 
@@ -311,7 +295,7 @@ public class Slzb06Handler extends ZigBeeCoordinatorHandler implements FirmwareU
         } else if (multicastTableSize > GROUPS_MAXIMUM) {
             multicastTableSize = GROUPS_MAXIMUM;
         }
-        logger.debug("ZigBee Ember Coordinator multicast table size set to {}", multicastTableSize);
+        logger.debug("ZigBee SLZB06 Coordinator multicast table size set to {}", multicastTableSize);
         dongle.updateDefaultConfiguration(EzspConfigId.EZSP_CONFIG_MULTICAST_TABLE_SIZE, multicastTableSize);
 
         int index = 0;
@@ -328,4 +312,5 @@ public class Slzb06Handler extends ZigBeeCoordinatorHandler implements FirmwareU
             index++;
         }
     }
+
 }

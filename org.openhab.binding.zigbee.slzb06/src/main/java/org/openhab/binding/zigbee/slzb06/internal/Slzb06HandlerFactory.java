@@ -24,7 +24,6 @@ import org.openhab.binding.zigbee.converter.ZigBeeChannelConverterFactory;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.slzb06.Slzb06BindingConstants;
 import org.openhab.binding.zigbee.slzb06.handler.Slzb06Handler;
-import org.openhab.core.io.transport.serial.SerialPortManager;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
@@ -33,7 +32,6 @@ import org.openhab.core.thing.binding.BaseThingHandlerFactory;
 import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.thing.binding.ThingHandlerFactory;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -48,19 +46,12 @@ import org.osgi.service.component.annotations.Reference;
 public class Slzb06HandlerFactory extends BaseThingHandlerFactory {
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections
-            .singleton(Slzb06BindingConstants.THING_TYPE_EMBER);
+            .singleton(Slzb06BindingConstants.THING_TYPE_SLZB06);
 
     private final Map<ThingUID, ServiceRegistration<?>> coordinatorHandlerRegs = new HashMap<>();
 
-    private final SerialPortManager serialPortManager;
-
     @Nullable
     private ZigBeeChannelConverterFactory zigbeeChannelConverterFactory;
-
-    @Activate
-    public Slzb06HandlerFactory(final @Reference SerialPortManager serialPortManager) {
-        this.serialPortManager = serialPortManager;
-    }
 
     @Reference
     protected void setZigBeeChannelConverterFactory(ZigBeeChannelConverterFactory zigbeeChannelConverterFactory) {
@@ -80,16 +71,16 @@ public class Slzb06HandlerFactory extends BaseThingHandlerFactory {
     protected @Nullable ThingHandler createHandler(Thing thing) {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
-        ZigBeeCoordinatorHandler emberHandler = null;
-        if (thingTypeUID.equals(Slzb06BindingConstants.THING_TYPE_EMBER)) {
-            emberHandler = new Slzb06Handler((Bridge) thing, serialPortManager, zigbeeChannelConverterFactory);
+        ZigBeeCoordinatorHandler slzb06Handler = null;
+        if (thingTypeUID.equals(Slzb06BindingConstants.THING_TYPE_SLZB06)) {
+            slzb06Handler = new Slzb06Handler((Bridge) thing, zigbeeChannelConverterFactory);
         }
 
-        if (emberHandler != null) {
-            coordinatorHandlerRegs.put(emberHandler.getThing().getUID(), bundleContext
-                    .registerService(ZigBeeCoordinatorHandler.class.getName(), emberHandler, new Hashtable<>()));
+        if (slzb06Handler != null) {
+            coordinatorHandlerRegs.put(slzb06Handler.getThing().getUID(), bundleContext
+                    .registerService(ZigBeeCoordinatorHandler.class.getName(), slzb06Handler, new Hashtable<>()));
 
-            return emberHandler;
+            return slzb06Handler;
         }
 
         return null;

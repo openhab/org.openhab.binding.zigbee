@@ -36,7 +36,7 @@ public class Slzb06BindingConstants {
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_SLZB06 = new ThingTypeUID(BINDING_ID, "coordinator_slzb06");
 
-    public static final String HOST = "host";
-    public static final int PORT = 6638;
+    public static final String HOST = "slzb06_server";
+    public static final String PORT = "slzb06_port";
 
 }
