@@ -61,7 +61,7 @@ public class Slzb06MDNSDiscoveryParticipant implements MDNSDiscoveryParticipant 
 
             if (uid != null) {
                 final Map<String, Object> properties = new HashMap<>(2);
-                String hostAddress = service.getName() + "." + service.getDomain() + ".";
+                String hostAddress = service.getName() + "." + service.getDomain();
                 BigDecimal hostPort = new BigDecimal(service.getPort());
                 properties.put(Slzb06BindingConstants.HOST, hostAddress);
                 properties.put(Slzb06BindingConstants.PORT, hostPort);
@@ -78,7 +78,7 @@ public class Slzb06MDNSDiscoveryParticipant implements MDNSDiscoveryParticipant 
         logger.debug("SLZB-06: Discovery getThingUID - application={}, service={}", service.getApplication(),
                 service.getName());
         if (service.getApplication().contains(APPLICATION)) {
-            String hostAddress = service.getName() + "." + service.getDomain() + ".";
+            String hostAddress = service.getName() + "." + service.getDomain();
             logger.debug("mDNS discovering host {}", hostAddress);
             return new ThingUID(Slzb06BindingConstants.THING_TYPE_SLZB06, service.getName());
         }

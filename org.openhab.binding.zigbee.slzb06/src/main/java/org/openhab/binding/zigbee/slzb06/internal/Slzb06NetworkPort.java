@@ -146,7 +146,12 @@ public class Slzb06NetworkPort implements ZigBeePort {
         try {
             if (socket != null) {
                 running = false;
-                receiveThread.join();
+
+                try {
+                    receiveThread.join();
+                } catch (InterruptedException e) {
+                    // Eatme!
+                }
 
                 dataIn.close();
                 dataOut.close();

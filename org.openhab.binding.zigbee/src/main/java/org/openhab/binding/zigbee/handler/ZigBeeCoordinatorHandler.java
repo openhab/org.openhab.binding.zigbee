@@ -560,6 +560,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
     private void startReconnectJobIfNotRunning() {
         if (reconnectPollingTimer != null) {
+            logger.info("ZigBee dongle inactivity timer. Already running!");
             return;
         }
 
@@ -574,17 +575,24 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 logger.info("ZigBee dongle inactivity timer. Reinitializing ZigBee");
 
                 // Close everything that has been started prior to initializing the serial port
+                logger.info("ZigBee dongle inactivity timer. 0");
                 if (restartJob != null) {
+                    logger.info("ZigBee dongle inactivity timer. 0.1");
                     restartJob.cancel(true);
                 }
+                logger.info("ZigBee dongle inactivity timer. 1");
                 networkManager.shutdown();
+                logger.info("ZigBee dongle inactivity timer. 2");
 
                 synchronized (reconnectLock) {
+                    logger.info("ZigBee dongle inactivity timer. 3");
                     currentReconnectAttemptFinished = false;
                 }
+                logger.info("ZigBee dongle inactivity timer. 4");
 
                 // Initialize the network again
                 initializeDongle();
+                logger.info("ZigBee dongle inactivity timer. 5");
 
                 waitForReconnectAttemptToFinish();
             }

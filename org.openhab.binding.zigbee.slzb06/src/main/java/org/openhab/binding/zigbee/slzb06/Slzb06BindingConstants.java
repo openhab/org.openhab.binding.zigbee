@@ -39,4 +39,8 @@ public class Slzb06BindingConstants {
     public static final String HOST = "slzb06_server";
     public static final String PORT = "slzb06_port";
 
+    public static final String CHANNEL_ESP32TEMP = "esp32_temp";
+    public static final String CHANNEL_ZBTEMP = "zb_temp";
+    public static final String CHANNEL_SOCKETUPTIME = "socket_uptime";
+    public static final String CHANNEL_UPTIME = "uptime";
 }

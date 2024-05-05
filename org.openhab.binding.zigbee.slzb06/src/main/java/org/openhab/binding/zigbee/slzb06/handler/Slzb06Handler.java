@@ -28,6 +28,9 @@ import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
 import org.openhab.binding.zigbee.slzb06.Slzb06BindingConstants;
 import org.openhab.binding.zigbee.slzb06.internal.Slzb06Configuration;
 import org.openhab.binding.zigbee.slzb06.internal.Slzb06NetworkPort;
+import org.openhab.binding.zigbee.slzb06.internal.api.Slzb06Communicator;
+import org.openhab.binding.zigbee.slzb06.internal.api.Slzb06Exception;
+import org.openhab.binding.zigbee.slzb06.internal.api.Slzb06SensorsOuter.Slzb06Sensors;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.thing.Bridge;
@@ -53,9 +56,7 @@ import com.zsmartsystems.zigbee.transport.ZigBeePort;
  *
  * @author Chris Jackson - Initial contribution
  */
-// @NonNullByDefault
 public class Slzb06Handler extends ZigBeeCoordinatorHandler {
-
     private static final String ASH_RX_DAT = "ASH_RX_DAT";
     private static final String ASH_TX_DAT = "ASH_TX_DAT";
     private static final String ASH_RX_ACK = "ASH_RX_ACK";
@@ -85,6 +86,8 @@ public class Slzb06Handler extends ZigBeeCoordinatorHandler {
 
     private @Nullable ScheduledFuture<?> pollingJob;
 
+    private Slzb06Communicator communicator;
+
     public Slzb06Handler(Bridge coordinator, ZigBeeChannelConverterFactory channelFactory) {
         super(coordinator, channelFactory);
     }
@@ -96,6 +99,12 @@ public class Slzb06Handler extends ZigBeeCoordinatorHandler {
         Slzb06Configuration config = getConfigAs(Slzb06Configuration.class);
         ZigBeeDongleEzsp dongle = createDongle(config);
         TransportConfig transportConfig = createTransportConfig(config);
+
+        try {
+            communicator = new Slzb06Communicator(config.slzb06_server);
+        } catch (Slzb06Exception e) {
+            logger.error("SLZB06 API failed to initialise - internal channels will be unavailable: {}", e.getMessage());
+        }
 
         startZigBee(dongle, transportConfig, DefaultSerializer.class, DefaultDeserializer.class);
     }
@@ -109,38 +118,69 @@ public class Slzb06Handler extends ZigBeeCoordinatorHandler {
             Runnable pollingRunnable = new Runnable() {
                 @Override
                 public void run() {
-                    if (zigbeeTransport == null) {
-                        return;
+                    if (zigbeeTransport != null) {
+                        ZigBeeDongleEzsp dongle = (ZigBeeDongleEzsp) zigbeeTransport;
+                        Map<String, Long> counters = dongle.getCounters();
+                        if (!counters.isEmpty()) {
+                            if (isLinked(Slzb06BindingConstants.CHANNEL_RX_DAT)) {
+                                updateState(Slzb06BindingConstants.CHANNEL_RX_DAT,
+                                        new DecimalType(counters.get(ASH_RX_DAT)));
+                            }
+                            if (isLinked(Slzb06BindingConstants.CHANNEL_TX_DAT)) {
+                                updateState(Slzb06BindingConstants.CHANNEL_TX_DAT,
+                                        new DecimalType(counters.get(ASH_TX_DAT)));
+                            }
+                            if (isLinked(Slzb06BindingConstants.CHANNEL_RX_ACK)) {
+                                updateState(Slzb06BindingConstants.CHANNEL_RX_ACK,
+                                        new DecimalType(counters.get(ASH_RX_ACK)));
+                            }
+                            if (isLinked(Slzb06BindingConstants.CHANNEL_TX_ACK)) {
+                                updateState(Slzb06BindingConstants.CHANNEL_TX_ACK,
+                                        new DecimalType(counters.get(ASH_TX_ACK)));
+                            }
+                            if (isLinked(Slzb06BindingConstants.CHANNEL_RX_NAK)) {
+                                updateState(Slzb06BindingConstants.CHANNEL_RX_NAK,
+                                        new DecimalType(counters.get(ASH_RX_NAK)));
+                            }
+                            if (isLinked(Slzb06BindingConstants.CHANNEL_TX_NAK)) {
+                                updateState(Slzb06BindingConstants.CHANNEL_TX_NAK,
+                                        new DecimalType(counters.get(ASH_TX_NAK)));
+                            }
+                        }
                     }
 
-                    ZigBeeDongleEzsp dongle = (ZigBeeDongleEzsp) zigbeeTransport;
-                    Map<String, Long> counters = dongle.getCounters();
-                    if (!counters.isEmpty()) {
-                        if (isLinked(Slzb06BindingConstants.CHANNEL_RX_DAT)) {
-                            updateState(Slzb06BindingConstants.CHANNEL_RX_DAT,
-                                    new DecimalType(counters.get(ASH_RX_DAT)));
-                        }
-                        if (isLinked(Slzb06BindingConstants.CHANNEL_TX_DAT)) {
-                            updateState(Slzb06BindingConstants.CHANNEL_TX_DAT,
-                                    new DecimalType(counters.get(ASH_TX_DAT)));
-                        }
-                        if (isLinked(Slzb06BindingConstants.CHANNEL_RX_ACK)) {
-                            updateState(Slzb06BindingConstants.CHANNEL_RX_ACK,
-                                    new DecimalType(counters.get(ASH_RX_ACK)));
-                        }
-                        if (isLinked(Slzb06BindingConstants.CHANNEL_TX_ACK)) {
-                            updateState(Slzb06BindingConstants.CHANNEL_TX_ACK,
-                                    new DecimalType(counters.get(ASH_TX_ACK)));
-                        }
-                        if (isLinked(Slzb06BindingConstants.CHANNEL_RX_NAK)) {
-                            updateState(Slzb06BindingConstants.CHANNEL_RX_NAK,
-                                    new DecimalType(counters.get(ASH_RX_NAK)));
-                        }
-                        if (isLinked(Slzb06BindingConstants.CHANNEL_TX_NAK)) {
-                            updateState(Slzb06BindingConstants.CHANNEL_TX_NAK,
-                                    new DecimalType(counters.get(ASH_TX_NAK)));
+                    if (communicator == null) {
+                        try {
+                            communicator = new Slzb06Communicator(config.slzb06_server);
+                        } catch (Slzb06Exception e) {
+                            communicator = null;
+                            logger.error("SLZB06 API failed to initialise - internal channels will be unavailable: {}",
+                                    e.getMessage());
                         }
                     }
+
+                    if (communicator != null) {
+                        try {
+                            Slzb06Sensors sensors = communicator.getSensors();
+                            if (isLinked(Slzb06BindingConstants.CHANNEL_ESP32TEMP)) {
+                                updateState(Slzb06BindingConstants.CHANNEL_ESP32TEMP,
+                                        new DecimalType(sensors.esp32_temp));
+                            }
+                            if (isLinked(Slzb06BindingConstants.CHANNEL_ZBTEMP)) {
+                                updateState(Slzb06BindingConstants.CHANNEL_ZBTEMP, new DecimalType(sensors.zb_temp));
+                            }
+                            if (isLinked(Slzb06BindingConstants.CHANNEL_UPTIME)) {
+                                updateState(Slzb06BindingConstants.CHANNEL_UPTIME, new DecimalType(sensors.uptime));
+                            }
+                            if (isLinked(Slzb06BindingConstants.CHANNEL_SOCKETUPTIME)) {
+                                updateState(Slzb06BindingConstants.CHANNEL_SOCKETUPTIME,
+                                        new DecimalType(sensors.socket_uptime));
+                            }
+                        } catch (Exception e) {
+                            logger.error("SLZB06: retreiving API information: {}", e.getMessage());
+                        }
+                    }
+
                 }
             };
 
@@ -312,5 +352,4 @@ public class Slzb06Handler extends ZigBeeCoordinatorHandler {
             index++;
         }
     }
-
 }
