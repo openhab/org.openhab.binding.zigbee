@@ -15,8 +15,6 @@ package org.openhab.binding.zigbee.slzb06.internal;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -131,12 +129,8 @@ public class Slzb06NetworkPort implements ZigBeePort {
 
             return true;
         } catch (RuntimeException | IOException e) {
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            e.printStackTrace(pw);
-            pw.close();
-            logger.error("Network Error: Device cannot be opened on [{}:{}]. Caused by {}, call stack: {}", serverName,
-                    serverPort, e.getMessage(), sw.toString());
+            logger.error("Network Error: Device cannot be opened on [{}:{}]. Caused by '{}'", serverName, serverPort,
+                    e.getMessage());
             return false;
         }
     }
