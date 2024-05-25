@@ -127,7 +127,7 @@ public class ZigBeeThingTypeMatcher {
                     continue;
                 }
 
-                newProperties.add(new RequiredProperty(discoveryElement[0].trim(), unescape(discoveryElement[1].trim())));
+                newProperties.add(new RequiredProperty(discoveryElement[0].trim(), unescape(discoveryElement[1]).trim()));
             }
 
             if (newProperties.isEmpty()) {
