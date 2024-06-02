@@ -269,9 +269,10 @@ public class Slzb06NetworkPort implements ZigBeePort {
                     end = 0;
                 }
                 if (end == start) {
-                    logger.warn("Processing received data event: Serial buffer overrun");
+                    logger.warn("Processing received data event: Serial buffer overrun [{}:{}]", start, end);
                     if (++start == RX_BUFFER_LEN) {
                         start = 0;
+                        end = 0;
                     }
                 }
             }
