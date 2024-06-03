@@ -37,7 +37,7 @@ public class Slzb06NetworkPort implements ZigBeePort {
     /**
      * The socket
      */
-    Socket socket;
+    private Socket socket;
 
     /**
      * The serial port input stream.
@@ -120,7 +120,7 @@ public class Slzb06NetworkPort implements ZigBeePort {
             dataIn = new DataInputStream(localSocket.getInputStream());
             dataOut = new DataOutputStream(localSocket.getOutputStream());
 
-            logger.debug("Network port [{}] is initialized.", serverName);
+            logger.debug("SLZB06 '{}': Network port is initialized.", serverName);
 
             socket = localSocket;
 
@@ -159,16 +159,15 @@ public class Slzb06NetworkPort implements ZigBeePort {
                 dataIn = null;
                 dataOut = null;
 
-                logger.debug("Network port '{}' closed.", serverName);
+                logger.debug("SLZB06 '{}': Network port closed.", serverName);
             }
         } catch (Exception e) {
-            logger.error("Error closing network port: '{}' ", serverName, e);
+            logger.error("SLZB06 '{}': Error closing network port ", serverName, e);
         }
     }
 
     @Override
     public void write(int value) {
-        logger.debug("SLZB06 '{}': Writing {} bytes", serverName, 1);
         if (dataOut == null) {
             logger.error("SLZB06 '{}': Write failed, dataOut is null", serverName);
             return;
@@ -247,7 +246,7 @@ public class Slzb06NetworkPort implements ZigBeePort {
     private class ReceiveThread extends Thread {
         @Override
         public void run() {
-            logger.debug("SLZB06: ReceiveThread started");
+            logger.debug("SLZB06 '{}': ReceiveThread started", serverName);
             try {
                 byte[] dataChunk = new byte[1024];
                 int bytesRead;
@@ -255,9 +254,9 @@ public class Slzb06NetworkPort implements ZigBeePort {
                     processReceivedData(dataChunk, bytesRead);
                 }
             } catch (Exception e) {
-                logger.error("SLZB06: Error in ReceiveThread: {}", e.getMessage());
+                logger.error("SLZB06 '{}': Error in ReceiveThread: {}", serverName, e.getMessage());
             }
-            logger.debug("SLZB06: ReceiveThread closed");
+            logger.debug("SLZB06 '{}': ReceiveThread closed", serverName);
         }
     }
 
@@ -269,7 +268,8 @@ public class Slzb06NetworkPort implements ZigBeePort {
                     end = 0;
                 }
                 if (end == start) {
-                    logger.warn("Processing received data event: Serial buffer overrun [{}:{}]", start, end);
+                    logger.warn("SLZB06 '{}': Processing received data event: Serial buffer overrun [{}:{}]",
+                            serverName, start, end);
                     if (++start == RX_BUFFER_LEN) {
                         start = 0;
                         end = 0;
