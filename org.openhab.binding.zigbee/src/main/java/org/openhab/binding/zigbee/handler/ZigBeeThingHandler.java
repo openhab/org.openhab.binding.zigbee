@@ -401,7 +401,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             for (Channel channel : getThing().getChannels()) {
                 ZigBeeBaseChannelConverter handler = createZigBeeChannelConverter(channel);
                 if (handler == null) {
-                    logger.debug("{}: No handler found for {}", nodeIeeeAddress, channel.getUID());
+                    logger.debug("{}: No handler found for {} of type {}", nodeIeeeAddress, channel.getUID(),
+                            channel.getChannelTypeUID());
                     continue;
                 }
 
@@ -529,7 +530,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         for (Channel channel : getThing().getChannels()) {
             ZigBeeBaseChannelConverter handler = createZigBeeChannelConverter(channel);
             if (handler == null) {
-                logger.debug("{}: No handler found for {}", nodeIeeeAddress, channel.getUID());
+                logger.debug("{}: No handler found for {} of type {}", nodeIeeeAddress, channel.getUID(),
+                        channel.getChannelTypeUID());
                 continue;
             }
 
@@ -546,6 +548,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     private ZigBeeBaseChannelConverter createZigBeeChannelConverter(Channel channel) {
         ZigBeeNode node = coordinatorHandler.getNode(nodeIeeeAddress);
+        if (node == null) {
+            logger.debug("{}: Initializing channel {} failed - node not found", nodeIeeeAddress, channel.getUID());
+            return null;
+        }
         Map<String, String> properties = channel.getProperties();
         return channelFactory.createConverter(channel, coordinatorHandler, node.getIeeeAddress(),
                 Integer.parseInt(properties.get(ZigBeeBindingConstants.CHANNEL_PROPERTY_ENDPOINT)));
@@ -758,7 +764,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
         ZigBeeBaseChannelConverter handler = channels.get(channelUID);
         if (handler == null) {
-            logger.debug("{}: No handler found for {}", nodeIeeeAddress, channelUID);
+            logger.debug("{}: No command handler found for {}", nodeIeeeAddress, channelUID);
             return;
         }
 
