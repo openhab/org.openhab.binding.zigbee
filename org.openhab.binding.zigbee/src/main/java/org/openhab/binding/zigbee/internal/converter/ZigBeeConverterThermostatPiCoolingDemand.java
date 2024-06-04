@@ -12,12 +12,13 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
-import com.zsmartsystems.zigbee.CommandResult;
-import com.zsmartsystems.zigbee.ZigBeeEndpoint;
-import com.zsmartsystems.zigbee.zcl.ZclAttribute;
-import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
-import com.zsmartsystems.zigbee.zcl.clusters.ZclThermostatCluster;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
@@ -30,12 +31,12 @@ import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
+import com.zsmartsystems.zigbee.CommandResult;
+import com.zsmartsystems.zigbee.ZigBeeEndpoint;
+import com.zsmartsystems.zigbee.zcl.ZclAttribute;
+import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclThermostatCluster;
+import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
  * Converter for the thermostat PI cooling demand channel. The PI Cooling Demand attribute specifies the level
@@ -44,7 +45,8 @@ import java.util.concurrent.ExecutionException;
  * @author Lucas Christian
  *
  */
-public class ZigBeeConverterThermostatPiCoolingDemand extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
+public class ZigBeeConverterThermostatPiCoolingDemand extends ZigBeeBaseChannelConverter
+        implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterThermostatPiCoolingDemand.class);
 
     private static BigDecimal CHANGE_DEFAULT = new BigDecimal(1);
@@ -149,7 +151,8 @@ public class ZigBeeConverterThermostatPiCoolingDemand extends ZigBeeBaseChannelC
                 handleReportingResponse(reportingResponse, configReporting.getPollingPeriod(),
                         configReporting.getReportingTimeMax());
             } catch (InterruptedException | ExecutionException e) {
-                logger.debug("{}: Thermostat PI cooling demand exception setting reporting", endpoint.getIeeeAddress(), e);
+                logger.debug("{}: Thermostat PI cooling demand exception setting reporting", endpoint.getIeeeAddress(),
+                        e);
             }
         }
     }
@@ -171,7 +174,8 @@ public class ZigBeeConverterThermostatPiCoolingDemand extends ZigBeeBaseChannelC
         }
 
         return ChannelBuilder
-                .create(createChannelUID(thingUID, endpoint, ZigBeeBindingConstants.CHANNEL_NAME_THERMOSTAT_COOLING_DEMAND),
+                .create(createChannelUID(thingUID, endpoint,
+                        ZigBeeBindingConstants.CHANNEL_NAME_THERMOSTAT_COOLING_DEMAND),
                         ZigBeeBindingConstants.ITEM_TYPE_NUMBER)
                 .withType(ZigBeeBindingConstants.CHANNEL_THERMOSTAT_COOLING_DEMAND)
                 .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_THERMOSTAT_COOLING_DEMAND)
@@ -180,9 +184,9 @@ public class ZigBeeConverterThermostatPiCoolingDemand extends ZigBeeBaseChannelC
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getClusterType() == ZclClusterType.THERMOSTAT
                 && attribute.getId() == ZclThermostatCluster.ATTR_PICOOLINGDEMAND) {
+            logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
             Integer value = (Integer) val;
             updateChannelState(valueToPercentDimensionless(value));
         }

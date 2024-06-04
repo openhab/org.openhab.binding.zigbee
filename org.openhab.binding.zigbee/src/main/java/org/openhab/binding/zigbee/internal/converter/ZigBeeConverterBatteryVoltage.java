@@ -138,9 +138,9 @@ public class ZigBeeConverterBatteryVoltage extends ZigBeeBaseChannelConverter im
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getClusterType() == ZclClusterType.POWER_CONFIGURATION
                 && attribute.getId() == ZclPowerConfigurationCluster.ATTR_BATTERYVOLTAGE) {
+            logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
             Integer value = (Integer) val;
             if (value == 0xFF) {
                 // The value 0xFF indicates an invalid or unknown reading.
