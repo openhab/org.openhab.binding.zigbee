@@ -77,7 +77,7 @@ public class ZigBeeIsAliveTracker {
      * @param zigBeeThingHandler the {@link ZigBeeThingHandler}
      */
     public synchronized void resetTimer(ZigBeeThingHandler zigBeeThingHandler) {
-        logger.debug("IsAlive Tracker reset for handler with thingUID={}", zigBeeThingHandler.getThing().getUID());
+        logger.trace("IsAlive Tracker reset for handler with thingUID={}", zigBeeThingHandler.getThing().getUID());
         cancelTask(zigBeeThingHandler);
         ScheduledFuture<?> existingTask = scheduledTasks.get(zigBeeThingHandler);
         if (existingTask == null && handlerIntervalMapping.containsKey(zigBeeThingHandler)) {
@@ -118,7 +118,7 @@ public class ZigBeeIsAliveTracker {
         lastChance.remove(handler);
         ScheduledFuture<?> task = scheduledTasks.get(handler);
         if (task != null) {
-            logger.debug("IsAlive Tracker cancelled task for thingUID={}", handler.getThing().getUID().getAsString());
+            logger.trace("IsAlive Tracker cancelled task for thingUID={}", handler.getThing().getUID().getAsString());
             task.cancel(true);
             scheduledTasks.remove(handler);
         }
