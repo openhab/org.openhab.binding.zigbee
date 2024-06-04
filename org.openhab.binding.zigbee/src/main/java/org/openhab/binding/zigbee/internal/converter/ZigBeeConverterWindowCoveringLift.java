@@ -213,8 +213,8 @@ public class ZigBeeConverterWindowCoveringLift extends ZigBeeBaseChannelConverte
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object value) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getId() == ZclWindowCoveringCluster.ATTR_CURRENTPOSITIONLIFTPERCENTAGE) {
+            logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
             updateChannelState(new PercentType((Integer) value));
         }
     }

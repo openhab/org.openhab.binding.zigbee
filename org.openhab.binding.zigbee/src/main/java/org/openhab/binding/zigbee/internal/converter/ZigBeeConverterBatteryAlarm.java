@@ -175,7 +175,6 @@ public class ZigBeeConverterBatteryAlarm extends ZigBeeBaseChannelConverter impl
     public void attributeUpdated(ZclAttribute attribute, Object val) {
         if (attribute.getClusterType() == ZclClusterType.POWER_CONFIGURATION
                 && attribute.getId() == ZclPowerConfigurationCluster.ATTR_BATTERYALARMSTATE) {
-
             logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
 
             // The value is a 32-bit bitmap, represented by an Integer

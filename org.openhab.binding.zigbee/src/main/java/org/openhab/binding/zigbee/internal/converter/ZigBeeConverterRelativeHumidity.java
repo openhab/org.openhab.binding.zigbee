@@ -131,9 +131,9 @@ public class ZigBeeConverterRelativeHumidity extends ZigBeeBaseChannelConverter 
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getClusterType() == ZclClusterType.RELATIVE_HUMIDITY_MEASUREMENT
                 && attribute.getId() == ZclRelativeHumidityMeasurementCluster.ATTR_MEASUREDVALUE) {
+            logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
             Integer value = (Integer) val;
             updateChannelState(new DecimalType(BigDecimal.valueOf(value, 2)));
         }

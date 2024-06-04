@@ -156,9 +156,9 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getClusterType() == ZclClusterType.ELECTRICAL_MEASUREMENT
                 && attribute.getId() == ZclElectricalMeasurementCluster.ATTR_RMSCURRENT) {
+            logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
             Integer value = (Integer) val;
             BigDecimal valueInAmpere = BigDecimal.valueOf(value * multiplier / divisor);
             updateChannelState(new QuantityType<ElectricCurrent>(valueInAmpere, Units.AMPERE));

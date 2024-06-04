@@ -142,9 +142,9 @@ public class ZigBeeConverterThermostatLocalTemperature extends ZigBeeBaseChannel
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getClusterType() == ZclClusterType.THERMOSTAT
                 && attribute.getId() == ZclThermostatCluster.ATTR_LOCALTEMPERATURE) {
+            logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
             Integer value = (Integer) val;
             if (value != null && value != INVALID_TEMPERATURE) {
                 updateChannelState(valueToTemperature(value));

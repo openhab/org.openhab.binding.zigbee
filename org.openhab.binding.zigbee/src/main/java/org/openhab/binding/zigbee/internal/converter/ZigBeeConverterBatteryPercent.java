@@ -138,11 +138,11 @@ public class ZigBeeConverterBatteryPercent extends ZigBeeBaseChannelConverter im
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getClusterType() == ZclClusterType.POWER_CONFIGURATION
                 && attribute.getId() == ZclPowerConfigurationCluster.ATTR_BATTERYPERCENTAGEREMAINING) {
-            Integer value = (Integer) val;
+            logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
 
+            Integer value = (Integer) val;
             updateChannelState(new DecimalType(value / 2));
         }
     }

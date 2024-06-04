@@ -156,9 +156,9 @@ public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConve
 
     @Override
     public void attributeUpdated(ZclAttribute attribute, Object val) {
-        logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
         if (attribute.getClusterType() == ZclClusterType.ELECTRICAL_MEASUREMENT
                 && attribute.getId() == ZclElectricalMeasurementCluster.ATTR_RMSVOLTAGE) {
+            logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
             Integer value = (Integer) val;
             BigDecimal valueInVolts = BigDecimal.valueOf(value * multiplier / divisor);
             updateChannelState(new QuantityType<ElectricPotential>(valueInVolts, Units.VOLT));
