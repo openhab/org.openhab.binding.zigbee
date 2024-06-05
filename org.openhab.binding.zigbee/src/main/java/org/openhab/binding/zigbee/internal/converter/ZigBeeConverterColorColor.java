@@ -129,9 +129,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             return false;
         }
 
-        if (!discoverSupportedColorCommands(serverClusterColorControl)) {
-            return false;
-        }
+        discoverSupportedColorCommands(serverClusterColorControl);
 
         // Bind to attribute reports, add listeners, then request the status
         // Configure reporting - no faster than once per second - no slower than 10 minutes.
@@ -249,9 +247,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         configColorControl.initialize(clusterColorControl);
         configOptions.addAll(configColorControl.getConfiguration());
 
-        if (!discoverSupportedColorCommands(clusterColorControl)) {
-            return false;
-        }
+        discoverSupportedColorCommands(clusterColorControl);
 
         clusterColorControl.addAttributeListener(this);
         clusterLevelControl.addAttributeListener(this);
@@ -607,11 +603,15 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         }
     }
 
-    private boolean discoverSupportedColorCommands(ZclColorControlCluster serverClusterColorControl) {
+    /**
+     * Discover which commands to use. Default to HUE/SAT if unsure
+     *
+     * @param serverClusterColorControl the {@link ZclColorControlCluster} to use for discovery
+     */
+    private void discoverSupportedColorCommands(ZclColorControlCluster serverClusterColorControl) {
         // If the configuration is not set to AUTO, then we can override the control method
         if (configColorControl != null && configColorControl.getControlMethod() != ControlMethod.AUTO) {
             supportsHue = configColorControl.getControlMethod() == ControlMethod.HUE;
-            return true;
         }
 
         // Discover whether the device supports HUE/SAT or XY color set of commands
@@ -632,7 +632,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             } else {
                 logger.warn("{}: Device supports neither RGB color nor XY color", endpoint.getIeeeAddress());
                 pollingPeriod = POLLING_PERIOD_HIGH;
-                return false;
+                supportsHue = true; // Default
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.warn(
@@ -640,8 +640,6 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                     endpoint.getIeeeAddress(), e);
             supportsHue = true;
         }
-
-        return true;
     }
 
 }
