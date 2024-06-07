@@ -26,6 +26,7 @@
     <module>org.openhab.binding.zigbee.ember</module>
     <module>org.openhab.binding.zigbee.telegesis</module>
     <module>org.openhab.binding.zigbee.xbee</module>
+    <module>org.openhab.binding.zigbee.slzb06</module>
     <module>org.openhab.binding.zigbee.console</module>
     <module>org.openhab.binding.zigbee.console.ember</module>
     <module>org.openhab.binding.zigbee.console.telegesis</module>
