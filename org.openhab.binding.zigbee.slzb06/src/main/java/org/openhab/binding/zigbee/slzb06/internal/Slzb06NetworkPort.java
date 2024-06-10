@@ -112,7 +112,7 @@ public class Slzb06NetworkPort implements ZigBeePort {
     @Override
     public boolean open() {
         try {
-            logger.debug("Connecting to network port [{}:{}]", serverName, serverPort);
+            logger.debug("SLZB06 Connecting to network port [{}:{}]", serverName, serverPort);
 
             Socket localSocket = new Socket();
             localSocket.connect(new InetSocketAddress(serverName, serverPort), 1000);
@@ -129,8 +129,8 @@ public class Slzb06NetworkPort implements ZigBeePort {
 
             return true;
         } catch (RuntimeException | IOException e) {
-            logger.error("Network Error: Device cannot be opened on [{}:{}]. Caused by '{}'", serverName, serverPort,
-                    e.getMessage());
+            logger.error("SLZB06 Network Error: Device cannot be opened on [{}:{}]. Caused by '{}'", serverName,
+                    serverPort, e.getMessage());
             return false;
         }
     }
@@ -163,6 +163,8 @@ public class Slzb06NetworkPort implements ZigBeePort {
             }
         } catch (Exception e) {
             logger.error("SLZB06 '{}': Error closing network port ", serverName, e);
+            socket = null;
+            this.notify();
         }
     }
 
