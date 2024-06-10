@@ -162,19 +162,20 @@ public class Slzb06Handler extends ZigBeeCoordinatorHandler {
                     if (communicator != null) {
                         try {
                             Slzb06Sensors sensors = communicator.getSensors();
-                            if (isLinked(Slzb06BindingConstants.CHANNEL_ESP32TEMP)) {
+                            if (isLinked(Slzb06BindingConstants.CHANNEL_ESP32TEMP) && sensors.esp32_temp != null) {
                                 updateState(Slzb06BindingConstants.CHANNEL_ESP32TEMP,
                                         new DecimalType(sensors.esp32_temp));
                             }
-                            if (isLinked(Slzb06BindingConstants.CHANNEL_ZBTEMP)) {
+                            if (isLinked(Slzb06BindingConstants.CHANNEL_ZBTEMP) && sensors.zb_temp != null) {
                                 updateState(Slzb06BindingConstants.CHANNEL_ZBTEMP, new DecimalType(sensors.zb_temp));
                             }
-                            if (isLinked(Slzb06BindingConstants.CHANNEL_UPTIME)) {
+                            if (isLinked(Slzb06BindingConstants.CHANNEL_UPTIME) && sensors.uptime != null) {
                                 updateState(Slzb06BindingConstants.CHANNEL_UPTIME, new DecimalType(sensors.uptime));
                             }
-                            if (isLinked(Slzb06BindingConstants.CHANNEL_SOCKETUPTIME)) {
+                            if (isLinked(Slzb06BindingConstants.CHANNEL_SOCKETUPTIME)
+                                    && sensors.socket_uptime != null) {
                                 updateState(Slzb06BindingConstants.CHANNEL_SOCKETUPTIME,
-                                        new DecimalType(sensors.socket_uptime));
+                                        new DecimalType(sensors.socket_uptime / 1000));
                             }
                         } catch (Exception e) {
                             logger.error("SLZB06: retreiving API information: {}", e.getMessage());
