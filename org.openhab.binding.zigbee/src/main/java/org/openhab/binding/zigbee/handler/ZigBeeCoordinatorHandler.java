@@ -579,9 +579,11 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 }
                 networkManager.shutdown();
 
+                logger.info("ZigBee dongle inactivity timer. Waiting for reconnect lock");
                 synchronized (reconnectLock) {
                     currentReconnectAttemptFinished = false;
                 }
+                logger.info("ZigBee dongle inactivity timer. Reconnect lock passed");
 
                 // Initialize the network again
                 initializeDongle();
