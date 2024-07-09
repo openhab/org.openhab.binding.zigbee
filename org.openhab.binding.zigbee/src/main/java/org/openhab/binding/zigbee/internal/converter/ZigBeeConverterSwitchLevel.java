@@ -799,5 +799,4 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
             }
         }, delay, TimeUnit.MILLISECONDS);
     }
-
 }

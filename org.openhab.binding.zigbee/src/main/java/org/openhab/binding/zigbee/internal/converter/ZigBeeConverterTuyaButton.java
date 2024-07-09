@@ -19,13 +19,13 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import org.openhab.core.thing.Channel;
-import org.openhab.core.thing.CommonTriggerEvents;
-import org.openhab.core.thing.ThingUID;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.binding.zigbee.internal.converter.command.TuyaButtonPressCommand;
 import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
+import org.openhab.core.thing.Channel;
+import org.openhab.core.thing.CommonTriggerEvents;
+import org.openhab.core.thing.ThingUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +59,7 @@ public class ZigBeeConverterTuyaButton extends ZigBeeBaseChannelConverter
     // Tuya devices sometimes send duplicate commands with the same tx id.
     // We keep track of the last received Tx id and ignore the duplicate.
     private Integer lastTxId = -1;
-    
+
     @Override
     public Set<Integer> getImplementedClientClusters() {
         return Collections.singleton(ZclOnOffCluster.CLUSTER_ID);
@@ -77,13 +77,13 @@ public class ZigBeeConverterTuyaButton extends ZigBeeBaseChannelConverter
 
         if (clientCluster == null) {
             logger.error("{}: Error opening client cluster {} on endpoint {}", endpoint.getIeeeAddress(),
-            ZclOnOffCluster.CLUSTER_ID, endpoint.getEndpointId());
+                    ZclOnOffCluster.CLUSTER_ID, endpoint.getEndpointId());
             return false;
         }
 
         if (serverCluster == null) {
             logger.error("{}: Error opening server cluster {} on endpoint {}", endpoint.getIeeeAddress(),
-            ZclOnOffCluster.CLUSTER_ID, endpoint.getEndpointId());
+                    ZclOnOffCluster.CLUSTER_ID, endpoint.getEndpointId());
             return false;
         }
 
@@ -115,7 +115,7 @@ public class ZigBeeConverterTuyaButton extends ZigBeeBaseChannelConverter
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting client binding to cluster {}: {}", endpoint.getIeeeAddress(),
-                        ZclOnOffCluster.CLUSTER_ID, e);
+                    ZclOnOffCluster.CLUSTER_ID, e);
         }
 
         return true;
@@ -152,7 +152,7 @@ public class ZigBeeConverterTuyaButton extends ZigBeeBaseChannelConverter
 
     @Override
     public void disposeConverter() {
-        if(clientCluster != null) {
+        if (clientCluster != null) {
             clientCluster.removeCommandListener(this);
         }
         if (serverCluster != null) {
@@ -176,17 +176,14 @@ public class ZigBeeConverterTuyaButton extends ZigBeeBaseChannelConverter
     public boolean commandReceived(ZclCommand command) {
         logger.debug("{}: received command {}", endpoint.getIeeeAddress(), command);
         Integer thisTxId = command.getTransactionId();
-        if(lastTxId == thisTxId)
-        {
+        if (lastTxId == thisTxId) {
             logger.debug("{}: ignoring duplicate command {}", endpoint.getIeeeAddress(), thisTxId);
-        }
-        else if (command instanceof TuyaButtonPressCommand) {
+        } else if (command instanceof TuyaButtonPressCommand) {
             TuyaButtonPressCommand tuyaButtonPressCommand = (TuyaButtonPressCommand) command;
-           thing.triggerChannel(channel.getUID(), getEventType(tuyaButtonPressCommand.getPressType()));
-           clientCluster.sendDefaultResponse(command, ZclStatus.SUCCESS);
-        }
-        else {
-           logger.warn("{}: received unknown command {}", endpoint.getIeeeAddress(), command);
+            thing.triggerChannel(channel.getUID(), getEventType(tuyaButtonPressCommand.getPressType()));
+            clientCluster.sendDefaultResponse(command, ZclStatus.SUCCESS);
+        } else {
+            logger.warn("{}: received unknown command {}", endpoint.getIeeeAddress(), command);
         }
 
         lastTxId = thisTxId;
@@ -198,10 +195,8 @@ public class ZigBeeConverterTuyaButton extends ZigBeeBaseChannelConverter
         logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
     }
 
-    private String getEventType(Integer pressType)
-    {
-        switch(pressType)
-        {
+    private String getEventType(Integer pressType) {
+        switch (pressType) {
             case 0:
                 return CommonTriggerEvents.SHORT_PRESSED;
             case 1:

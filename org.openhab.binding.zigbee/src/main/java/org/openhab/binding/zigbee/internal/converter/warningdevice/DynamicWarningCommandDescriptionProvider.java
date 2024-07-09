@@ -25,13 +25,13 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.zigbee.converter.warningdevice.WarningType;
+import org.openhab.binding.zigbee.converter.warningdevice.WarningTypeCommandDescriptionProvider;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.type.DynamicCommandDescriptionProvider;
 import org.openhab.core.types.CommandDescription;
 import org.openhab.core.types.CommandDescriptionBuilder;
 import org.openhab.core.types.CommandOption;
-import org.openhab.binding.zigbee.converter.warningdevice.WarningType;
-import org.openhab.binding.zigbee.converter.warningdevice.WarningTypeCommandDescriptionProvider;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -106,5 +106,4 @@ public class DynamicWarningCommandDescriptionProvider implements DynamicCommandD
 
         return result;
     }
-
 }

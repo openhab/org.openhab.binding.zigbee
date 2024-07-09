@@ -275,5 +275,4 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
 
         kelvinRange = kelvinMax - kelvinMin;
     }
-
 }

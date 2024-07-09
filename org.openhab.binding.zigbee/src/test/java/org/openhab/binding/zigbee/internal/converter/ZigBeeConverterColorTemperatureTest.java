@@ -229,5 +229,4 @@ public class ZigBeeConverterColorTemperatureTest {
                 stateCapture.capture());
         assertEquals(convertMiredToPercent(converter, 250), stateCapture.getValue());
     }
-
 }

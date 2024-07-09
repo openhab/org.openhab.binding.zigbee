@@ -175,5 +175,4 @@ public class ZigBeeConverterMeasurementPower extends ZigBeeBaseChannelConverter 
             multiplier = 1;
         }
     }
-
 }

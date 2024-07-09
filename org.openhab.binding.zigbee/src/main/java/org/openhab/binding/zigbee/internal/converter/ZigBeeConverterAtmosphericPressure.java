@@ -192,5 +192,4 @@ public class ZigBeeConverterAtmosphericPressure extends ZigBeeBaseChannelConvert
             }
         }
     }
-
 }

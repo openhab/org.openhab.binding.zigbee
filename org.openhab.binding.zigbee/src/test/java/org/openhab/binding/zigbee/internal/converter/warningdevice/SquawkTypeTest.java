@@ -49,5 +49,4 @@ public class SquawkTypeTest {
         assertEquals(SquawkMode.ARMED.getValue(), squawkType.getSquawkMode());
         assertTrue(squawkType.isUseStrobe());
     }
-
 }

@@ -29,11 +29,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.CommonTriggerEvents;
 import org.openhab.core.thing.ThingUID;
-import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
-import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

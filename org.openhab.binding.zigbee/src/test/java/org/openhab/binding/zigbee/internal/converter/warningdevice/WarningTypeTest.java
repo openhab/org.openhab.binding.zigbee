@@ -54,5 +54,4 @@ public class WarningTypeTest {
         assertEquals(WarningMode.BURGLAR.getValue(), warningType.getWarningMode());
         assertTrue(warningType.isUseStrobe());
     }
-
 }

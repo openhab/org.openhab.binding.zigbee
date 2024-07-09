@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -10,7 +12,7 @@
 
   <groupId>org.openhab.addons.bundles</groupId>
   <artifactId>org.openhab.addons.zigbee.reactor</artifactId>
-  <version>4.2.0</version>
+  <version>4.2.1-SNAPSHOT</version>
   <!-- do not delete the version here as it is required by the release process -->
 
   <name>openHAB Add-ons :: Bundles :: ZigBee Reactor</name>
@@ -257,45 +259,47 @@
       </plugins>
     </pluginManagement>
     <plugins>
-        <plugin>
-          <groupId>biz.aQute.bnd</groupId>
-          <artifactId>bnd-maven-plugin</artifactId>
-          <executions>
-            <execution>
-              <goals>
-                <goal>bnd-process</goal>
-              </goals>
-              <configuration>
-                <bnd>Bundle-SymbolicName: ${project.artifactId}
-Automatic-Module-Name: ${def;bsn}
-Import-Package: \\
-  io.swagger.v3.oas.annotations.*;resolution:=optional,\\
-  javax.annotation.security.*;resolution:=optional,\\
-  org.eclipse.jdt.annotation.*;resolution:=optional,\\
-  org.openhab.core.automation.annotation.*;resolution:=optional;version=!,\\
-  org.openhab.*;version=!,\\
-  com.google.common.*;version="14.0",\\
-  ,\\
-  *
--exportcontents: \\
-  !*.internal.*,\\
-  !*.impl.*, \\
-  org.openhab.*, \\
+      <plugin>
+        <groupId>biz.aQute.bnd</groupId>
+        <artifactId>bnd-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>bnd-process</goal>
+            </goals>
+            <configuration>
+              <bnd>Bundle-SymbolicName: ${project.artifactId}
+                Automatic-Module-Name: ${def;bsn}
+                Import-Package: \\
+                io.swagger.v3.oas.annotations.*;resolution:=optional,\\
+                javax.annotation.security.*;resolution:=optional,\\
+                org.eclipse.jdt.annotation.*;resolution:=optional,\\
+                org.openhab.core.automation.annotation.*;resolution:=optional;version=!,\\
+                org.openhab.*;version=!,\\
+                com.google.common.*;version="14.0",\\
+                ,\\
+                *
+                -exportcontents: \\
+                !*.internal.*,\\
+                !*.impl.*, \\
+                org.openhab.*,
+                \\
 
--noimportjava: true
--sources: false
--removeheaders: Require-Capability,Provide-Capability
--contract: *
--includeresource: -${.}/NOTICE, -${.}/*.xsd
--fixupmessages: "Classes found in the wrong directory"; is:=warning</bnd>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
-         <plugin>
-           <groupId>org.apache.maven.plugins</groupId>
-           <artifactId>maven-surefire-plugin</artifactId>
-         </plugin>
+                -noimportjava: true
+                -sources: false
+                -removeheaders: Require-Capability,Provide-Capability
+                -contract: *
+                -includeresource: -${.}/NOTICE, -${.}/*.xsd
+                -fixupmessages: "Classes found in the wrong directory";
+                is:=warning</bnd>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
       <plugin>
         <groupId>org.commonjava.maven.plugins</groupId>
         <artifactId>directory-maven-plugin</artifactId>
@@ -331,11 +335,11 @@ Import-Package: \\
       </plugin>
     </plugins>
     <extensions>
-       <extension>
-          <groupId>org.openhab.tools.sat</groupId>
-          <artifactId>sat-extension</artifactId>
-          <version>${sat.version}</version>
-       </extension>
+      <extension>
+        <groupId>org.openhab.tools.sat</groupId>
+        <artifactId>sat-extension</artifactId>
+        <version>${sat.version}</version>
+      </extension>
     </extensions>
   </build>
 

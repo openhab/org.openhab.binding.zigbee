@@ -16,9 +16,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.core.config.core.ConfigDescriptionParameter;
 import org.openhab.core.config.core.ConfigDescriptionParameterBuilder;
-import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 
 /**
  * Provides {@link ConfigDescriptionParameter}s which are supposed to exist in all things
@@ -49,5 +49,4 @@ public class ZigBeeConfigDescriptionParameters {
 
         return configDescriptionParameters;
     }
-
 }

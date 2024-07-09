@@ -145,5 +145,4 @@ public class WarningType {
             return DEFAULT_SIREN_LEVEL;
         }
     }
-
 }

@@ -641,5 +641,4 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             supportsHue = true;
         }
     }
-
 }

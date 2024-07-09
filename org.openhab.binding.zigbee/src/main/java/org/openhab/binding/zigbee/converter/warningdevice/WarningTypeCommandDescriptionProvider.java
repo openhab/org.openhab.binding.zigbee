@@ -29,5 +29,4 @@ public interface WarningTypeCommandDescriptionProvider {
      *         warning/squawk commands.
      */
     List<CommandOption> getWarningAndSquawkCommandOptions();
-
 }

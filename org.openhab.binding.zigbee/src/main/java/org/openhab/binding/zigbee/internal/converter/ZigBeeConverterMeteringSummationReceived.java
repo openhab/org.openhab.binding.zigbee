@@ -179,5 +179,4 @@ public class ZigBeeConverterMeteringSummationReceived extends ZigBeeBaseChannelC
         divisor = iDiv;
         multiplier = iMult;
     }
-
 }

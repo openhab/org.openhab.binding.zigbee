@@ -72,6 +72,5 @@ public class ZclDoorLockConfigTest {
                 throws InterruptedException, ExecutionException, TimeoutException {
             return null;
         }
-
     }
 }

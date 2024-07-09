@@ -152,8 +152,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
                 if (node.getNetworkAddress() == 0 || (coordinator.getThing().getThings().stream()
                         .anyMatch(thing -> new IeeeAddress(
                                 (String) thing.getConfiguration().get(ZigBeeBindingConstants.CONFIGURATION_MACADDRESS))
-                                        .equals(node.getIeeeAddress())
-                                && node.isDiscovered()))) {
+                                .equals(node.getIeeeAddress()) && node.isDiscovered()))) {
                     continue;
                 }
 

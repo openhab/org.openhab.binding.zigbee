@@ -82,7 +82,6 @@ public class ZigBeeConverterThermostatUnoccupiedHeating extends ZigBeeBaseChanne
         }
 
         return true;
-
     }
 
     @Override

@@ -51,5 +51,4 @@ public interface ZigBeeDiscoveryParticipant {
      */
     @Nullable
     public DiscoveryResult createResult(ThingUID bridgeUID, ZigBeeNode node, Map<String, Object> properties);
-
 }

@@ -41,5 +41,4 @@ public class IeeeAddressConverter implements Converter {
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
         return new IeeeAddress(reader.getValue());
     }
-
 }

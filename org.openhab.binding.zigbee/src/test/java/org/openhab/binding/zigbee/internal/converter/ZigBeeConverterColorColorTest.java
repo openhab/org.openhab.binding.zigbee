@@ -277,5 +277,4 @@ public class ZigBeeConverterColorColorTest {
 
         converter.initializeDevice();
     }
-
 }

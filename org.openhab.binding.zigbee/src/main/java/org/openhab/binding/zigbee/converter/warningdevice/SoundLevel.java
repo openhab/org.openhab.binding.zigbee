@@ -33,5 +33,4 @@ public enum SoundLevel {
     public int getValue() {
         return value;
     }
-
 }

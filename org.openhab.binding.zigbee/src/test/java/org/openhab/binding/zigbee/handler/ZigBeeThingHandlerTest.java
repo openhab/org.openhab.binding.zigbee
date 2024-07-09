@@ -249,5 +249,4 @@ public class ZigBeeThingHandlerTest {
         coordinatorHandlerField.setAccessible(true);
         coordinatorHandlerField.set(object, value);
     }
-
 }

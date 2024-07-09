@@ -85,5 +85,4 @@ public class ZigBeeFirmwareVersion {
         return "ZigBeeFirmwareVersion [manufacturerCode=" + manufacturerCode + ", imageType=" + imageType
                 + ", fileVersion=" + fileVersion + "]";
     }
-
 }

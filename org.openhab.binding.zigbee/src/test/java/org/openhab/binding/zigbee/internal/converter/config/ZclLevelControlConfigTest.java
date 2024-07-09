@@ -159,6 +159,5 @@ public class ZclLevelControlConfigTest {
                 throws InterruptedException, ExecutionException, TimeoutException {
             return null;
         }
-
     }
 }
