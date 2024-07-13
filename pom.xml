@@ -35,7 +35,7 @@
 
   <properties>
     <report.fail.on.error>false</report.fail.on.error>
-    <zsmartsystems.version>1.4.15-SNAPSHOT</zsmartsystems.version>
+    <zsmartsystems.version>1.4.14</zsmartsystems.version>
     <spotless.version>2.38.0</spotless.version>
     <spotless.check.skip>true</spotless.check.skip> <!-- Spotless disabled for now -->
     <!-- Eclipse Java formatter version 4.26+ does not check test files -->
