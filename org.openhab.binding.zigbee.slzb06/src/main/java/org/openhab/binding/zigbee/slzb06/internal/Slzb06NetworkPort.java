@@ -137,8 +137,10 @@ public class Slzb06NetworkPort implements ZigBeePort {
 
     @Override
     public void close() {
+        logger.debug("SLZB06 '{}': Network port closing", serverName);
         try {
             if (socket != null) {
+                logger.debug("SLZB06 '{}': Network port closing socket", serverName);
                 running = false;
 
                 try {
@@ -146,11 +148,13 @@ public class Slzb06NetworkPort implements ZigBeePort {
                 } catch (InterruptedException e) {
                     // Eatme!
                 }
+                logger.debug("SLZB06 '{}': Network port closed - joined", serverName);
 
                 dataIn.close();
                 dataOut.close();
                 socket.close();
 
+                logger.debug("SLZB06 '{}': Network port closed - wait for sync", serverName);
                 synchronized (this) {
                     this.notify();
                 }
