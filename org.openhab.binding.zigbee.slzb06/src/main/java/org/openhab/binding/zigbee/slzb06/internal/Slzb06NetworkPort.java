@@ -62,7 +62,12 @@ public class Slzb06NetworkPort implements ZigBeePort {
     /**
      * The length of the receive buffer
      */
-    private static final int RX_BUFFER_LEN = 512;
+    protected static final int RX_BUFFER_LEN = 512;
+
+    /**
+     * The amount of time to wait for the receive thread to join when closing the port
+     */
+    private static final int THREAD_JOIN_TIMEOUT = 1000;
 
     /**
      * The circular FIFO queue for receive data
@@ -144,7 +149,7 @@ public class Slzb06NetworkPort implements ZigBeePort {
                 running = false;
 
                 try {
-                    receiveThread.join();
+                    receiveThread.join(THREAD_JOIN_TIMEOUT);
                 } catch (InterruptedException e) {
                     // Eatme!
                 }
@@ -257,6 +262,7 @@ public class Slzb06NetworkPort implements ZigBeePort {
                 byte[] dataChunk = new byte[1024];
                 int bytesRead;
                 while (running && (bytesRead = dataIn.read(dataChunk)) != -1) {
+                    logger.debug("SLZB06: ReceiveThread received {} bytes", bytesRead);
                     processReceivedData(dataChunk, bytesRead);
                 }
             } catch (Exception e) {
@@ -266,7 +272,7 @@ public class Slzb06NetworkPort implements ZigBeePort {
         }
     }
 
-    private void processReceivedData(byte[] dataChunk, int bytesRead) {
+    protected void processReceivedData(byte[] dataChunk, int bytesRead) {
         synchronized (bufferSynchronisationObject) {
             for (int i = 0; i < bytesRead; i++) {
                 buffer[end++] = dataChunk[i] & 0xff;
@@ -274,8 +280,9 @@ public class Slzb06NetworkPort implements ZigBeePort {
                     end = 0;
                 }
                 if (end == start) {
-                    logger.warn("SLZB06 '{}': Processing received data event: Serial buffer overrun [{}:{}]",
-                            serverName, start, end);
+                    logger.warn(
+                            "SLZB06 '{}': Processing received data event: Serial buffer overrun [{}:{}] with {}/{} bytes",
+                            serverName, start, end, i, bytesRead);
                     if (++start == RX_BUFFER_LEN) {
                         start = 0;
                         end = 0;
