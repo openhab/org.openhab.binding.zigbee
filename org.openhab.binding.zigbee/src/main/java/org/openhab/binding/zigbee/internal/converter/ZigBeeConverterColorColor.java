@@ -23,7 +23,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,7 +43,7 @@ import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.types.Command;
-import org.openhab.core.types.UnDefType;
+import org.openhab.core.util.ColorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +55,6 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclLevelControlCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorCapabilitiesEnum;
-import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorModeEnum;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.MoveToColorCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.MoveToHueAndSaturationCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.levelcontrol.MoveToLevelCommand;
@@ -99,10 +97,6 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     private int lastY = -1;
     private boolean xChanged = false;
     private boolean yChanged = false;
-
-    private ColorModeEnum lastColorMode;
-
-    private final AtomicBoolean currentOnOffState = new AtomicBoolean(true);
 
     private ZclColorControlConfig configColorControl;
     private ZclLevelControlConfig configLevelControl;
@@ -297,6 +291,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             colorAttributes.add(ZclColorControlCluster.ATTR_CURRENTY);
         }
         colorAttributes.add(ZclColorControlCluster.ATTR_COLORMODE);
+        colorAttributes.add(ZclColorControlCluster.ATTR_COLORTEMPERATURE);
         clusterColorControl.readAttributes(colorAttributes);
 
         if (clusterLevelControl != null) {
@@ -443,16 +438,10 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
     private void updateOnOff(OnOffType onOff) {
         boolean on = onOff == OnOffType.ON;
-        currentOnOffState.set(on);
-
-        if (lastColorMode != ColorModeEnum.COLOR_TEMPERATURE) {
-            // Extra temp variable to avoid thread sync concurrency issues on lastHSB
-            HSBType oldHSB = lastHSB;
-            HSBType newHSB = on ? lastHSB : new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), PercentType.ZERO);
-            updateChannelState(newHSB);
-        } else if (!on) {
-            updateChannelState(OnOffType.OFF);
-        }
+        // Extra temp variable to avoid thread sync concurrency issues on lastHSB
+        HSBType oldHSB = lastHSB;
+        HSBType newHSB = on ? lastHSB : new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), PercentType.ZERO);
+        updateChannelState(newHSB);
     }
 
     private void updateBrightness(PercentType brightness) {
@@ -460,9 +449,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         HSBType oldHSB = lastHSB;
         HSBType newHSB = new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), brightness);
         lastHSB = newHSB;
-        if (currentOnOffState.get() && lastColorMode != ColorModeEnum.COLOR_TEMPERATURE) {
-            updateChannelState(newHSB);
-        }
+        updateChannelState(newHSB);
     }
 
     private void updateColorHSB(DecimalType hue, PercentType saturation) {
@@ -470,9 +457,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         HSBType oldHSB = lastHSB;
         HSBType newHSB = new HSBType(hue, saturation, oldHSB.getBrightness());
         lastHSB = newHSB;
-        if (currentOnOffState.get() && lastColorMode != ColorModeEnum.COLOR_TEMPERATURE) {
-            updateChannelState(newHSB);
-        }
+        updateChannelState(newHSB);
     }
 
     private void updateColorXY(PercentType x, PercentType y) {
@@ -552,12 +537,10 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                             lastY = y;
                             yChanged = true;
                         }
-                    } else if (attribute.getId() == ZclColorControlCluster.ATTR_COLORMODE) {
-                        Integer colorMode = (Integer) val;
-                        lastColorMode = ColorModeEnum.getByValue(colorMode);
-                        if (lastColorMode == ColorModeEnum.COLOR_TEMPERATURE) {
-                            updateChannelState(UnDefType.UNDEF);
-                        } else if (currentOnOffState.get()) {
+                    } else if (attribute.getId() == ZclColorControlCluster.ATTR_COLORTEMPERATURE) {
+                        if (val instanceof Integer mired && mired > 0) {
+                            HSBType ctHSB = ColorUtil.xyToHsb(ColorUtil.kelvinToXY(1e6 / mired));
+                            lastHSB = new HSBType(ctHSB.getHue(), ctHSB.getSaturation(), lastHSB.getBrightness());
                             updateChannelState(lastHSB);
                         }
                     }
@@ -641,5 +624,4 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             supportsHue = true;
         }
     }
-
 }
