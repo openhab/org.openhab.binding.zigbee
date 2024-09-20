@@ -34,9 +34,13 @@ import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster;
+import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorCapabilitiesEnum;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorModeEnum;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.MoveToColorTemperatureCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.onoff.OffCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.onoff.OnCommand;
+import com.zsmartsystems.zigbee.zcl.clusters.onoff.ZclOnOffCommand;
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
@@ -49,6 +53,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterColorTemperature.class);
 
     private ZclColorControlCluster clusterColorControl;
+    private ZclOnOffCluster clusterOnOff;
 
     private double kelvinMin;
     private double kelvinMax;
@@ -111,6 +116,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
                     endpoint.getEndpointId());
             return false;
         }
+        clusterOnOff = (ZclOnOffCluster) endpoint.getInputCluster(ZclOnOffCluster.CLUSTER_ID);
 
         determineMinMaxTemperature(clusterColorControl);
 
@@ -133,8 +139,9 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
         PercentType colorTemperaturePercentage = PercentType.ZERO;
         if (command instanceof PercentType) {
             colorTemperaturePercentage = (PercentType) command;
-        } else if (command instanceof OnOffType) {
-            // TODO: Should this turn the lamp on/off?
+        } else if (command instanceof OnOffType onOffCommand && clusterOnOff != null) {
+            ZclOnOffCommand zclOnOffCommand = OnOffType.ON == onOffCommand ? new OnCommand() : new OffCommand();
+            monitorCommandResponse(command, clusterOnOff.sendCommand(zclOnOffCommand));
             return;
         }
 
