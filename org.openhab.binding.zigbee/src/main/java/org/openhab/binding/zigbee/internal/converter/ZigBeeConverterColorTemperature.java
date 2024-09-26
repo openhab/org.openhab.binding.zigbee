@@ -187,23 +187,30 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
     public void attributeUpdated(ZclAttribute attribute, Object val) {
         logger.debug("{}: ZigBee attribute reports {}  on endpoint {}", endpoint.getIeeeAddress(), attribute,
                 endpoint.getEndpointId());
-        if (attribute.getClusterType() == ZclClusterType.COLOR_CONTROL
-                && attribute.getId() == ZclColorControlCluster.ATTR_COLORTEMPERATURE) {
+        if (attribute.getClusterType() == ZclClusterType.COLOR_CONTROL) {
+            switch (attribute.getId()) {
+                case ZclColorControlCluster.ATTR_COLORTEMPERATURE:
+                    Integer temperatureInMired = (Integer) val;
+                    PercentType percent = miredToPercent(temperatureInMired);
+                    if (percent != null) {
+                        updateChannelState(percent);
+                    }
+                    break;
 
-            if (lastColorMode == null || lastColorMode == ColorModeEnum.COLOR_TEMPERATURE) {
-                Integer temperatureInMired = (Integer) val;
+                case ZclColorControlCluster.ATTR_COLORMODE:
+                    Integer colorMode = (Integer) val;
+                    lastColorMode = ColorModeEnum.getByValue(colorMode);
+                    if (lastColorMode == ColorModeEnum.COLOR_TEMPERATURE) {
+                        break;
+                    }
+                    // else fall through
 
-                PercentType percent = miredToPercent(temperatureInMired);
-                if (percent != null) {
-                    updateChannelState(percent);
-                }
-            }
-        } else if (attribute.getClusterType() == ZclClusterType.COLOR_CONTROL
-                && attribute.getId() == ZclColorControlCluster.ATTR_COLORMODE) {
-            Integer colorMode = (Integer) val;
-            lastColorMode = ColorModeEnum.getByValue(colorMode);
-            if (lastColorMode != ColorModeEnum.COLOR_TEMPERATURE) {
-                updateChannelState(UnDefType.UNDEF);
+                case ZclColorControlCluster.ATTR_CURRENTHUE:
+                case ZclColorControlCluster.ATTR_CURRENTSATURATION:
+                case ZclColorControlCluster.ATTR_CURRENTX:
+                case ZclColorControlCluster.ATTR_CURRENTY:
+                    updateChannelState(UnDefType.UNDEF);
+                    break;
             }
         }
     }
@@ -218,31 +225,15 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
     /**
      * Convert color temperature in Kelvin to Mired.
      */
-    private int kelvinToMired(int temperatureInKelvin) {
-        return (int) (1e6 / temperatureInKelvin);
-    }
-
-    /**
-     * Convert color temperature given as percentage to Kelvin.
-     */
-    private int percentToKelvin(PercentType temperatureInPercent) {
-        double value = ((100.0 - temperatureInPercent.doubleValue()) * kelvinRange / 100.0) + kelvinMin;
-        return (int) (value + 0.5);
+    private double kelvinToMired(double temperatureInKelvin) {
+        return 1e6 / temperatureInKelvin;
     }
 
     /**
      * Convert color temperature given as percentage to Mired.
      */
     private int percentToMired(PercentType temperatureInPercent) {
-        return kelvinToMired(percentToKelvin(temperatureInPercent));
-    }
-
-    /**
-     * Convert color temperature given in Kelvin to percentage.
-     */
-    private PercentType kelvinToPercent(int temperatureInKelvin) {
-        double value = 100.0 - (temperatureInKelvin - kelvinMin) * 100.0 / kelvinRange;
-        return new PercentType((int) (value + 0.5));
+        return (int) (miredMin() + (temperatureInPercent.doubleValue() * miredRange() / 100.0));
     }
 
     /**
@@ -257,7 +248,7 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
             // 0xffff indicates invalid value (possible due to color mode not being CT).
             return null;
         }
-        return kelvinToPercent(miredToKelvin(temperatureInMired));
+        return new PercentType((int) ((temperatureInMired - miredMin()) * 100.0 / miredRange()));
     }
 
     private void determineMinMaxTemperature(ZclColorControlCluster serverClusterColorControl) {
@@ -283,4 +274,17 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
         kelvinRange = kelvinMax - kelvinMin;
     }
 
+    /**
+     * Getter for miredMin value
+     */
+    private double miredMin() {
+        return kelvinToMired(kelvinMax);
+    }
+
+    /**
+     * Getter for miredRange value
+     */
+    private double miredRange() {
+        return kelvinToMired(kelvinMin) - kelvinToMired(kelvinMax);
+    }
 }

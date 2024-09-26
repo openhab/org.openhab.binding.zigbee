@@ -55,6 +55,7 @@ import com.zsmartsystems.zigbee.zcl.clusters.ZclColorControlCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclLevelControlCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorCapabilitiesEnum;
+import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.ColorModeEnum;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.MoveToColorCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.MoveToHueAndSaturationCommand;
 import com.zsmartsystems.zigbee.zcl.clusters.levelcontrol.MoveToLevelCommand;
@@ -97,6 +98,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     private int lastY = -1;
     private boolean xChanged = false;
     private boolean yChanged = false;
+
+    private double lastMired = -1;
 
     private ZclColorControlConfig configColorControl;
     private ZclLevelControlConfig configLevelControl;
@@ -513,36 +516,59 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                         updateBrightness(brightness);
                     }
                 } else if (attribute.getClusterType().getId() == ZclColorControlCluster.CLUSTER_ID) {
-                    if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTHUE) {
-                        int hue = (Integer) val;
-                        if (hue != lastHue) {
-                            lastHue = hue;
-                            hueChanged = true;
-                        }
-                    } else if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTSATURATION) {
-                        int saturation = (Integer) val;
-                        if (saturation != lastSaturation) {
-                            lastSaturation = saturation;
-                            saturationChanged = true;
-                        }
-                    } else if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTX) {
-                        int x = (Integer) val;
-                        if (x != lastX) {
-                            lastX = x;
-                            xChanged = true;
-                        }
-                    } else if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTY) {
-                        int y = (Integer) val;
-                        if (y != lastY) {
-                            lastY = y;
-                            yChanged = true;
-                        }
-                    } else if (attribute.getId() == ZclColorControlCluster.ATTR_COLORTEMPERATURE) {
-                        if (val instanceof Integer mired && mired > 0) {
-                            HSBType ctHSB = ColorUtil.xyToHsb(ColorUtil.kelvinToXY(1e6 / mired));
-                            lastHSB = new HSBType(ctHSB.getHue(), ctHSB.getSaturation(), lastHSB.getBrightness());
-                            updateChannelState(lastHSB);
-                        }
+                    switch (attribute.getId()) {
+                        case ZclColorControlCluster.ATTR_CURRENTHUE:
+                            int hue = (Integer) val;
+                            if (hue != lastHue) {
+                                lastHue = hue;
+                                hueChanged = true;
+                            }
+                            lastMired = -1;
+                            break;
+
+                        case ZclColorControlCluster.ATTR_CURRENTSATURATION:
+                            int saturation = (Integer) val;
+                            if (saturation != lastSaturation) {
+                                lastSaturation = saturation;
+                                saturationChanged = true;
+                            }
+                            lastMired = -1;
+                            break;
+
+                        case ZclColorControlCluster.ATTR_CURRENTX:
+                            int x = (Integer) val;
+                            if (x != lastX) {
+                                lastX = x;
+                                xChanged = true;
+                            }
+                            lastMired = -1;
+                            break;
+
+                        case ZclColorControlCluster.ATTR_CURRENTY:
+                            int y = (Integer) val;
+                            if (y != lastY) {
+                                lastY = y;
+                                yChanged = true;
+                            }
+                            lastMired = -1;
+                            break;
+
+                        case ZclColorControlCluster.ATTR_COLORTEMPERATURE:
+                            if (val instanceof Integer mired && mired != lastMired) {
+                                HSBType ctHSB = ColorUtil.xyToHsb(ColorUtil.kelvinToXY(1e6 / mired));
+                                lastHSB = new HSBType(ctHSB.getHue(), ctHSB.getSaturation(), lastHSB.getBrightness());
+                                updateChannelState(lastHSB);
+                                lastMired = mired;
+                            }
+                            break;
+
+                        case ZclColorControlCluster.ATTR_COLORMODE:
+                            Integer colorMode = (Integer) val;
+                            ColorModeEnum colorModeEnum = ColorModeEnum.getByValue(colorMode);
+                            if (colorModeEnum != ColorModeEnum.COLOR_TEMPERATURE) {
+                                lastMired = -1;
+                            }
+                            break;
                     }
                 }
 
@@ -584,6 +610,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                 logger.debug("{}: Exception in attribute update", endpoint.getIeeeAddress(), e);
             }
         }
+
     }
 
     /**
