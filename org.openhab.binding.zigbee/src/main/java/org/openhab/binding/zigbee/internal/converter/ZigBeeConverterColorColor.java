@@ -610,7 +610,6 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                 logger.debug("{}: Exception in attribute update", endpoint.getIeeeAddress(), e);
             }
         }
-
     }
 
     /**
