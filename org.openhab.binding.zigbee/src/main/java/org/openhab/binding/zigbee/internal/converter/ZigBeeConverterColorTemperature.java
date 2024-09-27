@@ -59,8 +59,6 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
     private double kelvinMax;
     private double kelvinRange;
 
-    private ColorModeEnum lastColorMode;
-
     // Default range of 2000K to 6500K
     private final Integer DEFAULT_MIN_TEMPERATURE_IN_KELVIN = 2000;
     private final Integer DEFAULT_MAX_TEMPERATURE_IN_KELVIN = 6500;
@@ -199,8 +197,8 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
 
                 case ZclColorControlCluster.ATTR_COLORMODE:
                     Integer colorMode = (Integer) val;
-                    lastColorMode = ColorModeEnum.getByValue(colorMode);
-                    if (lastColorMode == ColorModeEnum.COLOR_TEMPERATURE) {
+                    ColorModeEnum colorModeEnum = ColorModeEnum.getByValue(colorMode);
+                    if (colorModeEnum == ColorModeEnum.COLOR_TEMPERATURE) {
                         break;
                     }
                     // else fall through
