@@ -504,72 +504,78 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
         synchronized (colorUpdateSync) {
             try {
-                if (attribute.getClusterType().getId() == ZclOnOffCluster.CLUSTER_ID) {
-                    if (attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
-                        Boolean value = (Boolean) val;
-                        OnOffType onoff = value ? OnOffType.ON : OnOffType.OFF;
-                        updateOnOff(onoff);
-                    }
-                } else if (attribute.getClusterType().getId() == ZclLevelControlCluster.CLUSTER_ID) {
-                    if (attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
-                        PercentType brightness = levelToPercent((Integer) val);
-                        updateBrightness(brightness);
-                    }
-                } else if (attribute.getClusterType().getId() == ZclColorControlCluster.CLUSTER_ID) {
-                    switch (attribute.getId()) {
-                        case ZclColorControlCluster.ATTR_CURRENTHUE:
-                            int hue = (Integer) val;
-                            if (hue != lastHue) {
-                                lastHue = hue;
-                                hueChanged = true;
-                            }
-                            lastMired = -1;
-                            break;
+                switch (attribute.getClusterType().getId()) {
+                    case ZclOnOffCluster.CLUSTER_ID:
+                        if (attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
+                            Boolean value = (Boolean) val;
+                            OnOffType onoff = value ? OnOffType.ON : OnOffType.OFF;
+                            updateOnOff(onoff);
+                        }
+                        break;
 
-                        case ZclColorControlCluster.ATTR_CURRENTSATURATION:
-                            int saturation = (Integer) val;
-                            if (saturation != lastSaturation) {
-                                lastSaturation = saturation;
-                                saturationChanged = true;
-                            }
-                            lastMired = -1;
-                            break;
+                    case ZclLevelControlCluster.CLUSTER_ID:
+                        if (attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
+                            PercentType brightness = levelToPercent((Integer) val);
+                            updateBrightness(brightness);
+                        }
+                        break;
 
-                        case ZclColorControlCluster.ATTR_CURRENTX:
-                            int x = (Integer) val;
-                            if (x != lastX) {
-                                lastX = x;
-                                xChanged = true;
-                            }
-                            lastMired = -1;
-                            break;
-
-                        case ZclColorControlCluster.ATTR_CURRENTY:
-                            int y = (Integer) val;
-                            if (y != lastY) {
-                                lastY = y;
-                                yChanged = true;
-                            }
-                            lastMired = -1;
-                            break;
-
-                        case ZclColorControlCluster.ATTR_COLORTEMPERATURE:
-                            if (val instanceof Integer mired && mired != lastMired) {
-                                HSBType ctHSB = ColorUtil.xyToHsb(ColorUtil.kelvinToXY(1e6 / mired));
-                                lastHSB = new HSBType(ctHSB.getHue(), ctHSB.getSaturation(), lastHSB.getBrightness());
-                                updateChannelState(lastHSB);
-                                lastMired = mired;
-                            }
-                            break;
-
-                        case ZclColorControlCluster.ATTR_COLORMODE:
-                            Integer colorMode = (Integer) val;
-                            ColorModeEnum colorModeEnum = ColorModeEnum.getByValue(colorMode);
-                            if (colorModeEnum != ColorModeEnum.COLOR_TEMPERATURE) {
+                    case ZclColorControlCluster.CLUSTER_ID:
+                        switch (attribute.getId()) {
+                            case ZclColorControlCluster.ATTR_CURRENTHUE:
+                                int hue = (Integer) val;
+                                if (hue != lastHue) {
+                                    lastHue = hue;
+                                    hueChanged = true;
+                                }
                                 lastMired = -1;
-                            }
-                            break;
-                    }
+                                break;
+
+                            case ZclColorControlCluster.ATTR_CURRENTSATURATION:
+                                int saturation = (Integer) val;
+                                if (saturation != lastSaturation) {
+                                    lastSaturation = saturation;
+                                    saturationChanged = true;
+                                }
+                                lastMired = -1;
+                                break;
+
+                            case ZclColorControlCluster.ATTR_CURRENTX:
+                                int x = (Integer) val;
+                                if (x != lastX) {
+                                    lastX = x;
+                                    xChanged = true;
+                                }
+                                lastMired = -1;
+                                break;
+
+                            case ZclColorControlCluster.ATTR_CURRENTY:
+                                int y = (Integer) val;
+                                if (y != lastY) {
+                                    lastY = y;
+                                    yChanged = true;
+                                }
+                                lastMired = -1;
+                                break;
+
+                            case ZclColorControlCluster.ATTR_COLORTEMPERATURE:
+                                if (val instanceof Integer mired && mired != lastMired) {
+                                    HSBType ctHSB = ColorUtil.xyToHsb(ColorUtil.kelvinToXY(1e6 / mired));
+                                    lastHSB = new HSBType(ctHSB.getHue(), ctHSB.getSaturation(),
+                                            lastHSB.getBrightness());
+                                    updateChannelState(lastHSB);
+                                    lastMired = mired;
+                                }
+                                break;
+
+                            case ZclColorControlCluster.ATTR_COLORMODE:
+                                Integer colorMode = (Integer) val;
+                                ColorModeEnum colorModeEnum = ColorModeEnum.getByValue(colorMode);
+                                if (colorModeEnum != ColorModeEnum.COLOR_TEMPERATURE) {
+                                    lastMired = -1;
+                                }
+                                break;
+                        }
                 }
 
                 if (hueChanged || saturationChanged || xChanged || yChanged) {
