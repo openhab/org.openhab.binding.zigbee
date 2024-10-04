@@ -118,10 +118,14 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
 
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
     protected void addZigBeeCoordinatorHandler(ZigBeeCoordinatorHandler coordinatorHandler) {
+        logger.debug("Adding ZigBeeCoordinatorHandler to discovery: {}", coordinatorHandler.getUID());
+
         coordinatorHandlers.add(coordinatorHandler);
         ZigBeeNetworkNodeListener listener = new ZigBeeNetworkNodeListener() {
             @Override
             public void nodeAdded(ZigBeeNode node) {
+                logger.debug("{}: ZigBee Discovery: Node added - scanStarted={}, createOnlyDuringScan={}",
+                        node.getIeeeAddress(), scanStarted, createResultsOnlyDuringActiveScans);
                 if (!createResultsOnlyDuringActiveScans || createResultsOnlyDuringActiveScans && scanStarted) {
                     ZigBeeDiscoveryService.this.nodeDiscovered(coordinatorHandler, node);
                 }
@@ -179,11 +183,17 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
     private void nodeDiscovered(ZigBeeCoordinatorHandler coordinator, final ZigBeeNode node) {
         // If this is the coordinator (NWK address 0), ignore this device
         if (node.getLogicalType() == LogicalType.COORDINATOR || node.getNetworkAddress() == 0) {
+            logger.debug("{}: Not creating ZigBee device - coordinator", node.getIeeeAddress());
             return;
         }
 
         ThingTypeUID defaultThingTypeUID = ZigBeeBindingConstants.THING_TYPE_GENERIC_DEVICE;
         ThingUID bridgeUID = coordinator.getUID();
+
+        if (coordinator.isChildInitialized(node.getIeeeAddress())) {
+            logger.debug("{}: Not creating ZigBee device - already initialised", node.getIeeeAddress());
+            return;
+        }
 
         String defaultThingId = node.getIeeeAddress().toString().toLowerCase().replaceAll("[^a-z0-9_/]", "");
         ThingUID defaultThingUID = new ThingUID(defaultThingTypeUID, bridgeUID, defaultThingId);
@@ -193,7 +203,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
             public void run() {
                 logger.info("{}: Starting ZigBee device discovery", node.getIeeeAddress());
 
-                // Do this here incase the device doesn't respond to the discovery messages.
+                // Do this here in case the device doesn't respond to the discovery messages.
                 // This keeps the user informed.
                 logger.debug("{}: Creating ZigBee device {} with bridge {}", node.getIeeeAddress(), defaultThingTypeUID,
                         bridgeUID);

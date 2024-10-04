@@ -1116,4 +1116,23 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         // Always allow the firmware to be updated
         return true;
     }
+
+    /**
+     * Returns the {@link IeeeAddress} for the node
+     *
+     * @return the {@link IeeeAddress} for the node
+     */
+    public Object getIeeeAddress() {
+        return nodeIeeeAddress;
+    }
+
+    /**
+     * Returns true if the device has been initialised, and all channel converters have initialised.
+     *
+     * @return
+     */
+    public boolean isDeviceInitialized() {
+        return Boolean
+                .parseBoolean(thing.getProperties().get(ZigBeeBindingConstants.THING_PROPERTY_DEVICE_INITIALIZED));
+    }
 }
