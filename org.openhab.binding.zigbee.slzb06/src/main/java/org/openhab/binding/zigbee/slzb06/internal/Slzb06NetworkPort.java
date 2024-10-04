@@ -12,8 +12,8 @@
  */
 package org.openhab.binding.zigbee.slzb06.internal;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -42,12 +42,12 @@ public class Slzb06NetworkPort implements ZigBeePort {
     /**
      * The serial port input stream.
      */
-    private DataInputStream dataIn;
+    private BufferedInputStream dataIn;
 
     /**
      * The serial port output stream.
      */
-    private DataOutputStream dataOut;
+    private BufferedOutputStream dataOut;
 
     /**
      * The server identifier.
@@ -122,8 +122,8 @@ public class Slzb06NetworkPort implements ZigBeePort {
             Socket localSocket = new Socket();
             localSocket.connect(new InetSocketAddress(serverName, serverPort), 1000);
 
-            dataIn = new DataInputStream(localSocket.getInputStream());
-            dataOut = new DataOutputStream(localSocket.getOutputStream());
+            dataIn = new BufferedInputStream(localSocket.getInputStream());
+            dataOut = new BufferedOutputStream(localSocket.getOutputStream());
 
             logger.debug("SLZB06 '{}': Network port is initialized.", serverName);
 
@@ -154,6 +154,8 @@ public class Slzb06NetworkPort implements ZigBeePort {
                     // Eatme!
                 }
                 logger.debug("SLZB06 '{}': Network port closed - joined", serverName);
+
+                dataOut.flush();
 
                 dataIn.close();
                 dataOut.close();
@@ -213,7 +215,7 @@ public class Slzb06NetworkPort implements ZigBeePort {
 
     @Override
     public int read() {
-        return read(9999999);
+        return read(Integer.MAX_VALUE);
     }
 
     @Override
@@ -262,7 +264,7 @@ public class Slzb06NetworkPort implements ZigBeePort {
                 byte[] dataChunk = new byte[1024];
                 int bytesRead;
                 while (running && (bytesRead = dataIn.read(dataChunk)) != -1) {
-                    logger.debug("SLZB06: ReceiveThread received {} bytes", bytesRead);
+                    logger.trace("SLZB06: ReceiveThread received {} bytes", bytesRead);
                     processReceivedData(dataChunk, bytesRead);
                 }
             } catch (Exception e) {
