@@ -13,15 +13,20 @@
 package org.openhab.binding.zigbee.internal.converter;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import javax.measure.quantity.ElectricPotential;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
+import org.openhab.core.config.core.Configuration;
 import org.openhab.core.library.types.QuantityType;
 import org.openhab.core.library.unit.Units;
 import org.openhab.core.thing.Channel;
@@ -46,10 +51,16 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConverter implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterMeasurementRmsVoltage.class);
 
+    private static BigDecimal CHANGE_DEFAULT = new BigDecimal(5);
+    private static BigDecimal CHANGE_MIN = new BigDecimal(1);
+    private static BigDecimal CHANGE_MAX = new BigDecimal(100);
+
     private ZclElectricalMeasurementCluster clusterMeasurement;
 
     private Integer divisor;
     private Integer multiplier;
+
+    private ZclReportingConfig configReporting;
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
@@ -72,14 +83,16 @@ public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConve
             return false;
         }
 
+        ZclReportingConfig reporting = new ZclReportingConfig(channel);
+
         try {
             CommandResult bindResponse = bind(serverClusterMeasurement).get();
             if (bindResponse.isSuccess()) {
                 ZclAttribute attribute = serverClusterMeasurement
                         .getAttribute(ZclElectricalMeasurementCluster.ATTR_RMSVOLTAGE);
                 // Configure reporting - no faster than once per second - no slower than 2 hours.
-                CommandResult reportingResponse = serverClusterMeasurement
-                        .setReporting(attribute, 3, REPORTING_PERIOD_DEFAULT_MAX, 1).get();
+                CommandResult reportingResponse = attribute.setReporting(reporting.getReportingTimeMin(),
+                        reporting.getReportingTimeMax(), reporting.getReportingChange()).get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 pollingPeriod = POLLING_PERIOD_HIGH;
@@ -106,6 +119,13 @@ public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConve
 
         // Add a listener
         clusterMeasurement.addAttributeListener(this);
+
+        // Create a configuration handler and get the available options
+        configReporting = new ZclReportingConfig(channel);
+        configReporting.setAnalogue(CHANGE_DEFAULT, CHANGE_MIN, CHANGE_MAX);
+        configOptions = new ArrayList<>();
+        configOptions.addAll(configReporting.getConfiguration());
+
         return true;
     }
 
@@ -119,6 +139,24 @@ public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConve
     @Override
     public void handleRefresh() {
         clusterMeasurement.getRmsVoltage(0);
+    }
+
+    @Override
+    public void updateConfiguration(@NonNull Configuration currentConfiguration,
+            Map<String, Object> updatedParameters) {
+        if (configReporting.updateConfiguration(currentConfiguration, updatedParameters)) {
+            try {
+                ZclAttribute attribute = clusterMeasurement
+                        .getAttribute(ZclElectricalMeasurementCluster.ATTR_RMSVOLTAGE);
+                CommandResult reportingResponse;
+                reportingResponse = attribute.setReporting(configReporting.getReportingTimeMin(),
+                        configReporting.getReportingTimeMax(), configReporting.getReportingChange()).get();
+                handleReportingResponse(reportingResponse, configReporting.getPollingPeriod(),
+                        configReporting.getReportingTimeMax());
+            } catch (InterruptedException | ExecutionException e) {
+                logger.debug("{}: RMS voltage measurement exception setting reporting", endpoint.getIeeeAddress(), e);
+            }
+        }
     }
 
     @Override

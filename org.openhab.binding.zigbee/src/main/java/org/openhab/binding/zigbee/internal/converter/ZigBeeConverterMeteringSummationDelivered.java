@@ -13,13 +13,18 @@
 package org.openhab.binding.zigbee.internal.converter;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
+import org.openhab.core.config.core.Configuration;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
@@ -44,12 +49,18 @@ public class ZigBeeConverterMeteringSummationDelivered extends ZigBeeBaseChannel
         implements ZclAttributeListener {
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterMeteringSummationDelivered.class);
 
+    private static BigDecimal CHANGE_DEFAULT = new BigDecimal(5);
+    private static BigDecimal CHANGE_MIN = new BigDecimal(1);
+    private static BigDecimal CHANGE_MAX = new BigDecimal(100);
+
     private ZclMeteringCluster clusterMetering;
 
     private ZclAttribute attribute;
 
     private double divisor = 1.0;
     private double multiplier = 1.0;
+
+    private ZclReportingConfig configReporting;
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
@@ -72,13 +83,16 @@ public class ZigBeeConverterMeteringSummationDelivered extends ZigBeeBaseChannel
             return false;
         }
 
+        ZclReportingConfig reporting = new ZclReportingConfig(channel);
+
         try {
             CommandResult bindResponse = bind(serverClusterMeasurement).get();
             if (bindResponse.isSuccess()) {
                 ZclAttribute attribute = serverClusterMeasurement
                         .getAttribute(ZclMeteringCluster.ATTR_CURRENTSUMMATIONDELIVERED);
-                // Configure reporting - no faster than once per second - no slower than 2 hours.
-                CommandResult reportingResponse = attribute.setReporting(3, REPORTING_PERIOD_DEFAULT_MAX, 1L).get();
+                // Configure reporting
+                CommandResult reportingResponse = attribute.setReporting(reporting.getReportingTimeMin(),
+                        reporting.getReportingTimeMax(), reporting.getReportingChange()).get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 pollingPeriod = POLLING_PERIOD_HIGH;
@@ -106,6 +120,13 @@ public class ZigBeeConverterMeteringSummationDelivered extends ZigBeeBaseChannel
 
         // Add a listener
         clusterMetering.addAttributeListener(this);
+
+        // Create a configuration handler and get the available options
+        configReporting = new ZclReportingConfig(channel);
+        configReporting.setAnalogue(CHANGE_DEFAULT, CHANGE_MIN, CHANGE_MAX);
+        configOptions = new ArrayList<>();
+        configOptions.addAll(configReporting.getConfiguration());
+
         return true;
     }
 
@@ -117,6 +138,25 @@ public class ZigBeeConverterMeteringSummationDelivered extends ZigBeeBaseChannel
     @Override
     public void handleRefresh() {
         attribute.readValue(0);
+    }
+
+    @Override
+    public void updateConfiguration(@NonNull Configuration currentConfiguration,
+            Map<String, Object> updatedParameters) {
+        if (configReporting.updateConfiguration(currentConfiguration, updatedParameters)) {
+            try {
+                ZclAttribute attribute = clusterMetering
+                        .getAttribute(ZclMeteringCluster.ATTR_CURRENTSUMMATIONDELIVERED);
+                CommandResult reportingResponse;
+                reportingResponse = attribute.setReporting(configReporting.getReportingTimeMin(),
+                        configReporting.getReportingTimeMax(), configReporting.getReportingChange()).get();
+                handleReportingResponse(reportingResponse, configReporting.getPollingPeriod(),
+                        configReporting.getReportingTimeMax());
+            } catch (InterruptedException | ExecutionException e) {
+                logger.debug("{}: Summation delivered measurement exception setting reporting",
+                        endpoint.getIeeeAddress(), e);
+            }
+        }
     }
 
     @Override
