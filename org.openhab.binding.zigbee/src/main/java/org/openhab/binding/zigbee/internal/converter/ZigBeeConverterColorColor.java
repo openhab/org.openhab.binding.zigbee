@@ -23,7 +23,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,7 +43,7 @@ import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.types.Command;
-import org.openhab.core.types.UnDefType;
+import org.openhab.core.util.ColorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,9 +99,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     private boolean xChanged = false;
     private boolean yChanged = false;
 
-    private ColorModeEnum lastColorMode;
-
-    private final AtomicBoolean currentOnOffState = new AtomicBoolean(true);
+    private double lastMired = -1;
 
     private ZclColorControlConfig configColorControl;
     private ZclLevelControlConfig configLevelControl;
@@ -297,6 +294,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             colorAttributes.add(ZclColorControlCluster.ATTR_CURRENTY);
         }
         colorAttributes.add(ZclColorControlCluster.ATTR_COLORMODE);
+        colorAttributes.add(ZclColorControlCluster.ATTR_COLORTEMPERATURE);
         clusterColorControl.readAttributes(colorAttributes);
 
         if (clusterLevelControl != null) {
@@ -443,16 +441,10 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
     private void updateOnOff(OnOffType onOff) {
         boolean on = onOff == OnOffType.ON;
-        currentOnOffState.set(on);
-
-        if (lastColorMode != ColorModeEnum.COLOR_TEMPERATURE) {
-            // Extra temp variable to avoid thread sync concurrency issues on lastHSB
-            HSBType oldHSB = lastHSB;
-            HSBType newHSB = on ? lastHSB : new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), PercentType.ZERO);
-            updateChannelState(newHSB);
-        } else if (!on) {
-            updateChannelState(OnOffType.OFF);
-        }
+        // Extra temp variable to avoid thread sync concurrency issues on lastHSB
+        HSBType oldHSB = lastHSB;
+        HSBType newHSB = on ? lastHSB : new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), PercentType.ZERO);
+        updateChannelState(newHSB);
     }
 
     private void updateBrightness(PercentType brightness) {
@@ -460,9 +452,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         HSBType oldHSB = lastHSB;
         HSBType newHSB = new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), brightness);
         lastHSB = newHSB;
-        if (currentOnOffState.get() && lastColorMode != ColorModeEnum.COLOR_TEMPERATURE) {
-            updateChannelState(newHSB);
-        }
+        updateChannelState(newHSB);
     }
 
     private void updateColorHSB(DecimalType hue, PercentType saturation) {
@@ -470,9 +460,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         HSBType oldHSB = lastHSB;
         HSBType newHSB = new HSBType(hue, saturation, oldHSB.getBrightness());
         lastHSB = newHSB;
-        if (currentOnOffState.get() && lastColorMode != ColorModeEnum.COLOR_TEMPERATURE) {
-            updateChannelState(newHSB);
-        }
+        updateChannelState(newHSB);
     }
 
     private void updateColorXY(PercentType x, PercentType y) {
@@ -516,51 +504,78 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
         synchronized (colorUpdateSync) {
             try {
-                if (attribute.getClusterType().getId() == ZclOnOffCluster.CLUSTER_ID) {
-                    if (attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
-                        Boolean value = (Boolean) val;
-                        OnOffType onoff = value ? OnOffType.ON : OnOffType.OFF;
-                        updateOnOff(onoff);
-                    }
-                } else if (attribute.getClusterType().getId() == ZclLevelControlCluster.CLUSTER_ID) {
-                    if (attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
-                        PercentType brightness = levelToPercent((Integer) val);
-                        updateBrightness(brightness);
-                    }
-                } else if (attribute.getClusterType().getId() == ZclColorControlCluster.CLUSTER_ID) {
-                    if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTHUE) {
-                        int hue = (Integer) val;
-                        if (hue != lastHue) {
-                            lastHue = hue;
-                            hueChanged = true;
+                switch (attribute.getClusterType().getId()) {
+                    case ZclOnOffCluster.CLUSTER_ID:
+                        if (attribute.getId() == ZclOnOffCluster.ATTR_ONOFF) {
+                            Boolean value = (Boolean) val;
+                            OnOffType onoff = value ? OnOffType.ON : OnOffType.OFF;
+                            updateOnOff(onoff);
                         }
-                    } else if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTSATURATION) {
-                        int saturation = (Integer) val;
-                        if (saturation != lastSaturation) {
-                            lastSaturation = saturation;
-                            saturationChanged = true;
+                        break;
+
+                    case ZclLevelControlCluster.CLUSTER_ID:
+                        if (attribute.getId() == ZclLevelControlCluster.ATTR_CURRENTLEVEL) {
+                            PercentType brightness = levelToPercent((Integer) val);
+                            updateBrightness(brightness);
                         }
-                    } else if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTX) {
-                        int x = (Integer) val;
-                        if (x != lastX) {
-                            lastX = x;
-                            xChanged = true;
+                        break;
+
+                    case ZclColorControlCluster.CLUSTER_ID:
+                        switch (attribute.getId()) {
+                            case ZclColorControlCluster.ATTR_CURRENTHUE:
+                                int hue = (Integer) val;
+                                if (hue != lastHue) {
+                                    lastHue = hue;
+                                    hueChanged = true;
+                                }
+                                lastMired = -1;
+                                break;
+
+                            case ZclColorControlCluster.ATTR_CURRENTSATURATION:
+                                int saturation = (Integer) val;
+                                if (saturation != lastSaturation) {
+                                    lastSaturation = saturation;
+                                    saturationChanged = true;
+                                }
+                                lastMired = -1;
+                                break;
+
+                            case ZclColorControlCluster.ATTR_CURRENTX:
+                                int x = (Integer) val;
+                                if (x != lastX) {
+                                    lastX = x;
+                                    xChanged = true;
+                                }
+                                lastMired = -1;
+                                break;
+
+                            case ZclColorControlCluster.ATTR_CURRENTY:
+                                int y = (Integer) val;
+                                if (y != lastY) {
+                                    lastY = y;
+                                    yChanged = true;
+                                }
+                                lastMired = -1;
+                                break;
+
+                            case ZclColorControlCluster.ATTR_COLORTEMPERATURE:
+                                if (val instanceof Integer mired && mired != lastMired) {
+                                    HSBType ctHSB = ColorUtil.xyToHsb(ColorUtil.kelvinToXY(1e6 / mired));
+                                    lastHSB = new HSBType(ctHSB.getHue(), ctHSB.getSaturation(),
+                                            lastHSB.getBrightness());
+                                    updateChannelState(lastHSB);
+                                    lastMired = mired;
+                                }
+                                break;
+
+                            case ZclColorControlCluster.ATTR_COLORMODE:
+                                Integer colorMode = (Integer) val;
+                                ColorModeEnum colorModeEnum = ColorModeEnum.getByValue(colorMode);
+                                if (colorModeEnum != ColorModeEnum.COLOR_TEMPERATURE) {
+                                    lastMired = -1;
+                                }
+                                break;
                         }
-                    } else if (attribute.getId() == ZclColorControlCluster.ATTR_CURRENTY) {
-                        int y = (Integer) val;
-                        if (y != lastY) {
-                            lastY = y;
-                            yChanged = true;
-                        }
-                    } else if (attribute.getId() == ZclColorControlCluster.ATTR_COLORMODE) {
-                        Integer colorMode = (Integer) val;
-                        lastColorMode = ColorModeEnum.getByValue(colorMode);
-                        if (lastColorMode == ColorModeEnum.COLOR_TEMPERATURE) {
-                            updateChannelState(UnDefType.UNDEF);
-                        } else if (currentOnOffState.get()) {
-                            updateChannelState(lastHSB);
-                        }
-                    }
                 }
 
                 if (hueChanged || saturationChanged || xChanged || yChanged) {
@@ -641,5 +656,4 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
             supportsHue = true;
         }
     }
-
 }

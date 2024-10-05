@@ -148,24 +148,12 @@ public class ZigBeeConverterColorTemperatureTest {
                 stateCapture.capture());
         assertEquals(UnDefType.UNDEF, stateCapture.getValue());
 
-        // Set the color temperature and ensure that the channel is not set
-        colorTemperatureAttribute.updateValue(Integer.valueOf(100));
-        converter.attributeUpdated(colorTemperatureAttribute, colorTemperatureAttribute.getLastValue());
-        Mockito.verify(thingHandler, Mockito.times(1)).setChannelState(channelCapture.capture(),
-                stateCapture.capture());
-
         // Update the color mode to CURRENTX_AND_CURRENTY and ensure that the state is set to UNDEF
         colorModeAttribute.updateValue(ColorModeEnum.CURRENT_X_AND_CURRENT_Y.getKey());
         converter.attributeUpdated(colorModeAttribute, colorModeAttribute.getLastValue());
         Mockito.verify(thingHandler, Mockito.times(2)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
         assertEquals(UnDefType.UNDEF, stateCapture.getValue());
-
-        // Set the color temperature and ensure that the channel is not set
-        colorTemperatureAttribute.updateValue(Integer.valueOf(100));
-        converter.attributeUpdated(colorTemperatureAttribute, colorTemperatureAttribute.getLastValue());
-        Mockito.verify(thingHandler, Mockito.times(2)).setChannelState(channelCapture.capture(),
-                stateCapture.capture());
     }
 
     @Test
