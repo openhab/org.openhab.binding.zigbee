@@ -71,6 +71,10 @@ public class ZigBeeBindingConstants {
     public static final ChannelTypeUID CHANNEL_HUMIDITY_VALUE = new ChannelTypeUID(
             "zigbee:measurement_relativehumidity");
 
+    public static final String CHANNEL_NAME_PM25_VALUE = "pm25";
+    public static final String CHANNEL_LABEL_PM25_VALUE = "Particulate Matter PM2.5";
+    public static final ChannelTypeUID CHANNEL_PM25_VALUE = new ChannelTypeUID("zigbee:measurement_pm25");
+
     public static final String CHANNEL_NAME_PRESSURE_VALUE = "pressure";
     public static final String CHANNEL_LABEL_PRESSURE_VALUE = "Atmospheric Pressure";
     public static final ChannelTypeUID CHANNEL_PRESSURE_VALUE = new ChannelTypeUID("zigbee:measurement_pressure");
