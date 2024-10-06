@@ -44,6 +44,7 @@ import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.BaseBridgeHandler;
+import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.types.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,6 +150,8 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     private ScheduledExecutorService reconnectPollingScheduler;
     private final Object reconnectLock = new Object();
     private boolean currentReconnectAttemptFinished = false;
+
+    private Map<ThingUID, ZigBeeThingHandler> children = new HashMap<>();
 
     /**
      * The factory to create the converters for the different channels.
@@ -1138,5 +1141,30 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
     @Override
     public @NonNull ThingUID getUID() {
         return getThing().getUID();
+    }
+
+    @Override
+    public void childHandlerInitialized(ThingHandler childHandler, Thing childThing) {
+        children.put(childThing.getUID(), (ZigBeeThingHandler) childHandler);
+        logger.debug("ZigBee coordinator {} child addded {}. Total {} children.", getThing().getUID(),
+                childThing.getUID(), children.size());
+
+    }
+
+    @Override
+    public void childHandlerDisposed(ThingHandler childHandler, Thing childThing) {
+        children.remove(childThing.getUID());
+        logger.debug("ZigBee coordinator {} child removed {}. Total {} children.", getThing().getUID(),
+                childThing.getUID(), children.size());
+    }
+
+    public boolean isChildInitialized(IeeeAddress address) {
+        for (ZigBeeThingHandler child : children.values()) {
+            if (child.getIeeeAddress().equals(address)) {
+                return child.isDeviceInitialized();
+            }
+        }
+
+        return false;
     }
 }
