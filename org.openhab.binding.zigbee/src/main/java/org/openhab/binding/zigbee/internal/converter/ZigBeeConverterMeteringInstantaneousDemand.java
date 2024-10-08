@@ -172,7 +172,7 @@ public class ZigBeeConverterMeteringInstantaneousDemand extends ZigBeeBaseChanne
 
         Integer iDiv = (Integer) divisorAttribute.readValue(Long.MAX_VALUE);
         Integer iMult = (Integer) multiplierAttribute.readValue(Long.MAX_VALUE);
-        if (iDiv == null || iMult == null) {
+        if (iDiv == null || iMult == null || iDiv == 0 || iMult == 0) {
             iDiv = 1;
             iMult = 1;
         }

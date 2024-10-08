@@ -211,7 +211,7 @@ public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConve
 
         divisor = (Integer) divAttribute.readValue(Long.MAX_VALUE);
         multiplier = (Integer) mulAttribute.readValue(Long.MAX_VALUE);
-        if (divisor == null || multiplier == null) {
+        if (divisor == null || multiplier == null || divisor == 0 || multiplier == 0) {
             divisor = 1;
             multiplier = 1;
         }
