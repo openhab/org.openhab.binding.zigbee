@@ -473,13 +473,12 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             otaServer.addListener(this);
         }
 
-        updateStatus(ThingStatus.ONLINE);
-
         startPolling();
 
         nodeInitialised = true;
 
         logger.debug("{}: Done initialising ZigBee Thing handler", nodeIeeeAddress);
+        updateStatus(ThingStatus.ONLINE);
 
         // Save the network state
         coordinatorHandler.serializeNetwork(node.getIeeeAddress());
@@ -518,7 +517,9 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * If the channel converter responds to a command, then the thing is considered ONLINE
      */
     public void alive() {
-        updateStatus(ThingStatus.ONLINE);
+        if (nodeInitialised) {
+            updateStatus(ThingStatus.ONLINE);
+        }
     }
 
     private synchronized void initializeDevice() {
@@ -811,7 +812,9 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         }
         logger.debug("{}: Updating ZigBee channel state {} to {}", nodeIeeeAddress, channel, state);
         updateState(channel, state);
-        updateStatus(ThingStatus.ONLINE);
+        if (nodeInitialised) {
+            updateStatus(ThingStatus.ONLINE);
+        }
         isAliveTracker.resetTimer(this);
     }
 
@@ -830,8 +833,10 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             return;
         }
         logger.debug("{}: Triggering ZigBee channel {} with event {}", nodeIeeeAddress, channel, event);
-        super.triggerChannel(channel, event);
-        updateStatus(ThingStatus.ONLINE);
+        triggerChannel(channel, event);
+        if (nodeInitialised) {
+            updateStatus(ThingStatus.ONLINE);
+        }
         isAliveTracker.resetTimer(this);
     }
 
