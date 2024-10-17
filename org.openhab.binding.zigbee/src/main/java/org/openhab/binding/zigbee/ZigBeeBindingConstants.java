@@ -296,7 +296,7 @@ public class ZigBeeBindingConstants {
 
     public static final String OFFLINE_COMMS_FAIL = "@text/zigbee.status.offline_commserror";
     public static final String OFFLINE_BAD_RESPONSE = "@text/zigbee.status.offline_badresponse";
-    public static final String OFFLINE_NOT_INITIALIZED = "@text/zigbee.status.offline_notinitialized";
+    public static final String OFFLINE_NETWORK_NOT_INITIALIZED = "@text/zigbee.status.offline_networknotinitialized";
     public static final String OFFLINE_INITIALIZE_FAIL = "@text/zigbee.status.offline_initializefail";
     public static final String OFFLINE_STARTUP_FAIL = "@text/zigbee.status.offline_startupfail";
     public static final String OFFLINE_NO_ADDRESS = "@text/zigbee.status.offline_noaddress";
