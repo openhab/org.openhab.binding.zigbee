@@ -528,7 +528,14 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         zigbeeTransport.updateTransportConfig(transportConfig);
 
         // Call startup. The setting of the bring to ONLINE will be done via the state listener.
-        if (networkManager.startup(initializeNetwork) != ZigBeeStatus.SUCCESS) {
+        ZigBeeStatus startupStatus = networkManager.startup(initializeNetwork);
+        if (startupStatus == ZigBeeStatus.NO_NETWORK && initializeNetwork == false) {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE,
+                    ZigBeeBindingConstants.OFFLINE_NETWORK_NOT_INITIALIZED);
+            return;
+        }
+
+        if (startupStatus != ZigBeeStatus.SUCCESS) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NONE, ZigBeeBindingConstants.OFFLINE_STARTUP_FAIL);
             return;
         }
@@ -540,10 +547,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         currentExtendedPanId = networkManager.getZigBeeExtendedPanId();
         logger.debug("ZigBee initialise done. channel={}, PanId={}  EPanId={}", currentChannel, currentPanId,
                 currentExtendedPanId);
-
-        // Set initializeNetwork to false to ensure that if communications to the dongle restarts, we don't reinitialise
-        // the network again!
-        initializeNetwork = false;
 
         // Set initializeNetwork to false to ensure that if communications to the dongle restarts, we don't reinitialise
         // the network again!
