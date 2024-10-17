@@ -29,6 +29,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
@@ -37,7 +38,10 @@ import org.openhab.core.config.core.Configuration;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
+import org.openhab.core.thing.ThingStatus;
+import org.openhab.core.thing.ThingStatusInfo;
 import org.openhab.core.thing.ThingUID;
+import org.openhab.core.thing.binding.ThingHandlerCallback;
 import org.openhab.core.thing.type.ThingType;
 import org.openhab.core.thing.type.ThingTypeBuilder;
 
@@ -65,6 +69,18 @@ public class ZigBeeThingHandlerTest {
         privateMethod.setAccessible(true);
 
         return (List<Integer>) privateMethod.invoke(handler, initialClusters, newClusters);
+    }
+
+    @Test
+    public void testAliveWhenNotInitialized() {
+        ZigBeeThingHandler handler = new ZigBeeThingHandler(null, null, null);
+
+        ThingHandlerCallback callback = mock(ThingHandlerCallback.class);
+        handler.setCallback(callback);
+
+        handler.alive();
+
+        verify(callback, never()).statusUpdated(any(), any());
     }
 
     @Test
@@ -160,6 +176,9 @@ public class ZigBeeThingHandlerTest {
         injectIntoPrivateField(zigBeeThingHandler, zigBeeCoordinatorHandler, "coordinatorHandler");
         injectIntoPrivateField(zigBeeThingHandler, ieeeAddress, "nodeIeeeAddress");
 
+        ThingHandlerCallback callback = mock(ThingHandlerCallback.class);
+        zigBeeThingHandler.setCallback(callback);
+
         // call doNodeInitialisation by reflection as it is not accessible
         Method doNodeInitialisationMethod = ZigBeeThingHandler.class.getDeclaredMethod("doNodeInitialisation",
                 (Class<Object>[]) null);
@@ -177,6 +196,13 @@ public class ZigBeeThingHandlerTest {
             Mockito.verify(thing, times(1)).setProperty(ZigBeeBindingConstants.THING_PROPERTY_DEVICE_INITIALIZED,
                     Boolean.TRUE.toString());
         }
+
+        ArgumentCaptor<ThingStatusInfo> captor = ArgumentCaptor.forClass(ThingStatusInfo.class);
+        verify(callback, times(1)).statusUpdated(any(), captor.capture());
+
+        ThingStatusInfo status = captor.getValue();
+        assertEquals(ThingStatus.ONLINE, status.getStatus());
+
     }
 
     private ZigBeeChannelConverterFactory mockZigBeeChannelConverterFactory(
