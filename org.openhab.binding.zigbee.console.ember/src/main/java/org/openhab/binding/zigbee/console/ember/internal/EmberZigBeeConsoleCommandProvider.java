@@ -57,15 +57,15 @@ public class EmberZigBeeConsoleCommandProvider implements ZigBeeConsoleCommandPr
     private static final ThingTypeUID THING_TYPE_SLZB06 = new ThingTypeUID(BINDING_ID, "coordinator_slzb06");
 
     @SuppressWarnings("null")
-    public static final List<ZigBeeConsoleCommand> EMBER_COMMANDS = unmodifiableList(asList(
-            new EmberConsoleMmoHashCommand(), new EmberConsoleNcpAddressTableCommand(),
-            new EmberConsoleNcpChildrenCommand(), new EmberConsoleNcpConfigurationCommand(),
-            new EmberConsoleNcpCountersCommand(), new EmberConsoleNcpHandlerCommand(),
-            new EmberConsoleNcpMulticastCommand(), new EmberConsoleNcpPolicyCommand(),
-            new EmberConsoleNcpRoutingCommand(), new EmberConsoleNcpScanCommand(), new EmberConsoleNcpStateCommand(),
-            new EmberConsoleSecurityStateCommand(), new EmberConsoleNcpStateCommand(),
-            new EmberConsoleNcpTokenCommand(), new EmberConsoleNcpValueCommand(), new EmberConsoleNcpVersionCommand(),
-            new EmberConsoleTransientKeyCommand()));
+    public static final List<ZigBeeConsoleCommand> EMBER_COMMANDS = unmodifiableList(
+            asList(new EmberConsoleMmoHashCommand(), new EmberConsoleNcpAddressTableCommand(),
+                    new EmberConsoleNcpChildrenCommand(), new EmberConsoleNcpConfigurationCommand(),
+                    new EmberConsoleNcpCountersCommand(), new EmberConsoleNcpHandlerCommand(),
+                    new EmberConsoleNcpMulticastCommand(), new EmberConsoleNcpPolicyCommand(),
+                    new EmberConsoleNcpRoutingCommand(), new EmberConsoleNcpScanCommand(),
+                    new EmberConsoleSecurityStateCommand(), new EmberConsoleNcpStateCommand(),
+                    new EmberConsoleNcpTokenCommand(), new EmberConsoleNcpValueCommand(),
+                    new EmberConsoleNcpVersionCommand(), new EmberConsoleTransientKeyCommand()));
 
     private Map<String, ZigBeeConsoleCommand> emberCommands = EMBER_COMMANDS.stream()
             .collect(toMap(ZigBeeConsoleCommand::getCommand, identity()));
