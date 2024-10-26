@@ -145,26 +145,28 @@ public class ZigBeeConsoleCommandExtension extends AbstractConsoleCommandExtensi
                 .filter(thing -> BINDING_ID.equals(thing.getThingTypeUID().getBindingId())).collect(toList());
 
         StringBuilder builder = new StringBuilder();
-        builder.append("UID                             Type                Addr   Ieee Addr  Init  Lqi  RSSI\n");
+        builder.append(
+                "UID                                                      Type             Addr  Ieee Addr         Init   LQI  RSSI\n");
 
         for (Thing thing : zigbeeThings) {
-            builder.append(String.format("%30s", thing.getUID()));
-            ZigBeeThingHandler handler = (ZigBeeThingHandler) thing.getHandler();
-            if (handler == null) {
+            builder.append(String.format("%-55s  ", thing.getUID()));
+            if (thing.getHandler() == null || !(thing.getHandler() instanceof ZigBeeThingHandler)) {
                 builder.append("** No Handler");
             } else {
+                ZigBeeThingHandler handler = (ZigBeeThingHandler) thing.getHandler();
                 ZigBeeNode node = handler.getNode();
                 ZigBeeLinkQualityStatistics lqi = node.getLinkQualityStatistics();
 
-                builder.append(String.format("%15s  ", node.getLogicalType()));
+                builder.append(String.format("%-15s  ", node.getLogicalType()));
                 builder.append(String.format("%04X  ", node.getNetworkAddress()));
-                builder.append(String.format("%s  ", node.getIeeeAddress()));
-                builder.append(String.format("%s  ", handler.isDeviceInitialized() ? "TRUE" : "FALSE"));
-                builder.append(String.format("%3d  ", lqi.getLastReceivedLqi()));
-                builder.append(String.format("%3d  ", lqi.getLastReceivedRssi()));
-
-                builder.append("\n");
+                builder.append(String.format("%-16s  ", node.getIeeeAddress()));
+                builder.append(String.format("%-5s  ", handler.isDeviceInitialized() ? "TRUE" : "FALSE"));
+                builder.append(
+                        lqi.getLastReceivedLqi() == null ? "   " : String.format("%3d  ", lqi.getLastReceivedLqi()));
+                builder.append(
+                        lqi.getLastReceivedLqi() == null ? "   " : String.format("%3d  ", lqi.getLastReceivedRssi()));
             }
+            builder.append("\n");
         }
 
         return builder.toString();
