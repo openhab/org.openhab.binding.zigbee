@@ -909,7 +909,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
 
     @Override
     public void nodeRemoved(ZigBeeNode node) {
-        // Make sure it's our node that's updated
+        // Make sure it's our node that's removed
         if (!node.getIeeeAddress().equals(nodeIeeeAddress)) {
             return;
         }
@@ -1134,10 +1134,19 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     /**
      * Returns true if the device has been initialised, and all channel converters have initialised.
      *
-     * @return
+     * @return true if the device has been initialised
      */
     public boolean isDeviceInitialized() {
         return Boolean
                 .parseBoolean(thing.getProperties().get(ZigBeeBindingConstants.THING_PROPERTY_DEVICE_INITIALIZED));
+    }
+
+    /**
+     * Gets the {@link ZigBeeNode} associated with this thing
+     *
+     * @return the {@link ZigBeeNode} associated with this thing
+     */
+    public ZigBeeNode getNode() {
+        return coordinatorHandler.getNode(nodeIeeeAddress);
     }
 }

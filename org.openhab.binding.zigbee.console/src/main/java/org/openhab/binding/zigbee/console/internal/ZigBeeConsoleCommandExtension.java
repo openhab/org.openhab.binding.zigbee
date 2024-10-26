@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 
 import org.openhab.binding.zigbee.console.ZigBeeConsoleCommandProvider;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
+import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.core.io.console.Console;
 import org.openhab.core.io.console.extensions.AbstractConsoleCommandExtension;
 import org.openhab.core.io.console.extensions.ConsoleCommandExtension;
@@ -39,7 +40,9 @@ import org.openhab.core.thing.ThingUID;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
+import com.zsmartsystems.zigbee.ZigBeeLinkQualityStatistics;
 import com.zsmartsystems.zigbee.ZigBeeNetworkManager;
+import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.console.ZigBeeConsoleCommand;
 
 /**
@@ -106,12 +109,15 @@ public class ZigBeeConsoleCommandExtension extends AbstractConsoleCommandExtensi
 
         result.add(buildCommandUsage(
                 "setBridgeUid [bridgeUid] - sets the UID of the bridge to be used in subsequent commands; only required if there is more than 1 bridge"));
+        result.add(buildCommandUsage("things - list all zigbee things and their address"));
 
         return result;
     }
 
     private String handleCommand(String commandName, String[] args) throws CommandExecutionException {
-        if ("setBridgeUid".equals(commandName)) {
+        if ("things".equals(commandName)) {
+            return handleThingsCommand(args);
+        } else if ("setBridgeUid".equals(commandName)) {
             return handleSetBridgeUidCommand(args);
         } else {
             return handleZigbeeCommand(commandName, args);
@@ -132,6 +138,38 @@ public class ZigBeeConsoleCommandExtension extends AbstractConsoleCommandExtensi
                 throw new CommandExecutionException("Please provide a valid bridge UID");
             }
         }
+    }
+
+    private String handleThingsCommand(String[] args) throws CommandExecutionException {
+        List<Thing> zigbeeThings = thingRegistry.stream()
+                .filter(thing -> BINDING_ID.equals(thing.getThingTypeUID().getBindingId())).collect(toList());
+
+        StringBuilder builder = new StringBuilder();
+        builder.append(
+                "UID                                                      Type             Addr  Ieee Addr         Init   LQI  RSSI\n");
+
+        for (Thing thing : zigbeeThings) {
+            builder.append(String.format("%-55s  ", thing.getUID()));
+            if (thing.getHandler() == null || !(thing.getHandler() instanceof ZigBeeThingHandler)) {
+                builder.append("** No Handler");
+            } else {
+                ZigBeeThingHandler handler = (ZigBeeThingHandler) thing.getHandler();
+                ZigBeeNode node = handler.getNode();
+                ZigBeeLinkQualityStatistics lqi = node.getLinkQualityStatistics();
+
+                builder.append(String.format("%-15s  ", node.getLogicalType()));
+                builder.append(String.format("%04X  ", node.getNetworkAddress()));
+                builder.append(String.format("%-16s  ", node.getIeeeAddress()));
+                builder.append(String.format("%-5s  ", handler.isDeviceInitialized() ? "TRUE" : "FALSE"));
+                builder.append(
+                        lqi.getLastReceivedLqi() == null ? "   " : String.format("%3d  ", lqi.getLastReceivedLqi()));
+                builder.append(
+                        lqi.getLastReceivedLqi() == null ? "   " : String.format("%3d  ", lqi.getLastReceivedRssi()));
+            }
+            builder.append("\n");
+        }
+
+        return builder.toString();
     }
 
     private String handleZigbeeCommand(String commandName, String[] args) throws CommandExecutionException {
