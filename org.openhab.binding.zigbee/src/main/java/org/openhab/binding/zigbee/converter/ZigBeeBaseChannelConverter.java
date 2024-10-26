@@ -484,6 +484,8 @@ public abstract class ZigBeeBaseChannelConverter {
         } else if (command instanceof Number) {
             // No scale, so assumed to be Celsius
             value = BigDecimal.valueOf(((Number) command).doubleValue());
+        } else {
+            return 0;
         }
         return value.setScale(2, RoundingMode.CEILING).multiply(TEMPERATURE_MULTIPLIER).intValue();
     }
