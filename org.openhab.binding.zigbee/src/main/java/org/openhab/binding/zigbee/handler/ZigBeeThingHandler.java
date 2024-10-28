@@ -1149,4 +1149,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     public ZigBeeNode getNode() {
         return coordinatorHandler.getNode(nodeIeeeAddress);
     }
+
+    public void putStateDescription(ChannelUID channelUID, StateDescription stateDescription) {
+        stateDescriptions.put(channelUID, stateDescription);
+    }
 }

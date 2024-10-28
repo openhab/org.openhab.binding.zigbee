@@ -52,11 +52,11 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
 
     private Logger logger = LoggerFactory.getLogger(ZigBeeConverterColorTemperature.class);
 
-    private ZclColorControlCluster clusterColorControl;
+    protected ZclColorControlCluster clusterColorControl;
     private ZclOnOffCluster clusterOnOff;
 
-    private double kelvinMin;
-    private double kelvinMax;
+    protected double kelvinMin;
+    protected double kelvinMax;
     private double kelvinRange;
 
     // Default range of 2000K to 6500K
