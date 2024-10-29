@@ -33,8 +33,8 @@ import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.MoveToColorTemperature
 import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
 
 /**
- * Channel converter for color temperature, converting between the color control cluster and a Kelvin
- * QuantityType<Temperature> channel.
+ * Channel converter for absolute color temperature based on {@link ZigBeeConverterColorTemperature}, that converts
+ * between the color control cluster and a QuantityType<Temperature> channel.
  *
  * @author Andrew Fiddian-Green - Initial Contribution
  */
@@ -85,7 +85,7 @@ public class ZigBeeConverterColorTemperatureAbs extends ZigBeeConverterColorTemp
             logger.debug("{}: ZigBee attribute reports {}  on endpoint {}", endpoint.getIeeeAddress(), attribute,
                     endpoint.getEndpointId());
             if (val instanceof Integer mired) {
-                updateChannelState(QuantityType.valueOf(1000000 / mired, Units.KELVIN));
+                updateChannelState(QuantityType.valueOf(mired, Units.MIRED));
             }
             return;
         }
