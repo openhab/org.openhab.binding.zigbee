@@ -150,7 +150,7 @@ public class ZigBeeBindingConstants {
 
     public static final String CHANNEL_NAME_POWER_BATTERYPERCENT = "batterylevel";
     public static final String CHANNEL_LABEL_POWER_BATTERYPERCENT = "Battery Level";
-    public static final ChannelTypeUID CHANNEL_POWER_BATTERYPERCENT = new ChannelTypeUID("system:battery-level");
+    public static final ChannelTypeUID CHANNEL_POWER_BATTERYPERCENT = SYSTEM_CHANNEL_BATTERY_LEVEL.getUID();
 
     public static final String CHANNEL_NAME_POWER_BATTERYVOLTAGE = "batteryvoltage";
     public static final String CHANNEL_LABEL_POWER_BATTERYVOLTAGE = "Battery Voltage";
