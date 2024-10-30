@@ -58,8 +58,8 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_LABEL_COLOR_TEMPERATURE = "Color Temperature";
     public static final ChannelTypeUID CHANNEL_COLOR_TEMPERATURE = SYSTEM_COLOR_TEMPERATURE.getUID();
 
-    public static final String CHANNEL_NAME_COLOR_TEMPERATURE_ABS = "colortemperature_abs";
-    public static final ChannelTypeUID CHANNEL_COLOR_TEMPERATURE_ABS = SYSTEM_COLOR_TEMPERATURE_ABS.getUID();
+    public static final String CHANNEL_NAME_COLOR_TEMP_ABSOLUTE = "colortempabsolute";
+    public static final ChannelTypeUID CHANNEL_COLOR_TEMP_ABSOLUTE = SYSTEM_COLOR_TEMPERATURE_ABS.getUID();
 
     public static final String CHANNEL_NAME_ILLUMINANCE_VALUE = "illuminance";
     public static final String CHANNEL_LABEL_ILLUMINANCE_VALUE = "Illuminance";

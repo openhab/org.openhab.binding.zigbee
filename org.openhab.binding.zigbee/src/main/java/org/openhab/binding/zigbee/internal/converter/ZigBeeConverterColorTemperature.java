@@ -57,7 +57,6 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
 
     protected double kelvinMin;
     protected double kelvinMax;
-    private double kelvinRange;
 
     // Default range of 2000K to 6500K
     private final Integer DEFAULT_MIN_TEMPERATURE_IN_KELVIN = 2000;
@@ -268,8 +267,6 @@ public class ZigBeeConverterColorTemperature extends ZigBeeBaseChannelConverter 
         } else {
             kelvinMax = miredToKelvin(minTemperatureInMired);
         }
-
-        kelvinRange = kelvinMax - kelvinMin;
     }
 
     /**

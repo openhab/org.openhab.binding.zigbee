@@ -38,9 +38,9 @@ import com.zsmartsystems.zigbee.zcl.protocol.ZclClusterType;
  *
  * @author Andrew Fiddian-Green - Initial Contribution
  */
-public class ZigBeeConverterColorTemperatureAbs extends ZigBeeConverterColorTemperature {
+public class ZigBeeConverterColorTempAbsolute extends ZigBeeConverterColorTemperature {
 
-    private Logger logger = LoggerFactory.getLogger(ZigBeeConverterColorTemperatureAbs.class);
+    private Logger logger = LoggerFactory.getLogger(ZigBeeConverterColorTempAbsolute.class);
 
     @Override
     public boolean initializeConverter(ZigBeeThingHandler thing) {
@@ -71,9 +71,9 @@ public class ZigBeeConverterColorTemperatureAbs extends ZigBeeConverterColorTemp
         return super.getChannel(thingUID, endpoint) == null ? null
                 : ChannelBuilder
                         .create(createChannelUID(thingUID, endpoint,
-                                ZigBeeBindingConstants.CHANNEL_NAME_COLOR_TEMPERATURE_ABS),
+                                ZigBeeBindingConstants.CHANNEL_NAME_COLOR_TEMP_ABSOLUTE),
                                 ZigBeeBindingConstants.ITEM_TYPE_NUMBER_TEMPERATURE)
-                        .withType(ZigBeeBindingConstants.CHANNEL_COLOR_TEMPERATURE_ABS)
+                        .withType(ZigBeeBindingConstants.CHANNEL_COLOR_TEMP_ABSOLUTE)
                         .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_COLOR_TEMPERATURE)
                         .withProperties(createProperties(endpoint)).build();
     }
@@ -82,7 +82,7 @@ public class ZigBeeConverterColorTemperatureAbs extends ZigBeeConverterColorTemp
     public void attributeUpdated(ZclAttribute attribute, Object val) {
         if (attribute.getClusterType() == ZclClusterType.COLOR_CONTROL
                 && attribute.getId() == ZclColorControlCluster.ATTR_COLORTEMPERATURE) {
-            logger.debug("{}: ZigBee attribute reports {}  on endpoint {}", endpoint.getIeeeAddress(), attribute,
+            logger.debug("{}: ZigBee attribute reports {} on endpoint {}", endpoint.getIeeeAddress(), attribute,
                     endpoint.getEndpointId());
             if (val instanceof Integer mired) {
                 updateChannelState(QuantityType.valueOf(mired, Units.MIRED));
