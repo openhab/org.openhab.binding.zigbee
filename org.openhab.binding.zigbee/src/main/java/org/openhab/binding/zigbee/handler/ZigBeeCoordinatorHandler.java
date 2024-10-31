@@ -1161,13 +1161,24 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 childThing.getUID(), children.size());
     }
 
+    /**
+     * Check if the child defined with the {@link IeeeAddress} has completed initialisation
+     *
+     * @param address the {@link IeeeAddress}
+     * @return true if the child is initialised
+     */
     public boolean isChildInitialized(IeeeAddress address) {
+        logger.debug("{}: ZigBee coordinator {} check if child is initialised", address, getThing().getUID());
         for (ZigBeeThingHandler child : children.values()) {
             if (child.getIeeeAddress().equals(address)) {
+                logger.debug("{}: ZigBee coordinator {} check if child is initialised - found {}", address,
+                        getThing().getUID(), child.isDeviceInitialized());
                 return child.isDeviceInitialized();
             }
         }
 
+        logger.debug("{}: ZigBee coordinator {} check if child is initialised - not found", address,
+                getThing().getUID());
         return false;
     }
 }
