@@ -69,7 +69,7 @@ public class ZigBeeDiscoveryService extends AbstractDiscoveryService {
     private final static int SEARCH_TIME = 60;
     private final static String CONFIG_PROPERTY_CREATE_RESULTS_ONLY_DURING_ACTIVE_SCANS = "createResultsOnlyDuringActiveScans";
 
-    private boolean createResultsOnlyDuringActiveScans = false;
+    private boolean createResultsOnlyDuringActiveScans = true;
     private volatile boolean scanStarted = false;
 
     private final Set<ZigBeeCoordinatorHandler> coordinatorHandlers = new CopyOnWriteArraySet<>();
