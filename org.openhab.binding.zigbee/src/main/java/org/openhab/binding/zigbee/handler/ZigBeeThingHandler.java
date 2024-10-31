@@ -433,7 +433,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                 }
             }
         } catch (Exception e) {
-            logger.error("{}: Exception creating channels ", nodeIeeeAddress, e);
+            logger.error("{}: Exception creating channels", nodeIeeeAddress, e);
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.HANDLER_INITIALIZING_ERROR);
             return;
         }

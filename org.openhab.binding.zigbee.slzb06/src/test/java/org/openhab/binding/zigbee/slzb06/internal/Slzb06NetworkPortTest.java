@@ -26,7 +26,7 @@ public class Slzb06NetworkPortTest {
     public void processReceivedData() {
         Slzb06NetworkPort port = new Slzb06NetworkPort(null, 0);
 
-        byte[] chunk = new byte[Slzb06NetworkPort.RX_BUFFER_LEN - 1];
+        byte[] chunk = new byte[Slzb06NetworkPort.RX_BUFFER_LEN - 2];
         byte[] extra = new byte[1];
 
         for (int i = 0; i < chunk.length; i++) {
@@ -37,7 +37,7 @@ public class Slzb06NetworkPortTest {
         extra[0] = 1;
         port.processReceivedData(extra, 1);
 
-        for (int i = 0; i < chunk.length - 1; i++) {
+        for (int i = 0; i < chunk.length; i++) {
             assertEquals(0, port.read(1));
         }
         assertEquals(1, port.read(1));
@@ -47,10 +47,10 @@ public class Slzb06NetworkPortTest {
     public void processReceivedDataOverflow() {
         Slzb06NetworkPort port = new Slzb06NetworkPort(null, 0);
 
-        byte[] chunk = new byte[Slzb06NetworkPort.RX_BUFFER_LEN];
+        byte[] chunk = new byte[Slzb06NetworkPort.RX_BUFFER_LEN - 1];
         byte[] extra = new byte[1];
 
-        for (int i = 0; i < Slzb06NetworkPort.RX_BUFFER_LEN; i++) {
+        for (int i = 0; i < chunk.length; i++) {
             chunk[i] = 0;
         }
         port.processReceivedData(chunk, chunk.length);
