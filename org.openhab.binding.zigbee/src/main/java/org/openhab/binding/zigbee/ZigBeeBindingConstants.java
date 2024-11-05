@@ -58,6 +58,9 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_LABEL_COLOR_TEMPERATURE = "Color Temperature";
     public static final ChannelTypeUID CHANNEL_COLOR_TEMPERATURE = SYSTEM_COLOR_TEMPERATURE.getUID();
 
+    public static final String CHANNEL_NAME_COLOR_TEMP_ABSOLUTE = "colortempabsolute";
+    public static final ChannelTypeUID CHANNEL_COLOR_TEMP_ABSOLUTE = SYSTEM_COLOR_TEMPERATURE_ABS.getUID();
+
     public static final String CHANNEL_NAME_ILLUMINANCE_VALUE = "illuminance";
     public static final String CHANNEL_LABEL_ILLUMINANCE_VALUE = "Illuminance";
     public static final ChannelTypeUID CHANNEL_ILLUMINANCE_VALUE = new ChannelTypeUID("zigbee:measurement_illuminance");
@@ -147,7 +150,7 @@ public class ZigBeeBindingConstants {
 
     public static final String CHANNEL_NAME_POWER_BATTERYPERCENT = "batterylevel";
     public static final String CHANNEL_LABEL_POWER_BATTERYPERCENT = "Battery Level";
-    public static final ChannelTypeUID CHANNEL_POWER_BATTERYPERCENT = new ChannelTypeUID("system:battery-level");
+    public static final ChannelTypeUID CHANNEL_POWER_BATTERYPERCENT = SYSTEM_CHANNEL_BATTERY_LEVEL.getUID();
 
     public static final String CHANNEL_NAME_POWER_BATTERYVOLTAGE = "batteryvoltage";
     public static final String CHANNEL_LABEL_POWER_BATTERYVOLTAGE = "Battery Voltage";
