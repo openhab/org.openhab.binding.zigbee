@@ -234,7 +234,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
 
         // Process the network key
         try {
-            logger.debug("Network Key String {}", networkKeyString);
+            logger.trace("Network Key String {}", networkKeyString);
             networkKey = new ZigBeeKey(networkKeyString);
         } catch (IllegalArgumentException e) {
             networkKey = new ZigBeeKey();
@@ -247,11 +247,11 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             logger.debug("Network key initialised {}", networkKey);
         }
 
-        logger.debug("Network key final array {}", networkKey);
+        logger.trace("Network key final array {}", networkKey);
 
         // Process the link key
         try {
-            logger.debug("Link Key String {}", linkKeyString);
+            logger.trace("Link Key String {}", linkKeyString);
             linkKey = new ZigBeeKey(linkKeyString);
         } catch (IllegalArgumentException e) {
             linkKey = KEY_ZIGBEE_ALLIANCE_O9;
@@ -319,7 +319,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
             }
         }
 
-        logger.debug("Link key final array {}", linkKey);
+        logger.trace("Link key final array {}", linkKey);
 
         initializeDongle();
 
@@ -509,8 +509,11 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 currentChannel, currentPanId, currentExtendedPanId);
 
         if (initializeNetwork) {
-            logger.debug("Link key initialise {}", linkKey);
-            logger.debug("Network key initialise {}", networkKey);
+            logger.info("ZigBee Initialise: Creating new network: channel={}, PanID={}, EPanId={}",
+                    ZigBeeChannel.create(channelId), panId, extendedPanId);
+            logger.trace("ZigBee Initialise: Link key    {}", linkKey);
+            logger.trace("ZigBee Initialise: Network key {}", networkKey);
+
             networkManager.setZigBeeLinkKey(linkKey);
             networkManager.setZigBeeNetworkKey(networkKey);
             networkManager.setZigBeeChannel(ZigBeeChannel.create(channelId));
