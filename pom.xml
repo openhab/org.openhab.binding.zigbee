@@ -4,13 +4,13 @@
   <parent>
     <groupId>org.openhab.addons</groupId>
     <artifactId>org.openhab.addons.reactor</artifactId>
-    <version>4.3.0-SNAPSHOT</version>
+    <version>4.3.0.M3</version>
     <relativePath/>
   </parent>
 
   <groupId>org.openhab.addons.bundles</groupId>
   <artifactId>org.openhab.addons.zigbee.reactor</artifactId>
-  <version>4.3.0-SNAPSHOT</version>
+  <version>4.3.0.M3</version>
   <!-- do not delete the version here as it is required by the release process -->
 
   <name>openHAB Add-ons :: Bundles :: ZigBee Reactor</name>
@@ -48,7 +48,7 @@
     <connection>scm:git:${scm.gitBaseUrl}/org.openhab.binding.zigbee.git</connection>
     <developerConnection>scm:git:${scm.gitBaseUrl}/org.openhab.binding.zigbee.git</developerConnection>
     <url>https://github.com/openhab/org.openhab.binding.zigbee</url>
-    <tag>HEAD</tag>
+    <tag>4.3.0.M3</tag>
   </scm>
 
   <distributionManagement>
