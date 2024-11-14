@@ -92,7 +92,7 @@ public class ZigBeeConverterMeteringSummationDelivered extends ZigBeeBaseChannel
                         .getAttribute(ZclMeteringCluster.ATTR_CURRENTSUMMATIONDELIVERED);
                 // Configure reporting
                 CommandResult reportingResponse = attribute.setReporting(reporting.getReportingTimeMin(),
-                        reporting.getReportingTimeMax(), reporting.getReportingChange()).get();
+                        reporting.getReportingTimeMax(), Long.valueOf(reporting.getReportingChange())).get();
                 handleReportingResponse(reportingResponse, POLLING_PERIOD_HIGH, REPORTING_PERIOD_DEFAULT_MAX);
             } else {
                 pollingPeriod = POLLING_PERIOD_HIGH;
