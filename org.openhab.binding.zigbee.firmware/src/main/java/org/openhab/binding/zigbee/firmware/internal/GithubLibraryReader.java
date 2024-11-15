@@ -288,7 +288,7 @@ public class GithubLibraryReader {
         }
 
         String responseString = response.getContentAsString();
-        logger.debug("GitHub response: {}", responseString);
+        logger.trace("GitHub response: {}", responseString);
 
         Type listType = new TypeToken<ArrayList<DirectoryFileEntry>>() {
         }.getType();
