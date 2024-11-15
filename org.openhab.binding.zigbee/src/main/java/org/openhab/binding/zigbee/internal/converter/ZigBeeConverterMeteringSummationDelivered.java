@@ -149,7 +149,8 @@ public class ZigBeeConverterMeteringSummationDelivered extends ZigBeeBaseChannel
                         .getAttribute(ZclMeteringCluster.ATTR_CURRENTSUMMATIONDELIVERED);
                 CommandResult reportingResponse;
                 reportingResponse = attribute.setReporting(configReporting.getReportingTimeMin(),
-                        configReporting.getReportingTimeMax(), configReporting.getReportingChange()).get();
+                        configReporting.getReportingTimeMax(), Long.valueOf(configReporting.getReportingChange()))
+                        .get();
                 handleReportingResponse(reportingResponse, configReporting.getPollingPeriod(),
                         configReporting.getReportingTimeMax());
             } catch (InterruptedException | ExecutionException e) {
