@@ -26,41 +26,39 @@ public class Slzb06NetworkPortTest {
     public void processReceivedData() {
         Slzb06NetworkPort port = new Slzb06NetworkPort(null, 0);
 
-        byte[] chunk = new byte[Slzb06NetworkPort.RX_BUFFER_LEN - 2];
-        byte[] extra = new byte[1];
+        assertEquals(-1, port.read());
 
-        for (int i = 0; i < chunk.length; i++) {
+        byte[] chunk = new byte[Slzb06NetworkPort.RX_BUFFER_LEN - 2];
+
+        for (int i = 0; i < chunk.length - 1; i++) {
             chunk[i] = 0;
         }
+        chunk[chunk.length - 1] = 1;
         port.processReceivedData(chunk, chunk.length);
 
-        extra[0] = 1;
-        port.processReceivedData(extra, 1);
-
-        for (int i = 0; i < chunk.length; i++) {
-            assertEquals(0, port.read(1));
+        for (int i = 0; i < chunk.length - 1; i++) {
+            assertEquals(0, port.read());
         }
-        assertEquals(1, port.read(1));
+        assertEquals(1, port.read());
     }
 
     @Test
     public void processReceivedDataOverflow() {
         Slzb06NetworkPort port = new Slzb06NetworkPort(null, 0);
 
-        byte[] chunk = new byte[Slzb06NetworkPort.RX_BUFFER_LEN - 1];
-        byte[] extra = new byte[1];
+        assertEquals(-1, port.read());
 
-        for (int i = 0; i < chunk.length; i++) {
+        byte[] chunk = new byte[Slzb06NetworkPort.RX_BUFFER_LEN];
+
+        for (int i = 0; i < chunk.length - 1; i++) {
             chunk[i] = 0;
         }
+        chunk[chunk.length - 1] = 1;
         port.processReceivedData(chunk, chunk.length);
 
-        extra[0] = 1;
-        port.processReceivedData(extra, 1);
-
-        for (int i = 0; i < Slzb06NetworkPort.RX_BUFFER_LEN - 2; i++) {
-            assertEquals(0, port.read(1));
+        for (int i = 0; i < chunk.length - 2; i++) {
+            assertEquals(0, port.read());
         }
-        assertEquals(1, port.read(1));
+        assertEquals(1, port.read());
     }
 }
