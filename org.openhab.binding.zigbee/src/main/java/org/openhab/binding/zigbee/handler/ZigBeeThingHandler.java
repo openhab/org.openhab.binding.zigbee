@@ -833,7 +833,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
             return;
         }
         logger.debug("{}: Triggering ZigBee channel {} with event {}", nodeIeeeAddress, channel, event);
-        triggerChannel(channel, event);
+        super.triggerChannel(channel, event);
         if (nodeInitialised) {
             updateStatus(ThingStatus.ONLINE);
         }
