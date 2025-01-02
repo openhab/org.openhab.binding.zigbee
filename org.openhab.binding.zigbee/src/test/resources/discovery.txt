@@ -3,3 +3,4 @@ type1,vendor=Vendor1,modelId=Model1
 type2,vendor=Vendor2,modelId=Model2
 type3,vendor=Vendor1,modelId=Model2
 type4,vendor=Vendor1,modelId=Model2,firmwareVersion=Version4
+type5,vendor=\u001F Vendor4,modelId= Model3\u001F
