@@ -152,20 +152,20 @@ public class ZigBeeConverterColorColorTest {
         // No update here since state is OFF, but we remember the level (20%)...
         levelAttribute.updateValue(Integer.valueOf(101));
         converter.attributeUpdated(levelAttribute, levelAttribute.getLastValue());
-        Mockito.verify(thingHandler, Mockito.times(4)).setChannelState(channelCapture.capture(),
+        Mockito.verify(thingHandler, Mockito.times(3)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
 
         // When turned ON, we are set to the last level
         onAttribute.updateValue(Boolean.TRUE);
         converter.attributeUpdated(onAttribute, onAttribute.getLastValue());
-        Mockito.verify(thingHandler, Mockito.times(5)).setChannelState(channelCapture.capture(),
+        Mockito.verify(thingHandler, Mockito.times(4)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
         assertEquals(new HSBType("0,0,40"), stateCapture.getValue());
 
         // Set the level and ensure it updates
         levelAttribute.updateValue(Integer.valueOf(50));
         converter.attributeUpdated(levelAttribute, levelAttribute.getLastValue());
-        Mockito.verify(thingHandler, Mockito.times(6)).setChannelState(channelCapture.capture(),
+        Mockito.verify(thingHandler, Mockito.times(5)).setChannelState(channelCapture.capture(),
                 stateCapture.capture());
         assertEquals(new HSBType("0,0,20"), stateCapture.getValue());
     }
