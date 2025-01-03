@@ -23,6 +23,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -98,6 +99,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
     private int lastY = -1;
     private boolean xChanged = false;
     private boolean yChanged = false;
+
+    private final AtomicBoolean currentOnOffState = new AtomicBoolean(true);
 
     private double lastMired = -1;
 
@@ -441,6 +444,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
 
     private void updateOnOff(OnOffType onOff) {
         boolean on = onOff == OnOffType.ON;
+        currentOnOffState.set(on);
+
         // Extra temp variable to avoid thread sync concurrency issues on lastHSB
         HSBType oldHSB = lastHSB;
         HSBType newHSB = on ? lastHSB : new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), PercentType.ZERO);
@@ -452,7 +457,10 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         HSBType oldHSB = lastHSB;
         HSBType newHSB = new HSBType(oldHSB.getHue(), oldHSB.getSaturation(), brightness);
         lastHSB = newHSB;
-        updateChannelState(newHSB);
+
+        if (currentOnOffState.get()) {
+            updateChannelState(newHSB);
+        }
     }
 
     private void updateColorHSB(DecimalType hue, PercentType saturation) {
@@ -460,7 +468,10 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         HSBType oldHSB = lastHSB;
         HSBType newHSB = new HSBType(hue, saturation, oldHSB.getBrightness());
         lastHSB = newHSB;
-        updateChannelState(newHSB);
+
+        if (currentOnOffState.get()) {
+            updateChannelState(newHSB);
+        }
     }
 
     private void updateColorXY(PercentType x, PercentType y) {
