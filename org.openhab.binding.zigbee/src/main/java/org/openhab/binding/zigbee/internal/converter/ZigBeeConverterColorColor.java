@@ -469,9 +469,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
         HSBType newHSB = new HSBType(hue, saturation, oldHSB.getBrightness());
         lastHSB = newHSB;
 
-        if (currentOnOffState.get()) {
-            updateChannelState(newHSB);
-        }
+        updateChannelState(new HSBType(newHSB.getHue(), newHSB.getSaturation(),
+                currentOnOffState.get() ? newHSB.getBrightness() : PercentType.ZERO));
     }
 
     private void updateColorXY(PercentType x, PercentType y) {
