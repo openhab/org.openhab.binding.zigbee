@@ -594,9 +594,9 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                         colorUpdateTimer = null;
                     }
 
-                    if (hueChanged && saturationChanged) {
+                    if (supportsHue && hueChanged && saturationChanged) {
                         updateColorHSB();
-                    } else if (xChanged && yChanged) {
+                    } else if (!supportsHue && xChanged && yChanged) {
                         updateColorXY();
                     } else {
                         // Wait some time and update anyway if only one attribute in each pair is updated
@@ -605,10 +605,10 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                             public void run() {
                                 synchronized (colorUpdateSync) {
                                     try {
-                                        if ((hueChanged || saturationChanged) && lastHue >= 0.0f
+                                        if (supportsHue && (hueChanged || saturationChanged) && lastHue >= 0.0f
                                                 && lastSaturation >= 0.0f) {
                                             updateColorHSB();
-                                        } else if ((xChanged || yChanged) && lastX >= 0.0f && lastY >= 0.0f) {
+                                        } else if (!supportsHue && (xChanged || yChanged) && lastX >= 0.0f && lastY >= 0.0f) {
                                             updateColorXY();
                                         }
                                     } catch (Exception e) {
