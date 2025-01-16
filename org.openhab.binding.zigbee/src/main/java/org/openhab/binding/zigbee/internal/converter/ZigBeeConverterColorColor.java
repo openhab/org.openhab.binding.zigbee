@@ -572,9 +572,7 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                             case ZclColorControlCluster.ATTR_COLORTEMPERATURE:
                                 if (val instanceof Integer mired && mired != lastMired) {
                                     HSBType ctHSB = ColorUtil.xyToHsb(ColorUtil.kelvinToXY(1e6 / mired));
-                                    lastHSB = new HSBType(ctHSB.getHue(), ctHSB.getSaturation(),
-                                            lastHSB.getBrightness());
-                                    updateChannelState(lastHSB);
+                                    updateColorHSB(ctHSB.getHue(), ctHSB.getSaturation());
                                     lastMired = mired;
                                 }
                                 break;
