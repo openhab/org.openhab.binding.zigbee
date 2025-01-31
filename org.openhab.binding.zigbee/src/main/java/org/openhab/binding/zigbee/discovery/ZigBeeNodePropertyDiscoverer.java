@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -33,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.zcl.ZclAttribute;
+import com.zsmartsystems.zigbee.zcl.ZclCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclBasicCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOtaUpgradeCluster;
 import com.zsmartsystems.zigbee.zdo.field.PowerDescriptor;
@@ -136,9 +138,9 @@ public class ZigBeeNodePropertyDiscoverer {
     }
 
     private void addPropertiesFromBasicCluster(ZigBeeNode node) {
-        ZclBasicCluster basicCluster = (ZclBasicCluster) node.getEndpoints().stream()
-                .map(ep -> ep.getInputCluster(ZclBasicCluster.CLUSTER_ID)).filter(Objects::nonNull).findFirst()
-                .orElse(null);
+        Optional<ZclCluster> cluster = node.getEndpoints().stream()
+                .map(ep -> ep.getInputCluster(ZclBasicCluster.CLUSTER_ID)).filter(Objects::nonNull).findFirst();
+        ZclBasicCluster basicCluster = (ZclBasicCluster) cluster.orElse(null);
 
         if (basicCluster == null) {
             logger.debug("{}: Node doesn't support basic cluster", node.getIeeeAddress());
@@ -241,9 +243,9 @@ public class ZigBeeNodePropertyDiscoverer {
     }
 
     private void addPropertiesFromOtaCluster(ZigBeeNode node) {
-        ZclOtaUpgradeCluster otaCluster = (ZclOtaUpgradeCluster) node.getEndpoints().stream()
-                .map(ep -> ep.getOutputCluster(ZclOtaUpgradeCluster.CLUSTER_ID)).filter(Objects::nonNull).findFirst()
-                .orElse(null);
+        Optional<ZclCluster> cluster = node.getEndpoints().stream()
+                .map(ep -> ep.getOutputCluster(ZclOtaUpgradeCluster.CLUSTER_ID)).filter(Objects::nonNull).findFirst();
+        ZclOtaUpgradeCluster otaCluster = (ZclOtaUpgradeCluster) cluster.orElse(null);
 
         if (otaCluster != null) {
             logger.debug("{}: ZigBee node property discovery using OTA cluster on endpoint {}", node.getIeeeAddress(),
