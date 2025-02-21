@@ -966,7 +966,7 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
                 // - Do not try to reconnect if the bridge is being removed.
                 if (Arrays.asList(ThingStatus.UNINITIALIZED, ThingStatus.REMOVING, ThingStatus.REMOVED)
                         .contains(bridge.getStatus())) {
-                    logger.debug("{}: Ignoring OFFLINE status: Thing is {}", bridge.getStatus());
+                    logger.debug("{}: Ignoring OFFLINE status: Thing is {}", nodeIeeeAddress, bridge.getStatus());
                     break;
                 }
 
