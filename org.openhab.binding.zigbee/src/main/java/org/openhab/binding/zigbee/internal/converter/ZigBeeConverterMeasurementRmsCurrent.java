@@ -205,9 +205,9 @@ public class ZigBeeConverterMeasurementRmsCurrent extends ZigBeeBaseChannelConve
 
     private void determineDivisorAndMultiplier(ZclElectricalMeasurementCluster serverClusterMeasurement) {
         ZclAttribute divAttribute = serverClusterMeasurement
-                .getAttribute(ZclElectricalMeasurementCluster.ATTR_ACPOWERDIVISOR);
+                .getAttribute(ZclElectricalMeasurementCluster.ATTR_ACCURRENTDIVISOR);
         ZclAttribute mulAttribute = serverClusterMeasurement
-                .getAttribute(ZclElectricalMeasurementCluster.ATTR_ACPOWERMULTIPLIER);
+                .getAttribute(ZclElectricalMeasurementCluster.ATTR_ACCURRENTMULTIPLIER);
 
         divisor = (Integer) divAttribute.readValue(Long.MAX_VALUE);
         multiplier = (Integer) mulAttribute.readValue(Long.MAX_VALUE);
