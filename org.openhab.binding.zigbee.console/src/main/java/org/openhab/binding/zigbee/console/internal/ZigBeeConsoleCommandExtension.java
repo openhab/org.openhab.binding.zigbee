@@ -155,16 +155,20 @@ public class ZigBeeConsoleCommandExtension extends AbstractConsoleCommandExtensi
             } else {
                 ZigBeeThingHandler handler = (ZigBeeThingHandler) thing.getHandler();
                 ZigBeeNode node = handler.getNode();
-                ZigBeeLinkQualityStatistics lqi = node.getLinkQualityStatistics();
+                if (node == null) {
+                    builder.append("** Node not found!");
+                } else {
+                    ZigBeeLinkQualityStatistics lqi = node.getLinkQualityStatistics();
 
-                builder.append(String.format("%-15s  ", node.getLogicalType()));
-                builder.append(String.format("%04X  ", node.getNetworkAddress()));
-                builder.append(String.format("%-16s  ", node.getIeeeAddress()));
-                builder.append(String.format("%-5s  ", handler.isDeviceInitialized() ? "TRUE" : "FALSE"));
-                builder.append(
-                        lqi.getLastReceivedLqi() == null ? "   " : String.format("%3d  ", lqi.getLastReceivedLqi()));
-                builder.append(
-                        lqi.getLastReceivedLqi() == null ? "   " : String.format("%3d  ", lqi.getLastReceivedRssi()));
+                    builder.append(String.format("%-15s  ", node.getLogicalType()));
+                    builder.append(String.format("%04X  ", node.getNetworkAddress()));
+                    builder.append(String.format("%-16s  ", node.getIeeeAddress()));
+                    builder.append(String.format("%-5s  ", handler.isDeviceInitialized() ? "TRUE" : "FALSE"));
+                    builder.append(lqi.getLastReceivedLqi() == null ? "   "
+                            : String.format("%3d  ", lqi.getLastReceivedLqi()));
+                    builder.append(lqi.getLastReceivedLqi() == null ? "   "
+                            : String.format("%3d  ", lqi.getLastReceivedRssi()));
+                }
             }
             builder.append("\n");
         }
