@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -83,6 +84,8 @@ import com.zsmartsystems.zigbee.app.otaserver.ZclOtaUpgradeServer;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaFile;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaServerStatus;
 import com.zsmartsystems.zigbee.app.otaserver.ZigBeeOtaStatusCallback;
+import com.zsmartsystems.zigbee.zcl.ZclAttribute;
+import com.zsmartsystems.zigbee.zcl.ZclCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOtaUpgradeCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.otaupgrade.QueryNextImageCommand;
 import com.zsmartsystems.zigbee.zdo.field.NeighborTable;
@@ -171,7 +174,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     /**
      * Holds the version information from the last request the device made
      */
-    private ZigBeeFirmwareVersion lastFirmwareVersion;
+    private ZigBeeFirmwareVersion firmwareVersion;
 
     private boolean firmwareUpdateInProgress = false;
 
@@ -470,6 +473,26 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         // Listen for incoming OTA requests
         ZclOtaUpgradeServer otaServer = getOtaServer(node);
         if (otaServer != null) {
+            Optional<ZclCluster> cluster = node.getEndpoints().stream()
+                    .map(ep -> ep.getOutputCluster(ZclOtaUpgradeCluster.CLUSTER_ID)).filter(Objects::nonNull)
+                    .findFirst();
+            ZclOtaUpgradeCluster otaCluster = (ZclOtaUpgradeCluster) cluster.orElse(null);
+
+            if (otaCluster != null) {
+                ZclAttribute attribute;
+
+                attribute = otaCluster.getAttribute(ZclOtaUpgradeCluster.ATTR_MANUFACTURERID);
+                Object manufacturerId = attribute.readValue(Long.MAX_VALUE);
+                attribute = otaCluster.getAttribute(ZclOtaUpgradeCluster.ATTR_IMAGETYPEID);
+                Object imageTypeId = attribute.readValue(Long.MAX_VALUE);
+                firmwareVersion = new ZigBeeFirmwareVersion((Integer) manufacturerId, (Integer) imageTypeId);
+
+                attribute = otaCluster.getAttribute(ZclOtaUpgradeCluster.ATTR_CURRENTFILEVERSION);
+                Object fileVersion = attribute.readValue(Long.MAX_VALUE);
+                if (fileVersion != null) {
+                    updateProperty(Thing.PROPERTY_FIRMWARE_VERSION, fileVersion.toString());
+                }
+            }
             otaServer.addListener(this);
         }
 
@@ -828,8 +851,8 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     @Override
     public void triggerChannel(ChannelUID channel, String event) {
         if (firmwareUpdateInProgress) {
-            logger.debug("Omitting triggering ZigBee channel {} with event {} due to firmware update in progress",
-                    channel, event);
+            logger.debug("{}: Omitting triggering ZigBee channel {} with event {} due to firmware update in progress",
+                    nodeIeeeAddress, channel, event);
             return;
         }
         logger.debug("{}: Triggering ZigBee channel {} with event {}", nodeIeeeAddress, channel, event);
@@ -1045,8 +1068,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         for (int retry = 0; retry < 3; retry++) {
             Integer fileVersion = otaServer.getCurrentFileVersion();
             if (fileVersion != null) {
-                updateProperty(Thing.PROPERTY_FIRMWARE_VERSION,
-                        String.format("%s%08X", ZigBeeBindingConstants.FIRMWARE_VERSION_HEX_PREFIX, fileVersion));
+                updateProperty(Thing.PROPERTY_FIRMWARE_VERSION, fileVersion.toString());
                 break;
             } else {
                 logger.debug("{}: OTA firmware request timeout (retry {})", nodeIeeeAddress, retry);
@@ -1060,7 +1082,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
     @Override
     public ZigBeeOtaFile otaIncomingRequest(QueryNextImageCommand command) {
         // We simply store the requested firmware version information so that it's available for the firmware provider
-        lastFirmwareVersion = new ZigBeeFirmwareVersion(command.getManufacturerCode(), command.getImageType(),
+        firmwareVersion = new ZigBeeFirmwareVersion(command.getManufacturerCode(), command.getImageType(),
                 command.getFileVersion());
 
         // We always return null as we don't want to automatically start the OTA
@@ -1075,7 +1097,7 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
      * @return the {@link ZigBeeFirmwareVersion} or null if no request has been received from the device
      */
     public ZigBeeFirmwareVersion getRequestedFirmwareVersion() {
-        return lastFirmwareVersion;
+        return firmwareVersion;
     }
 
     @Override

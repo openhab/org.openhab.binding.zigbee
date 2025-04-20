@@ -13,12 +13,12 @@
 package org.openhab.binding.zigbee.firmware;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -47,8 +47,6 @@ import org.slf4j.LoggerFactory;
 public class ZigBeeFirmwareProvider implements FirmwareProvider {
     private Logger logger = LoggerFactory.getLogger(ZigBeeFirmwareProvider.class);
 
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
     private GithubLibraryReader directoryReader;
 
     @Activate
@@ -58,7 +56,6 @@ public class ZigBeeFirmwareProvider implements FirmwareProvider {
         directoryReader = new GithubLibraryReader(folder);
         try {
             directoryReader.create("https://raw.githubusercontent.com/Koenkk/zigbee-OTA/master");
-            directoryReader.updateRemoteDirectory();
         } catch (Exception e) {
             logger.error("Exception activating ZigBee firmware provider ", e);
         }
@@ -76,20 +73,24 @@ public class ZigBeeFirmwareProvider implements FirmwareProvider {
 
     @Override
     public @Nullable Firmware getFirmware(@NonNull Thing thing, @NonNull String version, @Nullable Locale locale) {
-        ZigBeeFirmwareVersion requestedVersion = getRequestedVersionFromThing(thing);
+        ZigBeeFirmwareVersion requestedVersion = getThingRequestedVersion(thing);
         if (requestedVersion == null) {
             return null;
         }
 
-        List<DirectoryFileEntry> directory = directoryReader.getDirectory();
-        for (DirectoryFileEntry firmware : directory) {
-            if (firmware.getFirmwareVersion().equals(requestedVersion)) {
-                return getZigBeeFirmware(thing.getThingTypeUID(), firmware);
-            }
+        int specificVersion;
+        try {
+            specificVersion = Integer.parseInt(version);
+        } catch (NumberFormatException e) {
+            logger.info("ZigBee Firmware Provider: Requested version {} for {} is not an integer", version,
+                    thing.getUID());
+            return null;
         }
+        logger.debug("ZigBee Firmware Provider: Getting version {} of {}", specificVersion, thing.getUID());
 
-        logger.debug("Unable to find firmware version {}", version);
-        return null;
+        DirectoryFileEntry directory = directoryReader.getDirectoryEntry(requestedVersion, specificVersion);
+
+        return directory == null ? null : getZigBeeFirmware(thing.getThingTypeUID(), directory);
     }
 
     @Override
@@ -99,30 +100,35 @@ public class ZigBeeFirmwareProvider implements FirmwareProvider {
 
     @Override
     public @Nullable Set<@NonNull Firmware> getFirmwares(@NonNull Thing thing, @Nullable Locale locale) {
-        final Set<Firmware> firmwareSet = new HashSet<>();
-
-        ZigBeeFirmwareVersion requestedVersion = getRequestedVersionFromThing(thing);
+        ZigBeeFirmwareVersion requestedVersion = getThingRequestedVersion(thing);
         if (requestedVersion == null) {
-            return firmwareSet;
+            return Collections.emptySet();
         }
 
-        for (DirectoryFileEntry firmware : directoryReader.getDirectory()) {
-            if (firmware.getFirmwareVersion().equals(requestedVersion)) {
-                firmwareSet.add(getZigBeeFirmware(thing.getThingTypeUID(), firmware));
-            }
+        final Set<DirectoryFileEntry> directorySet = directoryReader.getDirectorEntries(requestedVersion);
+        final Set<Firmware> firmwareSet = new HashSet<>();
+        for (DirectoryFileEntry firmware : directorySet) {
+            firmwareSet.add(getZigBeeFirmware(thing.getThingTypeUID(), firmware));
         }
+
+        logger.debug("ZigBee Firmware Provider: Thing {} has {} firmwares available", thing.getUID(),
+                firmwareSet.size());
         return firmwareSet;
     }
 
-    private ZigBeeFirmwareVersion getRequestedVersionFromThing(@NonNull Thing thing) {
+    private ZigBeeFirmwareVersion getThingRequestedVersion(@NonNull Thing thing) {
         // We only deal in ZigBee devices here
         if (!(thing.getHandler() instanceof ZigBeeThingHandler)) {
             return null;
         }
+        logger.debug("ZigBee Firmware Provider: Getting requested version of {}", thing.getUID());
         ZigBeeThingHandler zigbeeHandler = (ZigBeeThingHandler) thing.getHandler();
         if (zigbeeHandler == null) {
+            logger.info("ZigBee Firmware Provider: No handler found for {}", thing.getUID());
             return null;
         }
+        ZigBeeFirmwareVersion version = zigbeeHandler.getRequestedFirmwareVersion();
+        logger.debug("ZigBee Firmware Provider: Requested version of {} is {}", thing.getUID(), version);
         return zigbeeHandler.getRequestedFirmwareVersion();
     }
 
@@ -138,12 +144,26 @@ public class ZigBeeFirmwareProvider implements FirmwareProvider {
         if (!directoryEntry.getDescription().isEmpty()) {
             builder.withDescription(directoryEntry.getDescription());
         }
+        if (!directoryEntry.getReleaseNotes().isEmpty()) {
+            builder.withChangelog(directoryEntry.getReleaseNotes());
+        }
         if (!directoryEntry.getMd5().isEmpty()) {
             builder.withMd5Hash(directoryEntry.getMd5());
         }
         if (!directoryEntry.getPrerequisiteVersion().isEmpty()) {
             builder.withPrerequisiteVersion(directoryEntry.getPrerequisiteVersion());
         }
+
+        Map<String, String> properties = new HashMap<>();
+
+        if (directoryEntry.getFilesize() != null) {
+            properties.put("Filesize", directoryEntry.getFilesize().toString());
+        }
+        if (directoryEntry.getFilename() != null) {
+            properties.put("Filename", directoryEntry.getFilename());
+        }
+
+        builder.withProperties(properties);
 
         return builder.build();
     }
