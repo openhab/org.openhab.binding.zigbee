@@ -22,7 +22,8 @@ import org.openhab.binding.zigbee.handler.ZigBeeFirmwareVersion;
  * @author Chris Jackson
  *
  */
-public class DirectoryFileEntry {
+public class DirectoryFileEntry extends DirectoryEntry {
+    private String fileName;
     private Integer manufacturerCode;
     private Integer imageType;
     private Integer fileVersion;
@@ -32,6 +33,17 @@ public class DirectoryFileEntry {
     private String modelId;
     private String url;
 
+    private String otaHeaderString;
+
+    private Boolean force;
+    private Integer hardwareVersionMin;
+    private Integer hardwareVersionMax;
+    private Integer minFileVersion;
+    private Integer maxFileVersion;
+    private String originalUrl;
+    private String releaseNotes;
+
+    // OH internal
     private String thingTypeUid;
     private String prerequisiteVersion;
     private String model;
@@ -40,9 +52,16 @@ public class DirectoryFileEntry {
     private String md5;
 
     /**
+     * @return the filename
+     */
+    public String getFilename() {
+        return fileName;
+    }
+
+    /**
      * @return the fileSize
      */
-    public Integer getFileSize() {
+    public Integer getFilesize() {
         return fileSize;
     }
 
@@ -72,20 +91,6 @@ public class DirectoryFileEntry {
      */
     public String getSha512() {
         return sha512;
-    }
-
-    /**
-     * @return the filesize
-     */
-    public Integer getFilesize() {
-        return fileSize;
-    }
-
-    /**
-     * @param filesize the filesize to set
-     */
-    public void setFilesize(Integer filesize) {
-        this.fileSize = filesize;
     }
 
     /**
@@ -120,7 +125,13 @@ public class DirectoryFileEntry {
      * @return the description
      */
     public String getDescription() {
-        return description == null ? "" : description;
+        if (description != null) {
+            return description;
+        }
+        if (otaHeaderString != null) {
+            return otaHeaderString;
+        }
+        return null;
     }
 
     /**
@@ -156,24 +167,10 @@ public class DirectoryFileEntry {
     }
 
     /**
-     * @param manufacturerName the manufacturerName to set
-     */
-    public void setManufacturerName(List<String> manufacturerName) {
-        this.manufacturerName = manufacturerName;
-    }
-
-    /**
      * @return the modelId
      */
     public String getModelId() {
-        return modelId;
-    }
-
-    /**
-     * @param modelId the modelId to set
-     */
-    public void setModelId(String modelId) {
-        this.modelId = modelId;
+        return modelId == null ? "" : modelId;
     }
 
     /**
@@ -184,10 +181,58 @@ public class DirectoryFileEntry {
     }
 
     /**
-     * @param url the url to set
+     * @return the otaHeaderString
      */
-    public void setUrl(String url) {
-        this.url = url;
+    public String getOtaHeaderString() {
+        return otaHeaderString;
     }
 
+    /**
+     * @return the force
+     */
+    public Boolean getForce() {
+        return force == null ? Boolean.FALSE : force;
+    }
+
+    /**
+     * @return the hardwareVersionMin
+     */
+    public Integer getHardwareVersionMin() {
+        return hardwareVersionMin;
+    }
+
+    /**
+     * @return the hardwareVersionMax
+     */
+    public Integer getHardwareVersionMax() {
+        return hardwareVersionMax;
+    }
+
+    /**
+     * @return the minFileVersion
+     */
+    public Integer getMinFileVersion() {
+        return minFileVersion;
+    }
+
+    /**
+     * @return the maxFileVersion
+     */
+    public Integer getMaxFileVersion() {
+        return maxFileVersion;
+    }
+
+    /**
+     * @return the originalUrl
+     */
+    public String getOriginalUrl() {
+        return originalUrl;
+    }
+
+    /**
+     * @return the releaseNotes
+     */
+    public String getReleaseNotes() {
+        return releaseNotes == null ? "" : releaseNotes;
+    }
 }
