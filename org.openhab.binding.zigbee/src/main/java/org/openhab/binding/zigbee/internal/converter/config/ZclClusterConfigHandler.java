@@ -59,4 +59,13 @@ public interface ZclClusterConfigHandler {
      * @return true if the configuration was updated
      */
     boolean updateConfiguration(@NonNull Configuration currentConfiguration, Map<String, Object> updatedParameters);
+
+    /**
+     * Updates the current configuration so the user has visibility of each setting
+     *
+     * @param currentConfig the current {@link Configuration}
+     */
+    default void updateCurrentConfiguration(Configuration currentConfig) {
+        // No default implementation
+    }
 }
