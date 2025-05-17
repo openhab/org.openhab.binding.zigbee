@@ -12,13 +12,19 @@
  */
 package org.openhab.binding.zigbee.internal.converter;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.binding.zigbee.converter.ZigBeeBaseChannelConverter;
 import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
+import org.openhab.binding.zigbee.internal.converter.config.ZclOccupancySensingConfig;
+import org.openhab.binding.zigbee.internal.converter.config.ZclReportingConfig;
+import org.openhab.core.config.core.Configuration;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ThingUID;
@@ -44,6 +50,10 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
 
     private ZclOccupancySensingCluster clusterOccupancy;
 
+    private ZclReportingConfig configReporting;
+    private ZclOccupancySensingConfig configOccupancySensing;
+    private ZclAttribute attribute;
+
     @Override
     public Set<Integer> getImplementedClientClusters() {
         return Collections.singleton(ZclOccupancySensingCluster.CLUSTER_ID);
@@ -56,6 +66,7 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
 
     @Override
     public boolean initializeDevice() {
+        ZclReportingConfig reporting = new ZclReportingConfig(channel);
         logger.debug("{}: Initialising device occupancy cluster", endpoint.getIeeeAddress());
 
         ZclOccupancySensingCluster serverClusterOccupancy = (ZclOccupancySensingCluster) endpoint
@@ -68,10 +79,11 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
         try {
             CommandResult bindResponse = bind(serverClusterOccupancy).get();
             if (bindResponse.isSuccess()) {
-                // Configure reporting - no faster than once per second - no slower than 2 hours.
-                CommandResult reportingResponse = serverClusterOccupancy
-                        .setOccupancyReporting(1, REPORTING_PERIOD_DEFAULT_MAX).get();
-                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, REPORTING_PERIOD_DEFAULT_MAX);
+                // Configure reporting
+                ZclAttribute attribute = serverClusterOccupancy.getAttribute(ZclOccupancySensingCluster.ATTR_OCCUPANCY);
+                CommandResult reportingResponse = attribute
+                        .setReporting(reporting.getReportingTimeMin(), reporting.getReportingTimeMax()).get();
+                handleReportingResponse(reportingResponse, POLLING_PERIOD_DEFAULT, reporting.getPollingPeriod());
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error("{}: Exception setting reporting ", endpoint.getIeeeAddress(), e);
@@ -89,8 +101,29 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
             return false;
         }
 
-        // Add a listener, then request the status
+        // Create a configuration handler and get the available options
+        configReporting = new ZclReportingConfig(channel);
+        configOccupancySensing = new ZclOccupancySensingConfig();
+        configOccupancySensing.initialize(clusterOccupancy);
+
+        configOptions = new ArrayList<>();
+        configOptions.addAll(configReporting.getConfiguration());
+        configOptions.addAll(configOccupancySensing.getConfiguration());
+
+        Configuration currentConfig = channel.getConfiguration();
+
+        configOccupancySensing.updateCurrentConfiguration(currentConfig);
+
+        attribute = clusterOccupancy.getAttribute(ZclOccupancySensingCluster.ATTR_OCCUPANCY);
+
+        // Add a listener
         clusterOccupancy.addAttributeListener(this);
+
+        // Request status
+        if (endpoint.getParentNode().isReceiverOnWhenIdle()) {
+            handleRefresh();
+        }
+
         return true;
     }
 
@@ -103,7 +136,9 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
 
     @Override
     public void handleRefresh() {
-        clusterOccupancy.getOccupancy(0);
+        if (attribute != null) {
+            attribute.readValue(0);
+        }
     }
 
     @Override
@@ -119,6 +154,32 @@ public class ZigBeeConverterOccupancy extends ZigBeeBaseChannelConverter impleme
                 .withType(ZigBeeBindingConstants.CHANNEL_OCCUPANCY_SENSOR)
                 .withLabel(ZigBeeBindingConstants.CHANNEL_LABEL_OCCUPANCY_SENSOR)
                 .withProperties(createProperties(endpoint)).build();
+    }
+
+    @Override
+    public void updateConfiguration(@NonNull Configuration currentConfiguration,
+            Map<String, Object> updatedParameters) {
+        if (configReporting != null) {
+            if (configReporting.updateConfiguration(currentConfiguration, updatedParameters)) {
+                try {
+                    ZclAttribute attribute;
+                    CommandResult reportingResponse;
+
+                    attribute = clusterOccupancy.getAttribute(ZclOccupancySensingCluster.ATTR_OCCUPANCY);
+                    reportingResponse = attribute
+                            .setReporting(configReporting.getReportingTimeMin(), configReporting.getReportingTimeMax())
+                            .get();
+                    handleReportingResponse(reportingResponse, configReporting.getPollingPeriod(),
+                            configReporting.getReportingTimeMax());
+                } catch (InterruptedException | ExecutionException e) {
+                    logger.debug("{}: Occupancy sensor exception setting reporting", endpoint.getIeeeAddress(), e);
+                }
+            }
+        }
+
+        if (configOccupancySensing != null) {
+            configOccupancySensing.updateConfiguration(currentConfiguration, updatedParameters);
+        }
     }
 
     @Override
