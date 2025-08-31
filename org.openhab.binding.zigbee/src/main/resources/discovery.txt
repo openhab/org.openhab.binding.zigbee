@@ -20,3 +20,4 @@ tuya_ts0041,modelId=TS0041
 tuya_ts0042,modelId=TS0042
 tuya_ts0043,modelId=TS0043
 tuya_ts0044,modelId=TS0044
+eurotronic_spzb0001,vendor=Eurotronic,modelId=SPZB0001
