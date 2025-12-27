@@ -606,7 +606,8 @@ public class ZigBeeConverterColorColor extends ZigBeeBaseChannelConverter implem
                                         if (supportsHue && (hueChanged || saturationChanged) && lastHue >= 0.0f
                                                 && lastSaturation >= 0.0f) {
                                             updateColorHSB();
-                                        } else if (!supportsHue && (xChanged || yChanged) && lastX >= 0.0f && lastY >= 0.0f) {
+                                        } else if (!supportsHue && (xChanged || yChanged) && lastX >= 0.0f
+                                                && lastY >= 0.0f) {
                                             updateColorXY();
                                         }
                                     } catch (Exception e) {

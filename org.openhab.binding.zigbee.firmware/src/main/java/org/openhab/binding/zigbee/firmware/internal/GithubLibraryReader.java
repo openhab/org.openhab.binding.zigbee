@@ -343,5 +343,4 @@ public class GithubLibraryReader {
 
         return builder.toString();
     }
-
 }

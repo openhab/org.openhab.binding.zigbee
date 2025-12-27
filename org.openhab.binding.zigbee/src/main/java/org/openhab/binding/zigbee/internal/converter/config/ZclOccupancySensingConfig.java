@@ -173,5 +173,4 @@ public class ZclOccupancySensingConfig implements ZclClusterConfigHandler {
                         .getAttribute(ZclOccupancySensingCluster.ATTR_ULTRASONICUNOCCUPIEDTOOCCUPIEDTHRESHOLD)
                         .readValue(Long.MAX_VALUE));
     }
-
 }

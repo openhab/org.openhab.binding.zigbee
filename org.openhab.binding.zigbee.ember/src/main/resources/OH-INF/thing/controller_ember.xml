@@ -9,12 +9,12 @@
 		<description>SiLabs Ember based NCP</description>
 
 		<channels>
-			<channel id="rx_dat" typeId="ember_ash_rx_dat" />
-			<channel id="tx_dat" typeId="ember_ash_tx_dat" />
-			<channel id="rx_nak" typeId="ember_ash_rx_nak" />
-			<channel id="tx_nak" typeId="ember_ash_tx_nak" />
-			<channel id="rx_ack" typeId="ember_ash_rx_ack" />
-			<channel id="tx_ack" typeId="ember_ash_tx_ack" />
+			<channel id="rx_dat" typeId="ember_ash_rx_dat"/>
+			<channel id="tx_dat" typeId="ember_ash_tx_dat"/>
+			<channel id="rx_nak" typeId="ember_ash_rx_nak"/>
+			<channel id="tx_nak" typeId="ember_ash_tx_nak"/>
+			<channel id="rx_ack" typeId="ember_ash_rx_ack"/>
+			<channel id="tx_ack" typeId="ember_ash_tx_ack"/>
 		</channels>
 
 		<config-description>
@@ -129,7 +129,7 @@
 					<option value="1">High RAM</option>
 				</options>
 			</parameter>
-			
+
 			<parameter name="zigbee_initialise" type="boolean" groupName="network">
 				<label>Reinitialize Controller</label>
 				<description>Resets the coordinator, reinitialises the network, and sets the configuration to the configured values</description>
@@ -158,8 +158,8 @@
 					<option value="22">Channel 22</option>
 					<option value="23">Channel 23</option>
 					<option value="24">Channel 24</option>
-                    <option value="25">Channel 25</option>
-                    <option value="26">Channel 26</option>
+					<option value="25">Channel 25</option>
+					<option value="26">Channel 26</option>
 				</options>
 				<advanced>true</advanced>
 			</parameter>
@@ -208,17 +208,18 @@
 				<advanced>true</advanced>
 			</parameter>
 
-            <parameter name="zigbee_installcode" type="text" groupName="network">
-                <label>Install Code</label>
-                <description>Add a temporary install key for device installation</description>
-                <advanced>true</advanced>
-            </parameter>
+			<parameter name="zigbee_installcode" type="text" groupName="network">
+				<label>Install Code</label>
+				<description>Add a temporary install key for device installation</description>
+				<advanced>true</advanced>
+			</parameter>
 
-            <parameter name="zigbee_groupregistration" type="text" groupName="network">
-                <label>Group Registrations</label>
-                <description>Registers the binding to receive group notifications. Groups are separated by a comma and must be defined in hexadecimal.</description>
-                <advanced>true</advanced>
-            </parameter>
+			<parameter name="zigbee_groupregistration" type="text" groupName="network">
+				<label>Group Registrations</label>
+				<description>Registers the binding to receive group notifications. Groups are separated by a comma and must be
+					defined in hexadecimal.</description>
+				<advanced>true</advanced>
+			</parameter>
 
 			<parameter name="zigbee_meshupdateperiod" type="integer" groupName="network">
 				<label>Mesh Update Period</label>
@@ -235,7 +236,7 @@
 					<option value="604800">1 Week</option>
 				</options>
 			</parameter>
-			
+
 			<parameter name="zigbee_trustcentremode" type="text" groupName="network">
 				<label>Trust Centre Join Mode</label>
 				<description>Sets the Trust Centre join/rejoin mode</description>
@@ -248,7 +249,7 @@
 				<default>TC_JOIN_SECURE</default>
 				<advanced>true</advanced>
 			</parameter>
-			
+
 		</config-description>
 	</bridge-type>
 

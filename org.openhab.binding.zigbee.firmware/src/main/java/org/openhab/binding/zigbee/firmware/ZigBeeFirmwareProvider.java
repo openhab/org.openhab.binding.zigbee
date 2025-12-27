@@ -147,5 +147,4 @@ public class ZigBeeFirmwareProvider implements FirmwareProvider {
 
         return builder.build();
     }
-
 }

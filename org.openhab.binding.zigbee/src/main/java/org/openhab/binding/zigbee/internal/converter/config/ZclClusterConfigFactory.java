@@ -100,5 +100,4 @@ public class ZclClusterConfigFactory {
 
         return null;
     }
-
 }

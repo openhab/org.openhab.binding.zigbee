@@ -54,5 +54,4 @@ public class ZigBeeCoordinatorHandlerTest {
         assertEquals(new IeeeAddress("1122334455667788"), keyCapture.getValue().getAddress());
         assertEquals(new ZigBeeKey("A833A77434F3BFBD7A7AB97942149287"), keyCapture.getValue());
     }
-
 }

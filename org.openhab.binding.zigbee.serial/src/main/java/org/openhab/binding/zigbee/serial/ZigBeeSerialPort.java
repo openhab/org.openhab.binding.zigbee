@@ -138,7 +138,7 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
             // CommPortIdentifier#open will kill the whole JVM.
             // Virtual ports (like RFC2217) do not have a discovery logic, so we have to skip this check.
             // TODO: Remove this check once nrjavaserial does no longer crash on non-existent ports.
-            if(!portName.toLowerCase().startsWith("rfc2217")) {
+            if (!portName.toLowerCase().startsWith("rfc2217")) {
                 Stream<SerialPortIdentifier> serialPortIdentifiers = serialPortManager.getIdentifiers();
                 if (!serialPortIdentifiers.findAny().isPresent()) {
                     logger.debug("No communication ports found, cannot connect to [{}]", portName);
@@ -161,7 +161,8 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
             }
 
             try {
-                localSerialPort.setSerialPortParams(baudRate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+                localSerialPort.setSerialPortParams(baudRate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1,
+                        SerialPort.PARITY_NONE);
             } catch (UnsupportedCommOperationException e) {
                 logger.error("Failed to set serial port parameters on [{}]", portName);
                 return false;
@@ -223,7 +224,8 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
             pw.close();
-            logger.error("Serial Error: Device cannot be opened on [{}]. Caused by {}, call stack: {}", portName, e.getMessage(), sw.toString());
+            logger.error("Serial Error: Device cannot be opened on [{}]. Caused by {}, call stack: {}", portName,
+                    e.getMessage(), sw.toString());
             return false;
         }
     }
@@ -376,5 +378,4 @@ public class ZigBeeSerialPort implements ZigBeePort, SerialPortEventListener {
             end = 0;
         }
     }
-
 }

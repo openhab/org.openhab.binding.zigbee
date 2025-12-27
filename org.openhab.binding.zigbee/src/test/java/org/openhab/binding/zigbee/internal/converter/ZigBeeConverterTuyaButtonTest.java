@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.openhab.binding.zigbee.handler.ZigBeeCoordinatorHandler;
@@ -29,7 +28,6 @@ import org.openhab.binding.zigbee.handler.ZigBeeThingHandler;
 import org.openhab.binding.zigbee.internal.converter.command.TuyaButtonPressCommand;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.CommonTriggerEvents;
-import org.openhab.core.thing.ThingUID;
 
 import com.zsmartsystems.zigbee.CommandResult;
 import com.zsmartsystems.zigbee.IeeeAddress;
@@ -37,14 +35,9 @@ import com.zsmartsystems.zigbee.ZigBeeCommand;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
 import com.zsmartsystems.zigbee.ZigBeeProfileType;
 import com.zsmartsystems.zigbee.ZigBeeStatus;
-import com.zsmartsystems.zigbee.zcl.ZclAttribute;
 import com.zsmartsystems.zigbee.zcl.ZclAttributeListener;
 import com.zsmartsystems.zigbee.zcl.ZclCluster;
-import com.zsmartsystems.zigbee.zcl.ZclCommandListener;
-import com.zsmartsystems.zigbee.zcl.clusters.ZclMultistateInputBasicCluster;
 import com.zsmartsystems.zigbee.zcl.clusters.ZclOnOffCluster;
-import com.zsmartsystems.zigbee.zcl.clusters.colorcontrol.MoveHueCommand;
-import com.zsmartsystems.zigbee.zcl.protocol.ZclDataType;
 
 /**
  * Unit tests for the {@link ZigBeeConverterTuyaButtonTest}.
@@ -119,8 +112,7 @@ public class ZigBeeConverterTuyaButtonTest {
         mockCluster(ZclOnOffCluster.CLUSTER_ID);
         converter.initializeConverter(thingHandler);
 
-        TuyaButtonPressCommand tuyaButtonPressCommand = 
-            new TuyaButtonPressCommand(0);
+        TuyaButtonPressCommand tuyaButtonPressCommand = new TuyaButtonPressCommand(0);
         tuyaButtonPressCommand.setTransactionId(1);
         converter.commandReceived(tuyaButtonPressCommand);
 
@@ -134,8 +126,7 @@ public class ZigBeeConverterTuyaButtonTest {
         mockCluster(ZclOnOffCluster.CLUSTER_ID);
         converter.initializeConverter(thingHandler);
 
-        TuyaButtonPressCommand tuyaButtonPressCommand = 
-            new TuyaButtonPressCommand(1);
+        TuyaButtonPressCommand tuyaButtonPressCommand = new TuyaButtonPressCommand(1);
         tuyaButtonPressCommand.setTransactionId(1);
         converter.commandReceived(tuyaButtonPressCommand);
 
@@ -149,8 +140,7 @@ public class ZigBeeConverterTuyaButtonTest {
         mockCluster(ZclOnOffCluster.CLUSTER_ID);
         converter.initializeConverter(thingHandler);
 
-        TuyaButtonPressCommand tuyaButtonPressCommand = 
-            new TuyaButtonPressCommand(2);
+        TuyaButtonPressCommand tuyaButtonPressCommand = new TuyaButtonPressCommand(2);
         tuyaButtonPressCommand.setTransactionId(1);
         converter.commandReceived(tuyaButtonPressCommand);
 
@@ -164,8 +154,7 @@ public class ZigBeeConverterTuyaButtonTest {
         mockCluster(ZclOnOffCluster.CLUSTER_ID);
         converter.initializeConverter(thingHandler);
 
-        TuyaButtonPressCommand tuyaButtonPressCommand = 
-            new TuyaButtonPressCommand(0);
+        TuyaButtonPressCommand tuyaButtonPressCommand = new TuyaButtonPressCommand(0);
         tuyaButtonPressCommand.setTransactionId(1);
         converter.commandReceived(tuyaButtonPressCommand);
         tuyaButtonPressCommand.setTransactionId(2);
@@ -179,8 +168,7 @@ public class ZigBeeConverterTuyaButtonTest {
         mockCluster(ZclOnOffCluster.CLUSTER_ID);
         converter.initializeConverter(thingHandler);
 
-        TuyaButtonPressCommand tuyaButtonPressCommand = 
-            new TuyaButtonPressCommand(0);
+        TuyaButtonPressCommand tuyaButtonPressCommand = new TuyaButtonPressCommand(0);
         tuyaButtonPressCommand.setTransactionId(1);
         converter.commandReceived(tuyaButtonPressCommand);
         converter.commandReceived(tuyaButtonPressCommand);
@@ -194,7 +182,7 @@ public class ZigBeeConverterTuyaButtonTest {
         ZclCluster cluster = mock(ZclCluster.class);
         when(cluster.getClusterId()).thenReturn(clusterId);
         when(cluster.bind(ArgumentMatchers.any(IeeeAddress.class), ArgumentMatchers.anyInt())).thenReturn(
-            CompletableFuture.completedFuture(new CommandResult(ZigBeeStatus.SUCCESS, new ZigBeeCommand())));
+                CompletableFuture.completedFuture(new CommandResult(ZigBeeStatus.SUCCESS, new ZigBeeCommand())));
         when(endpoint.getOutputCluster(clusterId)).thenReturn(cluster);
         when(endpoint.getInputCluster(clusterId)).thenReturn(cluster);
         return cluster;

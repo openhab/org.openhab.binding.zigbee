@@ -127,5 +127,4 @@ public class SquawkType {
             return DEFAULT_SQUAWK_LEVEL;
         }
     }
-
 }

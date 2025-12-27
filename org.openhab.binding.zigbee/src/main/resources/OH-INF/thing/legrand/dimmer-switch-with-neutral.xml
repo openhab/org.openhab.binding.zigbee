@@ -7,7 +7,7 @@
 	<thing-type id="legrand_dimmer_with_neutral" listed="false">
 		<label>Legrand with Netatmo Dimmer</label>
 		<description>Legrand with Netatmo Dimmer with neutral</description>
-      <semantic-equipment-tag>LightSource</semantic-equipment-tag>
+		<semantic-equipment-tag>LightSource</semantic-equipment-tag>
 		<channels>
 			<channel id="switch_onoff" typeId="switch_onoff">
 				<properties>
@@ -28,14 +28,14 @@
 				<label>MAC Address</label>
 			</parameter>
 
-                        <parameter name="attribute_01_in_fc01_0000_09" type="integer">
-                                <label>Dimmer mode</label>
-                                <options>
-                                        <option value="256">Disabled</option>
-                                        <option value="257">Enabled</option>
-                                </options>
-                                <default>257</default>
-                        </parameter>
+			<parameter name="attribute_01_in_fc01_0000_09" type="integer">
+				<label>Dimmer mode</label>
+				<options>
+					<option value="256">Disabled</option>
+					<option value="257">Enabled</option>
+				</options>
+				<default>257</default>
+			</parameter>
 
 			<parameter name="attribute_01_in_fc01_0001_10" type="boolean">
 				<label>Led in Dark</label>

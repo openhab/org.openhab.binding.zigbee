@@ -181,7 +181,6 @@ public class Slzb06Handler extends ZigBeeCoordinatorHandler {
                             logger.error("SLZB06: retreiving API information: {}", e.getMessage());
                         }
                     }
-
                 }
             };
 

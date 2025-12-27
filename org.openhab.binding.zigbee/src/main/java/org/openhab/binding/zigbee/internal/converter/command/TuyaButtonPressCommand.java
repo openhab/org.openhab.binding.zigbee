@@ -45,15 +45,12 @@ public class TuyaButtonPressCommand extends ZclCommand {
         commandDirection = ZclCommandDirection.CLIENT_TO_SERVER;
     }
 
-    public TuyaButtonPressCommand(
-        Integer pressType)
-    {
+    public TuyaButtonPressCommand(Integer pressType) {
         this();
         this.pressType = pressType;
     }
 
-    public Integer getPressType()
-    {
+    public Integer getPressType() {
         return pressType;
     }
 
@@ -66,7 +63,7 @@ public class TuyaButtonPressCommand extends ZclCommand {
     public void deserialize(final ZclFieldDeserializer deserializer) {
         pressType = (Integer) deserializer.deserialize(ZclDataType.UNSIGNED_8_BIT_INTEGER);
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder(113);

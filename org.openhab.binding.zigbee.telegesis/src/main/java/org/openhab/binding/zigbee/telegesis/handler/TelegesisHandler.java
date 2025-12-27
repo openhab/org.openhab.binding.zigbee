@@ -166,5 +166,4 @@ public class TelegesisHandler extends ZigBeeCoordinatorHandler implements Firmwa
         transportConfig.addOption(TransportConfigOption.SUPPORTED_OUTPUT_CLUSTERS, clusters);
         return transportConfig;
     }
-
 }

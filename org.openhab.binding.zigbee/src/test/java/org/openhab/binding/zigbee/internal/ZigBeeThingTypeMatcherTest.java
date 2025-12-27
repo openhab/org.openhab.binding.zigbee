@@ -62,9 +62,9 @@ public class ZigBeeThingTypeMatcherTest {
         properties.put(Thing.PROPERTY_VENDOR, "Vendor3");
         assertEquals(null, matcher.matchThingType(properties));
 
-	// Match with invisible characters
-	properties = new HashMap<>();
-	properties.put(Thing.PROPERTY_VENDOR, "Vendor4");
+        // Match with invisible characters
+        properties = new HashMap<>();
+        properties.put(Thing.PROPERTY_VENDOR, "Vendor4");
         properties.put(Thing.PROPERTY_MODEL_ID, "Model3");
         assertEquals(new ThingTypeUID("zigbee:type5"), matcher.matchThingType(properties));
     }

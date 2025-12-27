@@ -108,5 +108,4 @@ public class ZigBeeConverterWarningDeviceTest {
         converter.handleCommand(OnOffType.OFF);
         verify(cluster, never()).startWarningCommand(any(Integer.class), any(Integer.class));
     }
-
 }

@@ -1154,7 +1154,6 @@ public abstract class ZigBeeCoordinatorHandler extends BaseBridgeHandler
         children.put(childThing.getUID(), (ZigBeeThingHandler) childHandler);
         logger.debug("ZigBee coordinator {} child added {}. Total {} children.", getThing().getUID(),
                 childThing.getUID(), children.size());
-
     }
 
     @Override

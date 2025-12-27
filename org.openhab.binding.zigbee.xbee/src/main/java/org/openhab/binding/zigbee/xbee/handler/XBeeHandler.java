@@ -84,5 +84,4 @@ public class XBeeHandler extends ZigBeeCoordinatorHandler {
 
         return flowControl;
     }
-
 }

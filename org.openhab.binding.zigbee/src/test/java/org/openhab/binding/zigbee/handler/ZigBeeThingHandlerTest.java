@@ -202,7 +202,6 @@ public class ZigBeeThingHandlerTest {
 
         ThingStatusInfo status = captor.getValue();
         assertEquals(ThingStatus.ONLINE, status.getStatus());
-
     }
 
     private ZigBeeChannelConverterFactory mockZigBeeChannelConverterFactory(
@@ -275,5 +274,4 @@ public class ZigBeeThingHandlerTest {
         coordinatorHandlerField.setAccessible(true);
         coordinatorHandlerField.set(object, value);
     }
-
 }

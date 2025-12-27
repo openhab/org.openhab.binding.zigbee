@@ -84,5 +84,4 @@ public class Slzb06MDNSDiscoveryParticipant implements MDNSDiscoveryParticipant 
         }
         return null;
     }
-
 }

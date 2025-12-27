@@ -132,5 +132,4 @@ public class ZigBeeConverterBatteryAlarmTest {
         attribute.updateValue(Integer.valueOf(bitmask));
         return attribute;
     }
-
 }

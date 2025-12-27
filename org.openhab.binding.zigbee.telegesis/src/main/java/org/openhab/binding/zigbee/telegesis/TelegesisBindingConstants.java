@@ -28,5 +28,4 @@ public class TelegesisBindingConstants {
 
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_TELEGESIS = new ThingTypeUID(BINDING_ID, "coordinator_telegesis");
-
 }

@@ -228,7 +228,6 @@ public class ZigBeeNodePropertyDiscoverer {
                 logger.debug("{}: Date code failed", node.getIeeeAddress());
             }
         }
-
     }
 
     private Map<String, Integer> getPropertiesToRead(ZclBasicCluster basicCluster) {
@@ -262,5 +261,4 @@ public class ZigBeeNodePropertyDiscoverer {
             logger.debug("{}: Node doesn't support OTA cluster", node.getIeeeAddress());
         }
     }
-
 }

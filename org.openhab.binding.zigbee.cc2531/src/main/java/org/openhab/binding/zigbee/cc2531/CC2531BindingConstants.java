@@ -30,5 +30,4 @@ public class CC2531BindingConstants {
 
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_CC2531 = new ThingTypeUID(BINDING_ID, "coordinator_cc2531");
-
 }

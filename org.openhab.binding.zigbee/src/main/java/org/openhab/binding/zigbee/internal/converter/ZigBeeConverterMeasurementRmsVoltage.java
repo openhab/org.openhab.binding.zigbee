@@ -216,5 +216,4 @@ public class ZigBeeConverterMeasurementRmsVoltage extends ZigBeeBaseChannelConve
             multiplier = 1;
         }
     }
-
 }
