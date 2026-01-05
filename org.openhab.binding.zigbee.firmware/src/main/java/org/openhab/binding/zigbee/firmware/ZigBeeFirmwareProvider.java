@@ -13,6 +13,7 @@
 package org.openhab.binding.zigbee.firmware;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,8 +51,9 @@ public class ZigBeeFirmwareProvider implements FirmwareProvider {
     private GithubLibraryReader directoryReader;
 
     @Activate
-    protected void activate() {
+    protected void activate() throws Exception {
         logger.debug("ZigBee Firmware Provider: Activated");
+
         String folder = OpenHAB.getUserDataFolder() + File.separator + "firmware" + File.separator;
         directoryReader = new GithubLibraryReader(folder);
         try {
@@ -90,7 +92,16 @@ public class ZigBeeFirmwareProvider implements FirmwareProvider {
 
         DirectoryFileEntry directory = directoryReader.getDirectoryEntry(requestedVersion, specificVersion);
 
-        return directory == null ? null : getZigBeeFirmware(thing.getThingTypeUID(), directory);
+        if (directory == null) {
+            return null;
+        }
+
+        InputStream inputStream = directoryReader.getInputStream(directory);
+        if (inputStream == null) {
+            return null;
+        }
+
+        return getZigBeeFirmware(thing.getThingTypeUID(), directory, inputStream);
     }
 
     @Override
@@ -133,6 +144,11 @@ public class ZigBeeFirmwareProvider implements FirmwareProvider {
     }
 
     private Firmware getZigBeeFirmware(@NonNull ThingTypeUID thingTypeUID, DirectoryFileEntry directoryEntry) {
+        return getZigBeeFirmware(thingTypeUID, directoryEntry, null);
+    }
+
+    private Firmware getZigBeeFirmware(@NonNull ThingTypeUID thingTypeUID, DirectoryFileEntry directoryEntry,
+            InputStream inputStream) {
         FirmwareBuilder builder = FirmwareBuilder.create(thingTypeUID, directoryEntry.getVersion().toString());
 
         if (!directoryEntry.getModel().isEmpty()) {
@@ -152,6 +168,10 @@ public class ZigBeeFirmwareProvider implements FirmwareProvider {
         }
         if (!directoryEntry.getPrerequisiteVersion().isEmpty()) {
             builder.withPrerequisiteVersion(directoryEntry.getPrerequisiteVersion());
+        }
+
+        if (inputStream != null) {
+            builder.withInputStream(inputStream);
         }
 
         Map<String, String> properties = new HashMap<>();

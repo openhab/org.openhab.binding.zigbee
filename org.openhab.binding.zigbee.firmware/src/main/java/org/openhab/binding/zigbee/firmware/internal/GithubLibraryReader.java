@@ -250,13 +250,14 @@ public class GithubLibraryReader {
         try {
             inputStream = new FileInputStream(local);
             data = inputStream.readAllBytes();
+            inputStream.close();
 
             // Check the hash
             if (!checkHash(data, entry)) {
-                inputStream.close();
                 return null;
             }
-            return inputStream;
+
+            return new FileInputStream(local);
         } catch (IOException e) {
             logger.error("ZigBee Firmware Provider: IO Exception reading file {}", local.getName(), e);
             return null;
@@ -336,10 +337,20 @@ public class GithubLibraryReader {
         StringBuilder builder = new StringBuilder();
 
         for (byte val : hash) {
-            builder.append(String.format("%02X", val));
+            builder.append(String.format("%02x", val));
         }
 
         return builder.toString();
+    }
+
+    private synchronized void downloadFile(DirectoryFileEntry entry) {
+        logger.debug("ZigBee Firmware Provider: Scheduling file download [{}]", entry.getUrl());
+
+        if (entry.getMd5() != null) {
+            logger.debug("ZigBee Firmware Provider: File [{}] already exists", entry.getUrl());
+            return;
+        }
+        commandQueue.add(entry);
     }
 
     private synchronized void updateDirectory() {
@@ -418,7 +429,7 @@ public class GithubLibraryReader {
 
         for (DirectoryFileEntry firmware : firmwareSet) {
             if (firmware.getMd5() != null) {
-                createLocal(firmware);
+                downloadFile(firmware);
             }
         }
         return firmwareSet;
@@ -431,6 +442,7 @@ public class GithubLibraryReader {
                         && firmware.getImageType().equals(requestedVersion.getFileType())
                         && firmware.getVersion().equals(specificVersion)) {
                     logger.debug("ZigBee Firmware Provider: Found firmware version {}", specificVersion);
+                    return firmware;
                 }
             }
         }
