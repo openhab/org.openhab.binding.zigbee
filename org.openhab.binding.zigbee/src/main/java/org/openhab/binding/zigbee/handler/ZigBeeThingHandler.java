@@ -1127,8 +1127,9 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
         ZigBeeOtaFile otaFile = new ZigBeeOtaFile(firmware.getBytes());
         otaServer.setFirmware(otaFile);
 
-        // DOWNLOADING
+        // TRANSFERRING
         progressCallback.next();
+        progressCallback.update(0);
 
         this.progressCallback = progressCallback;
     }
