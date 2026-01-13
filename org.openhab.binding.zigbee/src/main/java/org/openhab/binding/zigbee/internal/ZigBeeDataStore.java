@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.core.OpenHAB;
@@ -40,6 +41,7 @@ import com.zsmartsystems.zigbee.ZigBeeNode;
 import com.zsmartsystems.zigbee.database.ZclAttributeDao;
 import com.zsmartsystems.zigbee.database.ZclClusterDao;
 import com.zsmartsystems.zigbee.database.ZigBeeEndpointDao;
+import com.zsmartsystems.zigbee.database.ZigBeeNetworkBackupDao;
 import com.zsmartsystems.zigbee.database.ZigBeeNetworkDataStore;
 import com.zsmartsystems.zigbee.database.ZigBeeNodeDao;
 import com.zsmartsystems.zigbee.zdo.field.BindingTable;
@@ -59,18 +61,35 @@ public class ZigBeeDataStore implements ZigBeeNetworkDataStore {
      */
     private final Logger logger = LoggerFactory.getLogger(ZigBeeDataStore.class);
 
+    private final static String CHARSET = "UTF-8";
+
+    private final String backupFilePath;
     private final String networkStateFilePath;
 
     public ZigBeeDataStore(String networkId) {
         networkStateFilePath = OpenHAB.getUserDataFolder() + File.separator + ZigBeeBindingConstants.BINDING_ID
                 + File.separator + networkId + File.separator;
 
-        final File folder = new File(networkStateFilePath);
+        File folder;
+
+        folder = new File(networkStateFilePath);
         // Create the path for serialization.
         if (!folder.exists()) {
             logger.debug("Creating ZigBee persistence folder {}", networkStateFilePath);
             if (!folder.mkdirs()) {
                 logger.error("Error while creating ZigBee persistence folder {}", networkStateFilePath);
+            }
+        }
+
+        backupFilePath = OpenHAB.getUserDataFolder() + File.separator + ZigBeeBindingConstants.BINDING_ID
+                + File.separator + "backup" + File.separator;
+
+        folder = new File(backupFilePath);
+        // Create the path for serialization.
+        if (!folder.exists()) {
+            logger.debug("Creating ZigBee backup folder {}", backupFilePath);
+            if (!folder.mkdirs()) {
+                logger.error("Error while creating ZigBee backup folder {}", networkStateFilePath);
             }
         }
     }
@@ -89,9 +108,14 @@ public class ZigBeeDataStore implements ZigBeeNetworkDataStore {
         stream.alias("PowerSourceType", PowerSourceType.class);
         stream.alias("FrequencyBandType", FrequencyBandType.class);
         stream.alias("BindingTable", BindingTable.class);
-        stream.alias("IeeeAddress", BindingTable.class);
+        stream.alias("IeeeAddress", IeeeAddress.class);
+        stream.alias("ZigBeeNetworkBackupDao", ZigBeeNetworkBackupDao.class);
         stream.registerConverter(new IeeeAddressConverter());
         return stream;
+    }
+
+    private File getFile(UUID uuid) {
+        return new File(backupFilePath + uuid + ".xml");
     }
 
     private File getFile(IeeeAddress address) {
@@ -176,5 +200,69 @@ public class ZigBeeDataStore implements ZigBeeNetworkDataStore {
         } catch (IOException e) {
             logger.error("Error deleting ZigBee network state {} ", networkStateFilePath, e);
         }
+    }
+
+    @Override
+    public boolean writeBackup(ZigBeeNetworkBackupDao backup) {
+        XStream stream = openStream();
+        File file = getFile(backup.getUuid());
+
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), CHARSET))) {
+            stream.marshal(backup, new PrettyPrintWriter(writer));
+            writer.close();
+        } catch (Exception e) {
+            logger.error("{}: Error writing network backup: ", backup.getUuid(), e);
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public ZigBeeNetworkBackupDao readBackup(UUID uuid) {
+        XStream stream = openStream();
+        File file = getFile(uuid);
+
+        ZigBeeNetworkBackupDao backup = null;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), CHARSET))) {
+            backup = (ZigBeeNetworkBackupDao) stream.fromXML(reader);
+            reader.close();
+        } catch (Exception e) {
+            logger.error("{}: Error reading network backup: ", uuid, e);
+        }
+
+        return backup;
+    }
+
+    @Override
+    public Set<ZigBeeNetworkBackupDao> listBackups() {
+        Set<ZigBeeNetworkBackupDao> backups = new HashSet<>();
+        File dir = new File(backupFilePath);
+        File[] files = dir.listFiles();
+
+        if (files == null) {
+            return backups;
+        }
+
+        for (File file : files) {
+            if (!file.getName().toLowerCase().endsWith(".xml")) {
+                continue;
+            }
+
+            try {
+                String filename = file.getName();
+                UUID uuid = UUID.fromString(filename.substring(0, filename.length() - 4));
+                ZigBeeNetworkBackupDao backup = readBackup(uuid);
+                for (ZigBeeNodeDao node : backup.getNodes()) {
+                    node.setEndpoints(null);
+                    node.setBindingTable(null);
+                }
+                backups.add(backup);
+            } catch (IllegalArgumentException e) {
+                logger.error("Error parsing database filename: {}", file.getName());
+            }
+        }
+
+        return backups;
     }
 }
