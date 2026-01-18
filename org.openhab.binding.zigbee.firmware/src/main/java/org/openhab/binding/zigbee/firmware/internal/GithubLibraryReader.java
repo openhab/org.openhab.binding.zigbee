@@ -65,7 +65,6 @@ public class GithubLibraryReader {
     private static final int HTTP_TIMEOUT = 5;
     private static final int QUEUE_SIZE = 15;
     private static final int UPDATE_CHECK_PERIOD = 40000; // Approximately twice per day - unsynchronisedd
-    private static final String INDEX_JSON = "index.json";
     private static final String PATH_TO_FIRMWARE = "firmware";
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -99,16 +98,7 @@ public class GithubLibraryReader {
 
     public boolean create(String repositoryAddress) throws Exception {
         logger.debug("ZigBee Firmware Provider: Creating directory at {}", repositoryAddress);
-        String localAddress;
-        if (repositoryAddress.endsWith("/")) {
-            localAddress = repositoryAddress.substring(0, repositoryAddress.length() - 1);
-        } else {
-            localAddress = repositoryAddress;
-        }
-        if (localAddress.contains("//")) {
-            localAddress = localAddress.substring(localAddress.indexOf("//") + 2);
-        }
-        this.repositoryAddress = localAddress + "/";
+        this.repositoryAddress = repositoryAddress;
 
         Client sslContext = new SslContextFactory.Client();
         this.httpClient = new HttpClient(sslContext);
@@ -144,6 +134,10 @@ public class GithubLibraryReader {
 
         // We're done!
         return true;
+    }
+
+    public String getRepositoryAddress() {
+        return repositoryAddress;
     }
 
     private void processDirectory(List<DirectoryFileEntry> newDirectory) {
@@ -265,13 +259,12 @@ public class GithubLibraryReader {
     }
 
     private synchronized List<DirectoryFileEntry> getIndex() {
-        String url = "https://" + repositoryAddress + INDEX_JSON;
-
-        logger.debug("ZigBee Firmware Provider: Performing GitHub request: {}", url);
+        logger.debug("ZigBee Firmware Provider: Performing GitHub request: {}", repositoryAddress);
         ContentResponse response;
 
         try {
-            response = httpClient.newRequest(url).method(GET).timeout(HTTP_TIMEOUT, TimeUnit.SECONDS).send();
+            response = httpClient.newRequest(repositoryAddress).method(GET).timeout(HTTP_TIMEOUT, TimeUnit.SECONDS)
+                    .send();
             if (response.getStatus() != HttpURLConnection.HTTP_OK) {
                 logger.warn("ZigBee Firmware Provider: Server return status other than HTTP_OK : {}",
                         response.getStatus());
@@ -346,7 +339,7 @@ public class GithubLibraryReader {
     private synchronized void downloadFile(DirectoryFileEntry entry) {
         logger.debug("ZigBee Firmware Provider: Scheduling file download [{}]", entry.getUrl());
 
-        if (entry.getMd5() != null) {
+        if (entry.getMd5() != "") {
             logger.debug("ZigBee Firmware Provider: File [{}] already exists", entry.getUrl());
             return;
         }
@@ -395,7 +388,7 @@ public class GithubLibraryReader {
                             commandQueue.size(), command);
 
                     if (command instanceof DirectoryFolderEntry) {
-                        logger.debug("ZigBee Firmware Provider: Starting update from remote");
+                        logger.debug("ZigBee Firmware Provider: Starting update from remote {}", repositoryAddress);
                         List<DirectoryFileEntry> newDirectory = getIndex();
                         processDirectory(newDirectory);
                         purgeOldFiles();
