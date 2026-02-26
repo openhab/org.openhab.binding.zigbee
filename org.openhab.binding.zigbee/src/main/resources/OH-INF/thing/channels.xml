@@ -398,6 +398,26 @@
         <autoUpdatePolicy>veto</autoUpdatePolicy>
 	</channel-type>
 
+    <!-- On Off Switch Events -->
+    <channel-type id="switch_onoff_events">
+        <kind>trigger</kind>
+        <label>Switch Events</label>
+        <description>Events related to the Switch channel</description>
+        <event>
+            <options>
+                <option value="SINGLE_ON">Pressed On once within a short time</option>
+                <option value="DOUBLE_ON">Pressed On twice within a short time</option>
+                <option value="TRIPLE_ON">Pressed On thrice within a short time</option>
+                <option value="SINGLE_OFF">Pressed Off once within a short time</option>
+                <option value="DOUBLE_OFF">Pressed Off twice within a short time</option>
+                <option value="TRIPLE_OFF">Pressed Off thrice within a short time</option>
+                <option value="SINGLE_TOGGLE">Pressed Toggle once within a short time</option>
+                <option value="DOUBLE_TOGGLE">Pressed Toggle twice within a short time</option>
+                <option value="TRIPLE_TOGGLE">Pressed Toggle thrice within a short time</option>
+            </options>
+        </event>
+    </channel-type>
+
     <!-- Level Switch -->
     <channel-type id="switch_level">
         <item-type>Dimmer</item-type>
@@ -410,6 +430,26 @@
         </tags>
         <autoUpdatePolicy>veto</autoUpdatePolicy>
     </channel-type>    
+
+    <!-- Level Switch Events -->
+    <channel-type id="switch_level_events">
+        <kind>trigger</kind>
+        <label>Dimmer Events</label>
+        <description>Events related to the Dimmer channel</description>
+        <event>
+            <options>
+                <option value="SINGLE_ON">Pressed On once within a short time</option>
+                <option value="DOUBLE_ON">Pressed On twice within a short time</option>
+                <option value="TRIPLE_ON">Pressed On thrice within a short time</option>
+                <option value="SINGLE_OFF">Pressed Off once within a short time</option>
+                <option value="DOUBLE_OFF">Pressed Off twice within a short time</option>
+                <option value="TRIPLE_OFF">Pressed Off thrice within a short time</option>
+                <option value="SINGLE_TOGGLE">Pressed Toggle once within a short time</option>
+                <option value="DOUBLE_TOGGLE">Pressed Toggle twice within a short time</option>
+                <option value="TRIPLE_TOGGLE">Pressed Toggle thrice within a short time</option>
+            </options>
+        </event>
+    </channel-type>
 
     <!-- Thermostat Local Temperature -->
     <channel-type id="thermostat_localtemp">

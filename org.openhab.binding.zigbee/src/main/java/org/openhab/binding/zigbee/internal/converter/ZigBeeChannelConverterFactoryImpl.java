@@ -63,6 +63,8 @@ public final class ZigBeeChannelConverterFactoryImpl implements ZigBeeChannelCon
         // Remove ON/OFF if we support LEVEL
         channelConsolidation.put(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL,
                 ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF);
+        channelConsolidation.put(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL_EVENTS,
+                ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF_EVENTS);
         // Remove LEVEL if we support COLOR
         channelConsolidation.put(ZigBeeBindingConstants.CHANNEL_COLOR_COLOR,
                 ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL);
