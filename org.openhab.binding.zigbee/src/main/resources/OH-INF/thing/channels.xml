@@ -411,6 +411,19 @@
         <autoUpdatePolicy>veto</autoUpdatePolicy>
     </channel-type>    
 
+    <!-- Level Switch Events -->
+    <channel-type id="switch_level_events">
+        <kind>trigger</kind>
+        <label>Dimmer Button Events</label>
+        <description>Events related to the buttons of a dimmer</description>
+        <event>
+            <options>
+                <option value="SHORT_PRESSED">Pressed a button once within a short time</option>
+                <option value="DOUBLE_PRESSED">Pressed a button twice within a short time</option>
+            </options>
+        </event>
+    </channel-type>
+
     <!-- Thermostat Local Temperature -->
     <channel-type id="thermostat_localtemp">
         <item-type>Number:Temperature</item-type>
