@@ -110,6 +110,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
 
     private ScheduledExecutorService updateScheduler;
     private ScheduledFuture<?> updateTimer = null;
+    private ZigBeeConverterSwitchLevelEvents eventConverter;
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
@@ -485,6 +486,13 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
     }
 
     @Override
+    public void connectEventConverter(ZigBeeBaseChannelConverter maybeEventConverter) {
+        if (maybeEventConverter instanceof ZigBeeConverterSwitchLevelEvents converter) {
+            this.eventConverter = converter;
+        }
+    }
+
+    @Override
     public void updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> updatedParameters) {
         if (configReporting != null) {
@@ -550,6 +558,9 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
             currentOnOffState.set(true);
             lastLevel = PercentType.HUNDRED;
             updateChannelState(lastLevel);
+            if (eventConverter != null) {
+                eventConverter.planChannelEvent("ON");
+            }
             clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
             return true;
         }
@@ -566,12 +577,18 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
             currentOnOffState.set(false);
             lastLevel = PercentType.ZERO;
             updateChannelState(lastLevel);
+            if (eventConverter != null) {
+                eventConverter.planChannelEvent("OFF");
+            }
             return true;
         }
         if (command instanceof ToggleCommand) {
             currentOnOffState.set(!currentOnOffState.get());
             lastLevel = currentOnOffState.get() ? PercentType.HUNDRED : PercentType.ZERO;
             updateChannelState(lastLevel);
+            if (eventConverter != null) {
+                eventConverter.planChannelEvent("TOGGLE");
+            }
             clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
             return true;
         }
@@ -799,5 +816,4 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
             }
         }, delay, TimeUnit.MILLISECONDS);
     }
-
 }

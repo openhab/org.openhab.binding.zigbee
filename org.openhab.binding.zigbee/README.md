@@ -491,6 +491,19 @@ then
 end
 ```
 
+### Dimmer events
+
+`Level Control Button Events` channels support the following events:
+
+- `SHORT_PRESSED`: Pressed once within a short time
+- `DOUBLE_PRESSED`: Pressed twice within a short time
+
+These events can be combined with `But only if` of the item state to run rules depending on the button pressed, e.g.
+- a rule triggered on `SHORT_PRESSED` with `But only if dimmer_state != 0` to run on `ON` button pressed once
+- a rule triggered on `SHORT_PRESSED` with `But only if dimmer_state = 0` to run on `OFF` button pressed once
+- a rule triggered on `DOUBLE_PRESSED` with `But only if dimmer_state != 0` to run on `ON` button pressed twice
+- a rule triggered on `DOUBLE_PRESSED` with `But only if dimmer_state = 0` to run on `OFF` button pressed twice
+
 ## Reporting and Polling
 
 ZigBee has a standard way of configuring how a device sends status reports to the binding - this is called Reporting. Reporting is configured using three pieces of information -:
