@@ -62,7 +62,9 @@ public final class ZigBeeDefaultChannelConverterProvider implements ZigBeeChanne
         channelMap.put(ZigBeeBindingConstants.CHANNEL_POWER_BATTERYALARM, ZigBeeConverterBatteryAlarm.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_PRESSURE_VALUE, ZigBeeConverterAtmosphericPressure.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF, ZigBeeConverterSwitchOnoff.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF_EVENTS, ZigBeeConverterSwitchOnoffEvents.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL, ZigBeeConverterSwitchLevel.class);
+        channelMap.put(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL_EVENTS, ZigBeeConverterSwitchLevelEvents.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_WARNING_DEVICE, ZigBeeConverterWarningDevice.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_TEMPERATURE_VALUE, ZigBeeConverterTemperature.class);
         channelMap.put(ZigBeeBindingConstants.CHANNEL_ELECTRICAL_RMSVOLTAGE,

@@ -89,6 +89,9 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
     // The number of milliseconds after the last IncreaseDecreaseType is received before sending the Stop command
     private static final int INCREASEDECREASE_TIMEOUT = 200;
 
+    // The number of milliseconds after the last action is performed to raise the event
+    private static final int EVENT_TIMEFRAME = 800;
+
     private ZclOnOffCluster clusterOnOffClient;
     private ZclLevelControlCluster clusterLevelControlClient;
 
@@ -110,6 +113,7 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
 
     private ScheduledExecutorService updateScheduler;
     private ScheduledFuture<?> updateTimer = null;
+    private ZigBeeConverterSwitchLevelEvents eventConverter;
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
@@ -485,6 +489,16 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
     }
 
     @Override
+    public void connectEventConverter(ZigBeeBaseChannelConverter eventConverter) {
+        if (eventConverter instanceof ZigBeeConverterSwitchLevelEvents converter) {
+            this.eventConverter = converter;
+        } else {
+            logger.warn("Tried to connect a unexpected event converter {}", eventConverter);
+            this.eventConverter = null;
+        }
+    }
+
+    @Override
     public void updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> updatedParameters) {
         if (configReporting != null) {
@@ -549,6 +563,9 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
         if (command instanceof OnCommand) {
             currentOnOffState.set(true);
             lastLevel = PercentType.HUNDRED;
+            if (eventConverter != null) {
+                eventConverter.planChannelEvent("ON");
+            }
             updateChannelState(lastLevel);
             clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
             return true;
@@ -565,12 +582,18 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
         if (command instanceof OffCommand) {
             currentOnOffState.set(false);
             lastLevel = PercentType.ZERO;
+            if (eventConverter != null) {
+                eventConverter.planChannelEvent("OFF");
+            }
             updateChannelState(lastLevel);
             return true;
         }
         if (command instanceof ToggleCommand) {
             currentOnOffState.set(!currentOnOffState.get());
             lastLevel = currentOnOffState.get() ? PercentType.HUNDRED : PercentType.ZERO;
+            if (eventConverter != null) {
+                eventConverter.planChannelEvent("TOGGLE");
+            }
             updateChannelState(lastLevel);
             clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
             return true;
@@ -799,5 +822,4 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
             }
         }, delay, TimeUnit.MILLISECONDS);
     }
-
 }

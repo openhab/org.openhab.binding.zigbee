@@ -78,6 +78,7 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
 
     private ScheduledExecutorService updateScheduler;
     private ScheduledFuture<?> updateTimer = null;
+    private ZigBeeConverterSwitchOnoffEvents eventConverter;
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
@@ -249,6 +250,16 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
     }
 
     @Override
+    public void connectEventConverter(ZigBeeBaseChannelConverter eventConverter) {
+        if (eventConverter instanceof ZigBeeConverterSwitchOnoffEvents converter) {
+            this.eventConverter = converter;
+        } else {
+            logger.warn("Tried to connect a unexpected event converter {}", eventConverter);
+            this.eventConverter = null;
+        }
+    }
+
+    @Override
     public void updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> updatedParameters) {
         if (clusterOnOffServer == null) {
@@ -291,6 +302,9 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
         logger.debug("{}: ZigBee command received {}", endpoint.getIeeeAddress(), command);
         if (command instanceof OnCommand) {
             currentOnOffState.set(true);
+            if (eventConverter != null) {
+                eventConverter.planChannelEvent("ON");
+            }
             updateChannelState(OnOffType.ON);
             clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
             return true;
@@ -305,12 +319,18 @@ public class ZigBeeConverterSwitchOnoff extends ZigBeeBaseChannelConverter
         }
         if (command instanceof OffCommand || command instanceof OffWithEffectCommand) {
             currentOnOffState.set(false);
+            if (eventConverter != null && command instanceof OffCommand) {
+                eventConverter.planChannelEvent("OFF");
+            }
             updateChannelState(OnOffType.OFF);
             clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
             return true;
         }
         if (command instanceof ToggleCommand) {
             currentOnOffState.set(!currentOnOffState.get());
+            if (eventConverter != null) {
+                eventConverter.planChannelEvent("TOGGLE");
+            }
             updateChannelState(currentOnOffState.get() ? OnOffType.ON : OnOffType.OFF);
             clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
             return true;

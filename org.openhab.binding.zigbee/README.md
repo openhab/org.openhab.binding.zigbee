@@ -491,6 +491,20 @@ then
 end
 ```
 
+### Switch events
+
+`Level Control Events` and `Switch Events` channels support the following events:
+
+- `SINGLE_ON`: Pressed `On` once within a short time
+- `DOUBLE_ON`: Pressed `On` twice within a short time
+- `TRIPLE_ON`: Pressed `On` thrice within a short time
+- `SINGLE_OFF`: Pressed `Off` once within a short time
+- `DOUBLE_OFF`: Pressed `Off` twice within a short time
+- `TRIPLE_OFF`: Pressed `Off` thrice within a short time
+- `SINGLE_TOGGLE`: Pressed `Toggle` once within a short time
+- `DOUBLE_TOGGLE`: Pressed `Toggle` twice within a short time
+- `TRIPLE_TOGGLE`: Pressed `Toggle` thrice within a short time
+
 ## Reporting and Polling
 
 ZigBee has a standard way of configuring how a device sends status reports to the binding - this is called Reporting. Reporting is configured using three pieces of information -:

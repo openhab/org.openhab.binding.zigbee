@@ -294,6 +294,29 @@ public abstract class ZigBeeBaseChannelConverter {
     public abstract Channel getChannel(ThingUID thingUID, ZigBeeEndpoint endpoint);
 
     /**
+     * Get the UID of the related event channel or null.
+     * 
+     * @param channel the channel to get the related event channel for.
+     * @return a {@link ChannelUID} with the related event channel or null.
+     */
+    public ChannelUID getEventChannel(ChannelUID channel) {
+        if (channel.getId().endsWith("_events")) {
+            return null;
+        }
+        
+        return new ChannelUID(channel + "_events");
+    }
+
+    /**
+     * Connects the channel converter with the converter of the event channel.
+     * 
+     * @param eventConverter the converter of the event channel
+     */
+    public void connectEventConverter(ZigBeeBaseChannelConverter eventConverter) {
+        logger.debug("{}: Not implemented event converted connection for channel {}", channelUID);        
+    }
+
+    /**
      * Updates the channel state within the thing.
      *
      * @param state the updated {@link State}
@@ -302,6 +325,21 @@ public abstract class ZigBeeBaseChannelConverter {
         logger.debug("{}: Channel {} updated to {}", endpoint.getIeeeAddress(), channelUID, state);
 
         thing.setChannelState(channelUID, state);
+    }
+
+    /**
+     * Trigger the event to the channel within the thing.
+     *
+     * @param event the event to post
+     */
+    protected void triggerEventChannel(String event) {
+        if (channelUID == null) {
+            throw new UnsupportedOperationException("no event channel initialzied to trigger the event");
+        }
+
+        logger.debug("{}: Trigger event {} to channel {}", endpoint.getIeeeAddress(), event, channelUID);
+
+        thing.triggerChannel(channelUID, event);
     }
 
     /**
