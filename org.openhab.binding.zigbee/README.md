@@ -491,6 +491,13 @@ then
 end
 ```
 
+### Dimmer events
+
+`Level Control On Events` and `Level Control Off Events` channels support the following events:
+
+- `SHORT_PRESSED`: Pressed once within a short time
+- `DOUBLE_PRESSED`: Pressed twice within a short time
+
 ## Reporting and Polling
 
 ZigBee has a standard way of configuring how a device sends status reports to the binding - this is called Reporting. Reporting is configured using three pieces of information -:

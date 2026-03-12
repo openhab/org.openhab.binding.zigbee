@@ -110,6 +110,8 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
 
     private ScheduledExecutorService updateScheduler;
     private ScheduledFuture<?> updateTimer = null;
+    private ZigBeeConverterSwitchLevelOnEvents onEventConverter;
+    private ZigBeeConverterSwitchLevelOffEvents offEventConverter;
 
     @Override
     public Set<Integer> getImplementedClientClusters() {
@@ -485,6 +487,15 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
     }
 
     @Override
+    public void connectEventConverter(ZigBeeBaseChannelConverter maybeEventConverter) {
+        if (maybeEventConverter instanceof ZigBeeConverterSwitchLevelOffEvents offConverter) {
+            this.offEventConverter = offConverter;
+        } else if (maybeEventConverter instanceof ZigBeeConverterSwitchLevelOnEvents onConverter) {
+            this.onEventConverter = onConverter;
+        }
+    }
+
+    @Override
     public void updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> updatedParameters) {
         if (configReporting != null) {
@@ -549,6 +560,9 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
         if (command instanceof OnCommand) {
             currentOnOffState.set(true);
             lastLevel = PercentType.HUNDRED;
+            if (onEventConverter != null) {
+                onEventConverter.planChannelEvent();
+            }
             updateChannelState(lastLevel);
             clusterOnOffClient.sendDefaultResponse(command, ZclStatus.SUCCESS);
             return true;
@@ -565,6 +579,9 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
         if (command instanceof OffCommand) {
             currentOnOffState.set(false);
             lastLevel = PercentType.ZERO;
+            if (offEventConverter != null) {
+                offEventConverter.planChannelEvent();
+            }
             updateChannelState(lastLevel);
             return true;
         }
@@ -799,5 +816,4 @@ public class ZigBeeConverterSwitchLevel extends ZigBeeBaseChannelConverter
             }
         }, delay, TimeUnit.MILLISECONDS);
     }
-
 }
