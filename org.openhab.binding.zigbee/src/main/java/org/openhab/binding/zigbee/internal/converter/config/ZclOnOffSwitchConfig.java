@@ -70,16 +70,23 @@ public class ZclOnOffSwitchConfig implements ZclClusterConfigHandler {
         List<ParameterOption> options = new ArrayList<>();
 
         if (onoffCluster.isAttributeSupported(ZclOnOffCluster.ATTR_OFFWAITTIME)) {
+            options = new ArrayList<>();
+            options.add(new ParameterOption("0", "Disabled"));
             parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_OFFWAITTIME, Type.INTEGER)
                     .withLabel("Off Wait Time")
                     .withDescription("Time in 100ms steps to ignore ON commands after an OFF command").withDefault("0")
-                    .withMinimum(new BigDecimal(0)).withMaximum(new BigDecimal(60000)).build());
+                    .withMinimum(new BigDecimal(0)).withMaximum(new BigDecimal(60000)).withOptions(options)
+                    .withLimitToOptions(false).build());
+
         }
         if (onoffCluster.isAttributeSupported(ZclOnOffCluster.ATTR_ONTIME)) {
+            options = new ArrayList<>();
+            options.add(new ParameterOption("0", "Disabled"));
             parameters.add(ConfigDescriptionParameterBuilder.create(CONFIG_ONTIME, Type.INTEGER)
                     .withLabel("Auto OFF Time")
                     .withDescription("Time in 100ms steps to automatically turn off when sent with timed command")
-                    .withDefault("65535").withMinimum(new BigDecimal(0)).withMaximum(new BigDecimal(60000)).build());
+                    .withDefault("0").withMinimum(new BigDecimal(0)).withMaximum(new BigDecimal(60000))
+                    .withOptions(options).withLimitToOptions(false).build());
         }
         if (onoffCluster.isAttributeSupported(ZclOnOffCluster.ATTR_STARTUPONOFF)) {
             options = new ArrayList<>();
