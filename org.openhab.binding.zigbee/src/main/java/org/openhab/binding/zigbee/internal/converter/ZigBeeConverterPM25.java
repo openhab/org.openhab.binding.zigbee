@@ -173,8 +173,7 @@ public class ZigBeeConverterPM25 extends ZigBeeBaseChannelConverter implements Z
                 && attribute.getId() == ZclPm25MeasurementCluster.ATTR_MEASUREDVALUE) {
             logger.debug("{}: ZigBee attribute reports {}", endpoint.getIeeeAddress(), attribute);
 
-            double pm25Value = ((Number) val).doubleValue();
-            updateChannelState(new DecimalType(Math.pow(10.0, pm25Value / 10000.0) - 1));
+            updateChannelState(new DecimalType(Math.pow(10.0, ((Number) val).doubleValue() / 10000.0) - 1));
         }
     }
 }
