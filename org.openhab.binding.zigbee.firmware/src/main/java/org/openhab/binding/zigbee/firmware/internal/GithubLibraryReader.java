@@ -49,7 +49,7 @@ import com.google.gson.reflect.TypeToken;
 /**
  * Manages the directory - reading the directory listing as a JSON file from GitHub
  *
- * @author Chris Jackson
+ * @author Chris Jackson - Initial contribution
  *
  */
 public class GithubLibraryReader {

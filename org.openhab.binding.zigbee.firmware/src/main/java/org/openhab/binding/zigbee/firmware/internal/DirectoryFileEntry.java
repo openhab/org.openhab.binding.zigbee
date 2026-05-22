@@ -19,7 +19,7 @@ import org.openhab.binding.zigbee.handler.ZigBeeFirmwareVersion;
 /**
  * Contains the information describing a firmware directory entry
  *
- * @author Chris Jackson
+ * @author Chris Jackson - Initial contribution
  *
  */
 public class DirectoryFileEntry {

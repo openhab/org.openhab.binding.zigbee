@@ -19,19 +19,16 @@
 
 		<config-description>
 			<parameter-group name="network">
-				<context></context>
 				<label>ZigBee Network Configuration</label>
 				<description></description>
 			</parameter-group>
 
 			<parameter-group name="port">
-				<context></context>
 				<label>Serial Port Configuration</label>
 				<description></description>
 			</parameter-group>
 
 			<parameter-group name="ember">
-				<context></context>
 				<label>Ember NCP Configuration</label>
 				<description></description>
 			</parameter-group>
@@ -62,7 +59,9 @@
 				<options>
 					<option value="38400">38400</option>
 					<option value="57600">57600</option>
-					<option value="115200">115200</option>
+                    <option value="115200">115200</option>
+                    <option value="230400">230400</option>
+                    <option value="460800">460800</option>
 				</options>
 			</parameter>
 
@@ -76,11 +75,12 @@
 				</options>
 			</parameter>
 
-			<parameter name="zigbee_txpower" type="integer" min="0" max="8" groupName="ember">
+			<parameter name="zigbee_txpower" type="integer" min="0" max="20" groupName="ember">
 				<label>Transmit Power</label>
 				<description>Sets the Ember transmit power</description>
 				<default>0</default>
 				<options>
+					<option value="20">Maximum</option>
 					<option value="8">High</option>
 					<option value="0">Normal</option>
 				</options>
