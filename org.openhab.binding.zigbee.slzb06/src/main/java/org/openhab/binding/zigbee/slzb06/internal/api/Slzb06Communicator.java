@@ -22,10 +22,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.util.ssl.SslContextFactory.Client;
 import org.openhab.binding.zigbee.slzb06.internal.api.Slzb06SensorsOuter.Slzb06Sensors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,12 +63,7 @@ public class Slzb06Communicator {
         }
         this.address = localAddress;
 
-        Client sslContext = new SslContextFactory.Client();
-        this.httpClient = new HttpClient(sslContext);
-        this.httpClient.getSslContextFactory().setTrustAll(true);
-        this.httpClient.getSslContextFactory().setValidateCerts(false);
-        this.httpClient.getSslContextFactory().setValidatePeerCerts(false);
-        this.httpClient.getSslContextFactory().setEndpointIdentificationAlgorithm(null);
+        this.httpClient = new HttpClient();
         this.httpClient.setExecutor(executor);
 
         try {
