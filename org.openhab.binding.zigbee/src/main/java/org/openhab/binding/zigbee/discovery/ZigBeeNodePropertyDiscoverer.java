@@ -254,7 +254,7 @@ public class ZigBeeNodePropertyDiscoverer {
             ZclAttribute attribute = otaCluster.getAttribute(ZclOtaUpgradeCluster.ATTR_CURRENTFILEVERSION);
             Object fileVersion = attribute.readValue(Long.MAX_VALUE);
             if (fileVersion != null) {
-                properties.put(PROPERTY_FIRMWARE_VERSION, String.format("0x%08X", fileVersion));
+                properties.put(PROPERTY_FIRMWARE_VERSION, fileVersion.toString());
             } else {
                 logger.debug("{}: Could not get OTA firmware version from device", node.getIeeeAddress());
             }
