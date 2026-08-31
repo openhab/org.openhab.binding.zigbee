@@ -46,6 +46,10 @@ public class ZigBeeBindingConstants {
     public static final String CHANNEL_LABEL_SWITCH_LEVEL = "Level Control";
     public static final ChannelTypeUID CHANNEL_SWITCH_LEVEL = new ChannelTypeUID("zigbee:switch_level");
 
+    public static final String CHANNEL_NAME_SWITCH_LEVEL_EVENTS = "dimmer_events";
+    public static final String CHANNEL_LABEL_SWITCH_LEVEL_EVENTS = "Level Control Button Events";
+    public static final ChannelTypeUID CHANNEL_SWITCH_LEVEL_EVENTS = new ChannelTypeUID("zigbee:switch_level_events");
+
     public static final String CHANNEL_NAME_WARNING_DEVICE = "warning_device";
     public static final String CHANNEL_LABEL_WARNING_DEVICE = "Warning Device";
     public static final ChannelTypeUID CHANNEL_WARNING_DEVICE = new ChannelTypeUID("zigbee:warning_device");
