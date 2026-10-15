@@ -175,6 +175,10 @@ public class ZigBeeConverterTemperature extends ZigBeeBaseChannelConverter imple
     @Override
     public void updateConfiguration(@NonNull Configuration currentConfiguration,
             Map<String, Object> updatedParameters) {
+        if (configReporting == null) {
+            return;
+        }
+
         if (configReporting.updateConfiguration(currentConfiguration, updatedParameters)) {
             try {
                 ZclAttribute attribute = cluster.getAttribute(ZclTemperatureMeasurementCluster.ATTR_MEASUREDVALUE);
