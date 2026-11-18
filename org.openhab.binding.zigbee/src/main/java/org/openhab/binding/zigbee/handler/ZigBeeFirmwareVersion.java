@@ -38,6 +38,12 @@ public class ZigBeeFirmwareVersion {
         this.fileVersion = fileVersion;
     }
 
+    public ZigBeeFirmwareVersion(final int manufacturerCode, final int imageType) {
+        this.manufacturerCode = manufacturerCode;
+        this.imageType = imageType;
+        this.fileVersion = 0;
+    }
+
     /**
      * @return the manufacturerCode
      */
