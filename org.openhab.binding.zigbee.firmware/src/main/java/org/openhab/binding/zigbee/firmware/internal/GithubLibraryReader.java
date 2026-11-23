@@ -34,10 +34,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.util.ssl.SslContextFactory.Client;
 import org.openhab.binding.zigbee.ZigBeeBindingConstants;
 import org.openhab.core.OpenHAB;
 import org.slf4j.Logger;
@@ -91,12 +90,12 @@ public class GithubLibraryReader {
         }
         this.repositoryAddress = localAddress + "/";
 
-        Client sslContext = new SslContextFactory.Client();
-        this.httpClient = new HttpClient(sslContext);
-        this.httpClient.getSslContextFactory().setTrustAll(true);
-        this.httpClient.getSslContextFactory().setValidateCerts(false);
-        this.httpClient.getSslContextFactory().setValidatePeerCerts(false);
-        this.httpClient.getSslContextFactory().setEndpointIdentificationAlgorithm(null);
+        SslContextFactory.Client sslContext = new SslContextFactory.Client(true);
+        sslContext.setValidateCerts(false);
+        sslContext.setValidatePeerCerts(false);
+        sslContext.setEndpointIdentificationAlgorithm(null);
+        this.httpClient = new HttpClient();
+        this.httpClient.setSslContextFactory(sslContext);
         this.httpClient.setExecutor(executor);
 
         try {
@@ -343,5 +342,4 @@ public class GithubLibraryReader {
 
         return builder.toString();
     }
-
 }
