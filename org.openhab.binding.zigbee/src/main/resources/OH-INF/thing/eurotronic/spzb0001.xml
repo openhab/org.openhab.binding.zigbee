@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="zigbee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+  xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+  <thing-type id="eurotronic_spzb0001" listed="false">
+    <label>Eurotronic Spirit Zigbee Thermostat</label>
+    <description>Radiator Thermostat</description>
+    <category>WallSwitch</category>
+
+    <channels>
+      <channel id="batteryLevel" typeId="system.battery-level">
+        <properties>
+          <property name="zigbee_endpoint">1</property>
+        </properties>
+      </channel>
+      <channel id="thermostat_occupiedheating" typeId="thermostat_occupiedheating">
+        <properties>
+          <property name="zigbee_endpoint">1</property>
+        </properties>
+      </channel>
+      <channel id="thermostat_occupiedcooling" typeId="thermostat_occupiedcooling">
+        <properties>
+          <property name="zigbee_endpoint">1</property>
+        </properties>
+      </channel>
+      <channel id="thermostat_unoccupiedheating" typeId="thermostat_unoccupiedheating">
+        <properties>
+          <property name="zigbee_endpoint">1</property>
+        </properties>
+      </channel>
+      <channel id="thermostat_heatingdemand" typeId="thermostat_heatingdemand">
+        <properties>
+          <property name="zigbee_endpoint">1</property>
+        </properties>
+      </channel>
+      <channel id="thermostat_systemmode" typeId="thermostat_systemmode">
+        <properties>
+          <property name="zigbee_endpoint">1</property>
+        </properties>
+      </channel>
+      <channel id="eurotronic_spzb0001_window_open" typeId="eurotronic_spzb0001_window_open">
+        <properties>
+          <property name="zigbee_endpoint">1</property>
+        </properties>
+      </channel>
+    </channels>
+    <config-description>
+      <parameter name="zigbee_macaddress" type="text" readOnly="true" required="true">
+        <label>MAC Address</label>
+      </parameter>
+    </config-description>
+  </thing-type>
+</thing:thing-descriptions>
