@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import com.zsmartsystems.zigbee.IeeeAddress;
 import com.zsmartsystems.zigbee.ZigBeeEndpoint;
+import java.util.List;
 
 @Component(immediate = true)
 public final class ZigBeeChannelConverterFactoryImpl implements ZigBeeChannelConverterFactory {
@@ -52,7 +53,7 @@ public final class ZigBeeChannelConverterFactoryImpl implements ZigBeeChannelCon
     /**
      * Map of all channels to be consolidated. Note that order is important.
      */
-    private final Map<ChannelTypeUID, ChannelTypeUID> channelConsolidation = new LinkedHashMap<>();
+    private final Map<ChannelTypeUID, List<ChannelTypeUID>> channelConsolidation = new LinkedHashMap<>();
 
     public ZigBeeChannelConverterFactoryImpl() {
         // Add the hierarchical list of channels that are to be removed due to inheritance
@@ -62,10 +63,11 @@ public final class ZigBeeChannelConverterFactoryImpl implements ZigBeeChannelCon
 
         // Remove ON/OFF if we support LEVEL
         channelConsolidation.put(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL,
-                ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF);
+                List.of(ZigBeeBindingConstants.CHANNEL_SWITCH_ONOFF));
         // Remove LEVEL if we support COLOR
         channelConsolidation.put(ZigBeeBindingConstants.CHANNEL_COLOR_COLOR,
-                ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL);
+                List.of(ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL,
+                        ZigBeeBindingConstants.CHANNEL_SWITCH_LEVEL_EVENTS));
     }
 
     @Override
@@ -91,12 +93,14 @@ public final class ZigBeeChannelConverterFactoryImpl implements ZigBeeChannelCon
 
         // Perform a channel consolidation at endpoint level to remove unnecessary channels.
         // This removes channels that are covered through inheritance.
-        for (Map.Entry<ChannelTypeUID, ChannelTypeUID> consolidationChannel : channelConsolidation.entrySet()) {
-            if (channels.containsKey(consolidationChannel.getKey())
-                    && channels.containsKey(consolidationChannel.getValue())) {
-                logger.debug("{}: Removing channel {} in favor of {}", endpoint.getIeeeAddress(),
-                        consolidationChannel.getValue(), consolidationChannel.getKey());
-                channels.remove(consolidationChannel.getValue());
+        for (Map.Entry<ChannelTypeUID, List<ChannelTypeUID>> consolidationChannel : channelConsolidation.entrySet()) {
+            for (ChannelTypeUID toRemove : consolidationChannel.getValue()) {
+                if (channels.containsKey(consolidationChannel.getKey())
+                        && channels.containsKey(toRemove)) {
+                    logger.debug("{}: Removing channel {} in favor of {}", endpoint.getIeeeAddress(),
+                            toRemove, consolidationChannel.getKey());
+                    channels.remove(toRemove);
+                }
             }
         }
         return channels.values();

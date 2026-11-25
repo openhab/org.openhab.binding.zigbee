@@ -432,6 +432,9 @@ public class ZigBeeThingHandler extends BaseThingHandler implements ZigBeeNetwor
                     stateDescriptions.put(channel.getUID(), stateDescription);
                 }
             }
+
+            // give all channels a chance to connect to each other to trigger events
+            channels.values().forEach((h) -> channels.values().forEach(h::connectEventConverter));
         } catch (Exception e) {
             logger.error("{}: Exception creating channels", nodeIeeeAddress, e);
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.HANDLER_INITIALIZING_ERROR);
